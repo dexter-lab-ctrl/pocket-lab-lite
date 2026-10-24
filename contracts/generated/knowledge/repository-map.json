@@ -4103,6 +4103,12 @@
     },
     {
       "entities": [
+        "test:tests/docs/readme-responsive.spec.ts"
+      ],
+      "source": "tests/docs/readme-responsive.spec.ts"
+    },
+    {
+      "entities": [
         "test:tests/docs/release-inventory.spec.ts"
       ],
       "source": "tests/docs/release-inventory.spec.ts"
@@ -4166,6 +4172,12 @@
         "test:tests/docs/test_operational_health_bridge.py"
       ],
       "source": "tests/docs/test_operational_health_bridge.py"
+    },
+    {
+      "entities": [
+        "test:tests/docs/test_readme_contract.py"
+      ],
+      "source": "tests/docs/test_readme_contract.py"
     },
     {
       "entities": [
@@ -4286,6 +4298,24 @@
         "test:tests/e2e/lite-accessibility.spec.ts"
       ],
       "source": "tests/e2e/lite-accessibility.spec.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts"
+      ],
+      "source": "tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts"
+      ],
+      "source": "tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts"
+    },
+    {
+      "entities": [
+        "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts"
+      ],
+      "source": "tests/e2e/lite-apps-azure-premium-polish.spec.ts"
     },
     {
       "entities": [
@@ -4487,6 +4517,12 @@
     },
     {
       "entities": [
+        "test:tests/e2e/lite-readme-capture.spec.ts"
+      ],
+      "source": "tests/e2e/lite-readme-capture.spec.ts"
+    },
+    {
+      "entities": [
         "test:tests/e2e/lite-recovery-premium-performance.spec.ts"
       ],
       "source": "tests/e2e/lite-recovery-premium-performance.spec.ts"
@@ -4672,6 +4708,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "95cb7bf725ae3818514bbe94e5d093fac637f1a870fa1ab4511c3a94fc11957b"
+    "source_fingerprint": "6740107435949b3e97a6b4a583bf7f29d166039ca6aef7bcbb2aa3f3effebab6"
   }
 }

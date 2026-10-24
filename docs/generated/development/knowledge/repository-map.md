@@ -16,7 +16,7 @@ generator_version: 3
 
 > Need physical repository structure, execution ownership, Uses/Used-by, symbols, and bounded impact? Open the separate [Codebase Map](codebase-map.md). This Repository Map retains reverse source→Knowledge semantics.
 
-<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>21</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>108</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>23</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>289</strong><small>mapped sources</small></div></div>
+<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>21</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>108</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>23</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>295</strong><small>mapped sources</small></div></div>
 
 ## architecture
 
@@ -425,6 +425,7 @@ generator_version: 3
 <article class="pl-repository-card"><code>tests/docs/documentation-ia.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/documentation-ia.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/knowledge-graph.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/knowledge-graph.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/mkdocs.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/mkdocs.spec.ts</span></div></article>
+<article class="pl-repository-card"><code>tests/docs/readme-responsive.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/readme-responsive.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/release-inventory.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/release-inventory.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_codebase_map.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_codebase_map.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_docs_runtime_network_fence.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_docs_runtime_network_fence.py</span></div></article>
@@ -436,6 +437,7 @@ generator_version: 3
 <article class="pl-repository-card"><code>tests/docs/test_identity_rules_threat_model_d3.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_identity_rules_threat_model_d3.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_living_knowledgebase.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_living_knowledgebase.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_operational_health_bridge.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_operational_health_bridge.py</span></div></article>
+<article class="pl-repository-card"><code>tests/docs/test_readme_contract.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_readme_contract.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_release_inventory_experience.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_release_inventory_experience.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_release_model.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_release_model.py</span></div></article>
 <article class="pl-repository-card"><code>tests/docs/test_security_assurance_correlation.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/docs/test_security_assurance_correlation.py</span></div></article>
@@ -456,6 +458,9 @@ generator_version: 3
 <article class="pl-repository-card"><code>tests/e2e/global-setup.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/global-setup.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-accessibility-states.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-accessibility-states.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-accessibility.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-accessibility.spec.ts</span></div></article>
+<article class="pl-repository-card"><code>tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts</span></div></article>
+<article class="pl-repository-card"><code>tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts</span></div></article>
+<article class="pl-repository-card"><code>tests/e2e/lite-apps-azure-premium-polish.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-apps-azure-premium-polish.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-apps-premium-refinement.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-apps-premium-refinement.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-azure-horizon-apps-performance.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-azure-horizon-apps-visual.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts</span></div></article>
@@ -489,6 +494,7 @@ generator_version: 3
 <article class="pl-repository-card"><code>tests/e2e/lite-performance.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-performance.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-phase9-qualification.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-phase9-qualification.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-photo-backup.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-photo-backup.spec.ts</span></div></article>
+<article class="pl-repository-card"><code>tests/e2e/lite-readme-capture.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-readme-capture.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-recovery-premium-performance.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-recovery-premium-performance.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-recovery-premium-refinement.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-recovery-premium-refinement.spec.ts</span></div></article>
 <article class="pl-repository-card"><code>tests/e2e/lite-recovery-premium-visual.spec.ts</code><div class="pl-chip-list"><span class="pl-chip">test:tests/e2e/lite-recovery-premium-visual.spec.ts</span></div></article>

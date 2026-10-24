@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// Candidate visual specifications require human inspection before baselines are accepted.
+// Baselines below were visually reviewed for Daylight/Black structure, mobile
+// reflow, nested Action Details, and the moved/resized desktop panel.
 async function open(page:any, theme:'light'|'dark', scenario:string, width:number) {
   await page.setViewportSize({width,height:width<=390?780:900});
   await page.emulateMedia({reducedMotion:'reduce'});

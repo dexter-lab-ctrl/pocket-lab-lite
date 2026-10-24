@@ -30752,6 +30752,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/docs/readme-responsive.spec.ts",
+      "name": "tests/docs/readme-responsive.spec.ts",
+      "source_refs": [
+        "tests/docs/readme-responsive.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/docs/release-inventory.spec.ts",
       "name": "tests/docs/release-inventory.spec.ts",
       "source_refs": [
@@ -30856,6 +30866,16 @@
       "name": "tests/docs/test_operational_health_bridge.py",
       "source_refs": [
         "tests/docs/test_operational_health_bridge.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/docs/test_readme_contract.py",
+      "name": "tests/docs/test_readme_contract.py",
+      "source_refs": [
+        "tests/docs/test_readme_contract.py"
       ],
       "type": "test"
     },
@@ -31056,6 +31076,36 @@
       "name": "tests/e2e/lite-accessibility.spec.ts",
       "source_refs": [
         "tests/e2e/lite-accessibility.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
+      "name": "tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+      "name": "tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
+      "name": "tests/e2e/lite-apps-azure-premium-polish.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-azure-premium-polish.spec.ts"
       ],
       "type": "test"
     },
@@ -31386,6 +31436,16 @@
       "name": "tests/e2e/lite-photo-backup.spec.ts",
       "source_refs": [
         "tests/e2e/lite-photo-backup.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-readme-capture.spec.ts",
+      "name": "tests/e2e/lite-readme-capture.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-readme-capture.spec.ts"
       ],
       "type": "test"
     },
@@ -34883,6 +34943,7 @@
         "test:tests/docs/documentation-ia.spec.ts",
         "test:tests/docs/knowledge-graph.spec.ts",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/readme-responsive.spec.ts",
         "test:tests/docs/release-inventory.spec.ts",
         "test:tests/docs/test_codebase_map.py",
         "test:tests/docs/test_docs_runtime_network_fence.py",
@@ -34894,6 +34955,7 @@
         "test:tests/docs/test_identity_rules_threat_model_d3.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
+        "test:tests/docs/test_readme_contract.py",
         "test:tests/docs/test_release_inventory_experience.py",
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_security_assurance_correlation.py",
@@ -34914,6 +34976,9 @@
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
+        "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
+        "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+        "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
         "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
@@ -34947,6 +35012,7 @@
         "test:tests/e2e/lite-performance.spec.ts",
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
         "test:tests/e2e/lite-photo-backup.spec.ts",
+        "test:tests/e2e/lite-readme-capture.spec.ts",
         "test:tests/e2e/lite-recovery-premium-performance.spec.ts",
         "test:tests/e2e/lite-recovery-premium-refinement.spec.ts",
         "test:tests/e2e/lite-recovery-premium-visual.spec.ts",
@@ -36405,6 +36471,7 @@
         "test:tests/docs/documentation-ia.spec.ts",
         "test:tests/docs/knowledge-graph.spec.ts",
         "test:tests/docs/mkdocs.spec.ts",
+        "test:tests/docs/readme-responsive.spec.ts",
         "test:tests/docs/release-inventory.spec.ts",
         "test:tests/docs/test_codebase_map.py",
         "test:tests/docs/test_docs_runtime_network_fence.py",
@@ -36416,6 +36483,7 @@
         "test:tests/docs/test_identity_rules_threat_model_d3.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
+        "test:tests/docs/test_readme_contract.py",
         "test:tests/docs/test_release_inventory_experience.py",
         "test:tests/docs/test_release_model.py",
         "test:tests/docs/test_security_assurance_correlation.py",
@@ -36436,6 +36504,9 @@
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
+        "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
+        "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+        "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
         "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
@@ -36469,6 +36540,7 @@
         "test:tests/e2e/lite-performance.spec.ts",
         "test:tests/e2e/lite-phase9-qualification.spec.ts",
         "test:tests/e2e/lite-photo-backup.spec.ts",
+        "test:tests/e2e/lite-readme-capture.spec.ts",
         "test:tests/e2e/lite-recovery-premium-performance.spec.ts",
         "test:tests/e2e/lite-recovery-premium-refinement.spec.ts",
         "test:tests/e2e/lite-recovery-premium-visual.spec.ts",
@@ -53297,6 +53369,28 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-apps-premium-refinement.spec.ts": [
         {
           "source": "component:photoprism",
@@ -53518,6 +53612,12 @@
         },
         {
           "source": "reason:interrupted",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-readme-capture.spec.ts": [
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         }
       ],
@@ -60660,6 +60760,18 @@
         },
         {
           "target": "test:tests/e2e/lite-accessibility-states.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
           "type": "verified_by"
         },
         {
@@ -68751,6 +68863,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
           "type": "verified_by"
         },
@@ -68800,6 +68916,10 @@
         },
         {
           "target": "test:tests/e2e/lite-photo-backup.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-readme-capture.spec.ts",
           "type": "verified_by"
         },
         {
@@ -74286,6 +74406,15 @@
       "source": "api:get:/api/lite/devices/{device_id}",
       "target": "table:device_health_attention",
       "type": "reads"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts"
+      ],
+      "id": "rel:0843d210d419b41e",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -87884,6 +88013,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-readme-capture.spec.ts"
+      ],
+      "id": "rel:6371a0a921c0b8b9",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-readme-capture.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
@@ -87902,6 +88040,15 @@
       "id": "rel:6399207e53252487",
       "source": "reason:remote_access_not_ready",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts"
+      ],
+      "id": "rel:639ef4d708c5c04d",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
       "type": "verified_by"
     },
     {
@@ -101540,6 +101687,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-apps-azure-premium-polish.spec.ts"
+      ],
+      "id": "rel:c4f6db9c8c7d7a28",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteRecovery.jsx"
       ],
       "id": "rel:c50e1e060109964b",
@@ -101763,6 +101919,15 @@
       "source": "component:remote-readiness",
       "target": "troubleshooting:remote-access-not-ready",
       "type": "recovers_with"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts"
+      ],
+      "id": "rel:c77568d7baba04a8",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -110070,9 +110235,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "95cb7bf725ae3818514bbe94e5d093fac637f1a870fa1ab4511c3a94fc11957b",
+  "source_fingerprint": "6740107435949b3e97a6b4a583bf7f29d166039ca6aef7bcbb2aa3f3effebab6",
   "statistics": {
-    "entity_count": 1440,
+    "entity_count": 1446,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -110089,14 +110254,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 292,
+      "test": 298,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4085,
-    "source_count": 329
+    "relation_count": 4090,
+    "source_count": 335
   }
 }

@@ -3,7 +3,7 @@
   "generated": true,
   "generated_at": "uncommitted",
   "generator": "scripts/docs/graphviz/generate_lite_diagrams.py",
-  "generator_sha256": "882fce0d6684c9cbb3b95c054f89d1a5eb7b29273cc201e145e8244818c239ba",
+  "generator_sha256": "93e9f6386d6919e190ac0d6519ecfb365bc4aea62bb9ab3afd69a774d90749e4",
   "generator_version": 1,
   "outputs": [
     "docs/assets/diagrams/agent-supervisor-recovery.dark.dot",

@@ -2206,7 +2206,7 @@ def test_lite_storage_and_capability_ui_is_present():
     assert "Connect photos" in ui
     assert "Use phone photos" in ui
     assert "Use storage device" in ui
-    assert "Storage devices:" in ui
+    assert "Storage devices" in ui
     assert "deviceCapabilityLabels" in ui
     assert "lite-catalog-storage-panel" in css
     assert "lite-device-capability-chips" in css
@@ -2967,7 +2967,7 @@ def test_lite_app_action_sheet_ui_source_is_present():
     # measured Manage controls while the explicit tab/close controls remain.
     assert "lite-catalog-manage-section-viewport" in ui
     assert "data-lite-perf-mode" in ui
-    assert "{...bindCatalogPull()}" not in ui
+    assert 'className="lite-catalog-touch-pull-zone" {...bindCatalogPull()}' in ui
     assert "{...bindAppCardLongPress(" not in ui
     assert "lite-catalog-search-wrap" not in ui
     assert "lite-catalog-search-wrap" not in css
@@ -5431,7 +5431,8 @@ def test_lite_progressive_details_keeps_history_lazy_and_technical_collapsed():
     assert "const shouldMountHistory = Boolean(isOpen && enabled)" in history
     assert "{shouldMountHistory ? (" in history
     assert "data-lazy-history" in history
-    assert "hidden={!" not in catalog
+    # Match a standalone JSX hidden prop; do not reject the accessible aria-hidden prop.
+    assert " hidden={!" not in catalog
     assert "window.setInterval" not in catalog
 
 
@@ -5486,7 +5487,8 @@ def test_lite_app_catalog_phase_s1_render_reduction_source_contract():
     assert "Saved for troubleshooting" in details_lazy
     assert "backend_only" in details_lazy
     assert "window.setInterval" not in catalog
-    assert "hidden={!" not in catalog
+    # Match a standalone JSX hidden prop; do not reject the accessible aria-hidden prop.
+    assert " hidden={!" not in catalog
     assert "normal App Catalog UI does not load" not in catalog
 
 

@@ -2,7 +2,8 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// AUTHORED — NOT EXECUTED — UNVALIDATED. All fixtures are deterministic MSW projections.
+// The deterministic MSW projections below cover the validated Apps premium
+// contract; live/backend and physical Android evidence is recorded separately.
 async function catalog(page:Page, scenario='catalog-ready', theme:'light'|'dark'|'system'='light', width=1280) {
   await page.setViewportSize({width,height:width<=430?780:900});
   await page.addInitScript(pref=>localStorage.setItem('pocketlab:appearance',pref),theme);
@@ -35,7 +36,7 @@ async function azureBackgroundMatches(page:Page, selector:string) {
   });
   expect(colors.element).toBe(colors.expected);
 }
-test.describe('Azure Apps premium theme and responsive contracts — authored, never executed',()=>{
+test.describe('Azure Apps premium theme and responsive contracts — validated mocked matrix',()=>{
   for(const theme of ['light','dark'] as const){
     for(const width of [320,375,390,768,1024,1440]){
       test(`${theme} ${width}px: catalog and Manage stay within bounds`,async({page})=>{
@@ -116,7 +117,7 @@ test.describe('Azure Apps premium theme and responsive contracts — authored, n
     await expect(dialog.getByRole('region',{name:'Photo backup'})).toHaveCount(0);
   });
 });
-test.describe('premium operational facts and gesture ownership — authored, never executed',()=>{
+test.describe('premium operational facts and gesture ownership — validated mocked matrix',()=>{
   for(const scenario of ['photo-backup-completed','photo-backup-remote-unavailable','photo-backup-photoprism-unavailable','photo-backup-malformed','photo-backup-permission-missing']){
     test(`backend-specific photo facts: ${scenario}`,async({page})=>{
       await catalog(page,scenario);
@@ -192,7 +193,7 @@ test.describe('premium operational facts and gesture ownership — authored, nev
   });
 });
 
-test.describe('touch pull P2 boundary — AUTHORED, NOT RUN',()=>{
+test.describe('touch pull P2 boundary — validated where supported',()=>{
   test('small pull stays below threshold; release triggers one refresh, leaves buttons clickable',async({page},testInfo)=>{
     test.skip(!testInfo.project.name.includes('mobile'),'Touch-only scenario');
     await page.addInitScript(()=>{

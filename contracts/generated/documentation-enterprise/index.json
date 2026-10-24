@@ -23585,6 +23585,30 @@
         "affects_release": false,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_README_CAPTURE",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "tasks/Taskfile.readme.yml",
+          "tests/e2e/lite-readme-capture.spec.ts"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "POCKETLAB_READY_ATTEMPTS",
         "owner": "repository tooling",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -40761,7 +40785,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 509,
+      "page_count": 511,
       "top_level": [
         "start-here",
         "use",
@@ -48645,7 +48669,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "cd5e0974b51fbb3d18295e9e6b4c6149582848008d3ccd530eeaf2ea57f93faf",
-        "documentation": "42f7864a64320f9011d4a08dfd154ad77f977140b2f532b5b08b62e53bed62de",
+        "documentation": "2e979d7ca955c43524c25630fca61a181a427b8c8244980c0fed775520ced031",
         "openapi": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
         "operational_health": "c758d7d653b42f1860a89c2ab10d285eea8d8f477df13804b883c3b2e3255f8e"
       },
@@ -50581,7 +50605,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "affbc812f65e95322d2e54307f2fdbb9cf4c7211603a9c72f862a3d03a23360f"
+          "sha256": "2cc32695adff6017cf387594addafe95a595fbe2c0ec7321084eba5a07bc4cb1"
         },
         {
           "path": "requirements-dev.txt",
@@ -100728,6 +100752,133 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
+          "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked POCKETLAB_README_CAPTURE=1 npx playwright test tests/e2e/lite-readme-capture.spec.ts --project=mocked-desktop"
+        ],
+        "dependencies": [],
+        "environment": [
+          "LITE_E2E_MODE",
+          "POCKETLAB_README_CAPTURE"
+        ],
+        "example_invocation": "task lite:readme:capture:mocked",
+        "expected_runtime_class": "heavy-dev",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "tests/e2e/lite-readme-capture.spec.ts"
+        ],
+        "name": "lite:readme:capture:mocked",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Explicit future opt-in mocked UI capture, not a live production screenshot",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": true,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": true,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.readme.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Runtime-evidence loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/docs/check_readme.py",
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_readme_contract.py"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:readme:check",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/docs/check_readme.py",
+          "tests/docs/test_readme_contract.py"
+        ],
+        "name": "lite:readme:check",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Check README links, capability inventory, asset safety, and mocked screenshot provenance",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.readme.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Documentation loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/docs/readme-responsive.spec.ts --project=mocked-desktop"
+        ],
+        "dependencies": [],
+        "environment": [
+          "LITE_E2E_MODE"
+        ],
+        "example_invocation": "task lite:readme:visual",
+        "expected_runtime_class": "heavy-dev",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "generated drift"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "tests/docs/readme-responsive.spec.ts"
+        ],
+        "name": "lite:readme:visual",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Later SVG viewport qualification at 320–1920 pixels (not GitHub-render qualification)",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": true,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": true,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.readme.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Documentation loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
           "{{.PYTHON}} scripts/dev/lite/release_artifact_check.py --root ."
         ],
         "dependencies": [],
@@ -101255,6 +101406,390 @@
         "outputs": [],
         "promotes_evidence": false,
         "purpose": "Compare Azure Apps visuals after owner-approved baseline capture",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:apps:premium:a11y"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:apps:premium:a11y",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:apps:premium:a11y",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run Apps P0/P1 premium accessibility and Axe coverage",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:apps:premium:devices-regression"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:apps:premium:devices-regression",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:apps:premium:devices-regression",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run Apps P0/P1 premium shared Apps/Devices geometry regression coverage",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:apps:premium:geometry"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:apps:premium:geometry",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:apps:premium:geometry",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run Apps P0/P1 premium desktop geometry coverage",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:apps:premium:mocked"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:apps:premium:mocked",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:apps:premium:mocked",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run Apps P0/P1 premium mocked desktop/mobile coverage",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:apps:premium:performance"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:apps:premium:performance",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:apps:premium:performance",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run Apps P0/P1 premium performance samples with existing budgets",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:apps:premium:storybook"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:test:apps:premium:storybook",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:apps:premium:storybook",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Build and exercise Apps P0/P1 premium Storybook coverage",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:apps:premium:theme"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:apps:premium:theme",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:apps:premium:theme",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run Apps P0/P1 premium Daylight/Black/System theme coverage",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:apps:premium:unit"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:test:apps:premium:unit",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:apps:premium:unit",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run Apps P0/P1 premium unit and selector coverage",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:apps:premium:visual"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:apps:premium:visual",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:apps:premium:visual",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Compare Apps P0/P1 premium visuals against accepted baselines",
         "related_tasks": [
           "lite:dev:scratch:prepare",
           "lite:playwright:preflight"
@@ -122068,5 +122603,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "82e0e5edbd90dc5d79db8d71f915c37b0e13ebd187bbbfd42acf90e98f28995c"
+  "source_fingerprint": "db116c97796e5738e945312a78808b72d4a865da00900965d2a04fc0f8ce3d8a"
 }

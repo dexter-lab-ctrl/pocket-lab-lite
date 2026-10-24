@@ -14849,6 +14849,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/docs/readme-responsive.spec.ts",
+      "name": "tests/docs/readme-responsive.spec.ts",
+      "source_refs": [
+        "tests/docs/readme-responsive.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/docs/release-inventory.spec.ts",
       "name": "tests/docs/release-inventory.spec.ts",
       "source_refs": [
@@ -14963,6 +14974,17 @@
       "name": "tests/docs/test_operational_health_bridge.py",
       "source_refs": [
         "tests/docs/test_operational_health_bridge.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/docs/test_readme_contract.py",
+      "name": "tests/docs/test_readme_contract.py",
+      "source_refs": [
+        "tests/docs/test_readme_contract.py"
       ],
       "type": "test"
     },
@@ -15183,6 +15205,39 @@
       "name": "tests/e2e/lite-accessibility.spec.ts",
       "source_refs": [
         "tests/e2e/lite-accessibility.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
+      "name": "tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+      "name": "tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
+      "name": "tests/e2e/lite-apps-azure-premium-polish.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-azure-premium-polish.spec.ts"
       ],
       "type": "test"
     },
@@ -15546,6 +15601,17 @@
       "name": "tests/e2e/lite-photo-backup.spec.ts",
       "source_refs": [
         "tests/e2e/lite-photo-backup.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-readme-capture.spec.ts",
+      "name": "tests/e2e/lite-readme-capture.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-readme-capture.spec.ts"
       ],
       "type": "test"
     },
@@ -18800,6 +18866,20 @@
       "source": "api:get:/api/lite/devices/{device_id}",
       "target": "table:device_health_attention",
       "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts"
+      ],
+      "id": "rel:0843d210d419b41e",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -39903,6 +39983,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-readme-capture.spec.ts"
+      ],
+      "id": "rel:6371a0a921c0b8b9",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-readme-capture.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_identity_p1.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
@@ -39926,6 +40020,20 @@
       "id": "rel:6399207e53252487",
       "source": "reason:remote_access_not_ready",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts"
+      ],
+      "id": "rel:639ef4d708c5c04d",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
       "type": "verified_by"
     },
     {
@@ -61089,6 +61197,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-apps-azure-premium-polish.spec.ts"
+      ],
+      "id": "rel:c4f6db9c8c7d7a28",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "src/lite/LiteRecovery.jsx"
       ],
       "id": "rel:c50e1e060109964b",
@@ -61432,6 +61554,20 @@
       "source": "component:remote-readiness",
       "target": "troubleshooting:remote-access-not-ready",
       "type": "recovers_with"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts"
+      ],
+      "id": "rel:c77568d7baba04a8",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {

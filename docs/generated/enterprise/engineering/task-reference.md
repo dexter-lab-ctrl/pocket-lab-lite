@@ -15,10 +15,10 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 116 |
-| Documentation loop | 55 |
+| Development loop | 125 |
+| Documentation loop | 57 |
 | API-validation loop | 12 |
-| Runtime-evidence loop | 35 |
+| Runtime-evidence loop | 36 |
 | Security-analysis loop | 34 |
 | Release loop | 19 |
 | Recovery-diagnostics loop | 20 |
@@ -8234,6 +8234,109 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Example:** `task lite:visual:check`
 
+## `lite:readme:capture:mocked`
+
+**Purpose:** Explicit future opt-in mocked UI capture, not a live production screenshot
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked POCKETLAB_README_CAPTURE=1 npx playwright test tests/e2e/lite-readme-capture.spec.ts --project=mocked-desktop`
+
+**Environment:** LITE_E2E_MODE, POCKETLAB_README_CAPTURE
+
+**Inputs:** tests/e2e/lite-readme-capture.spec.ts
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=True; safe local=True; class=heavy-dev
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:readme:capture:mocked`
+
+## `lite:readme:check`
+
+**Purpose:** Check README links, capability inventory, asset safety, and mocked screenshot provenance
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/docs/check_readme.py`
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/docs/test_readme_contract.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/docs/check_readme.py, tests/docs/test_readme_contract.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:readme:check`
+
+## `lite:readme:visual`
+
+**Purpose:** Later SVG viewport qualification at 320–1920 pixels (not GitHub-render qualification)
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/docs/readme-responsive.spec.ts --project=mocked-desktop`
+
+**Environment:** LITE_E2E_MODE
+
+**Inputs:** tests/docs/readme-responsive.spec.ts
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=True; safe local=True; class=heavy-dev
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, generated drift
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:readme:visual`
+
 ## `lite:release:artifact-check`
 
 **Purpose:** Validate an existing dist.zip, checksums.txt, and optional Lite release manifest
@@ -8676,6 +8779,312 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** gate-defined
 
 **Example:** `task lite:test:apps:azure:visual`
+
+## `lite:test:apps:premium:a11y`
+
+**Purpose:** Run Apps P0/P1 premium accessibility and Axe coverage
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:premium:a11y`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:premium:a11y`
+
+## `lite:test:apps:premium:devices-regression`
+
+**Purpose:** Run Apps P0/P1 premium shared Apps/Devices geometry regression coverage
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:premium:devices-regression`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:premium:devices-regression`
+
+## `lite:test:apps:premium:geometry`
+
+**Purpose:** Run Apps P0/P1 premium desktop geometry coverage
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:premium:geometry`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:premium:geometry`
+
+## `lite:test:apps:premium:mocked`
+
+**Purpose:** Run Apps P0/P1 premium mocked desktop/mobile coverage
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:premium:mocked`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:premium:mocked`
+
+## `lite:test:apps:premium:performance`
+
+**Purpose:** Run Apps P0/P1 premium performance samples with existing budgets
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:premium:performance`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:premium:performance`
+
+## `lite:test:apps:premium:storybook`
+
+**Purpose:** Build and exercise Apps P0/P1 premium Storybook coverage
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:premium:storybook`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:premium:storybook`
+
+## `lite:test:apps:premium:theme`
+
+**Purpose:** Run Apps P0/P1 premium Daylight/Black/System theme coverage
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:premium:theme`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:premium:theme`
+
+## `lite:test:apps:premium:unit`
+
+**Purpose:** Run Apps P0/P1 premium unit and selector coverage
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:premium:unit`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:premium:unit`
+
+## `lite:test:apps:premium:visual`
+
+**Purpose:** Compare Apps P0/P1 premium visuals against accepted baselines
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:premium:visual`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:premium:visual`
 
 ## `lite:test:azure:a11y`
 
