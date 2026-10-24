@@ -25067,7 +25067,7 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 
 /* Apps UI follow-up: center the Manage surface and make tab selection a full
    control-state change instead of a partial underline/ripple. */
-[data-lite-manage-portal="true"] .lite-catalog-manage-sheet {
+[data-lite-manage-portal="true"] .lite-catalog-manage-sheet:not(.is-movable) {
   left: auto !important;
   margin: 0 auto !important;
   right: auto !important;
@@ -25085,10 +25085,10 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 }
 
 [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button.is-active {
-  background: linear-gradient(135deg, rgba(219, 234, 254, 0.98), rgba(224, 242, 254, 0.96)) !important;
-  border-color: rgba(37, 99, 235, 0.42) !important;
-  color: #1d4ed8 !important;
-  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.16), 0 0 0 1px rgba(37, 99, 235, 0.06) !important;
+  background: var(--azure-selected) !important;
+  border-color: var(--azure-accent) !important;
+  color: var(--azure-text) !important;
+  box-shadow: 0 0 0 1px var(--azure-border) !important;
 }
 
 [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button::before {
@@ -25096,7 +25096,7 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
   width: auto !important;
   height: auto !important;
   border-radius: inherit !important;
-  background: rgba(37, 99, 235, 0.18) !important;
+  background: var(--azure-pressed) !important;
   opacity: 0 !important;
   transform: none !important;
   transition: opacity 140ms ease !important;
