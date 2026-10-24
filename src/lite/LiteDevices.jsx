@@ -177,7 +177,7 @@ export function deviceRelationshipPresentation(device, savedStateOnly = false) {
 function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
   const server = devices.find((device) => deviceLinkState(device) === 'server') || null;
   const peers = devices.filter((device) => device !== server);
-  const serverName = server?.name || server?.hostname || 'Server Phone';
+  const serverName = server?.name || server?.hostname || 'Server Host';
   const stateCounts = peers.reduce((counts, device) => {
     const state = deviceRelationshipPresentation(device, savedStateOnly).state;
     counts[state] = (counts[state] || 0) + 1;
@@ -186,7 +186,9 @@ function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
   const connectedCount = Number(stateCounts.joined || 0);
   const repairingCount = Number(stateCounts.repairing || 0);
   const disconnectedCount = peers.length - connectedCount - repairingCount;
-  const connectionSummary = connectedCount
+  const connectionSummary = savedStateOnly ? 'Showing saved connection information'
+    : !server ? 'Server Host status not reported'
+    : connectedCount
     ? `${connectedCount} connected device${connectedCount === 1 ? '' : 's'}${repairingCount ? ` · ${repairingCount} repairing` : ''}${disconnectedCount ? ` · ${disconnectedCount} not connected` : ''}`
     : peers.length
       ? `${repairingCount + disconnectedCount} device${repairingCount + disconnectedCount === 1 ? '' : 's'} need${repairingCount + disconnectedCount === 1 ? 's' : ''} connection attention`
@@ -209,7 +211,7 @@ function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
         <div className="lite-device-relationship-node is-server" data-relationship-state="server">
           <LockKeyhole className="h-4 w-4" aria-hidden="true" />
           <span>{serverName}</span>
-          <small>Protected server</small>
+          <small>{server ? 'Protected server host' : 'Server status not reported'}</small>
         </div>
         <div className="lite-device-relationship-peers" role="list" aria-label="Connected device links">
         {peers.length ? peers.slice(0, 6).map((device) => {
@@ -633,7 +635,7 @@ export default function DevicesScreen() {
   }, [rawDevices]);
   const modelPickerDevice = devices.find((device) => String(device?.id || device?.name || '') === deviceModelPickerId) || null;
   const remoteAccess = data?.remote_access || {};
-  const remoteAccessView = remoteAccessPresentation(remoteAccess, savedStateOnly);
+  const remoteAccessView = remoteAccessPresentation(remoteAccess, savedStateOnly || isExpired);
   const remoteAccessReady = remoteAccessView.ready;
   const latestInvite = invite || data?.latest_invite || null;
   useLiteServiceWorkerUpdateBlocker('devices-workflow', Boolean(
@@ -1026,7 +1028,7 @@ export default function DevicesScreen() {
         </div>
 
         <div className="lite-remote-access-facts" aria-label="Remote access readiness">
-          {remoteAccessSummaryRows(remoteAccess, remoteAccessView, savedStateOnly).map((item) => (
+          {remoteAccessSummaryRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
             <div key={item.label} className={`is-${item.state}`}>
               <span>{item.label}</span>
               <strong><i aria-hidden="true" />{item.value}</strong>
@@ -1038,10 +1040,10 @@ export default function DevicesScreen() {
           <summary>Technical connection details</summary>
           {remoteAccessDetailsOpen ? (
             <dl>
-              {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly).map((item) => (
+              {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
                 <div key={item.label}>
                   <dt>{item.label}</dt>
-                  <dd>{item.label === 'Tailscale IP' && remoteAccessReady && !savedStateOnly && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
+                  <dd>{item.label === 'Tailscale IP' && remoteAccessReady && !savedStateOnly && !isExpired && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
                     ? <><span>Available</span> <code>{remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}</code></>
                     : item.value}</dd>
                 </div>
