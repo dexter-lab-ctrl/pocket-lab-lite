@@ -1,0 +1,76 @@
+import { expect, test } from '@playwright/test';
+import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
+
+// Baselines below were visually reviewed for Daylight/Black structure, mobile
+// reflow, nested Action Details, and the moved/resized desktop panel.
+async function open(page:any, theme:'light'|'dark', scenario:string, width:number) {
+  await page.setViewportSize({width,height:width<=390?780:900});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.addInitScript((pref:string)=>localStorage.setItem('pocketlab:appearance',pref),theme);
+  await installScenario(page,scenario);
+  await page.goto('/?screen=catalog');
+  await waitForLiteScreenToSettle(page,'catalog');
+  // The catalog projection can settle before its entrance spring has reached
+  // its final opacity on a newly started mobile worker. Visual captures must
+  // represent the steady-state surface rather than an intermediate frame.
+  await expect(page.locator('.lite-catalog-screen')).toHaveCSS('opacity', '1');
+}
+async function manage(page:any){
+  await page.locator('.lite-catalog-app-card').getByRole('button',{name:'Manage',exact:true}).first().click();
+  const dialog=page.getByRole('dialog',{name:/Manage PhotoPrism/i});
+  await expect(dialog).toBeVisible();
+  return dialog;
+}
+for(const theme of ['light','dark'] as const) {
+  for(const width of [320,375,390,768,1280]) {
+    test(`premium polish ${theme} catalog width ${width}`,async({page})=>{
+      await open(page,theme,'catalog-multi-app',width);
+      await expect(page.locator('.lite-catalog-screen')).toHaveScreenshot(`premium-${theme}-catalog-${width}.png`,{animations:'disabled'});
+    });
+    test(`premium polish ${theme} Manage width ${width}`,async({page})=>{
+      await open(page,theme,'catalog-ready',width);
+      const dialog=await manage(page);
+      await expect(dialog).toHaveScreenshot(`premium-${theme}-manage-${width}.png`,{animations:'disabled'});
+    });
+  }
+  for(const scenario of ['photo-backup-completed','photo-backup-remote-unavailable','photo-backup-malformed','offline-saved']) {
+    test(`premium ${theme} photo state ${scenario}`,async({page})=>{
+      await open(page,theme,scenario,390);
+      const dialog=await manage(page);
+      const photos=dialog.getByRole('tab',{name:'Photos'});
+      if(await photos.count()) await photos.click();
+      await dialog.locator('.lite-catalog-manage-scroll').evaluate((node:any)=>{node.scrollTop=0;});
+      await expect(dialog).toHaveScreenshot(`premium-${theme}-${scenario}.png`,{animations:'disabled'});
+    });
+  }
+  test(`premium ${theme} Action Details and disclosure expansion`,async({page})=>{
+    await open(page,theme,'catalog-ready',1280);
+    const dialog=await manage(page);
+    await dialog.getByRole('tab',{name:'Photos'}).click();
+    const storage=dialog.locator('.lite-catalog-premium-storage-details');
+    await storage.locator('summary').click();
+    const how=dialog.getByRole('region',{name:'Photo backup'}).locator('details');
+    await how.locator('summary').click();
+    await expect(dialog).toHaveScreenshot(`premium-${theme}-storage-how-open.png`,{animations:'disabled'});
+    await dialog.getByRole('region',{name:'Photo workflow'}).getByRole('button',{name:'View details'}).click();
+    const detailsPanel=page.locator('.lite-details-overlay-layer .lite-details-panel');
+    await expect(detailsPanel).toBeVisible();
+    await expect(detailsPanel.getByRole('region',{name:/Import photos details/i})).toBeVisible();
+    await expect(detailsPanel).not.toContainText('Loading details…');
+    await expect(detailsPanel).toHaveScreenshot(`premium-${theme}-nested-details.png`,{animations:'disabled'});
+  });
+  test(`premium ${theme} desktop resized/moved Manage`,async({page})=>{
+    await open(page,theme,'catalog-ready',1440);
+    const panel=await manage(page);
+    const move=panel.getByRole('button',{name:'Move app management panel'});
+    await move.focus();await page.keyboard.press('Shift+ArrowLeft');
+    const resize=panel.getByRole('button',{name:'Resize app management panel'});
+    await resize.focus();await page.keyboard.press('Shift+ArrowDown');
+    await expect(panel).toHaveScreenshot(`premium-${theme}-desktop-moved-resized.png`,{animations:'disabled'});
+  });
+  test(`premium ${theme} 200% zoom and long name safeguard`,async({page})=>{
+    await open(page,theme,'catalog-multi-app',390);
+    await page.evaluate(()=>{document.documentElement.style.fontSize='200%';});
+    await expect(page.locator('.lite-catalog-screen')).toHaveScreenshot(`premium-${theme}-zoom200-longname.png`,{animations:'disabled'});
+  });
+}

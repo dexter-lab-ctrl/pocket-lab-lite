@@ -22,7 +22,9 @@ function getActionDisplayState(status, enabled = true) {
   if (!enabled) return { status: 'review', label: 'Not ready' };
   if (['queued', 'pending', 'accepted'].includes(normalized)) return { status: 'working', label: 'Getting ready' };
   if (['running', 'working', 'executing', 'in_progress'].includes(normalized)) return { status: 'working', label: 'Working' };
-  if (['succeeded', 'success', 'completed', 'complete', 'done', 'verified', 'ready', 'protected', 'imported'].includes(normalized)) return { status: 'ready', label: 'Done' };
+  if (normalized === 'ready') return { status: 'checking', label: 'Ready to start' };
+  if (normalized === 'protected') return { status: 'checking', label: 'Protected' };
+  if (['succeeded', 'success', 'completed', 'complete', 'done', 'verified', 'imported'].includes(normalized)) return { status: 'ready', label: 'Done' };
   if (['failed', 'error', 'blocked', 'needs_attention', 'review', 'not_ready'].includes(normalized)) return { status: 'review', label: 'Needs attention' };
   return { status: 'checking', label: 'Not checked' };
 }
@@ -91,13 +93,12 @@ function formatRunHistoryValue(value, hasEvidence) {
   return hasEvidence ? 'Recorded' : 'Not run yet';
 }
 
-function actionDetailsTone(details = {}, saved = {}) {
-  const raw = `${details.status || ''} ${details.summary || ''} ${details.last_result || ''}`.toLowerCase();
-  const hasAttention = Array.isArray(details.what_needs_attention) && details.what_needs_attention.some(Boolean);
-  if (hasAttention || ['review', 'needs_attention', 'failed', 'error'].some((term) => raw.includes(term)) || raw.includes('something changed') || raw.includes('not ready')) {
-    return 'review';
-  }
-  if (saved?.saved || raw.includes('completed') || raw.includes('protected') || raw.includes('ready')) return 'ready';
+function actionDetailsTone(details = {}) {
+  const status = normalizedActionStatus(details.status);
+  const needsAttention = Array.isArray(details.what_needs_attention) && details.what_needs_attention.some(Boolean);
+  if (needsAttention || ['failed','error','blocked','needs_attention','review','not_ready','partial','timed_out'].includes(status)) return 'review';
+  if (['completed','succeeded','success','verified','done','imported','installed'].includes(status)) return 'ready';
+  // Saved troubleshooting records and prose containing "ready" are not evidence of execution success.
   return 'neutral';
 }
 
@@ -171,7 +172,7 @@ export default function AppActionDetailsLazy({ details, actionId = '' }) {
   const saved = details.saved_for_troubleshooting && typeof details.saved_for_troubleshooting === 'object'
     ? details.saved_for_troubleshooting
     : { saved: false, backend_only: true, summary: 'No troubleshooting record was saved because this action did not run.' };
-  const detailsTone = actionDetailsTone(details, saved);
+  const detailsTone = actionDetailsTone(details);
   const runLabels = actionDetailRunHistoryLabels(actionId);
   const display = getActionDisplayState(details.status || 'unknown');
 
@@ -181,7 +182,7 @@ export default function AppActionDetailsLazy({ details, actionId = '' }) {
       <LiteProgressiveDetails
         title={details.title || 'Action details'}
         status={detailsTone}
-        statusLabel={details.last_result || display.label}
+        statusLabel={display.label}
         summary={details.summary || 'Action details are available.'}
         what_happened={happened}
         what_changed={changed}

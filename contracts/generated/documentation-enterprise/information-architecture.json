@@ -4688,7 +4688,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 509,
+  "page_count": 511,
   "page_types": [
     "overview",
     "guide",
@@ -4701,6 +4701,29 @@
     "handbook"
   ],
   "pages": [
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "README-media-source.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:README-media-source",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "README-media-source.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "README-media-source.md",
+      "title": "README visual sources and qualification plan",
+      "url": "/README-media-source/"
+    },
     {
       "additional_audiences": [],
       "authority": "canonical-source",
@@ -4794,6 +4817,29 @@
       "source_or_generator": "architecture/universal-app-platform.md",
       "title": "Universal App Platform",
       "url": "/architecture/universal-app-platform/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-apps-premium-p0-p1-refinement.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "apps",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-apps-premium-p0-p1-refinement",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-apps-premium-p0-p1-refinement.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-apps-premium-p0-p1-refinement.md",
+      "title": "Azure Horizon Apps — Premium UI/UX P0–P1 Refinement",
+      "url": "/development/lite-azure-horizon-apps-premium-p0-p1-refinement/"
     },
     {
       "additional_audiences": [],
@@ -18064,7 +18110,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "c7eee03dd0923971579e90d7677e40ec143bfa045b606ae663a73e598fef017b",
+  "source_fingerprint": "d5dd3eefa56adfb88dea8ec1407995764748442ba326e190f8e0a3cdfdf66d13",
   "top_level": [
     "start-here",
     "use",

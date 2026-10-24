@@ -1,11 +1,11 @@
 /* Premium Apps refinement — presentation only. PR #606 tokens and overlay primitives remain authoritative. */
 .lite-catalog-manage-layer.lite-catalog-app-premium-layer {
-  --apps-premium-surface: var(--lite-surface, #fff);
-  --apps-premium-secondary: var(--lite-surface-soft, var(--azure-raised));
-  --apps-premium-border: var(--lite-border, rgba(100,116,139,.22));
-  --apps-premium-muted: var(--lite-muted, var(--azure-muted));
-  --apps-premium-text: var(--lite-text, var(--azure-text));
-  --apps-premium-radius: var(--lite-p0-radius-card, 1.25rem);
+  --apps-premium-surface: var(--azure-surface);
+  --apps-premium-secondary: var(--azure-raised);
+  --apps-premium-border: var(--azure-border);
+  --apps-premium-muted: var(--azure-muted);
+  --apps-premium-text: var(--azure-text);
+  --apps-premium-radius: var(--azure-radius-card);
 }
 .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-manage-scroll,.lite-catalog-manage-section-viewport,.lite-catalog-action-groups,.lite-app-action-group,.lite-app-action-row,.lite-app-action-row-main,.lite-app-action-row-copy,.lite-app-action-row-side),
 .lite-catalog-screen :is(.lite-catalog-card,.lite-catalog-app-card,.lite-catalog-hero,.lite-catalog-hero-actions,.lite-catalog-meta) {
@@ -246,10 +246,10 @@
 .lite-catalog-premium-backup-header > div {display:grid;gap:.25rem;min-width:0;}
 .lite-catalog-premium-backup-header > div > span {display:inline-flex;align-items:center;gap:.3rem;}
 .lite-catalog-premium-backup-header p {margin:0;color:var(--apps-premium-muted,var(--azure-muted));font-size:.79rem;}
-.lite-catalog-premium-backup-path {display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:.2rem;}
-.lite-catalog-premium-backup-path > span {display:flex;align-items:center;justify-content:center;gap:.3rem;min-width:0;font-size:.73rem;font-weight:700;overflow-wrap:anywhere;text-align:center;}
+.lite-catalog-premium-backup-path {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:.65rem;}
+.lite-catalog-premium-backup-path > span {display:grid;justify-items:start;align-content:start;gap:.35rem;min-width:0;padding:.8rem;background:var(--azure-raised);border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);font-size:.85rem;overflow-wrap:anywhere;text-align:left;}
 .lite-catalog-premium-backup-path svg {flex:0 0 .95rem;width:.95rem;height:.95rem;}
-.lite-catalog-premium-backup-path > i {font-size:.85rem;font-style:normal;color:var(--apps-premium-muted,var(--azure-muted));}
+.lite-catalog-premium-backup-path > i {display:none;}
 .lite-catalog-premium-backup-destination {margin:0;font-size:.75rem;color:var(--apps-premium-muted,var(--azure-muted));overflow-wrap:anywhere;}
 .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup-metrics {
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem;margin:0;
@@ -263,97 +263,129 @@
 .lite-catalog-premium-backup-guidance {margin:0;font-size:.82rem;overflow-wrap:anywhere;}
 .lite-catalog-premium-backup-actions {display:flex;gap:.55rem;align-items:flex-start;flex-wrap:wrap;}
 .lite-catalog-premium-backup-actions .lite-catalog-premium-disclosure {flex:1 1 13rem;}
-/* Shared LiteDetailsPanel appears above Manage's fixed portal without replacing it. */
-.theme-pocket-lite-daylight.lite-details-overlay-layer {
-  z-index:11000 !important;
-  color:var(--lite-text,var(--azure-text));
+/* The portal resolves the theme on its own root. Apply the same structure to
+   Daylight, Black and System; never flatten only the Daylight details content. */
+.lite-details-overlay-layer { z-index:11000 !important; color:var(--azure-text); }
+.lite-details-overlay-layer .lite-details-panel {
+  display:flex;flex-direction:column;min-width:0;
+  max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 1rem);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);
+  background:var(--azure-surface);color:var(--azure-text);
+  box-shadow:var(--azure-panel-shadow);overflow:hidden;
 }
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-details-panel {
-  display:flex;flex-direction:column;min-width:0;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 1rem);
-  border:1px solid var(--lite-border,rgba(100,116,139,.22));
-  border-radius:var(--lite-p0-radius-card,1.25rem);
-  background:var(--lite-surface,#fff);
-  background-image:none !important;
-  box-shadow:0 14px 44px rgba(15,23,42,.15);
-  overflow:hidden;
+.lite-details-overlay-layer .lite-overlay-head {
+  flex:0 0 auto;min-width:0;background:var(--azure-surface);color:var(--azure-text);
+  border-bottom:1px solid var(--azure-border);
 }
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-overlay-head {
-  flex:0 0 auto;
-  min-width:0;
-  background:var(--lite-surface,#fff);
-  background-image:none !important;
-  border-bottom:1px solid var(--lite-border,rgba(100,116,139,.22));
-}
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-overlay-head > div,
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-overlay-head :is(strong,p) {min-width:0;overflow-wrap:anywhere;white-space:normal;}
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-apps-premium-details-scroll {
+.lite-details-overlay-layer .lite-overlay-head :is(div,strong,p) {min-width:0;overflow-wrap:anywhere;}
+.lite-details-overlay-layer .lite-apps-premium-details-scroll {
   min-height:0;min-width:0;max-width:100%;overflow-x:hidden;overflow-y:auto;
   overscroll-behavior:contain;scroll-padding-bottom:env(safe-area-inset-bottom,0px);
-  padding:1rem;
+  padding:clamp(.75rem,2vw,1.2rem);background:var(--azure-surface);color:var(--azure-text);
 }
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-app-premium-details,
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details,
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-app-premium-details :is(.lite-progressive-details-summary,.lite-progressive-detail-section,.lite-app-action-detail-section,.lite-technical-details,.lite-history-section) {
-  background:transparent !important;
-  background-image:none !important;
-  border:0 !important;
-  box-shadow:none !important;
-  filter:none;
-  backdrop-filter:none;
-  border-radius:0 !important;
+.lite-details-overlay-layer .lite-app-premium-details,
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details {
+  display:grid;gap:.85rem;background:transparent;color:var(--azure-text);min-width:0;
 }
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-app-premium-details::before {display:none !important;}
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-app-premium-details :is(.lite-progressive-details-summary,.lite-progressive-detail-section,.lite-app-action-detail-section,.lite-technical-details,.lite-history-section) {
-  padding:.7rem 0 !important;
-  margin:0 !important;
-  border-bottom:1px solid var(--lite-border,rgba(100,116,139,.22)) !important;
+.lite-details-overlay-layer .lite-app-premium-details::before {display:none;}
+.lite-details-overlay-layer .lite-app-premium-details :is(.lite-progressive-details-summary,.lite-progressive-detail-section,.lite-app-action-detail-section,.lite-technical-details,.lite-history-section) {
+  display:grid;gap:.35rem;min-width:0;margin:0 0 .65rem;padding:clamp(.7rem,1.5vw,1rem);
+  background:var(--azure-raised);color:var(--azure-text);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  box-shadow:none;backdrop-filter:none;
 }
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details-summary > :is(span,h3) {display:none;}
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details-summary p {overflow-wrap:anywhere;}
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-app-premium-details :is(p,small,li,dt,dd,strong,span) {min-width:0;overflow-wrap:anywhere;white-space:normal;}
-.theme-pocket-lite-daylight.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details-status {
-  display:inline-flex;padding:.25rem .55rem;border:1px solid var(--lite-border,rgba(100,116,139,.22));border-radius:999px;
-  background:var(--lite-surface-soft,var(--azure-raised));
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details-summary {
+  gap:.35rem;
 }
-.theme-pocket-lite-daylight.lite-details-overlay-layer :is(button,summary):focus-visible,
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details-summary > span,
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-disclosure-summary {
+  margin:0;color:var(--azure-muted);font-size:.78rem;line-height:1.45;
+}
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details-summary :is(h3,p) {margin:0;}
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details-summary h3 {
+  color:var(--azure-text);font-size:1.1rem;font-weight:650;line-height:1.3;
+}
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details-grid {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(13.5rem,1fr));gap:.75rem;
+}
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-detail-section {
+  display:grid;gap:.35rem;
+}
+.lite-details-overlay-layer .lite-app-premium-details :is(.lite-progressive-detail-section strong,.lite-technical-details dt) {
+  color:var(--azure-text);font-weight:700;
+}
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-detail-section p {
+  margin:0;color:var(--azure-muted);font-size:.9rem;line-height:1.5;
+}
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-detail-section.is-attention,
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-detail-section.is-next-step {
+  border-color:var(--azure-warning);background:var(--azure-warning-subtle);
+}
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-detail-section.is-saved {
+  border-color:var(--azure-success);background:var(--azure-success-subtle);
+}
+.lite-details-overlay-layer .lite-app-premium-details :is(.lite-technical-details,.lite-history-section) {
+  gap:.5rem;
+}
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-disclosure-toggle {
+  display:flex;align-items:center;justify-content:space-between;gap:.75rem;width:100%;min-height:2.75rem;
+  padding:0;border:0;background:transparent;color:var(--azure-text);font:inherit;text-align:left;cursor:pointer;
+}
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-disclosure-toggle span {font-weight:700;}
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-disclosure-toggle small {
+  flex:0 0 auto;padding:.28rem .58rem;border-radius:999px;background:var(--azure-neutral-subtle);color:var(--azure-muted);font-size:.76rem;font-weight:700;
+}
+.lite-details-overlay-layer .lite-app-premium-details :is(.lite-technical-details-list,.lite-history-section-list) {
+  display:grid;gap:.45rem;margin:0;padding:0;
+}
+.lite-details-overlay-layer .lite-app-premium-details :is(.lite-technical-details-row,.lite-history-section-list li) {
+  display:grid;grid-template-columns:minmax(7rem,.42fr) 1fr;gap:.55rem;align-items:start;min-width:0;
+  padding:.58rem .65rem;border-radius:var(--azure-radius-control);background:var(--azure-surface);
+}
+.lite-details-overlay-layer .lite-app-premium-details :is(.lite-technical-details dd,.lite-history-section-list small) {
+  margin:0;min-width:0;overflow-wrap:anywhere;color:var(--azure-muted);
+}
+.lite-details-overlay-layer .lite-app-premium-details .lite-history-section-body {display:grid;gap:.55rem;}
+.lite-details-overlay-layer .lite-app-premium-details :is(p,small,li,dt,dd,strong,span) {
+  min-width:0;overflow-wrap:anywhere;white-space:normal;
+}
+.lite-details-overlay-layer .lite-app-premium-details :is(p,small,dt) {color:var(--azure-muted);}
+.lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details-status {
+  display:inline-flex;padding:.25rem .55rem;border:1px solid var(--azure-border);
+  border-radius:999px;background:var(--azure-selected);color:var(--azure-text);
+}
+.lite-details-overlay-layer :is(button,summary):focus-visible,
 .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(button,summary):focus-visible {
-  outline:2px solid var(--lite-p0-focus-ring,var(--azure-accent));outline-offset:3px;
+  outline:2px solid var(--azure-focus);outline-offset:3px;
 }
 @media (max-width:400px) {
   .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow {padding:.7rem !important;}
-  .lite-catalog-premium-flow-step strong {font-size:.73rem;}
-  .lite-catalog-premium-flow-step small {font-size:.64rem;}
-  .lite-catalog-premium-backup-path {grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);}
-  .lite-catalog-premium-backup-path > span {flex-direction:column;font-size:.69rem;}
+  .lite-catalog-premium-flow-step strong {font-size:.8rem;}
+  .lite-catalog-premium-flow-step small {font-size:.75rem;}
+  .lite-catalog-premium-backup-path {grid-template-columns:minmax(0,1fr);}
+  .lite-catalog-premium-backup-path > span {font-size:.85rem;}
   .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side {flex-direction:column;align-items:stretch;}
   .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side .pocket-button {width:100%;}
 }
-@media (min-width:900px) {
-  .theme-pocket-lite-daylight.lite-details-overlay-layer {justify-content:flex-end;}
-  .theme-pocket-lite-daylight.lite-details-overlay-layer .lite-details-panel {width:min(36rem,50vw);height:100%;}
+@media (max-width:680px) {
+  .lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details-grid {grid-template-columns:minmax(0,1fr);}
+  .lite-details-overlay-layer .lite-app-premium-details :is(.lite-technical-details-row,.lite-history-section-list li) {grid-template-columns:minmax(0,1fr);}
 }
-@media (prefers-color-scheme:dark) {
-  .lite-catalog-manage-layer.lite-catalog-app-premium-layer {
-    --apps-premium-surface: var(--lite-surface,#111827);
-    --apps-premium-secondary: var(--lite-surface-soft,#1f2937);
-    --apps-premium-border:var(--lite-border,rgba(148,163,184,.3));
-    --apps-premium-text:var(--lite-text,#f1f5f9);
-    --apps-premium-muted:var(--lite-muted,#94a3b8);
-  }
-  .lite-catalog-premium-state.is-review {background:#3d2c16;color:var(--azure-warning);border-color:var(--azure-warning);}
-  .lite-catalog-premium-state:is(.is-running,.is-working,.is-waiting) {background:#172554;color:var(--azure-border);border-color:var(--azure-info);}
+@media (min-width:900px) {
+   .lite-details-overlay-layer {justify-content:flex-end;}
+   .lite-details-overlay-layer .lite-details-panel {width:min(36rem,50vw);height:100%;}
 }
 @media (prefers-reduced-motion:reduce) {
   .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow *,
   .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup *,
-  .theme-pocket-lite-daylight.lite-details-overlay-layer * {animation:none !important;transition:none !important;}
+   .lite-details-overlay-layer * {animation:none !important;transition:none !important;}
 }
 
 .lite-catalog-screen .lite-catalog-premium-app-status {
   margin: .5rem 0 .75rem;
   font-size: .84rem;
   line-height: 1.45;
-  color: var(--lite-muted, var(--azure-muted));
+  color: var(--azure-muted);
   overflow-wrap: anywhere;
   white-space: normal;
 }
@@ -385,6 +417,193 @@
 }
 
 
+
+/* Scoped premium ownership: theme-independent layout and Azure semantic surfaces. */
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-sheet {
+  box-sizing: border-box;
+  gap: .85rem;
+  margin-top: 1rem;
+  padding: .95rem;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-manage-grip,.lite-catalog-manage-head,.lite-catalog-manage-section-tabs) {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 2;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-grip {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  cursor: grab;
+  display: inline-flex;
+  height: 2rem;
+  justify-content: center;
+  margin: -.35rem auto -.25rem;
+  padding: 0;
+  touch-action: none;
+  width: 5.25rem;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-grip span {
+  display: block;
+  width: 3.2rem;
+  height: .34rem;
+  border-radius: 999px;
+  background: var(--azure-muted);
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .8rem;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head > div > span:first-child {
+  display: block;
+  color: var(--azure-muted);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head strong {
+  display: block;
+  margin-top: .2rem;
+  color: var(--azure-text);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head p {
+  margin: .25rem 0 0;
+  color: var(--azure-muted);
+  font-size: .86rem;
+  line-height: 1.4;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.3rem;
+  height: 2.3rem;
+  border: 1px solid var(--azure-border);
+  border-radius: 999px;
+  background: var(--azure-surface);
+  color: var(--azure-muted);
+  cursor: pointer;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: .85rem;
+  padding: 0 1.1rem 1.1rem;
+  position: relative;
+  scrollbar-gutter: stable both-edges;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-scroll > :is(.lite-catalog-media-flow,.lite-catalog-manage-quick-actions,.lite-catalog-manage-section-viewport,.lite-catalog-action-reasons,.lite-catalog-storage-panel--sheet) {
+  flex: 0 0 auto;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-manage-scroll,.lite-catalog-manage-section-viewport) {
+  background:var(--azure-surface);color:var(--azure-text);
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs {
+  display:flex;gap:.55rem;padding:.55rem .65rem;overflow-x:auto;overflow-y:hidden;
+  scroll-padding-inline:.65rem;scrollbar-width:thin;scroll-snap-type:x proximity;
+  background:var(--azure-raised);border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-control);
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs button {
+  flex:0 0 auto;scroll-snap-align:start;min-height:44px;
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  padding:.55rem .85rem;background:var(--azure-surface);color:var(--azure-text);
+  opacity:1;box-shadow:none;transform:none;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs button[aria-selected="true"] {
+  border-color:var(--azure-accent);background:var(--azure-selected);color:var(--azure-text);
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs button:focus-visible {
+  outline:2px solid var(--azure-focus);outline-offset:2px;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-manage-quick-actions,.lite-app-action-row-side,.lite-catalog-premium-backup-actions,.lite-catalog-remove-confirm-actions) {
+  gap:.875rem;
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row {
+  border:1px solid var(--azure-border);background:var(--azure-raised);color:var(--azure-text);
+}
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-action-notices,
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-storage-details {
+  padding:.75rem;margin-top:.85rem;border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-card);background:var(--azure-surface);color:var(--azure-text);
+}
+.lite-catalog-premium-fact-list {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem;margin:.65rem 0;}
+.lite-catalog-premium-fact-list > div {
+  min-width:0;display:grid;gap:.25rem;padding:.75rem;
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);background:var(--azure-raised);
+}
+.lite-catalog-premium-fact-list dt {font-size:.77rem;color:var(--azure-muted);}
+.lite-catalog-premium-fact-list dd {margin:0;font-size:.88rem;font-weight:650;color:var(--azure-text);overflow-wrap:anywhere;}
+.lite-catalog-premium-action-notices .lite-catalog-action-reasons article {
+  display:grid;gap:.3rem;min-width:0;padding:.8rem;
+  background:var(--azure-raised);border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+}
+.lite-catalog-premium-action-notices .lite-catalog-action-reasons article > span {color:var(--azure-warning);font-size:.78rem;font-weight:700;}
+.lite-catalog-premium-action-notices .lite-catalog-action-reasons article p {margin:0;color:var(--azure-muted);}
+.lite-catalog-premium-disclosure[open] > summary {margin-bottom:.7rem;}
+.lite-catalog-premium-how-guide {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem;padding:0;margin:0;list-style:none;}
+.lite-catalog-premium-how-guide > li {
+  display:grid;align-content:start;gap:.4rem;min-width:0;padding:.8rem;
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);background:var(--azure-raised);
+}
+.lite-catalog-premium-how-guide strong {color:var(--azure-text);font-size:.86rem;}
+.lite-catalog-premium-how-guide p {margin:0;color:var(--azure-muted);}
+.lite-catalog-premium-backup-guidance {
+  padding:.8rem;border:1px solid var(--azure-border);border-left:3px solid var(--azure-info);
+  border-radius:var(--azure-radius-control);background:var(--azure-accent-subtle);color:var(--azure-text);
+}
+.lite-catalog-premium-backup-guidance.is-review {border-left-color:var(--azure-warning);background:var(--azure-warning-subtle);}
+.lite-catalog-premium-backup-guidance strong {display:block;margin-bottom:.25rem;color:var(--azure-text);}
+.lite-catalog-premium-step-title {display:flex;align-items:center;gap:.35rem;color:var(--azure-text);}
+.lite-catalog-premium-step-state {font-size:.76rem;color:var(--azure-muted);}
+.lite-catalog-manage-sheet.is-movable {touch-action:auto;}
+.lite-catalog-manage-resize-grip {
+  position:absolute;bottom:0;right:0;z-index:3;display:grid;place-items:center;
+  width:44px;height:44px;border:1px solid var(--azure-strong-border);
+  border-radius:var(--azure-radius-control) 0 0 0;background:var(--azure-raised);
+  color:var(--azure-text);cursor:nwse-resize;touch-action:none;user-select:none;
+}
+.lite-catalog-manage-sheet.is-interacting {user-select:none;cursor:grabbing;}
+.lite-catalog-manage-panel-tool:first-child {cursor:grab;}
+@media (max-width:700px) {
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-sheet {
+    padding: .72rem .95rem .95rem;
+  }
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-grip {
+    min-height: 2.3rem;
+    padding: .75rem 0 .35rem;
+  }
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head {
+    padding: .1rem 1rem .75rem;
+  }
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-scroll {
+    padding: 0 1rem max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+  .lite-catalog-premium-backup-path,.lite-catalog-premium-how-guide,.lite-catalog-premium-fact-list {grid-template-columns:minmax(0,1fr);}
+  .lite-catalog-manage-resize-grip {display:none;}
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side {gap:.75rem;}
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-quick-actions,
+  .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-quick-actions {flex-wrap:wrap;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .lite-catalog-manage-section-tabs button,.lite-catalog-manage-sheet.is-interacting {transition:none!important;animation:none!important;}
+}
 /* Azure Horizon Apps: one token-backed surface across resolved Light/Dark/System.
    Specificity here deliberately supersedes pre-Azure Daylight catalog rules. */
 .lite-catalog-screen,
@@ -435,6 +654,8 @@ html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer 
 html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-manage-head,.lite-catalog-manage-section-hint,.lite-app-action-row,.lite-catalog-storage-panel--sheet,.lite-catalog-premium-backup,.lite-catalog-premium-flow) {color:var(--azure-text);border-color:var(--azure-border);background:var(--azure-surface);}
 html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-manage-scroll,.lite-catalog-manage-section-viewport,.lite-catalog-action-groups,.lite-app-action-row) {min-height:0;min-width:0;overflow-wrap:anywhere;}
 html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(p,small,.lite-app-action-row-copy p,.lite-catalog-manage-section-hint span) {color:var(--azure-muted);opacity:1;}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-copy > span {color:var(--azure-muted);opacity:1;}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup-guidance :is(p,small) {color:var(--azure-text);}
 html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(input,textarea,select) {color:var(--azure-text);background:var(--azure-input);border-color:var(--azure-strong-border);}
 .lite-catalog-manage-current-state {display:block;color:var(--azure-muted);font-size:.76rem;margin-top:.3rem;}
 .lite-catalog-manage-desktop-controls {display:flex;align-items:center;gap:.6rem;padding:.4rem .8rem;border-bottom:1px solid var(--azure-border);background:var(--azure-raised);color:var(--azure-muted);font-size:.78rem;}
@@ -461,4 +682,58 @@ html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer 
 }
 @media (prefers-reduced-motion:reduce) {
  .lite-catalog-screen .lite-catalog-card,.lite-catalog-screen .lite-catalog-card:hover,.lite-catalog-manage-sheet,.lite-catalog-manage-sheet * {animation:none;transition:none;}
+}
+
+/* Pull gesture belongs to a small, non-action touch zone at the page top.
+   Normal desktop/idle appearance stays hidden; explicit Refresh is retained. */
+.lite-catalog-touch-pull-zone {display:none;}
+.lite-catalog-screen .lite-catalog-pull-refresh {
+  position:fixed;top:calc(env(safe-area-inset-top,0px) + .7rem);left:50%;z-index:40;
+  display:inline-flex;align-items:center;gap:.5rem;max-width:calc(100vw - 1.5rem);
+  padding:.65rem .85rem;border:1px solid var(--azure-border);border-radius:999px;
+  background:var(--azure-surface);color:var(--azure-text);box-shadow:var(--azure-shadow);
+  opacity:0;visibility:hidden;pointer-events:none;transform:translate(-50%,-.5rem);
+  transition:opacity .14s ease,transform .14s ease,visibility .14s ease;
+}
+.lite-catalog-screen .lite-catalog-pull-refresh svg {animation:none;}
+.lite-catalog-screen .lite-catalog-pull-refresh.is-ready {border-color:var(--azure-accent);color:var(--azure-text);}
+@media (hover:none) and (pointer:coarse) and (max-width:700px) {
+  .lite-catalog-touch-pull-zone {
+    display:block;height:22px;max-height:22px;touch-action:none;
+    background:transparent;position:relative;z-index:1;
+  }
+  .lite-catalog-screen .lite-catalog-pull-refresh:is(.is-pulling,.is-refreshing) {
+    opacity:1;visibility:visible;transform:translate(-50%,0);
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+ .lite-catalog-screen .lite-catalog-pull-refresh {transition:none;animation:none;}
+}
+
+/* The Action Details portal is mounted directly under body. Keep its
+   progressive sections token-backed even when the legacy Daylight selectors
+   are absent from the cascade. */
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details :is(.lite-progressive-details-summary,.lite-progressive-detail-section,.lite-app-action-detail-section,.lite-technical-details,.lite-history-section) {
+  background-color:var(--azure-raised) !important;
+  background-image:none !important;
+  border-color:var(--azure-border) !important;
+  color:var(--azure-text) !important;
+}
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details :is(.lite-progressive-details-summary h3,.lite-progressive-detail-section strong,.lite-technical-details dt,.lite-progressive-disclosure-toggle,.lite-progressive-disclosure-toggle span) {
+  color:var(--azure-text) !important;
+}
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details :is(.lite-progressive-details-summary > span,.lite-progressive-details-summary p,.lite-progressive-detail-section p,.lite-progressive-disclosure-summary,.lite-technical-details dd,.lite-history-section-list small) {
+  color:var(--azure-muted) !important;
+}
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details :is(.lite-progressive-detail-section.is-attention,.lite-progressive-detail-section.is-next-step) {
+  background-color:var(--azure-warning-subtle) !important;
+  border-color:var(--azure-warning) !important;
+}
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details .lite-progressive-detail-section.is-saved {
+  background-color:var(--azure-success-subtle) !important;
+  border-color:var(--azure-success) !important;
+}
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details :is(.lite-progressive-disclosure-toggle small,.lite-technical-details-row,.lite-history-section-list li) {
+  background-color:var(--azure-surface) !important;
+  color:var(--azure-text) !important;
 }

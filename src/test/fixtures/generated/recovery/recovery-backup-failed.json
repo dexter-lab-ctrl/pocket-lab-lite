@@ -14,7 +14,7 @@
     "scenario": "recovery-backup-failed",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "065edc5b116234914e28538c1ba6680f1d29f180d3d82d1115eec4ed049ca8ea",
+    "source_fingerprint": "0ea9526e0698d2f2ea8adf0e990640ba732029a47116b88669c0af1f11a0ec18",
     "validation_status": "generated"
   }
 }

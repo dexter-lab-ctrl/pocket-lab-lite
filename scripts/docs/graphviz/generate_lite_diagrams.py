@@ -19,6 +19,10 @@ METADATA = ROOT / "architecture" / "metadata" / "diagrams.json"
 OUTPUT = ROOT / "docs" / "assets" / "diagrams"
 GALLERY = ROOT / "docs" / "generated" / "development" / "architecture-diagrams.md"
 NAME_MAP = {"prepared-projection-flow": "projection-flow"}
+# This README architecture illustration is a committed publication asset, not
+# one of the metadata-owned Graphviz outputs below.  Generation must not
+# delete it while removing stale generated diagrams.
+PRESERVED_OUTPUT_NAMES = frozenset({"readme-control-flow.svg"})
 
 THEMES = {
     "light": {
@@ -283,7 +287,7 @@ def write_outputs(outputs: dict[Path, str]) -> None:
         if stale.name not in expected:
             stale.unlink()
     for stale in OUTPUT.glob("*.svg"):
-        if stale.name not in expected:
+        if stale.name not in expected and stale.name not in PRESERVED_OUTPUT_NAMES:
             stale.unlink()
     for path, content in sorted(outputs.items(), key=lambda item: item[0].as_posix()):
         path.parent.mkdir(parents=True, exist_ok=True)

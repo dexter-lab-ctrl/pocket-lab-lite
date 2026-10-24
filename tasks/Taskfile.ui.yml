@@ -210,6 +210,59 @@ tasks:
     cmds:
       - npm run test:apps:azure:qualification
 
+  # Premium refinement qualification is maintained by the PR #629 evidence ledger.
+  lite:test:apps:premium:unit:
+    desc: Run Apps P0/P1 premium unit and selector coverage
+    cmds:
+      - npm run test:apps:premium:unit
+
+  lite:test:apps:premium:mocked:
+    desc: Run Apps P0/P1 premium mocked desktop/mobile coverage
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:mocked
+
+  lite:test:apps:premium:a11y:
+    desc: Run Apps P0/P1 premium accessibility and Axe coverage
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:a11y
+
+  lite:test:apps:premium:theme:
+    desc: Run Apps P0/P1 premium Daylight/Black/System theme coverage
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:theme
+
+  lite:test:apps:premium:geometry:
+    desc: Run Apps P0/P1 premium desktop geometry coverage
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:geometry
+
+  lite:test:apps:premium:devices-regression:
+    desc: Run Apps P0/P1 premium shared Apps/Devices geometry regression coverage
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:devices-regression
+
+  lite:test:apps:premium:visual:
+    desc: Compare Apps P0/P1 premium visuals against accepted baselines
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:visual
+
+  lite:test:apps:premium:performance:
+    desc: Run Apps P0/P1 premium performance samples with existing budgets
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:premium:performance
+
+  lite:test:apps:premium:storybook:
+    desc: Build and exercise Apps P0/P1 premium Storybook coverage
+    cmds:
+      - npm run test:apps:premium:storybook
+
   lite:test:rules:azure:unit:
     desc: Rules Azure selectors, Journey and shared geometry unit tests
     cmds:

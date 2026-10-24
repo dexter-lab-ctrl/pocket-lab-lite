@@ -68,6 +68,7 @@ export function useDesktopManageGeometry({ open, defaultWidth = 560, minWidth = 
       addEventListener: () => {}, removeEventListener: () => {},
     };
     const apply = (matches) => {
+      stop();
       setDesktopPanel(matches);
       setGeometry((current) => matches ? clamp(current || defaultManageGeometry(options)) : null);
     };
@@ -75,18 +76,21 @@ export function useDesktopManageGeometry({ open, defaultWidth = 560, minWidth = 
     const changed = (event) => apply(event.matches);
     media.addEventListener?.('change', changed);
     return () => media.removeEventListener?.('change', changed);
-  }, [open, defaultWidth, minHeight, minWidth, clamp]);
+  }, [open, defaultWidth, minHeight, minWidth, clamp, stop]);
 
   useEffect(() => {
     if (!open || typeof window === 'undefined') return undefined;
-    const resized = () => setGeometry((current) => current ? clamp(current) : current);
+    const resized = () => {
+      stop();
+      setGeometry((current) => current ? clamp(current) : current);
+    };
     window.addEventListener('resize', resized, { passive: true });
     window.visualViewport?.addEventListener('resize', resized, { passive: true });
     return () => {
       window.removeEventListener('resize', resized);
       window.visualViewport?.removeEventListener('resize', resized);
     };
-  }, [open, clamp]);
+  }, [open, clamp, stop]);
 
   useEffect(() => () => stop(), [stop]);
 
@@ -112,23 +116,38 @@ export function useDesktopManageGeometry({ open, defaultWidth = 560, minWidth = 
         pendingRef.current = null;
       });
     };
+    const handle = event.currentTarget;
+    let settled = false;
     const cleanup = () => {
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', finish);
-      window.removeEventListener('pointercancel', finish);
+      window.removeEventListener('pointercancel', cancel);
+      handle.removeEventListener('lostpointercapture', lost);
+      if (handle.hasPointerCapture?.(pointerId)) handle.releasePointerCapture(pointerId);
     };
-    const finish = (next) => {
-      if (next.pointerId !== pointerId) return;
-      if (pendingRef.current) setGeometry(pendingRef.current);
+    const complete = (cancelled = false) => {
+      if (settled) return;
+      settled = true;
+      if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+      if (cancelled) setGeometry(clamp(origin));
+      else if (pendingRef.current) setGeometry(pendingRef.current);
+      pendingRef.current = null;
       cleanup();
       interactionRef.current = null;
       panelRef.current?.classList.remove('is-interacting');
+      if (!cancelled) setAnnouncement(`Panel ${kind === 'move' ? 'moved' : 'resized'}.`);
     };
+    function finish(next) { if (next.pointerId === pointerId) complete(); }
+    function cancel(next) { if (next.pointerId === pointerId) complete(true); }
+    function lost(next) { if (next.pointerId === pointerId) complete(true); }
     interactionRef.current = cleanup;
     panelRef.current.classList.add('is-interacting');
+    handle.addEventListener('lostpointercapture', lost);
+    handle.setPointerCapture?.(pointerId);
     window.addEventListener('pointermove', move, { passive: true });
     window.addEventListener('pointerup', finish, { passive: true });
-    window.addEventListener('pointercancel', finish, { passive: true });
+    window.addEventListener('pointercancel', cancel, { passive: true });
   }, [clamp, desktopPanel]);
 
   const adjustPanelWithKeyboard = useCallback((kind, event) => {
