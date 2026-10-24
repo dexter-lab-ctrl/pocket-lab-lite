@@ -91,6 +91,7 @@ import {
   LiteOperationalStory,
   friendlyOverallLabel,
   deviceLinkState,
+  canonicalDevicePresentation,
   restartProgressTitle,
   restartStepStateLabel,
   safeRestartSteps
@@ -104,6 +105,7 @@ import { loadDeviceCard } from './devices/devicesPreload.js';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 import LiteNextSteps from './components/LiteNextSteps.jsx';
 import './devices/azureDevices.css';
+import { deviceHorizonConnection } from './devices/deviceHorizonPresentation.js';
 
 const MemoLiteVirtualList = React.memo(LiteVirtualList);
 const DeviceCardLazy = React.lazy(loadDeviceCard);
@@ -157,16 +159,19 @@ void DEVICES_LINKED_CARD_CLASS_MARKER;
 void DEVICES_CONNECTION_COPY_MARKER;
 
 export function deviceRelationshipPresentation(device, savedStateOnly = false) {
-  if (savedStateOnly) return { state: 'unknown', label: 'Saved · connection unconfirmed', icon: 'unknown' };
-  const raw = String(device?.connection || device?.status || device?.state || '').toLowerCase().replace(/[\s-]+/g, '_');
-  if (['identity_mismatch', 'identity_blocked', 'blocked'].includes(raw)) return { state: 'blocked', label: 'Identity check blocked', icon: 'disconnected' };
-  if (['agent_stopped', 'stopped'].includes(raw)) return { state: 'stopped', label: 'Agent stopped', icon: 'disconnected' };
-  if (['joining', 'waiting'].includes(raw)) return { state: 'waiting', label: raw === 'joining' ? 'Joining' : 'Waiting', icon: 'repairing' };
-  if (['offline', 'disconnected'].includes(raw)) return { state: 'disconnected', label: raw === 'offline' ? 'Offline' : 'Disconnected', icon: 'disconnected' };
-  const link = deviceLinkState(device);
-  if (link === 'joined') return { state: 'joined', label: 'Connected', icon: 'connected' };
-  if (link === 'repairing') return { state: 'repairing', label: 'Repairing', icon: 'repairing' };
-  return { state: 'disconnected', label: 'Disconnected', icon: 'disconnected' };
+  const view = deviceHorizonConnection(device, {
+    saved: savedStateOnly,
+    presentation: canonicalDevicePresentation(device),
+    linkState: deviceLinkState(device),
+  });
+  const state = view.kind === 'connected' ? 'joined'
+    : view.kind === 'joining' ? 'waiting'
+      : view.kind === 'stale' ? 'unknown'
+        : view.kind === 'disconnected' ? 'disconnected' : view.kind;
+  return { state, label: savedStateOnly ? 'Saved · connection unconfirmed' : view.label,
+    icon: view.kind === 'connected' ? 'connected'
+      : ['joining', 'repairing', 'waiting'].includes(view.kind) ? 'repairing'
+        : ['unknown', 'stale'].includes(view.kind) ? 'unknown' : 'disconnected' };
 }
 
 function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
@@ -206,7 +211,7 @@ function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
           <span>{serverName}</span>
           <small>Protected server</small>
         </div>
-        {peers.length ? peers.map((device) => {
+        {peers.length ? peers.slice(0, 6).map((device) => {
           const presentation = deviceRelationshipPresentation(device, savedStateOnly);
           const { state, label: stateLabel, icon } = presentation;
           return (
@@ -220,6 +225,17 @@ function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
             </React.Fragment>
           );
         }) : <span className="lite-device-relationship-empty">Add a device when you want to expand this workspace.</span>}
+        {peers.length > 6 ? (
+          <details className="lite-device-relationship-more">
+            <summary>Show {peers.length - 6} more device connections</summary>
+            <ul aria-label="Additional device connections">
+              {peers.slice(6).map((device) => {
+                const state = deviceRelationshipPresentation(device, savedStateOnly);
+                return <li key={deviceListKey(device)}>{device.name || device.hostname || 'Device'}: {state.label}</li>;
+              })}
+            </ul>
+          </details>
+        ) : null}
       </div>
     </section>
   );
@@ -460,7 +476,7 @@ export function remoteAccessSummaryRows(remoteAccess = {}, remoteAccessView = {}
   const natsReachable = typeof remoteAccess.nats_reachable === 'boolean'
     ? remoteAccess.nats_reachable
     : typeof remoteAccessView.nats_reachable === 'boolean' ? remoteAccessView.nats_reachable : null;
-  const hasAddress = Boolean(remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip);
+  const hasAddress = !savedStateOnly && remoteAccessView.ready && Boolean(remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip);
   const checkedAt = remoteAccess.checked_at || remoteAccess.updated_at || remoteAccessView.checked_at || remoteAccessView.updated_at;
   const networkReady = !savedStateOnly && remoteAccessView.ready && running !== false;
   return [
@@ -543,6 +559,7 @@ export default function DevicesScreen() {
   const [hostname, setHostname] = useState('');
   const [selectedRoles, setSelectedRoles] = useState(['compute']);
   const [addDeviceOpen, setAddDeviceOpen] = useState(false);
+  const addDeviceDisclosureRef = useRef(null);
   const [remoteAccessDetailsOpen, setRemoteAccessDetailsOpen] = useState(false);
   const [result, setResult] = useState(null);
   const [invite, setInvite] = useState(null);
@@ -635,7 +652,7 @@ export default function DevicesScreen() {
   const preloadDeviceDetailsOnIntent = useCallback(() => {
     void loadDeviceDetails().catch(() => null);
   }, []);
-  const onlineDevices = devices.filter((device) => String(device?.connection || '').toLowerCase() === 'online').length;
+  const onlineDevices = devices.filter((device) => deviceRelationshipPresentation(device, savedStateOnly || isExpired).state === 'joined').length;
   const healthAttentionCurrent = Boolean(data?.health_summary?.attention_current);
   const healthAttentionCount = healthAttentionCurrent ? Number(data?.health_summary?.attention_count || 0) : 0;
   const fleetStory = fleetOperationalStory({ data, devices, onlineDevices, healthAttentionCount, savedStateOnly });
@@ -748,8 +765,8 @@ export default function DevicesScreen() {
     if (!inviteDetails) return '';
     if (inviteDetails.copy_text) return inviteDetails.copy_text;
     if (inviteDetails.bootstrap_command) return inviteDetails.bootstrap_command;
-    if (inviteDetails.bootstrap_url) return `curl -fsSL '${inviteDetails.bootstrap_url}' | bash`;
-    return inviteDetails.url || '';
+    // The backend-generated copyable command is the only authorized artifact.
+    return '';
   }
 
   async function copyInvite() {
@@ -939,7 +956,16 @@ export default function DevicesScreen() {
         eyebrow="Devices"
         title="Devices"
         description="Your self-hosted workspace, connected devices, and safe recovery actions."
-        actions={<LiteRefreshButton scope="devices" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
+        actions={<div className="lite-devices-title-actions">
+          <LiteRefreshButton scope="devices" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
+          <LiteButton aria-expanded={addDeviceOpen} aria-controls="lite-devices-onboarding" onClick={() => {
+            if (addDeviceDisclosureRef.current) {
+              addDeviceDisclosureRef.current.open = true;
+              setAddDeviceOpen(true);
+              addDeviceDisclosureRef.current.scrollIntoView?.({ block: 'start', behavior: 'auto' });
+            }
+          }}>Add Device</LiteButton>
+        </div>}
       />
 
       <LiteOperationalStory className="lite-devices-operational-story" story={fleetStory} />
@@ -965,8 +991,8 @@ export default function DevicesScreen() {
       />
       <DeviceRelationshipMap devices={devices} savedStateOnly={savedStateOnly || isExpired} />
       <section className="lite-devices-horizon-summary" aria-label="Workspace operational summary">
-        <div><span>Connected devices</span><strong>{savedStateOnly || isExpired ? 'Not confirmed' : devices.filter((device) => deviceLinkState(device) === 'joined').length}</strong></div>
-        <div><span>Needs attention</span><strong>{savedStateOnly || isExpired ? 'Review saved status' : devices.filter((device) => !['joined', 'server'].includes(deviceLinkState(device))).length + healthAttentionCount}</strong></div>
+        <div><span>Connected devices</span><strong>{savedStateOnly || isExpired ? 'Not confirmed' : onlineDevices}</strong></div>
+        <div><span>Needs attention</span><strong>{savedStateOnly || isExpired ? 'Review saved status' : devices.filter((device) => !['joined', 'server'].includes(deviceRelationshipPresentation(device, savedStateOnly).state)).length}</strong></div>
         <div><span>Remote access</span><strong>{remoteAccessView.title}</strong></div>
       </section>
 
@@ -1007,7 +1033,7 @@ export default function DevicesScreen() {
       </section>
 
       <div className="lite-devices-layout">
-        <details className="lite-devices-add-disclosure" onToggle={(event) => setAddDeviceOpen(event.currentTarget.open)}>
+        <details ref={addDeviceDisclosureRef} id="lite-devices-onboarding" className="lite-devices-add-disclosure" onToggle={(event) => setAddDeviceOpen(event.currentTarget.open)}>
           <summary>
             <span>Expand your workspace</span>
             <strong>Add a device</strong>
@@ -1187,7 +1213,7 @@ export default function DevicesScreen() {
           <div className="lite-devices-section-title">
             <div>
               <p>Workspace</p>
-              <h2>Devices</h2>
+              <h2>Your devices</h2>
               <small>Current connection, system identity, and health at a glance.</small>
             </div>
             <div className="lite-devices-section-metrics" aria-label="Device totals">
