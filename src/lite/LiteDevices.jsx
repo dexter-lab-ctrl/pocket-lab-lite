@@ -211,18 +211,19 @@ function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
           <span>{serverName}</span>
           <small>Protected server</small>
         </div>
+        <div className="lite-device-relationship-peers" role="list" aria-label="Connected device links">
         {peers.length ? peers.slice(0, 6).map((device) => {
           const presentation = deviceRelationshipPresentation(device, savedStateOnly);
           const { state, label: stateLabel, icon } = presentation;
           return (
-            <React.Fragment key={deviceListKey(device)}>
+            <div className={`lite-device-relationship-peer is-${state}`} key={deviceListKey(device)} role="listitem">
               <span className={`lite-device-relationship-link is-${state}`} aria-hidden="true"><i /></span>
               <div className={`lite-device-relationship-node is-${state}`} data-relationship-state={state} aria-label={`${device.name || device.hostname || 'Device'}: ${stateLabel}`}>
                 {icon === 'connected' ? <Smartphone className="h-4 w-4" aria-hidden="true" /> : icon === 'repairing' ? <RefreshCw className="h-4 w-4" aria-hidden="true" /> : <WifiOff className="h-4 w-4" aria-hidden="true" />}
                 <span>{device.name || device.hostname || 'Device'}</span>
                 <small>{stateLabel}</small>
               </div>
-            </React.Fragment>
+            </div>
           );
         }) : <span className="lite-device-relationship-empty">Add a device when you want to expand this workspace.</span>}
         {peers.length > 6 ? (
@@ -236,6 +237,7 @@ function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
             </ul>
           </details>
         ) : null}
+        </div>
       </div>
     </section>
   );
