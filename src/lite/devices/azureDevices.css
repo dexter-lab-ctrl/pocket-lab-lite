@@ -167,3 +167,139 @@ html[data-lite-theme] .lite-devices-add-card { min-width: 0; overflow-wrap: anyw
 @media(max-width:360px) {
   .lite-device-service-summary { grid-template-columns:1fr; }
 }
+
+
+/* P0/P1/P3 refinements: one existing Azure sheet, not a second theme tree. */
+html[data-lite-theme] .lite-devices-title-actions {
+  display:flex;gap:.65rem;align-items:center;justify-content:flex-end;flex-wrap:wrap;
+}
+html[data-lite-theme] .lite-devices-title-actions .lite-button { min-height:2.75rem; }
+html[data-lite-theme] .lite-device-relationship-map :is(span,strong,p,small) {overflow-wrap:anywhere;}
+html[data-lite-theme] .lite-device-relationship-more {
+  flex:1 1 100%;align-self:stretch;min-width:0;
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  padding:.65rem .8rem;background:var(--azure-raised);color:var(--azure-text);
+}
+html[data-lite-theme] .lite-device-relationship-more summary {
+  cursor:pointer;color:var(--azure-accent);font-weight:650;min-height:2.5rem;
+  display:flex;align-items:center;
+}
+html[data-lite-theme] .lite-device-relationship-more li {
+  margin-block:.35rem;color:var(--azure-text);overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-device-relationship-link.is-unknown,
+html[data-lite-theme] .lite-device-relationship-node.is-unknown {border-color:var(--azure-neutral);}
+html[data-lite-theme] .lite-device-card .lite-device-connection-flow {
+  background:var(--azure-raised);border-color:var(--azure-border);color:var(--azure-text);
+}
+html[data-lite-theme] .lite-device-card .lite-device-connection-copy strong {color:var(--azure-text);}
+html[data-lite-theme] .lite-device-service-summary > div,
+html[data-lite-theme] .lite-device-health-strip,
+html[data-lite-theme] .lite-device-trust-strip,
+html[data-lite-theme] .lite-invite-card-body > div {
+  background:var(--azure-raised);border-color:var(--azure-border);color:var(--azure-text);
+}
+html[data-lite-theme] .lite-devices-add-disclosure,
+html[data-lite-theme] .lite-invite-card,
+html[data-lite-theme] .lite-invite-details,
+html[data-lite-theme] .lite-invite-command,
+html[data-lite-theme] .lite-devices-safe-note {
+  background:var(--azure-surface);border-color:var(--azure-border);color:var(--azure-text);
+}
+html[data-lite-theme] .lite-devices-add-disclosure > summary,
+html[data-lite-theme] .lite-invite-details > summary,
+html[data-lite-theme] .lite-remote-access-details summary,
+html[data-lite-theme] .lite-device-card-disclosure summary { color:var(--azure-text);cursor:pointer; }
+html[data-lite-theme] .lite-devices-add-card :is(input,select,textarea),
+html[data-lite-theme] .lite-device-details-panel :is(input,select,textarea) {
+  background:var(--azure-input);color:var(--azure-text);border-color:var(--azure-strong-border);
+  max-width:100%;min-width:0;
+}
+html[data-lite-theme] .lite-devices-add-card .lite-role-card,
+html[data-lite-theme] .lite-device-details-panel .lite-role-card {
+  background:var(--azure-raised);border-color:var(--azure-border);color:var(--azure-text);
+}
+html[data-lite-theme] .lite-devices-add-card .lite-role-card-selected,
+html[data-lite-theme] .lite-device-details-panel .lite-role-card-selected {
+  background:var(--azure-selected);border-color:var(--azure-accent);
+  box-shadow:inset 0 0 0 1px var(--azure-accent);
+}
+html[data-lite-theme] .lite-device-action-layer {
+  --lite-surface:var(--azure-surface);
+  --lite-surface-strong:var(--azure-surface);
+  --lite-ink:var(--azure-text);
+  --lite-muted:var(--azure-muted);
+  color:var(--azure-text);
+}
+html[data-lite-theme] .lite-device-action-backdrop {background:var(--azure-backdrop);}
+html[data-lite-theme] .lite-device-details-focus-anchor,
+html[data-lite-theme] .pocket-card.lite-device-remove-panel {
+  background:var(--azure-surface);color:var(--azure-text);
+  border:1px solid var(--azure-border);box-shadow:var(--azure-panel-shadow);
+}
+html[data-lite-theme] .lite-device-details-panel-tools {
+  background:var(--azure-raised);color:var(--azure-text);border-color:var(--azure-border);
+}
+html[data-lite-theme] .lite-device-details-panel-tool {
+  background:var(--azure-surface);border-color:var(--azure-strong-border);color:var(--azure-text);
+}
+html[data-lite-theme] .lite-device-details-panel :is(
+  .lite-device-system-summary,.lite-device-awareness-section,.lite-device-health-resource,
+  .lite-device-advanced-details,.lite-device-proactive-health,.lite-device-history-timeline-card,
+  .lite-device-health-history-shell,.lite-device-connection-health-story
+) { background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border); }
+html[data-lite-theme] .lite-device-details-panel :is(
+  .lite-device-system-facts,.lite-device-health-posture-grid,.lite-device-capability-list,
+  .lite-device-health-recommendation,.lite-device-operational-now > div
+) { color:var(--azure-text);border-color:var(--azure-border); }
+html[data-lite-theme] .lite-device-details-panel :is(h2,h3,h4,strong,dt) {
+  color:var(--azure-text);overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-device-details-panel :is(p,dd,small) {
+  color:var(--azure-muted);overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-device-remove-panel .lite-device-remove-actions {
+  background:var(--azure-surface);border-color:var(--azure-border);
+}
+html[data-lite-theme] .lite-invite-command code {
+  display:block;overflow-x:auto;white-space:pre;max-width:100%;padding:.7rem;
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  background:var(--azure-input);color:var(--azure-text);font-variant-ligatures:none;user-select:text;
+}
+html[data-lite-theme] .lite-devices-invite-stages {
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;
+  padding:0;margin:1rem 0;list-style:none;
+}
+html[data-lite-theme] .lite-devices-invite-stages li {
+  display:flex;gap:.5rem;align-items:center;min-width:0;padding:.7rem .6rem;
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  background:var(--azure-raised);color:var(--azure-text);font-size:.8rem;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-devices-invite-stages li span {
+  display:grid;place-items:center;flex:0 0 auto;width:1.5rem;height:1.5rem;
+  border-radius:50%;background:var(--azure-accent-subtle);color:var(--azure-accent);font-weight:800;
+}
+html[data-lite-theme] .lite-devices-add-card :is(button,summary,input):focus-visible,
+html[data-lite-theme] .lite-device-action-layer :is(button,summary,input,select):focus-visible {
+  outline:2px solid var(--azure-focus);outline-offset:3px;
+}
+@media(max-width:700px) {
+  html[data-lite-theme] .lite-devices-title-actions {justify-content:flex-start;}
+  html[data-lite-theme] .lite-devices-invite-stages {grid-template-columns:repeat(2,minmax(0,1fr));}
+  html[data-lite-theme] .lite-device-details-focus-anchor,
+  html[data-lite-theme] .pocket-card.lite-device-remove-panel {
+    inset:auto 0 0!important;top:auto!important;left:0!important;right:0!important;
+    width:100%!important;max-width:100%!important;height:auto!important;
+    transform:none!important;
+    max-height:calc(100dvh - max(1rem,env(safe-area-inset-top)))!important;
+    padding-bottom:env(safe-area-inset-bottom);
+    border-radius:1.4rem 1.4rem 0 0;
+  }
+}
+@media(max-width:360px) {
+  html[data-lite-theme] .lite-devices-invite-stages {grid-template-columns:minmax(0,1fr);}
+}
+@media(prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-device-relationship-more *,
+  html[data-lite-theme] .lite-devices-invite-stages * {animation:none!important;transition:none!important;}
+}
