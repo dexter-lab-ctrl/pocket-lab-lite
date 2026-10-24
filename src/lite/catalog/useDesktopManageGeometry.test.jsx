@@ -46,4 +46,59 @@ describe('shared Devices + Apps desktop geometry', () => {
     expect(result.current.desktopPanel).toBe(false);
     expect(result.current.panelStyle).toBeUndefined();
   });
+  it('uses captured pointer ownership and cleans up on cancellation', () => {
+    const request = window.requestAnimationFrame;
+    const cancel = window.cancelAnimationFrame;
+    let queuedFrame;
+    window.requestAnimationFrame = vi.fn((fn) => { queuedFrame = fn; return 19; });
+    window.cancelAnimationFrame = vi.fn();
+    try {
+      const {result, unmount} = renderHook(() => useDesktopManageGeometry({open:true,defaultWidth:620}));
+      const panel = document.createElement('section');
+      panel.getBoundingClientRect = () => ({left:280,top:100,width:540,height:440});
+      result.current.panelRef.current = panel;
+      const handle = document.createElement('button');
+      handle.setPointerCapture = vi.fn();
+      handle.hasPointerCapture = vi.fn(() => false);
+      const initial = result.current.geometry;
+      act(() => result.current.startPanelInteraction('move', {
+        button:0, pointerId:8, clientX:300, clientY:120, preventDefault:vi.fn(), currentTarget:handle
+      }));
+      expect(handle.setPointerCapture).toHaveBeenCalledWith(8);
+      const move = new Event('pointermove');
+      Object.defineProperties(move,{pointerId:{value:8},clientX:{value:348},clientY:{value:146}});
+      act(() => {window.dispatchEvent(move); queuedFrame?.();});
+      expect(result.current.geometry.left).toBeGreaterThan(280);
+      const aborted = new Event('pointercancel');
+      Object.defineProperty(aborted,'pointerId',{value:8});
+      act(() => window.dispatchEvent(aborted));
+      expect(panel.classList.contains('is-interacting')).toBe(false);
+      expect(result.current.geometry.left).toBe(280);
+      unmount();
+      expect(window.cancelAnimationFrame).toHaveBeenCalled();
+      expect(initial).toBeTruthy();
+    } finally {
+      window.requestAnimationFrame = request;
+      window.cancelAnimationFrame = cancel;
+    }
+  });
+  it('supports pointer-capture loss and does not persist geometry in storage', () => {
+    const {result,unmount}=renderHook(() => useDesktopManageGeometry({open:true}));
+    const panel=document.createElement('section');
+    panel.getBoundingClientRect=()=>({left:100,top:60,width:500,height:420});
+    result.current.panelRef.current=panel;
+    const handle=document.createElement('button');
+    handle.setPointerCapture=vi.fn();
+    handle.hasPointerCapture=vi.fn(()=>false);
+    act(()=>result.current.startPanelInteraction('resize',{
+      button:0,pointerId:4,clientX:600,clientY:480,currentTarget:handle,preventDefault:vi.fn()
+    }));
+    const event=new Event('lostpointercapture');
+    Object.defineProperty(event,'pointerId',{value:4});
+    act(()=>handle.dispatchEvent(event));
+    expect(panel.classList.contains('is-interacting')).toBe(false);
+    expect(result.current.panelStyle).toBeDefined();
+    unmount();
+  });
+
 });
