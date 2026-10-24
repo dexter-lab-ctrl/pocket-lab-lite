@@ -2253,10 +2253,10 @@ function CatalogManagePortal({
         data-lite-apps-manage-layout={desktopPanel ? 'desktop-movable' : 'mobile-sheet'}
         tabIndex={-1}
         style={{
-          position: 'relative',
+          position: desktopPanel ? 'fixed' : 'relative',
           zIndex: 1,
-          width: 'min(100%, 44rem)',
-          maxHeight: 'min(86vh, calc(var(--lite-visual-viewport-height, 100vh) - max(1.5rem, env(safe-area-inset-top)) - max(1.5rem, env(safe-area-inset-bottom))))',
+          width: desktopPanel ? undefined : 'min(100%, 44rem)',
+          maxHeight: desktopPanel ? 'none' : 'min(86vh, calc(var(--lite-visual-viewport-height, 100vh) - max(1.5rem, env(safe-area-inset-top)) - max(1.5rem, env(safe-area-inset-bottom))))',
           minHeight: 0,
           display: 'flex',
           flexDirection: 'column',
