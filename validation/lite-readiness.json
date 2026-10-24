@@ -150,7 +150,7 @@
     "status": "validation contract documented; local PASS is not claimed"
   },
   "metadata": {
-    "aggregate_fingerprint": "18bd7d3f5abb71c2e3fb5190a94dd6aa6de1b3f71717ae06ab2f6dd8f794798c",
+    "aggregate_fingerprint": "9f1833728c83a153281027917b97bc228bf32b280d92ccd8a6231a1fbf0ab6d1",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -160,7 +160,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "Taskfile.yml": "06a83a2f6039a645e6592bb77f81c8c0375bac541c3d6299f368f9cc8d4e8ecd",
+      "Taskfile.yml": "cadb39dfe21186b3199f6c609be89e655d37ccee926a9a1991c5c84905da3be3",
       "contracts/metadata/documentation-platform.json": "8581a61d27860c218bdb1e23d6b806cc3c8512685be07712338a277b1fee22e2",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "scripts/dev/lite/run-gate.sh": "81b2d42dbbb265fbc31dc28ec7f87c77a863a4d3bfa9586a9875a4aeb30e7ee1",

@@ -3362,6 +3362,9 @@
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/e2e/lite-accessibility-states.spec.ts",
+        "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
+        "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+        "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
         "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
@@ -4781,6 +4784,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "95cb7bf725ae3818514bbe94e5d093fac637f1a870fa1ab4511c3a94fc11957b"
+    "source_fingerprint": "6740107435949b3e97a6b4a583bf7f29d166039ca6aef7bcbb2aa3f3effebab6"
   }
 }

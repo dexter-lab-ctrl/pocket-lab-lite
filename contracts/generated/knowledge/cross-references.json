@@ -16691,6 +16691,28 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-apps-premium-refinement.spec.ts": [
         {
           "source": "component:photoprism",
@@ -16912,6 +16934,12 @@
         },
         {
           "source": "reason:interrupted",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-readme-capture.spec.ts": [
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         }
       ],
@@ -24054,6 +24082,18 @@
         },
         {
           "target": "test:tests/e2e/lite-accessibility-states.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
           "type": "verified_by"
         },
         {
@@ -32145,6 +32185,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
           "type": "verified_by"
         },
@@ -32194,6 +32238,10 @@
         },
         {
           "target": "test:tests/e2e/lite-photo-backup.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-readme-capture.spec.ts",
           "type": "verified_by"
         },
         {
@@ -36425,6 +36473,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "95cb7bf725ae3818514bbe94e5d093fac637f1a870fa1ab4511c3a94fc11957b"
+    "source_fingerprint": "6740107435949b3e97a6b4a583bf7f29d166039ca6aef7bcbb2aa3f3effebab6"
   }
 }

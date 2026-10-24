@@ -13746,7 +13746,7 @@ textarea {
   pointer-events: auto !important;
 }
 
-.theme-pocket-lite-daylight .lite-catalog-manage-sheet {
+.theme-pocket-lite-daylight .lite-catalog-manage-sheet:not(.is-movable) {
   position: relative !important;
   z-index: 1 !important;
   width: min(100%, 44rem) !important;
@@ -13777,7 +13777,7 @@ textarea {
     padding: 1.2rem !important;
   }
 
-  .theme-pocket-lite-daylight .lite-catalog-manage-sheet {
+  .theme-pocket-lite-daylight .lite-catalog-manage-sheet:not(.is-movable) {
     width: min(42rem, 44vw) !important;
     height: 100% !important;
     max-height: none !important;
@@ -13805,7 +13805,7 @@ textarea {
   pointer-events: auto !important;
 }
 
-.lite-catalog-manage-sheet {
+.lite-catalog-manage-sheet:not(.is-movable) {
   position: relative !important;
   z-index: 1 !important;
   width: min(100%, 44rem) !important;
@@ -13844,7 +13844,7 @@ textarea {
     padding: 1.2rem !important;
   }
 
-  .lite-catalog-manage-sheet {
+  .lite-catalog-manage-sheet:not(.is-movable) {
     width: min(42rem, 44vw) !important;
     height: 100% !important;
     max-height: none !important;
@@ -13864,7 +13864,7 @@ textarea {
   padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left)) !important;
   pointer-events: auto !important;
   isolation: isolate !important;
-  color: #0f172a !important;
+  color: var(--azure-text) !important;
 }
 
 .lite-catalog-manage-backdrop {
@@ -13876,7 +13876,7 @@ textarea {
   pointer-events: auto !important;
 }
 
-.lite-catalog-manage-sheet {
+.lite-catalog-manage-sheet:not(.is-movable) {
   position: relative !important;
   z-index: 1 !important;
   width: min(100%, 44rem) !important;
@@ -13890,10 +13890,10 @@ textarea {
   pointer-events: auto !important;
   transform: none !important;
   translate: none !important;
-  background: #f8fafc !important;
-  border: 1px solid rgba(148, 163, 184, 0.34) !important;
+  background: var(--azure-surface) !important;
+  border: 1px solid var(--azure-border) !important;
   border-radius: 2rem 2rem 1.35rem 1.35rem !important;
-  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35) !important;
+  box-shadow: var(--azure-panel-shadow) !important;
 }
 
 .lite-catalog-manage-head,
@@ -13908,7 +13908,7 @@ textarea {
   overflow-y: auto !important;
   overscroll-behavior: contain !important;
   -webkit-overflow-scrolling: touch !important;
-  background: #f8fafc !important;
+  background: var(--azure-surface) !important;
 }
 
 .lite-catalog-manage-grip,
@@ -13926,7 +13926,7 @@ textarea {
     padding: 1.2rem !important;
   }
 
-  .lite-catalog-manage-sheet {
+  .lite-catalog-manage-sheet:not(.is-movable) {
     width: min(42rem, 44vw) !important;
     height: 100% !important;
     max-height: none !important;
@@ -13945,7 +13945,7 @@ textarea {
   padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left)) !important;
   pointer-events: auto !important;
   isolation: isolate !important;
-  color: #0f172a !important;
+  color: var(--azure-text) !important;
 }
 
 [data-lite-manage-portal="true"] .lite-catalog-manage-backdrop {
@@ -13953,11 +13953,11 @@ textarea {
   inset: 0 !important;
   z-index: 0 !important;
   border: 0 !important;
-  background: rgba(15, 23, 42, 0.42) !important;
+  background: var(--azure-backdrop) !important;
   pointer-events: auto !important;
 }
 
-[data-lite-manage-portal="true"] .lite-catalog-manage-sheet {
+[data-lite-manage-portal="true"] .lite-catalog-manage-sheet:not(.is-movable) {
   position: relative !important;
   z-index: 1 !important;
   width: min(100%, 44rem) !important;
@@ -13971,10 +13971,10 @@ textarea {
   pointer-events: auto !important;
   transform: none !important;
   translate: none !important;
-  background: #f8fafc !important;
-  border: 1px solid rgba(148, 163, 184, 0.34) !important;
+  background: var(--azure-surface) !important;
+  border: 1px solid var(--azure-border) !important;
   border-radius: 2rem 2rem 1.35rem 1.35rem !important;
-  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35) !important;
+  box-shadow: var(--azure-panel-shadow) !important;
 }
 
 [data-lite-manage-portal="true"] .lite-catalog-manage-scroll {
@@ -13983,7 +13983,7 @@ textarea {
   overflow-y: auto !important;
   overscroll-behavior: contain !important;
   -webkit-overflow-scrolling: touch !important;
-  background: #f8fafc !important;
+  background: var(--azure-surface) !important;
 }
 
 [data-lite-manage-portal="true"] .lite-catalog-manage-grip,
@@ -14001,7 +14001,7 @@ textarea {
     padding: 1.2rem !important;
   }
 
-  [data-lite-manage-portal="true"] .lite-catalog-manage-sheet {
+  [data-lite-manage-portal="true"] .lite-catalog-manage-sheet:not(.is-movable) {
     width: min(42rem, 44vw) !important;
     height: 100% !important;
     max-height: none !important;
@@ -24999,7 +24999,7 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 [data-lite-manage-portal="true"] .lite-catalog-manage-grip:focus-visible,
 [data-lite-manage-portal="true"] .lite-app-action-row button:focus-visible,
 .theme-pocket-lite-daylight .lite-catalog-screen .pocket-button:focus-visible {
-  outline: 3px solid rgba(37, 99, 235, 0.42);
+  outline: 3px solid var(--azure-focus);
   outline-offset: 3px;
 }
 
@@ -25016,15 +25016,15 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 
 @media (min-width: 721px) {
   [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    overflow: visible;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button {
-    min-width: 0;
-    padding-inline: 0.45rem;
-    font-size: 0.74rem;
+    flex: 0 0 auto;
+    min-height: 44px;
+    font-size: .84rem;
   }
 }
 
@@ -25067,7 +25067,7 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 
 /* Apps UI follow-up: center the Manage surface and make tab selection a full
    control-state change instead of a partial underline/ripple. */
-[data-lite-manage-portal="true"] .lite-catalog-manage-sheet {
+[data-lite-manage-portal="true"] .lite-catalog-manage-sheet:not(.is-movable) {
   left: auto !important;
   margin: 0 auto !important;
   right: auto !important;
@@ -25085,10 +25085,10 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 }
 
 [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button.is-active {
-  background: linear-gradient(135deg, rgba(219, 234, 254, 0.98), rgba(224, 242, 254, 0.96)) !important;
-  border-color: rgba(37, 99, 235, 0.42) !important;
-  color: #1d4ed8 !important;
-  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.16), 0 0 0 1px rgba(37, 99, 235, 0.06) !important;
+  background: var(--azure-selected) !important;
+  border-color: var(--azure-accent) !important;
+  color: var(--azure-text) !important;
+  box-shadow: 0 0 0 1px var(--azure-border) !important;
 }
 
 [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button::before {
@@ -25096,7 +25096,7 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
   width: auto !important;
   height: auto !important;
   border-radius: inherit !important;
-  background: rgba(37, 99, 235, 0.18) !important;
+  background: var(--azure-pressed) !important;
   opacity: 0 !important;
   transform: none !important;
   transition: opacity 140ms ease !important;
@@ -25130,8 +25130,8 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
   .lite-overlay-root .lite-overlay-surface,
   .theme-pocket-lite-daylight.lite-overlay-root .lite-details-panel,
   .lite-overlay-root .lite-details-panel,
-  .theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-manage-sheet,
-  .lite-catalog-manage-layer .lite-catalog-manage-sheet {
+  .theme-pocket-lite-daylight.lite-catalog-manage-layer .lite-catalog-manage-sheet:not(.is-movable),
+  .lite-catalog-manage-layer .lite-catalog-manage-sheet:not(.is-movable) {
     box-sizing: border-box !important;
     inset-inline: auto !important;
     left: auto !important;

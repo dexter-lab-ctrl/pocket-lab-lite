@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 8ca81eba32a986c33892f734642cc21af68a308ce3f983c16269b9821994d07f
+source_fingerprint: 6286fca865714ba97ee6385c90e0575db99ef60a93f498fdb3e86abcad4353b3
 schema_revision: 1
 validation_status: generated
 ---
@@ -288,6 +288,9 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:qualification:start:key-bound:fleet-role`
 - `lite:qualification:start:key-bound:recovery`
 - `lite:qualification:start:key-bound:ui-performance`
+- `lite:readme:capture:mocked`
+- `lite:readme:check`
+- `lite:readme:visual`
 - `lite:recovery:database:offline-promote`
 - `lite:release:artifact-check`
 - `lite:release:dry-run`
@@ -343,6 +346,15 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:test:apps:azure:qualification`
 - `lite:test:apps:azure:unit`
 - `lite:test:apps:azure:visual`
+- `lite:test:apps:premium:a11y`
+- `lite:test:apps:premium:devices-regression`
+- `lite:test:apps:premium:geometry`
+- `lite:test:apps:premium:mocked`
+- `lite:test:apps:premium:performance`
+- `lite:test:apps:premium:storybook`
+- `lite:test:apps:premium:theme`
+- `lite:test:apps:premium:unit`
+- `lite:test:apps:premium:visual`
 - `lite:test:azure:a11y`
 - `lite:test:azure:home`
 - `lite:test:azure:home:premium:mocked`
