@@ -33,7 +33,7 @@ export function deviceHorizonConnection(device, { presentation, linkState, saved
     return { kind: 'connected', label: 'Connected', description: 'Current device connection reported', needsAttention: false };
   }
   if (status === 'offline' || state === 'offline') {
-    return { kind: 'disconnected', label: 'Disconnected', description: 'Current connection is unavailable', needsAttention: true };
+    return { kind: 'disconnected', label: status === 'offline' ? 'Offline' : 'Disconnected', description: 'Current connection is unavailable', needsAttention: true };
   }
   return { kind: 'unknown', label: 'Not confirmed', description: 'Current connection evidence is unavailable', needsAttention: true };
 }
