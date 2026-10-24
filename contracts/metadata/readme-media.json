@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "provenance": "Existing committed Playwright mocked UI baselines, not runtime screenshots",
+  "freshness_policy": "Pin Git blob hashes of captures and source specs; changes require review",
+  "captures": [
+    {
+      "path": "tests/e2e/lite-azure-horizon-visual.spec.ts-snapshots/black-desktop-mocked-desktop-linux.png",
+      "sha": "a503b1d34e8aabe4b00f1ef66f29f565e23c6c7e",
+      "spec": "tests/e2e/lite-azure-horizon-visual.spec.ts",
+      "spec_sha": "c1e3a94df890910eb923832db33e333a2a15632b",
+      "environment": "mocked",
+      "published_as": "ui-reference-not-live-evidence"
+    },
+    {
+      "path": "tests/e2e/lite-azure-horizon-visual.spec.ts-snapshots/black-mobile-mocked-mobile-linux.png",
+      "sha": "ac1d02ea2dc0b1116a4f9d4380726c0306ace1e3",
+      "spec": "tests/e2e/lite-azure-horizon-visual.spec.ts",
+      "spec_sha": "c1e3a94df890910eb923832db33e333a2a15632b",
+      "environment": "mocked",
+      "published_as": "ui-reference-not-live-evidence"
+    },
+    {
+      "path": "tests/e2e/lite-azure-horizon-apps-visual.spec.ts-snapshots/apps-dark-catalog-1280-mocked-desktop-linux.png",
+      "sha": "28b5e46e7c9fa8df46519e553bdbb968a2acd86a",
+      "spec": "tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
+      "spec_sha": "570d1299640749af3e00500c52428f4eb0098313",
+      "environment": "mocked",
+      "published_as": "ui-reference-not-live-evidence"
+    },
+    {
+      "path": "tests/e2e/lite-visual-states.spec.ts-snapshots/devices-repairing-mocked-desktop-linux.png",
+      "sha": "07c5e7bdfe78afde82770aacea65fbc188632d2f",
+      "spec": "tests/e2e/lite-visual-states.spec.ts",
+      "spec_sha": "21bffcc43d53a8b91bb07db4a1725a76b6ab74cc",
+      "environment": "mocked",
+      "published_as": "ui-reference-not-live-evidence"
+    },
+    {
+      "path": "tests/e2e/lite-visual-states.spec.ts-snapshots/security-action-needed-mocked-desktop-linux.png",
+      "sha": "8db018b3ccc25ef2fe69cfad91a77df25c35647a",
+      "spec": "tests/e2e/lite-visual-states.spec.ts",
+      "spec_sha": "21bffcc43d53a8b91bb07db4a1725a76b6ab74cc",
+      "environment": "mocked",
+      "published_as": "ui-reference-not-live-evidence"
+    },
+    {
+      "path": "tests/e2e/lite-recovery-premium-visual.spec.ts-snapshots/recovery-premium-preview-ready-desktop-mocked-desktop-linux.png",
+      "sha": "0a18197390df0073f2a64d31e41daa0eee45cab1",
+      "spec": "tests/e2e/lite-recovery-premium-visual.spec.ts",
+      "spec_sha": "e95cd3ae0bd2a1b2217ed2973d9728f3d9cc4d8a",
+      "environment": "mocked",
+      "published_as": "ui-reference-not-live-evidence"
+    }
+  ]
+}

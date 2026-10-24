@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 744" width="420" height="744" role="img" aria-labelledby="title desc">
+<title id="title">Pocket Lab Lite mobile product illustration</title>
+<desc id="desc">Pocket Lab Lite signature mark and tagline above a vertically arranged self-hosted workspace illustration: Devices, Apps and Safety.</desc>
+<rect width="420" height="744" rx="28" fill="#0b1220"/>
+<rect x="175" y="32" width="70" height="70" rx="19" fill="#11283c" stroke="#2ed2dc" stroke-width="2"/>
+<path d="M191 52h38v31h-38z" fill="none" stroke="#56dfeb" stroke-width="3"/><circle cx="202" cy="67" r="4" fill="#56dfeb"/><circle cx="218" cy="67" r="4" fill="#56dfeb"/><path d="M206 67h8M210 52v-7M199 90v-7M223 90v-7" stroke="#eefbff" stroke-width="2.5" stroke-linecap="round"/>
+<g font-family="Arial,Helvetica,sans-serif" text-anchor="middle">
+<text x="210" y="145" font-size="31" font-weight="700" fill="#f6fbff">Pocket Lab Lite</text>
+<text x="210" y="201" font-size="30" font-weight="700" fill="#f6fbff">Your private</text>
+<text x="210" y="239" font-size="30" font-weight="700" fill="#f6fbff">infrastructure.</text>
+<text x="210" y="278" font-size="30" font-weight="700" fill="#63dce6">Under your control.</text>
+<text x="210" y="316" font-size="17" fill="#c1d3e0">Lightweight self-hosted control for</text>
+<text x="210" y="340" font-size="17" fill="#c1d3e0">your apps, devices and safety.</text>
+</g>
+<g font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="600" fill="#e1f2f9" text-anchor="middle">
+<rect x="36" y="365" width="164" height="35" rx="18" fill="#193449" stroke="#34566c"/><text x="118" y="387">Self-hosted</text>
+<rect x="214" y="365" width="170" height="35" rx="18" fill="#193449" stroke="#34566c"/><text x="299" y="387">Edge-first</text>
+<rect x="36" y="411" width="164" height="35" rx="18" fill="#193449" stroke="#34566c"/><text x="118" y="433">Android / ARM64</text>
+<rect x="214" y="411" width="170" height="35" rx="18" fill="#193449" stroke="#34566c"/><text x="299" y="433">Private access</text>
+</g>
+<rect x="25" y="474" width="370" height="239" rx="19" fill="#122337" stroke="#345268"/>
+<text x="46" y="509" font-family="Arial,Helvetica,sans-serif" font-size="20" font-weight="700" fill="#f6fbff">Self-hosted workspace</text>
+<g font-family="Arial,Helvetica,sans-serif">
+<rect x="42" y="529" width="162" height="73" rx="12" fill="#1a354a" stroke="#3c6a7c"/>
+<circle cx="66" cy="550" r="9" fill="#245369"/><text x="84" y="556" font-size="20" font-weight="700" fill="#f8fafc">Devices</text>
+<text x="56" y="580" font-size="14" fill="#bbd5e2">Connections</text>
+<rect x="216" y="529" width="162" height="73" rx="12" fill="#1a354a" stroke="#3c6a7c"/>
+<rect x="230" y="541" width="19" height="19" rx="5" fill="none" stroke="#66e1e8" stroke-width="2"/><text x="258" y="556" font-size="20" font-weight="700" fill="#f8fafc">Apps</text>
+<text x="232" y="580" font-size="14" fill="#bbd5e2">Open &amp; Manage</text>
+<rect x="42" y="615" width="336" height="75" rx="12" fill="#1a354a" stroke="#3c6a7c"/>
+<path d="M60 635l13 -5 13 5v11c0 10 -6 16 -13 21 -7 -5 -13 -11 -13 -21z" fill="none" stroke="#66e1e8" stroke-width="2"/>
+<text x="101" y="646" font-size="21" font-weight="700" fill="#f8fafc">Safety</text><text x="101" y="671" font-size="15" fill="#bbd5e2">Local checks and findings</text>
+</g>
+<text x="210" y="731" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="12" fill="#90b0c3">Illustration · not live telemetry</text>
+</svg>

@@ -42,6 +42,9 @@ includes:
   lite-docs:
     taskfile: ./tasks/Taskfile.docs.yml
     flatten: true
+  lite-readme:
+    taskfile: ./tasks/Taskfile.readme.yml
+    flatten: true
   lite-release:
     taskfile: ./tasks/Taskfile.release.yml
     flatten: true
