@@ -4,7 +4,10 @@ import { deviceRelationshipPresentation, remoteAccessPresentation, remoteAccessS
 describe('Azure Horizon backend-truthful Devices presentation', () => {
   it.each([
     [{ status: 'joining' }, 'Joining'],
-    [{ status: 'waiting' }, 'Waiting'],
+    // `pending` is the backend invitation state normalized to Waiting by the
+    // canonical device presentation helper. `waiting` is the derived UI
+    // state, not a raw device status.
+    [{ status: 'pending' }, 'Waiting'],
     [{ status: 'agent_stopped' }, 'Agent stopped'],
     [{ status: 'identity_mismatch' }, 'Identity check blocked'],
     [{ status: 'offline' }, 'Offline'],

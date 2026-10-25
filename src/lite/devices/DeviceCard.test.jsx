@@ -15,6 +15,7 @@ describe('DeviceCard connection presentation', () => {
     expect(deviceConnectionFlowLabel('repairing', 'Studio phone', false)).toContain('restoring');
     expect(deviceConnectionFlowLabel('disconnected', 'Studio phone', false)).toContain('disconnected');
     expect(deviceConnectionFlowLabel('server', 'Pocket Lab Lite Server', true)).toContain('protected server host');
+    expect(deviceConnectionFlowLabel('disconnected', 'Joining phone', false, { kind: 'joining' })).toContain('joining');
   });
 
   it('keeps healthy remote access compact while retaining an explicit not-ready state', () => {

@@ -216,9 +216,12 @@ test.describe('Pocket Lab Lite Phase 9 native/PWA qualification', () => {
 
     if (await disconnected.count()) {
       await expect(disconnected).toBeVisible();
+      // A joining device uses the bounded disconnected rail until current
+      // backend evidence confirms a live connection, but keeps its explicit
+      // Joining vocabulary for assistive technology.
       await expect(disconnected).toHaveAttribute(
         'aria-label',
-        /disconnected/i,
+        /joining|disconnected/i,
       );
     }
   });

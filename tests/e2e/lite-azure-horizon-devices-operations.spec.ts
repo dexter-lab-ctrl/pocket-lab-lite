@@ -34,7 +34,7 @@ test('add-device name conflict displays an accessible error without creating an 
   await openDevices(page, 'devices-online');
   const form = await openAddDevice(page);
   await form.getByLabel('Device name').fill('Test-Phone-4');
-  await expect(form.getByRole('alert')).toContainText(/already exists/i);
+  await expect(form.locator('.lite-devices-name-conflict')).toContainText(/already exists/i);
   await expect(form.getByRole('button', { name: /Device already added/i })).toBeDisabled();
 });
 

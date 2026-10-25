@@ -167,6 +167,16 @@ html[data-lite-theme] .lite-details-panel {
 html[data-lite-theme] .lite-overlay-head {color:var(--azure-text);background:var(--azure-surface);border-color:var(--azure-border);}
 html[data-lite-theme] .lite-overlay-backdrop {background:var(--azure-backdrop);}
 html[data-lite-theme] .lite-operational-story {background:var(--azure-surface);border-color:var(--azure-border);color:var(--azure-text);}
+
+/* Devices still has a small amount of historical Daylight typography in
+   src/index.css. Keep that content in the Azure semantic color system and
+   ensure the light raised surfaces retain WCAG AA contrast. */
+html[data-lite-theme="light"].theme-pocket-lite-daylight .lite-devices-section-title p { color: var(--azure-accent); }
+html[data-lite-theme="light"].theme-pocket-lite-daylight .lite-devices-section-title > span,
+html[data-lite-theme="light"].theme-pocket-lite-daylight .lite-devices-section-title small,
+html[data-lite-theme="light"].theme-pocket-lite-daylight .lite-device-connection-copy > span,
+html[data-lite-theme="light"].theme-pocket-lite-daylight .lite-device-relationship-node small { color: var(--azure-text); }
+
 html[data-lite-theme] .lite-overlay-root {
   position:fixed;inset:0;z-index:140;display:flex;align-items:flex-end;justify-content:center;
   padding:max(.75rem,env(safe-area-inset-top)) max(.75rem,env(safe-area-inset-right))

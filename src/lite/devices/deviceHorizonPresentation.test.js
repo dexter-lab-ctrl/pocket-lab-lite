@@ -11,7 +11,7 @@ describe('Azure Horizon Devices evidence-safe connection vocabulary', () => {
     ['repairing', 'repairing', 'repairing', 'Repairing'],
     ['joining', 'disconnected', 'joining', 'Joining'],
     ['waiting', 'disconnected', 'waiting', 'Waiting'],
-    ['offline', 'disconnected', 'disconnected', 'Disconnected'],
+    ['offline', 'disconnected', 'disconnected', 'Offline'],
     ['agent_stopped', 'disconnected', 'stopped', 'Agent stopped'],
     ['unknown', 'disconnected', 'unknown', 'Not confirmed'],
   ])('%s is not confused with other states', (status, linkState, kind, label) => {

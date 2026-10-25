@@ -17,6 +17,11 @@ html[data-lite-theme] .lite-device-relationship-map {
   padding: clamp(1rem, 2vw, 1.4rem);
   min-width: 0;
 }
+/* Add Device is rendered after this list, not as a second child of the
+   layout grid. Give the virtualized fleet the full content width so its two
+   desktop lanes remain usable instead of collapsing each card into a narrow
+   column. */
+html[data-lite-theme] .lite-devices-layout { grid-template-columns: minmax(0, 1fr); }
 html[data-lite-theme] .lite-device-relationship-head :is(strong,span),
 html[data-lite-theme] .lite-device-card :is(h2,strong),
 html[data-lite-theme] .lite-device-details-panel :is(h3,strong) { color: var(--azure-text); }
@@ -129,6 +134,115 @@ html[data-lite-theme] .lite-devices-add-card :is(code,pre) {
 html[data-lite-theme] .lite-device-card,
 html[data-lite-theme] .lite-device-details-panel,
 html[data-lite-theme] .lite-devices-add-card { min-width: 0; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-device-details-panel {
+  padding: 1rem;
+  border-radius: var(--azure-radius-card);
+}
+html[data-lite-theme] .lite-device-details-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+  margin-bottom: 1rem;
+}
+html[data-lite-theme] .lite-device-details-panel-head > div { min-width: 0; }
+html[data-lite-theme] .lite-device-details-panel-head span {
+  display: block;
+  margin-bottom: .25rem;
+  color: var(--azure-muted);
+  font-size: .74rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+html[data-lite-theme] .lite-device-details-panel-head h3 {
+  margin: .16rem 0 0;
+  color: var(--azure-text);
+  font-size: 1.1rem;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-device-details-panel-head p {
+  margin: .3rem 0 0;
+  color: var(--azure-muted);
+  font-size: .9rem;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-device-awareness-section {
+  min-width: 0;
+  padding: .95rem;
+  border: 1px solid var(--azure-border);
+  border-radius: 1rem;
+  background: var(--azure-surface);
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-device-awareness-section > span {
+  display: block;
+  margin-bottom: .25rem;
+  color: var(--azure-muted);
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+html[data-lite-theme] .lite-device-awareness-section > strong {
+  display: block;
+  margin-bottom: .55rem;
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-device-awareness-section p,
+html[data-lite-theme] .lite-device-awareness-section li,
+html[data-lite-theme] .lite-device-awareness-section dd {
+  margin: .65rem 0 0;
+  overflow-wrap: anywhere;
+  color: var(--azure-muted);
+  font-size: .86rem;
+  line-height: 1.45;
+}
+html[data-lite-theme] .lite-device-awareness-section dl,
+html[data-lite-theme] .lite-device-awareness-section ul {
+  display: grid;
+  gap: .45rem;
+  margin: .6rem 0 0;
+  padding: 0;
+}
+html[data-lite-theme] .lite-device-awareness-section ul { list-style: none; }
+html[data-lite-theme] .lite-device-awareness-section dl > div,
+html[data-lite-theme] .lite-device-capability-list li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem;
+  min-width: 0;
+}
+html[data-lite-theme] .lite-device-awareness-section dt { color: var(--azure-muted); }
+html[data-lite-theme] .lite-device-awareness-section dd { margin: 0; text-align: right; }
+html[data-lite-theme] .lite-device-card { container: lite-device-card / inline-size; }
+
+/* Devices keeps two virtual lanes on desktop. A lane can therefore be
+   narrower than the viewport even when the overall layout is desktop-sized.
+   Let the in-card rail shrink with its container so a disconnected marker
+   cannot escape its own surface or create horizontal overflow. */
+@container lite-device-card (max-width: 280px) {
+  html[data-lite-theme] .lite-device-flow-topology {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .25rem;
+  }
+  html[data-lite-theme] .lite-device-flow-track {
+    min-width: 0;
+    width: 100%;
+  }
+  html[data-lite-theme] .lite-device-flow-node > svg {
+    width: 1.35rem;
+    height: 1.35rem;
+    padding: .25rem;
+  }
+  html[data-lite-theme] .lite-device-flow-node small {
+    max-width: 2.5rem;
+    font-size: .6rem;
+  }
+}
 @media (max-width: 700px) {
   .lite-devices-horizon-summary { grid-template-columns: 1fr; gap: .5rem; }
   html[data-lite-theme] .lite-device-relationship-flow { flex-direction: column; align-items: stretch; }
@@ -224,6 +338,104 @@ html[data-lite-theme] .lite-device-details-panel .lite-role-card-selected {
   background:var(--azure-selected);border-color:var(--azure-accent);
   box-shadow:inset 0 0 0 1px var(--azure-accent);
 }
+
+/* The onboarding disclosure is shared by Daylight and Black. Keep its
+   structure here instead of relying on the historical Daylight-only rules in
+   src/index.css, so the dark flow is fully styled as well. */
+html[data-lite-theme] .lite-devices-add-disclosure {
+  min-width:0;border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);
+  overflow:clip;
+}
+html[data-lite-theme] .lite-devices-add-disclosure > summary {
+  display:grid;gap:.2rem;padding:1rem 1.1rem;cursor:pointer;list-style:none;
+}
+html[data-lite-theme] .lite-devices-add-disclosure > summary::-webkit-details-marker { display:none; }
+html[data-lite-theme] .lite-devices-add-disclosure > summary::after {
+  content:'+';grid-column:2;grid-row:1 / span 3;align-self:center;justify-self:end;
+  display:grid;place-items:center;width:2rem;height:2rem;border-radius:999px;
+  background:var(--azure-accent-subtle);color:var(--azure-accent);font-size:1.2rem;font-weight:800;
+}
+html[data-lite-theme] .lite-devices-add-disclosure[open] > summary::after { content:'–'; }
+html[data-lite-theme] .lite-devices-add-disclosure > summary span {
+  color:var(--azure-accent);font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+}
+html[data-lite-theme] .lite-devices-add-disclosure > summary strong { color:var(--azure-text);font-size:1rem; }
+html[data-lite-theme] .lite-devices-add-disclosure > summary small {
+  max-width:24rem;color:var(--azure-muted);font-size:.82rem;line-height:1.45;
+}
+html[data-lite-theme] .lite-devices-add-disclosure .lite-devices-add-card {
+  margin:0 .75rem .75rem;border-radius:var(--azure-radius-card);box-shadow:none;
+}
+html[data-lite-theme] .lite-devices-card-head {
+  display:flex;align-items:center;justify-content:space-between;gap:.75rem;
+}
+html[data-lite-theme] .lite-devices-mini-icon {
+  display:grid;place-items:center;width:2.75rem;height:2.75rem;border-radius:1rem;
+  border:1px solid var(--azure-strong-border);background:var(--azure-accent-subtle);color:var(--azure-accent);
+}
+html[data-lite-theme] .lite-devices-soft-badge {
+  display:inline-flex;padding:.42rem .7rem;border:1px solid var(--azure-strong-border);
+  border-radius:999px;background:var(--azure-accent-subtle);color:var(--azure-accent);
+  font-size:.78rem;font-weight:800;
+}
+html[data-lite-theme] .lite-devices-add-card h2 {
+  margin-top:1rem;color:var(--azure-text);font-size:1.35rem;font-weight:800;letter-spacing:-.04em;
+}
+html[data-lite-theme] .lite-devices-add-card > p {
+  margin-top:.7rem;color:var(--azure-muted);font-size:.96rem;line-height:1.7;
+}
+html[data-lite-theme] .lite-devices-field-label {
+  display:block;margin-top:1.25rem;margin-bottom:.55rem;color:var(--azure-accent);
+  font-size:.72rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+}
+html[data-lite-theme] .lite-role-selector {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin-top:.6rem;
+}
+html[data-lite-theme] .lite-role-card {
+  display:grid;gap:.35rem;padding:.9rem;border:1px solid var(--azure-border);
+  border-radius:1.1rem;text-align:left;box-shadow:none;
+}
+html[data-lite-theme] .lite-role-card > span { display:grid;gap:.2rem;min-width:0; }
+html[data-lite-theme] .lite-role-card > span strong { color:var(--azure-text);font-size:.96rem;font-weight:800; }
+html[data-lite-theme] .lite-role-card > span small { color:var(--azure-muted);font-size:.74rem; }
+html[data-lite-theme] .lite-role-card > span > span { color:var(--azure-muted);font-size:.86rem;line-height:1.45; }
+html[data-lite-theme] .lite-devices-safe-note {
+  display:grid;gap:.3rem;margin-top:1rem;padding:.85rem;border:1px solid var(--azure-border);
+  border-radius:1.1rem;background:var(--azure-raised);
+}
+html[data-lite-theme] .lite-devices-safe-note strong { color:var(--azure-text); }
+html[data-lite-theme] .lite-devices-safe-note span { color:var(--azure-muted);line-height:1.45; }
+html[data-lite-theme] .lite-flow-status-panel {
+  margin-top:.85rem;padding:.85rem;border:1px solid var(--azure-border);
+  border-radius:1.15rem;background:var(--azure-raised);color:var(--azure-text);box-shadow:none;
+}
+html[data-lite-theme] .lite-flow-status-head {
+  display:flex;align-items:center;justify-content:space-between;gap:.75rem;
+}
+html[data-lite-theme] .lite-flow-status-head span {
+  color:var(--azure-muted);font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+}
+html[data-lite-theme] .lite-flow-status-head strong { color:var(--azure-text);font-size:.95rem;font-weight:800;text-align:right; }
+html[data-lite-theme] .lite-flow-status-panel p { margin:.45rem 0 0;color:var(--azure-muted);font-size:.82rem;line-height:1.45; }
+html[data-lite-theme] .lite-flow-status-steps {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(8rem,1fr));gap:.45rem;
+  list-style:none;margin:.75rem 0 0;padding:0;
+}
+html[data-lite-theme] .lite-flow-status-step {
+  display:flex;align-items:center;gap:.45rem;min-width:0;padding:.38rem .55rem;
+  border:1px solid var(--azure-border);border-radius:999px;background:var(--azure-surface);
+  color:var(--azure-muted);font-size:.76rem;font-weight:800;
+}
+html[data-lite-theme] .lite-flow-status-step > span {
+  width:.48rem;height:.48rem;flex:0 0 auto;border-radius:999px;background:var(--azure-neutral);
+}
+html[data-lite-theme] .lite-flow-status-step em { min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:normal; }
+html[data-lite-theme] .lite-flow-status-step.is-active { border-color:var(--azure-strong-border);background:var(--azure-accent-subtle);color:var(--azure-accent); }
+html[data-lite-theme] .lite-flow-status-step.is-active > span { background:var(--azure-accent); }
+html[data-lite-theme] .lite-flow-status-step.is-done { border-color:var(--azure-success);background:var(--azure-success-subtle);color:var(--azure-success); }
+html[data-lite-theme] .lite-flow-status-step.is-done > span { background:var(--azure-success); }
+html[data-lite-theme] .lite-flow-status-step.is-failed { border-color:var(--azure-danger);background:var(--azure-danger-subtle);color:var(--azure-danger); }
+html[data-lite-theme] .lite-flow-status-step.is-failed > span { background:var(--azure-danger); }
 html[data-lite-theme] .lite-device-action-layer {
   --lite-surface:var(--azure-surface);
   --lite-surface-strong:var(--azure-surface);
@@ -286,6 +498,8 @@ html[data-lite-theme] .lite-device-action-layer :is(button,summary,input,select)
 @media(max-width:700px) {
   html[data-lite-theme] .lite-devices-title-actions {justify-content:flex-start;}
   html[data-lite-theme] .lite-devices-invite-stages {grid-template-columns:repeat(2,minmax(0,1fr));}
+  html[data-lite-theme] .lite-device-details-panel {padding:.85rem;border-radius:1rem;}
+  html[data-lite-theme] .lite-device-details-panel-head {align-items:flex-start;}
   html[data-lite-theme] .lite-device-details-focus-anchor,
   html[data-lite-theme] .pocket-card.lite-device-remove-panel {
     inset:auto 0 0!important;top:auto!important;left:0!important;right:0!important;
@@ -302,6 +516,15 @@ html[data-lite-theme] .lite-device-action-layer :is(button,summary,input,select)
 @media(prefers-reduced-motion:reduce) {
   html[data-lite-theme] .lite-device-relationship-more *,
   html[data-lite-theme] .lite-devices-invite-stages * {animation:none!important;transition:none!important;}
+}
+
+@media(max-width:740px) {
+  html[data-lite-theme] .lite-role-selector { grid-template-columns:minmax(0,1fr); }
+}
+@media(max-width:640px) {
+  html[data-lite-theme] .lite-flow-status-head { align-items:flex-start;flex-direction:column; }
+  html[data-lite-theme] .lite-flow-status-head strong { text-align:left; }
+  html[data-lite-theme] .lite-flow-status-steps { grid-template-columns:minmax(0,1fr); }
 }
 
 

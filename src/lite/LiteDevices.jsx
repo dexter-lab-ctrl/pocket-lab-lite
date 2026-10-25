@@ -213,7 +213,11 @@ function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
           <span>{serverName}</span>
           <small>{server ? 'Protected server host' : 'Server status not reported'}</small>
         </div>
-        <div className="lite-device-relationship-peers" role="list" aria-label="Connected device links">
+        <div
+          className="lite-device-relationship-peers"
+          role={peers.length ? 'list' : undefined}
+          aria-label={peers.length ? 'Connected device links' : undefined}
+        >
         {peers.length ? peers.slice(0, 6).map((device) => {
           const presentation = deviceRelationshipPresentation(device, savedStateOnly);
           const { state, label: stateLabel, icon } = presentation;
