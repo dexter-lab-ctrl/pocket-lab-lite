@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 6286fca865714ba97ee6385c90e0575db99ef60a93f498fdb3e86abcad4353b3
+source_fingerprint: b8f1587ad10fcec0d137541c6200623249782d2f5bfdd154d3a65d631ff83e3a
 schema_revision: 1
 validation_status: generated
 ---
@@ -369,6 +369,14 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:test:azure:visual`
 - `lite:test:backend`
 - `lite:test:contracts`
+- `lite:test:devices:azure:a11y`
+- `lite:test:devices:azure:geometry`
+- `lite:test:devices:azure:mocked`
+- `lite:test:devices:azure:perf`
+- `lite:test:devices:azure:qualification`
+- `lite:test:devices:azure:storybook`
+- `lite:test:devices:azure:unit`
+- `lite:test:devices:azure:visual`
 - `lite:test:docs`
 - `lite:test:e2e:live`
 - `lite:test:e2e:mocked`

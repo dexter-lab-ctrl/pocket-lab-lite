@@ -31152,6 +31152,46 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-devices-operations.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-devices-operations.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-devices-operations.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-devices-performance.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-devices-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-devices-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-devices-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-devices.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-devices.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-devices.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
       "name": "tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
       "source_refs": [
@@ -34983,6 +35023,10 @@
         "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-devices-operations.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-devices-performance.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-devices.spec.ts",
         "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-identity.spec.ts",
@@ -36511,6 +36555,10 @@
         "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-devices-operations.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-devices-performance.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-devices.spec.ts",
         "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-identity.spec.ts",
@@ -53419,6 +53467,22 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-azure-horizon-devices-operations.spec.ts": [
+        {
+          "source": "journey:add-device",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts": [
+        {
+          "source": "journey:add-device",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts": [
         {
           "source": "domain:identity",
@@ -66657,6 +66721,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-azure-horizon-devices-operations.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-mocked.spec.ts",
           "type": "verified_by"
         }
@@ -68868,6 +68940,10 @@
         },
         {
           "target": "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
           "type": "verified_by"
         },
         {
@@ -87860,6 +87936,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-azure-horizon-devices-visual.spec.ts"
+      ],
+      "id": "rel:61ffc66f03da8909",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:660"
       ],
       "id": "rel:620074a7c895f5bb",
@@ -100875,6 +100960,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-azure-horizon-devices-operations.spec.ts"
+      ],
+      "id": "rel:befd34ea7a2b4211",
+      "source": "journey:add-device",
+      "target": "test:tests/e2e/lite-azure-horizon-devices-operations.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:bf05471bb1978761",
@@ -103334,6 +103428,15 @@
       "id": "rel:d02be7d010268a75",
       "source": "api:post:/api/lite/owner-operations/observer-challenge",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-devices-visual.spec.ts"
+      ],
+      "id": "rel:d039e2fec1a53628",
+      "source": "journey:add-device",
+      "target": "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -110235,9 +110338,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "6740107435949b3e97a6b4a583bf7f29d166039ca6aef7bcbb2aa3f3effebab6",
+  "source_fingerprint": "058e8e8a5e6326009008236bc1d052b32ebb7c481dae026631fc57d7538a878a",
   "statistics": {
-    "entity_count": 1446,
+    "entity_count": 1450,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -110254,14 +110357,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 298,
+      "test": 302,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4090,
-    "source_count": 335
+    "relation_count": 4093,
+    "source_count": 339
   }
 }

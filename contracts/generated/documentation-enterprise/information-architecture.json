@@ -766,6 +766,18 @@
           "depth": 1,
           "relation_type": "verified_by",
           "source": "journey:add-device",
+          "target": "test:tests/e2e/lite-azure-horizon-devices-operations.spec.ts"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:add-device",
+          "target": "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts"
+        },
+        {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:add-device",
           "target": "test:tests/e2e/lite-mocked.spec.ts"
         },
         {
@@ -1145,18 +1157,6 @@
           "relation_type": "verified_by",
           "source": "api:post:/api/lite/fleet/add-device",
           "target": "test:tests/parity/test_api_contract_fences.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "affected_by",
-          "source": "component:agent-supervisor",
-          "target": "adr:adr-agent-supervisor-execution"
-        },
-        {
-          "depth": 2,
-          "relation_type": "depends_on",
-          "source": "component:agent-supervisor",
-          "target": "component:agent-recovery"
         }
       ],
       "expansion": {
@@ -1198,6 +1198,8 @@
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/e2e/lite-azure-horizon-devices-operations.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/parity/test_api_contract_fences.py"
       ],
@@ -4688,7 +4690,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 511,
+  "page_count": 512,
   "page_types": [
     "overview",
     "guide",
@@ -4886,6 +4888,29 @@
       "source_or_generator": "development/lite-azure-horizon-design-system.md",
       "title": "Azure Horizon — Lite appearance and premium Home",
       "url": "/development/lite-azure-horizon-design-system/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-devices-refinement.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "devices",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-devices-refinement",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-devices-refinement.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-devices-refinement.md",
+      "title": "Azure Horizon Devices — source implementation and deferred qualification",
+      "url": "/development/lite-azure-horizon-devices-refinement/"
     },
     {
       "additional_audiences": [],
@@ -18110,7 +18135,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "d5dd3eefa56adfb88dea8ec1407995764748442ba326e190f8e0a3cdfdf66d13",
+  "source_fingerprint": "880a0dad8ec47fed433f808d1200107630b25cc870909427566634c078235c66",
   "top_level": [
     "start-here",
     "use",

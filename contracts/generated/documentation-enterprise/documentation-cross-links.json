@@ -2188,6 +2188,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:devices:0c2fb2048fbe8bc3",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/devices",
+      "target": "test:tests/e2e/lite-azure-horizon-devices-operations.spec.ts",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:devices:1355cda24d7df951",
       "relation_type": "calls",
       "source": "page:generated/enterprise/journeys/devices",
@@ -2313,6 +2324,17 @@
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/devices",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:devices:3c94f5f5b2293ca0",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/devices",
+      "target": "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
       "target_type": "test"
     },
     {
@@ -2856,17 +2878,6 @@
       "target_type": "table"
     },
     {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:devices:c84ab04ecf92b592",
-      "relation_type": "depends_on",
-      "source": "page:generated/enterprise/journeys/devices",
-      "target": "component:agent-recovery",
-      "target_type": "component"
-    },
-    {
       "depth": 1,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -3157,17 +3168,6 @@
       "source": "page:generated/enterprise/journeys/devices",
       "target": "test:tests/backend/test_lite_device_system_profile.py",
       "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:devices:efc75b5973f93d4c",
-      "relation_type": "affected_by",
-      "source": "page:generated/enterprise/journeys/devices",
-      "target": "adr:adr-agent-supervisor-execution",
-      "target_type": "adr"
     },
     {
       "evidence": [

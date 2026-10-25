@@ -1,17 +1,17 @@
 // @vitest-environment jsdom
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import DeviceCard from './DeviceCard.jsx';
 
 describe('DeviceCard operational stories', () => {
   it('shows a connected device with independent remote-access attention and Manage', () => {
-    render(<DeviceCard
+    const { container } = render(<DeviceCard
       device={{ id: 'phone', name: 'Studio phone', role: 'mobile', status: 'online', connection: 'online', remote_access: { ready: false, status: 'remote_access_not_ready' } }}
       onOpenDetails={vi.fn()}
     />);
 
-    expect(screen.getByText('Connected')).toBeTruthy();
+    expect(within(container.querySelector('.lite-device-operational-story')).getByText('Connected')).toBeTruthy();
     expect(screen.getByText('Remote access')).toBeTruthy();
     expect(screen.getByText('This is separate from the local Pocket Lab connection.')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Restart agent' })).toBeNull();
@@ -20,13 +20,13 @@ describe('DeviceCard operational stories', () => {
 
   it('only exposes prepared restart recovery as the primary action', () => {
     const restart = vi.fn();
-    render(<DeviceCard
+    const { container } = render(<DeviceCard
       device={{ id: 'phone', name: 'Studio phone', role: 'mobile', status: 'agent_stopped', restart_agent_assessment: { allowed: true, command_deliverable: true } }}
       onRestartAgent={restart}
       onOpenDetails={vi.fn()}
     />);
 
-    expect(screen.getByText('Agent stopped')).toBeTruthy();
+    expect(within(container.querySelector('.lite-device-operational-story')).getByText('Agent stopped')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Restart agent' }));
     expect(restart).toHaveBeenCalledOnce();
   });
