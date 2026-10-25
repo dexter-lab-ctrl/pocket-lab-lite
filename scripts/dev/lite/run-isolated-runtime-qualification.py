@@ -774,6 +774,11 @@ class QualificationRun:
             "POCKETLAB_QUALIFICATION_LOG_DIR": str(self.paths.logs),
             "POCKETLAB_QUALIFICATION_RUNNER_BIN": str(self.paths.bin),
             "POCKETLAB_AGENT_SUPERVISOR_STATE": str(self.paths.state / "agent-supervisor.json"),
+            # Bytecode caches are disposable interpreter artifacts.  Keep
+            # them out of the point-in-time run-root budget so the same
+            # candidate has deterministic disk accounting on the Dev PC and
+            # in CI; the physical Android lane applies the same policy.
+            "PYTHONDONTWRITEBYTECODE": "1",
             "POCKETLAB_AGENT_SUPERVISOR_SECONDS": "5",
             "POCKETLAB_AGENT_HEARTBEAT_SECONDS": "5",
             "POCKETLAB_WORKER_HEARTBEAT_SECONDS": "5",

@@ -900,8 +900,14 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
     <section className={`lite-device-details-panel is-${status}`} role="region" aria-label={`${title} details`}>
       <div className="lite-device-details-panel-head">
         <div>
-          <span>Details</span>
+          <span>Device Manage · {isProtectedServer ? 'Protected server host' : deviceRoleSummary(device)}</span>
           <h3>{title}</h3>
+          <div className="lite-device-details-head-facts" aria-label="Device connection and freshness">
+            <strong>{canonicalDevicePresentation(device).label}</strong>
+            <small>{device?.last_seen_state?.last_seen_at || device?.last_seen
+              ? `Last reported ${formatLiteTime(device?.last_seen_state?.last_seen_at || device?.last_seen)}`
+              : 'No recent heartbeat reported'}</small>
+          </div>
           <p>{deviceSummary(device)}</p>
         </div>
         <button type="button" className="lite-device-remove-close" onClick={onClose} aria-label="Close device details">
@@ -909,7 +915,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
         </button>
       </div>
 
-      <section className="lite-device-system-summary" aria-label="System identity and health">
+      <section id="lite-device-manage-overview" className="lite-device-system-summary" aria-label="Overview · system identity and health">
         <div>
           <span>System</span>
           <strong>{device?.system_profile?.display_model || device?.system_profile?.technical_model || 'System details unavailable'}</strong>
@@ -935,8 +941,12 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
 
       {!isProtectedServer ? (
         <>
-          <DeviceRoleManager device={device} onChanged={() => detailsQuery.refetch?.()} />
-          <DevicePhotoBackup deviceId={initialDeviceId} />
+          <div className="lite-device-manage-group" aria-label="Device responsibilities">
+            <DeviceRoleManager device={device} onChanged={() => detailsQuery.refetch?.()} />
+          </div>
+          <div className="lite-device-manage-group" aria-label="Device photo backup">
+            <DevicePhotoBackup deviceId={initialDeviceId} />
+          </div>
         </>
       ) : null}
 

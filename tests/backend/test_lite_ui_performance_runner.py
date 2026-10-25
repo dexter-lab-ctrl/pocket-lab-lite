@@ -220,6 +220,7 @@ def test_android_qualifier_uses_the_current_in_control_refresh_progress_surface(
     source = Path("scripts/dev/lite/qualify-ui-performance-android-cdp.mjs").read_text(encoding="utf-8")
     assert ".lite-refresh-progress-ring" in source
     assert "POCKETLAB_ANDROID_CDP_DELAY_NEXT_STATUS" in source
+    assert "data-lite-refresh-state') === 'idle'" in source
     assert ".lite-refresh-status-popover" not in source
 
 

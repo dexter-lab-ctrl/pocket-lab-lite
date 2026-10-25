@@ -988,6 +988,17 @@ await page.addInitScript(() => {
 await gotoScreen('home');
 const refreshControl = page.locator('.lite-refresh-control').first();
 const refreshButton = await firstVisible(refreshControl.getByRole('button'), 'Home Refresh button');
+// Do not race the initial status request.  If the first query is still in
+// flight, React Query can coalesce the explicit refresh with that request and
+// the one-shot delay marker below is never observed.  That makes the real
+// in-control progress state too short to qualify even though the UI contract
+// is correct.  Wait for the owned refresh control to report idle before
+// scheduling the bounded read-only delay.
+await page.waitForFunction(
+  () => document.querySelector('button.lite-refresh-button')?.getAttribute('data-lite-refresh-state') === 'idle',
+  undefined,
+  { timeout: 20_000 },
+);
 
 await measurePhase4Interaction({
   interaction: 'progress-update',

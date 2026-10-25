@@ -40785,7 +40785,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 511,
+      "page_count": 512,
       "top_level": [
         "start-here",
         "use",
@@ -48669,7 +48669,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "cd5e0974b51fbb3d18295e9e6b4c6149582848008d3ccd530eeaf2ea57f93faf",
-        "documentation": "2e979d7ca955c43524c25630fca61a181a427b8c8244980c0fed775520ced031",
+        "documentation": "032352e964bb5e94f33df1dc60a1d6c429aeb6cf8315bec78d25ae73c6c1df03",
         "openapi": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
         "operational_health": "c758d7d653b42f1860a89c2ab10d285eea8d8f477df13804b883c3b2e3255f8e"
       },
@@ -50605,7 +50605,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "2cc32695adff6017cf387594addafe95a595fbe2c0ec7321084eba5a07bc4cb1"
+          "sha256": "4e408dd7443f9297864cd56308f8b0cb62a5081110638ae0eb65abe67b32431e"
         },
         {
           "path": "requirements-dev.txt",
@@ -102317,6 +102317,346 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
+          "npm run test:devices:azure:a11y"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:devices:azure:a11y",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:devices:azure:a11y",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run Devices Azure Black/Daylight keyboard and Axe checks",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:devices:azure:geometry"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:devices:azure:geometry",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:devices:azure:geometry",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run shared desktop Manage movement, resize and mobile fallback scenarios",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:devices:azure:mocked"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:devices:azure:mocked",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:devices:azure:mocked",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run mocked Devices connection and safe action regression",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:devices:azure:perf"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:devices:azure:perf",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:devices:azure:perf",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Collect Devices interaction samples and retain PR 588 performance gates",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:devices:azure:qualification"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:devices:azure:qualification",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:devices:azure:qualification",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run Devices source/mock/a11y/geometry/performance; visual approval remains separate",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:devices:azure:storybook"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:test:devices:azure:storybook",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:devices:azure:storybook",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Build existing Storybook with Azure Devices scenarios",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:devices:azure:unit"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:test:devices:azure:unit",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:devices:azure:unit",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run Devices Azure projection, card and shared Manage geometry unit coverage",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm run test:devices:azure:visual"
+        ],
+        "dependencies": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "environment": [],
+        "example_invocation": "task lite:test:devices:azure:visual",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:test:devices:azure:visual",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Compare Devices Azure screenshots only after manual capture and owner approval",
+        "related_tasks": [
+          "lite:dev:scratch:prepare",
+          "lite:playwright:preflight"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.ui.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
           "npm run test:e2e:live"
         ],
         "dependencies": [
@@ -122603,5 +122943,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "db116c97796e5738e945312a78808b72d4a865da00900965d2a04fc0f8ce3d8a"
+  "source_fingerprint": "3559dfc1fedd39337139273bb94f332840b40c2b2d563de30e151bf90bb96ebf"
 }

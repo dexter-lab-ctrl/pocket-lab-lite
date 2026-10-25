@@ -710,7 +710,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(connectedSignal).toHaveCSS('animation-name', 'none');
     const disconnected = devices.locator('[data-connection-state="disconnected"]').first();
     await expect(disconnected).toBeVisible();
-    await expect(disconnected).toHaveAttribute('aria-label', /disconnected/i);
+    await expect(disconnected).toHaveAttribute('aria-label', /joining/i);
     expect(await disconnected.locator('.lite-device-flow-break').evaluate((element) => {
       const marker = element.getBoundingClientRect();
       const surface = element.closest('.lite-device-connection-flow')?.getBoundingClientRect();

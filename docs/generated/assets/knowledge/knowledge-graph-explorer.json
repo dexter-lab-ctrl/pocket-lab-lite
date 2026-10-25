@@ -15289,6 +15289,50 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-devices-operations.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-devices-operations.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-devices-operations.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-devices-performance.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-devices-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-devices-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-devices-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-devices.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-devices.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-devices.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
       "name": "tests/e2e/lite-azure-horizon-identity-performance.spec.ts",
       "source_refs": [
@@ -39745,6 +39789,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-azure-horizon-devices-visual.spec.ts"
+      ],
+      "id": "rel:61ffc66f03da8909",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:660"
       ],
       "id": "rel:620074a7c895f5bb",
@@ -59940,6 +59998,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-azure-horizon-devices-operations.spec.ts"
+      ],
+      "id": "rel:befd34ea7a2b4211",
+      "source": "journey:add-device",
+      "target": "test:tests/e2e/lite-azure-horizon-devices-operations.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:bf05471bb1978761",
@@ -63754,6 +63826,20 @@
       "id": "rel:d02be7d010268a75",
       "source": "api:post:/api/lite/owner-operations/observer-challenge",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-devices-visual.spec.ts"
+      ],
+      "id": "rel:d039e2fec1a53628",
+      "source": "journey:add-device",
+      "target": "test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts",
       "type": "verified_by"
     },
     {

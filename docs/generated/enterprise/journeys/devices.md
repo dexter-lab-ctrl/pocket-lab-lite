@@ -130,6 +130,8 @@ Execution ownership: FastAPI → NATS/JetStream → node agent/supervisor.
 - `test:tests/docs/test_documentation_presentation_polish.py`
 - `test:tests/docs/test_enterprise_completion.py`
 - `test:tests/docs/test_living_knowledgebase.py`
+- `test:tests/e2e/lite-azure-horizon-devices-operations.spec.ts`
+- `test:tests/e2e/lite-azure-horizon-devices-visual.spec.ts`
 - `test:tests/e2e/lite-mocked.spec.ts`
 - `test:tests/parity/test_api_contract_fences.py`
 

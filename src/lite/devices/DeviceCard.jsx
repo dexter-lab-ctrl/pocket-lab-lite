@@ -16,6 +16,7 @@ import {
 import { formatLiteTime } from '../../lib/liteApi.js';
 import { selectDeviceOperationalStory } from '../../lib/liteViewModels.js';
 import './deviceActionFocus.css';
+import { deviceHorizonConnection } from './deviceHorizonPresentation.js';
 
 const DEVICES_CARD_RENDER_REDUCTION_M1 = true;
 const DEVICES_CARD_ACTIONS_OWN_CLICKS = true;
@@ -69,8 +70,13 @@ export function deviceConnectionFlowState({ isServerCard, linkState, presentatio
   return 'disconnected';
 }
 
-export function deviceConnectionFlowLabel(state, deviceName, isServerCard) {
+export function deviceConnectionFlowLabel(state, deviceName, isServerCard, connectionView = null) {
   if (isServerCard) return `Pocket Lab Server. ${deviceName} is the protected server host.`;
+  if (connectionView?.kind === 'joining') return `Pocket Lab Server is joining ${deviceName}.`;
+  if (connectionView?.kind === 'waiting') return `Pocket Lab Server is waiting for ${deviceName}.`;
+  if (connectionView?.kind === 'stopped') return `Pocket Lab Server reports the agent stopped on ${deviceName}.`;
+  if (connectionView?.kind === 'blocked') return `Pocket Lab Server blocked the identity for ${deviceName}.`;
+  if (connectionView?.kind === 'stale') return `Pocket Lab Server has saved status for ${deviceName}, but no current connection is confirmed.`;
   if (state === 'connected') return `Pocket Lab Server connected to ${deviceName}.`;
   if (state === 'repairing') return `Pocket Lab Server is restoring the connection to ${deviceName}.`;
   return `Pocket Lab Server is disconnected from ${deviceName}.`;
@@ -81,6 +87,12 @@ function deviceConnectionSummary(state) {
   if (state === 'repairing') return 'Repairing connection';
   if (state === 'server') return 'Protected server host';
   return 'Connection interrupted';
+}
+
+function deviceConnectionCopyLabel(connectionView, flowState, isServerCard) {
+  if (isServerCard) return deviceConnectionSummary(flowState);
+  if (connectionView.kind === 'repairing') return 'Repairing connection';
+  return connectionView.label;
 }
 
 function DeviceConnectionIcon({ state, isServer = false, className = '' }) {
@@ -103,24 +115,28 @@ function DeviceCard({
 }) {
   const [technicalDetailsOpen, setTechnicalDetailsOpen] = React.useState(false);
   const presentation = canonicalDevicePresentation(device);
-  const online = !savedStateOnly && presentation.state === 'online';
   const linkState = deviceLinkState(device);
+  const connectionView = deviceHorizonConnection(device, { saved: savedStateOnly, presentation, linkState });
+  const online = connectionView.kind === 'connected';
   const role = String(device?.role || '').toLowerCase();
   const isServerCard = Boolean(device?.protected_server_host || role === 'server_host' || device?.is_current || device?.isCurrent);
-  const effectiveLinkState = savedStateOnly && !isServerCard ? 'disconnected' : linkState;
+  const effectiveLinkState = connectionView.kind === 'connected' ? 'joined' : connectionView.kind === 'repairing' ? 'repairing' : 'disconnected';
   const connectionClass = isServerCard
     ? 'lite-device-card-server'
     : `lite-device-card-linked lite-device-card-linked-${effectiveLinkState}`;
   const deviceName = device?.name || 'Unnamed device';
+  const agentState = device?.agent?.status || device?.agent_status || device?.agent_connection?.status || null;
+  const supervisorState = device?.supervisor?.status || device?.supervisor_status || null;
   const capabilitySummary = technicalDetailsOpen ? deviceCapabilitySummary(device) : null;
   const canRestart = !savedStateOnly && canRestartDeviceAgent(device);
   const canRemove = !savedStateOnly && canRemoveDevice(device);
   const proactiveHealth = device?.proactive_health || null;
   const healthAttentionCurrent = Boolean(proactiveHealth?.attention_current !== false);
   const healthAttentionCount = healthAttentionCurrent ? Number(proactiveHealth?.attention_count || 0) : 0;
-  const flowState = savedStateOnly && !isServerCard
-    ? 'disconnected'
-    : deviceConnectionFlowState({ isServerCard, linkState: effectiveLinkState, presentation });
+  // Joining is an explicit backend state, but it is not recovery in progress.
+  // Keep its copy truthful while rendering the connection rail as disconnected
+  // until the backend reports either a live connection or repairing work.
+  const flowState = isServerCard ? 'server' : connectionView.kind === 'connected' ? 'connected' : connectionView.kind === 'repairing' ? 'repairing' : 'disconnected';
   const showHealthAttention = Boolean(proactiveHealth && (healthAttentionCount > 0 || !['healthy', 'unknown'].includes(String(proactiveHealth.status || '').toLowerCase())));
   const lastSeen = device?.last_seen_state?.last_seen_at || device?.last_seen;
   const story = selectDeviceOperationalStory(device, { savedStateOnly });
@@ -145,10 +161,10 @@ function DeviceCard({
           {isServerCard ? <p>Protected host for this self-hosted workspace.</p> : null}
         </div>
 
-        <div className={`lite-device-connection-flow is-${flowState}`} data-connection-state={flowState} role="img" aria-label={deviceConnectionFlowLabel(flowState, deviceName, isServerCard)}>
+        <div className={`lite-device-connection-flow is-${flowState}`} data-connection-state={flowState} role="img" aria-label={deviceConnectionFlowLabel(flowState, deviceName, isServerCard, connectionView)}>
           <div className="lite-device-connection-copy">
             <span>Connection</span>
-            <strong>{deviceConnectionSummary(flowState)}</strong>
+            <strong>{deviceConnectionCopyLabel(connectionView, flowState, isServerCard)}</strong>
           </div>
           {isServerCard ? (
             <div className="lite-device-protected-host" aria-hidden="true">
@@ -180,6 +196,10 @@ function DeviceCard({
           )}
         </div>
 
+        <div className="lite-device-service-summary" aria-label="Reported device services">
+          <div><span>Agent</span><strong>{savedStateOnly ? 'Saved · unconfirmed' : agentState || 'Not reported'}</strong></div>
+          <div><span>Supervisor</span><strong>{savedStateOnly ? 'Saved · unconfirmed' : supervisorState || 'Not reported'}</strong></div>
+        </div>
         <LiteOperationalStory
           className="lite-device-operational-story"
           story={{

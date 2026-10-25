@@ -91,6 +91,7 @@ import {
   LiteOperationalStory,
   friendlyOverallLabel,
   deviceLinkState,
+  canonicalDevicePresentation,
   restartProgressTitle,
   restartStepStateLabel,
   safeRestartSteps
@@ -103,6 +104,8 @@ import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { loadDeviceCard } from './devices/devicesPreload.js';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 import LiteNextSteps from './components/LiteNextSteps.jsx';
+import './devices/azureDevices.css';
+import { deviceHorizonConnection } from './devices/deviceHorizonPresentation.js';
 
 const MemoLiteVirtualList = React.memo(LiteVirtualList);
 const DeviceCardLazy = React.lazy(loadDeviceCard);
@@ -155,19 +158,37 @@ void DEVICES_ACTION_ROWS_OWN_CLICKS;
 void DEVICES_LINKED_CARD_CLASS_MARKER;
 void DEVICES_CONNECTION_COPY_MARKER;
 
-function DeviceRelationshipMap({ devices = [] }) {
+export function deviceRelationshipPresentation(device, savedStateOnly = false) {
+  const view = deviceHorizonConnection(device, {
+    saved: savedStateOnly,
+    presentation: canonicalDevicePresentation(device),
+    linkState: deviceLinkState(device),
+  });
+  const state = view.kind === 'connected' ? 'joined'
+    : view.kind === 'joining' ? 'waiting'
+      : view.kind === 'stale' ? 'unknown'
+        : view.kind === 'disconnected' ? 'disconnected' : view.kind;
+  return { state, label: savedStateOnly ? 'Saved · connection unconfirmed' : view.label,
+    icon: view.kind === 'connected' ? 'connected'
+      : ['joining', 'repairing', 'waiting'].includes(view.kind) ? 'repairing'
+        : ['unknown', 'stale'].includes(view.kind) ? 'unknown' : 'disconnected' };
+}
+
+function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
   const server = devices.find((device) => deviceLinkState(device) === 'server') || null;
   const peers = devices.filter((device) => device !== server);
-  const serverName = server?.name || server?.hostname || 'Server Phone';
+  const serverName = server?.name || server?.hostname || 'Server Host';
   const stateCounts = peers.reduce((counts, device) => {
-    const state = deviceLinkState(device);
+    const state = deviceRelationshipPresentation(device, savedStateOnly).state;
     counts[state] = (counts[state] || 0) + 1;
     return counts;
   }, {});
   const connectedCount = Number(stateCounts.joined || 0);
   const repairingCount = Number(stateCounts.repairing || 0);
-  const disconnectedCount = Number(stateCounts.disconnected || 0);
-  const connectionSummary = connectedCount
+  const disconnectedCount = peers.length - connectedCount - repairingCount;
+  const connectionSummary = savedStateOnly ? 'Showing saved connection information'
+    : !server ? 'Server Host status not reported'
+    : connectedCount
     ? `${connectedCount} connected device${connectedCount === 1 ? '' : 's'}${repairingCount ? ` · ${repairingCount} repairing` : ''}${disconnectedCount ? ` · ${disconnectedCount} not connected` : ''}`
     : peers.length
       ? `${repairingCount + disconnectedCount} device${repairingCount + disconnectedCount === 1 ? '' : 's'} need${repairingCount + disconnectedCount === 1 ? 's' : ''} connection attention`
@@ -190,22 +211,39 @@ function DeviceRelationshipMap({ devices = [] }) {
         <div className="lite-device-relationship-node is-server" data-relationship-state="server">
           <LockKeyhole className="h-4 w-4" aria-hidden="true" />
           <span>{serverName}</span>
-          <small>Protected server</small>
+          <small>{server ? 'Protected server host' : 'Server status not reported'}</small>
         </div>
-        {peers.length ? peers.map((device) => {
-          const state = deviceLinkState(device);
-          const stateLabel = state === 'joined' ? 'Connected' : state === 'repairing' ? 'Repairing' : 'Disconnected';
+        <div
+          className="lite-device-relationship-peers"
+          role={peers.length ? 'list' : undefined}
+          aria-label={peers.length ? 'Connected device links' : undefined}
+        >
+        {peers.length ? peers.slice(0, 6).map((device) => {
+          const presentation = deviceRelationshipPresentation(device, savedStateOnly);
+          const { state, label: stateLabel, icon } = presentation;
           return (
-            <React.Fragment key={deviceListKey(device)}>
+            <div className={`lite-device-relationship-peer is-${state}`} key={deviceListKey(device)} role="listitem">
               <span className={`lite-device-relationship-link is-${state}`} aria-hidden="true"><i /></span>
               <div className={`lite-device-relationship-node is-${state}`} data-relationship-state={state} aria-label={`${device.name || device.hostname || 'Device'}: ${stateLabel}`}>
-                {state === 'joined' ? <Smartphone className="h-4 w-4" aria-hidden="true" /> : state === 'repairing' ? <RefreshCw className="h-4 w-4" aria-hidden="true" /> : <WifiOff className="h-4 w-4" aria-hidden="true" />}
+                {icon === 'connected' ? <Smartphone className="h-4 w-4" aria-hidden="true" /> : icon === 'repairing' ? <RefreshCw className="h-4 w-4" aria-hidden="true" /> : <WifiOff className="h-4 w-4" aria-hidden="true" />}
                 <span>{device.name || device.hostname || 'Device'}</span>
                 <small>{stateLabel}</small>
               </div>
-            </React.Fragment>
+            </div>
           );
         }) : <span className="lite-device-relationship-empty">Add a device when you want to expand this workspace.</span>}
+        {peers.length > 6 ? (
+          <details className="lite-device-relationship-more">
+            <summary>Show {peers.length - 6} more device connections</summary>
+            <ul aria-label="Additional device connections">
+              {peers.slice(6).map((device) => {
+                const state = deviceRelationshipPresentation(device, savedStateOnly);
+                return <li key={deviceListKey(device)}>{device.name || device.hostname || 'Device'}: {state.label}</li>;
+              })}
+            </ul>
+          </details>
+        ) : null}
+        </div>
       </div>
     </section>
   );
@@ -313,6 +351,23 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
         tabIndex={-1}
         className={`lite-device-details-focus-anchor lite-device-action-surface ${desktopPanel ? 'is-movable' : ''}`.trim()}
         data-lite-details-panel-layout={desktopPanel ? 'desktop-movable' : 'mobile-sheet'}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Manage ${activeDetailsDevice.name || activeDetailsDevice.hostname || 'device'}`}
+        onKeyDown={(event) => {
+          if (event.key !== 'Tab') return;
+          const focusable = Array.from(detailsPanelRef.current?.querySelectorAll(
+            'button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[href],[tabindex]:not([tabindex="-1"])',
+          ) || []).filter((node) => node.getClientRects().length > 0);
+          if (!focusable.length) { event.preventDefault(); detailsPanelRef.current?.focus(); return; }
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey && (document.activeElement === first || document.activeElement === detailsPanelRef.current)) {
+            event.preventDefault(); last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault(); first.focus();
+          }
+        }}
         style={panelStyle}
       >
         {desktopPanel ? (
@@ -428,7 +483,7 @@ function remoteAccessDetailRows(remoteAccess = {}, remoteAccessView = {}, savedS
   const natsReachable = typeof remoteAccess.nats_reachable === 'boolean'
     ? remoteAccess.nats_reachable
     : typeof remoteAccessView.nats_reachable === 'boolean' ? remoteAccessView.nats_reachable : null;
-  const hasAddress = Boolean(remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip);
+  const hasAddress = !savedStateOnly && remoteAccessView.ready === true && Boolean(remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip);
   const checkedAt = remoteAccess.checked_at || remoteAccess.updated_at || remoteAccessView.checked_at || remoteAccessView.updated_at;
   return [
     { label: 'Evidence', value: savedStateOnly ? 'Saved workspace snapshot' : 'Current connection check' },
@@ -446,7 +501,7 @@ export function remoteAccessSummaryRows(remoteAccess = {}, remoteAccessView = {}
   const natsReachable = typeof remoteAccess.nats_reachable === 'boolean'
     ? remoteAccess.nats_reachable
     : typeof remoteAccessView.nats_reachable === 'boolean' ? remoteAccessView.nats_reachable : null;
-  const hasAddress = Boolean(remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip);
+  const hasAddress = !savedStateOnly && remoteAccessView.ready && Boolean(remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip);
   const checkedAt = remoteAccess.checked_at || remoteAccess.updated_at || remoteAccessView.checked_at || remoteAccessView.updated_at;
   const networkReady = !savedStateOnly && remoteAccessView.ready && running !== false;
   return [
@@ -529,6 +584,7 @@ export default function DevicesScreen() {
   const [hostname, setHostname] = useState('');
   const [selectedRoles, setSelectedRoles] = useState(['compute']);
   const [addDeviceOpen, setAddDeviceOpen] = useState(false);
+  const addDeviceDisclosureRef = useRef(null);
   const [remoteAccessDetailsOpen, setRemoteAccessDetailsOpen] = useState(false);
   const [result, setResult] = useState(null);
   const [invite, setInvite] = useState(null);
@@ -583,7 +639,7 @@ export default function DevicesScreen() {
   }, [rawDevices]);
   const modelPickerDevice = devices.find((device) => String(device?.id || device?.name || '') === deviceModelPickerId) || null;
   const remoteAccess = data?.remote_access || {};
-  const remoteAccessView = remoteAccessPresentation(remoteAccess, savedStateOnly);
+  const remoteAccessView = remoteAccessPresentation(remoteAccess, savedStateOnly || isExpired);
   const remoteAccessReady = remoteAccessView.ready;
   const latestInvite = invite || data?.latest_invite || null;
   useLiteServiceWorkerUpdateBlocker('devices-workflow', Boolean(
@@ -621,7 +677,7 @@ export default function DevicesScreen() {
   const preloadDeviceDetailsOnIntent = useCallback(() => {
     void loadDeviceDetails().catch(() => null);
   }, []);
-  const onlineDevices = devices.filter((device) => String(device?.connection || '').toLowerCase() === 'online').length;
+  const onlineDevices = devices.filter((device) => deviceRelationshipPresentation(device, savedStateOnly || isExpired).state === 'joined').length;
   const healthAttentionCurrent = Boolean(data?.health_summary?.attention_current);
   const healthAttentionCount = healthAttentionCurrent ? Number(data?.health_summary?.attention_count || 0) : 0;
   const fleetStory = fleetOperationalStory({ data, devices, onlineDevices, healthAttentionCount, savedStateOnly });
@@ -734,8 +790,8 @@ export default function DevicesScreen() {
     if (!inviteDetails) return '';
     if (inviteDetails.copy_text) return inviteDetails.copy_text;
     if (inviteDetails.bootstrap_command) return inviteDetails.bootstrap_command;
-    if (inviteDetails.bootstrap_url) return `curl -fsSL '${inviteDetails.bootstrap_url}' | bash`;
-    return inviteDetails.url || '';
+    // The backend-generated copyable command is the only authorized artifact.
+    return '';
   }
 
   async function copyInvite() {
@@ -902,7 +958,7 @@ export default function DevicesScreen() {
         device={device}
         restartBusy={restartBusy}
         removeBusy={removeBusy}
-        savedStateOnly={savedStateOnly}
+        savedStateOnly={savedStateOnly || isExpired}
         onOpenDetails={() => toggleDeviceDetails(key)}
         onPreloadDetails={preloadDeviceDetailsOnIntent}
         detailsButtonRef={(node) => {
@@ -917,15 +973,24 @@ export default function DevicesScreen() {
         onRemoveDevice={() => deviceActionHandlersRef.current.loadRemovalAssessment?.(device)}
       />
     );
-  }, [preloadDeviceDetailsOnIntent, removeBusy, restartBusy, savedStateOnly]);
+  }, [preloadDeviceDetailsOnIntent, removeBusy, restartBusy, savedStateOnly, isExpired]);
 
   return (
     <>
       <PageHeader
         eyebrow="Devices"
         title="Devices"
-        description="See how your devices are connected, what needs attention, and what you can safely do next."
-        actions={<LiteRefreshButton scope="devices" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
+        description="Your self-hosted workspace, connected devices, and safe recovery actions."
+        actions={<div className="lite-devices-title-actions">
+          <LiteRefreshButton scope="devices" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
+          <LiteButton aria-expanded={addDeviceOpen} aria-controls="lite-devices-onboarding" onClick={() => {
+            if (addDeviceDisclosureRef.current) {
+              addDeviceDisclosureRef.current.open = true;
+              setAddDeviceOpen(true);
+              addDeviceDisclosureRef.current.scrollIntoView?.({ block: 'start', behavior: 'auto' });
+            }
+          }}>Add Device</LiteButton>
+        </div>}
       />
 
       <LiteOperationalStory className="lite-devices-operational-story" story={fleetStory} />
@@ -949,7 +1014,12 @@ export default function DevicesScreen() {
           ...(!remoteAccessReady ? [{ id: "remote-access", label: "Remote access not ready", description: remoteAccessView.summary || "Review Tailnet connectivity below." }] : []),
         ]}
       />
-      <DeviceRelationshipMap devices={devices} />
+      <DeviceRelationshipMap devices={devices} savedStateOnly={savedStateOnly || isExpired} />
+      <section className="lite-devices-horizon-summary" aria-label="Workspace operational summary">
+        <div><span>Connected devices</span><strong>{savedStateOnly || isExpired ? 'Not confirmed' : onlineDevices}</strong></div>
+        <div><span>Needs attention</span><strong>{savedStateOnly || isExpired ? 'Review saved status' : devices.filter((device) => !['joined', 'server'].includes(deviceRelationshipPresentation(device, savedStateOnly).state)).length}</strong></div>
+        <div><span>Remote access</span><strong>{remoteAccessView.title}</strong></div>
+      </section>
 
       <section className={`lite-remote-access-panel ${remoteAccessReady ? 'lite-remote-access-ready' : 'lite-remote-access-not-ready'}`} aria-live="polite">
         <div className="lite-remote-access-icon">
@@ -962,7 +1032,7 @@ export default function DevicesScreen() {
         </div>
 
         <div className="lite-remote-access-facts" aria-label="Remote access readiness">
-          {remoteAccessSummaryRows(remoteAccess, remoteAccessView, savedStateOnly).map((item) => (
+          {remoteAccessSummaryRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
             <div key={item.label} className={`is-${item.state}`}>
               <span>{item.label}</span>
               <strong><i aria-hidden="true" />{item.value}</strong>
@@ -974,10 +1044,10 @@ export default function DevicesScreen() {
           <summary>Technical connection details</summary>
           {remoteAccessDetailsOpen ? (
             <dl>
-              {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly).map((item) => (
+              {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
                 <div key={item.label}>
                   <dt>{item.label}</dt>
-                  <dd>{item.label === 'Tailscale IP' && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
+                  <dd>{item.label === 'Tailscale IP' && remoteAccessReady && !savedStateOnly && !isExpired && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
                     ? <><span>Available</span> <code>{remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}</code></>
                     : item.value}</dd>
                 </div>
@@ -988,187 +1058,12 @@ export default function DevicesScreen() {
       </section>
 
       <div className="lite-devices-layout">
-        <details className="lite-devices-add-disclosure" onToggle={(event) => setAddDeviceOpen(event.currentTarget.open)}>
-          <summary>
-            <span>Expand your workspace</span>
-            <strong>Add a device</strong>
-            <small>Create a protected invite only when you need one.</small>
-          </summary>
-          {addDeviceOpen ? <GlassCard className="lite-devices-add-card">
-          <div className="lite-devices-card-head">
-            <div className="lite-devices-mini-icon">
-              <Network className="h-5 w-5" />
-            </div>
-            <span className="lite-devices-soft-badge">Add safely</span>
-          </div>
-
-          <h2>Add a device</h2>
-          <p>
-            Create a simple invite for another phone, tablet, or small server you want to connect.
-          </p>
-
-          <LiteField label="Device name" id="device-name" hint="Use a recognizable name for this device." error={activeNameConflict ? 'A device with this name already exists.' : ''}>
-          <input
-            id="device-name"
-            className="pocket-input lite-devices-input"
-            value={hostname}
-            onChange={(event) => {
-              setHostname(event.target.value);
-              setServerConflict(null);
-              addDeviceFlow.enterDevice(event.target.value, selectedRoles.join(','));
-            }}
-            placeholder="Optional, for example: Kitchen tablet"
-            aria-label="Device name"
-          />
-          </LiteField>
-
-          {activeNameConflict ? (
-            <div className="lite-devices-name-conflict" role="alert">
-              <strong>A device with this name already exists.</strong>
-              <span>{deviceDuplicateMessage(activeNameConflict)}</span>
-            </div>
-          ) : null}
-
-          <div className="lite-devices-field-label">What should this device do?</div>
-          <div className="lite-role-selector" role="group" aria-label="Device responsibilities">
-            {DEVICE_ROLE_OPTIONS.map((role) => {
-              const checked = selectedRoles.includes(role.value);
-              return (
-                <label
-                  key={role.value}
-                  className={`lite-role-card ${checked ? 'lite-role-card-selected' : ''}`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => {
-                      const next = checked
-                        ? selectedRoles.filter((item) => item !== role.value)
-                        : [...selectedRoles, role.value].sort((left, right) => (left === 'compute' ? -1 : right === 'compute' ? 1 : left.localeCompare(right)));
-                      if (!next.length) return;
-                      setSelectedRoles(next);
-                      setServerConflict(null);
-                      addDeviceFlow.enterDevice(candidateDeviceName, next.join(','));
-                    }}
-                  />
-                  <span>
-                    <strong>{role.actionLabel || role.label}</strong>
-                    <small>{role.label} role</small>
-                    <span>{role.description}</span>
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-          <div className="lite-devices-safe-note" role="status" aria-live="polite">
-            <strong>Access check: {addDeviceAuthorityLabel}</strong>
-            <span>
-              {addDeviceAuthorityMode === 'approval'
-                ? 'Pocket Lab will create a review request before this role set can be used.'
-                : addDeviceAuthorityMode === 'deny'
-                  ? 'Your current human role cannot create this kind of device invite.'
-                  : 'Pocket Lab will verify your current human role and Safety Rules on the server.'}
-            </span>
-          </div>
-
-          <div className="lite-devices-safe-note">
-            <strong>What happens next</strong>
-            <span>Pocket Lab prepares an invite. Open it on the new device while it is connected to the same Pocket Lab private network.</span>
-          </div>
-
-          <LiteFlowStatusPanel
-            title="Add Device"
-            label={addDeviceFlow.label}
-            steps={addDeviceFlow.steps}
-            note={addDeviceFlow.writeBlocked ? addDeviceFlow.blockedReason : 'Pocket Lab prepares the invite safely and confirms it before anything is shown as ready.'}
-            className="mt-4"
-          />
-
-          <div className="mt-5">
-            <LiteButton onClick={addDevice} disabled={addDeviceDisabled}>
-              {busy ? 'Preparing invite...' : (addDeviceFlow.writeBlocked ? 'Reconnect to continue' : activeNameConflict ? 'Device already added' : addDeviceAuthorityMode === 'deny' ? 'Not allowed' : addDeviceAuthorityMode === 'approval' ? 'Request Add Device' : 'Add Device')}
-            </LiteButton>
-          </div>
-
-          {result?.status === 'queued' && !latestInvite ? (
-            <StateSurface
-              tone="empty"
-              title="Preparing invite..."
-              description="Pocket Lab is getting the invite ready. The device list will refresh automatically."
-              className="mt-4"
-            />
-          ) : null}
-
-          {latestInvite ? (
-            <div className="lite-invite-card" aria-live="polite">
-              <div className="lite-invite-card-header">
-                <div>
-                  <span>Invite ready</span>
-                  <strong>{latestInvite.hostname || hostname || 'New device'}</strong>
-                </div>
-                <StatusBadge status="healthy">Ready</StatusBadge>
-              </div>
-
-              <div className="lite-invite-card-body">
-                <div>
-                  <span>Roles</span>
-                  <strong>{(latestInvite.device_role_labels || []).join(' + ') || latestInvite.role_label || selectedRoleLabel}</strong>
-                </div>
-                <div>
-                  <span>Expires at</span>
-                  <strong>{formatLiteTime(latestInvite.expires_at)}</strong>
-                </div>
-              </div>
-
-              <p>Run this in Termux on the new phone. Pocket Lab will set up the secure connection and start the device service automatically.</p>
-
-              {inviteCommand(latestInvite) ? (
-                <>
-                  <div className="lite-invite-command" aria-label="Connect this device command">
-                    <span>Connect this device</span>
-                    <code>{inviteCommand(latestInvite)}</code>
-                  </div>
-                  <div className="lite-invite-actions">
-                    <LiteButton onClick={copyInvite} tone="secondary">
-                      <Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy command'}
-                    </LiteButton>
-                  </div>
-
-                  <details className="lite-invite-details">
-                    <summary>What this does</summary>
-                    <ul>
-                      <li>Installs only the small required tools.</li>
-                      <li>Saves this device’s connection file.</li>
-                      <li>Checks the secure Pocket Lab connection.</li>
-                      <li>Downloads Pocket Lab Lite if needed.</li>
-                      <li>Starts the small Pocket Lab device service.</li>
-                      <li>The device appears Online after it connects and reports back.</li>
-                    </ul>
-                  </details>
-
-                  <details className="lite-invite-details">
-                    <summary>Troubleshooting</summary>
-                    <ol>
-                      <li>Check that the device is connected to your private network.</li>
-                      <li>Open the device card and review Connection and Health.</li>
-                      <li>If the device service is stopped, use the guided restart or recovery action when available.</li>
-                      <li>If the device identity does not match, use the explicit repair or rejoin flow instead of reusing an old invite.</li>
-                    </ol>
-                  </details>
-                </>
-              ) : (
-                <span className="lite-invite-muted">Invite details were created earlier. Create a new invite if you need to copy the command again.</span>
-              )}
-            </div>
-          ) : null}
-          </GlassCard> : null}
-        </details>
 
         <section className="lite-devices-list-area" aria-busy={loading ? 'true' : 'false'}>
           <div className="lite-devices-section-title">
             <div>
               <p>Workspace</p>
-              <h2>Devices</h2>
+              <h2>Your devices</h2>
               <small>Current connection, system identity, and health at a glance.</small>
             </div>
             <div className="lite-devices-section-metrics" aria-label="Device totals">
@@ -1363,6 +1258,189 @@ export default function DevicesScreen() {
             />
           ) : null}
         </section>
+        <details ref={addDeviceDisclosureRef} id="lite-devices-onboarding" className="lite-devices-add-disclosure" onToggle={(event) => setAddDeviceOpen(event.currentTarget.open)}>
+          <summary>
+            <span>Expand your workspace</span>
+            <strong>Add a device</strong>
+            <small>Create a protected invite only when you need one.</small>
+          </summary>
+          {addDeviceOpen ? <GlassCard className="lite-devices-add-card">
+          <div className="lite-devices-card-head">
+            <div className="lite-devices-mini-icon">
+              <Network className="h-5 w-5" />
+            </div>
+            <span className="lite-devices-soft-badge">Add safely</span>
+          </div>
+
+          <h2>Add a device</h2>
+          <p>
+            Create a simple invite for another phone, tablet, or small server you want to connect.
+          </p>
+
+          <ol className="lite-devices-invite-stages" aria-label="Device onboarding guidance">
+            <li><span>1</span>Name your device</li>
+            <li><span>2</span>Choose responsibilities</li>
+            <li><span>3</span>Create connection invite</li>
+            <li><span>4</span>Connect and verify</li>
+          </ol>
+          <LiteField label="Device name" id="device-name" hint="Use a recognizable name for this device." error={activeNameConflict ? 'A device with this name already exists.' : ''}>
+          <input
+            id="device-name"
+            className="pocket-input lite-devices-input"
+            value={hostname}
+            onChange={(event) => {
+              setHostname(event.target.value);
+              setServerConflict(null);
+              addDeviceFlow.enterDevice(event.target.value, selectedRoles.join(','));
+            }}
+            placeholder="Optional, for example: Kitchen tablet"
+            aria-label="Device name"
+          />
+          </LiteField>
+
+          {activeNameConflict ? (
+            <div className="lite-devices-name-conflict" role="alert">
+              <strong>A device with this name already exists.</strong>
+              <span>{deviceDuplicateMessage(activeNameConflict)}</span>
+            </div>
+          ) : null}
+
+          <div className="lite-devices-field-label">What should this device do?</div>
+          <div className="lite-role-selector" role="group" aria-label="Device responsibilities">
+            {DEVICE_ROLE_OPTIONS.map((role) => {
+              const checked = selectedRoles.includes(role.value);
+              return (
+                <label
+                  key={role.value}
+                  className={`lite-role-card ${checked ? 'lite-role-card-selected' : ''}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => {
+                      const next = checked
+                        ? selectedRoles.filter((item) => item !== role.value)
+                        : [...selectedRoles, role.value].sort((left, right) => (left === 'compute' ? -1 : right === 'compute' ? 1 : left.localeCompare(right)));
+                      if (!next.length) return;
+                      setSelectedRoles(next);
+                      setServerConflict(null);
+                      addDeviceFlow.enterDevice(candidateDeviceName, next.join(','));
+                    }}
+                  />
+                  <span>
+                    <strong>{role.actionLabel || role.label}</strong>
+                    <small>{role.label} role</small>
+                    <span>{role.description}</span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          <div className="lite-devices-safe-note" role="status" aria-live="polite">
+            <strong>Access check: {addDeviceAuthorityLabel}</strong>
+            <span>
+              {addDeviceAuthorityMode === 'approval'
+                ? 'Pocket Lab will create a review request before this role set can be used.'
+                : addDeviceAuthorityMode === 'deny'
+                  ? 'Your current human role cannot create this kind of device invite.'
+                  : 'Pocket Lab will verify your current human role and Safety Rules on the server.'}
+            </span>
+          </div>
+
+          <div className="lite-devices-safe-note">
+            <strong>What happens next</strong>
+            <span>Pocket Lab prepares an invite. Open it on the new device while it is connected to the same Pocket Lab private network.</span>
+          </div>
+
+          <LiteFlowStatusPanel
+            title="Add Device"
+            label={addDeviceFlow.label}
+            steps={addDeviceFlow.steps}
+            note={addDeviceFlow.writeBlocked ? addDeviceFlow.blockedReason : 'Pocket Lab prepares the invite safely and confirms it before anything is shown as ready.'}
+            className="mt-4"
+          />
+
+          <div className="mt-5">
+            <LiteButton onClick={addDevice} disabled={addDeviceDisabled}>
+              {busy ? 'Preparing invite...' : (addDeviceFlow.writeBlocked ? 'Reconnect to continue' : activeNameConflict ? 'Device already added' : addDeviceAuthorityMode === 'deny' ? 'Not allowed' : addDeviceAuthorityMode === 'approval' ? 'Request Add Device' : 'Add Device')}
+            </LiteButton>
+          </div>
+
+          {result?.status === 'queued' && !latestInvite ? (
+            <StateSurface
+              tone="empty"
+              title="Preparing invite..."
+              description="Pocket Lab is getting the invite ready. The device list will refresh automatically."
+              className="mt-4"
+            />
+          ) : null}
+
+          {latestInvite ? (
+            <div className="lite-invite-card" aria-live="polite">
+              <div className="lite-invite-card-header">
+                <div>
+                  <span>Invite ready</span>
+                  <strong>{latestInvite.hostname || hostname || 'New device'}</strong>
+                </div>
+                <StatusBadge status="healthy">Ready</StatusBadge>
+              </div>
+
+              <div className="lite-invite-card-body">
+                <div>
+                  <span>Roles</span>
+                  <strong>{(latestInvite.device_role_labels || []).join(' + ') || latestInvite.role_label || selectedRoleLabel}</strong>
+                </div>
+                <div>
+                  <span>Expires at</span>
+                  <strong>{formatLiteTime(latestInvite.expires_at)}</strong>
+                </div>
+              </div>
+
+              <p>Run this in Termux on the new phone. Pocket Lab will set up the secure connection and start the device service automatically.</p>
+
+              {inviteCommand(latestInvite) ? (
+                <>
+                  <div className="lite-invite-command" aria-label="Connect this device command">
+                    <span>Connect this device</span>
+                    <code>{inviteCommand(latestInvite)}</code>
+                  </div>
+                  <div className="lite-invite-actions">
+                    <LiteButton onClick={copyInvite} tone="secondary">
+                      <Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy command'}
+                    </LiteButton>
+                  </div>
+
+                  <details className="lite-invite-details">
+                    <summary>What this does</summary>
+                    <ul>
+                      <li>Installs only the small required tools.</li>
+                      <li>Saves this device’s connection file.</li>
+                      <li>Checks the secure Pocket Lab connection.</li>
+                      <li>Downloads Pocket Lab Lite if needed.</li>
+                      <li>Starts the small Pocket Lab device service.</li>
+                      <li>The device appears Online after it connects and reports back.</li>
+                    </ul>
+                  </details>
+
+                  <details className="lite-invite-details">
+                    <summary>Troubleshooting</summary>
+                    <ol>
+                      <li>Check that the device is connected to your private network.</li>
+                      <li>Open the device card and review Connection and Health.</li>
+                      <li>If the device service is stopped, use the guided restart or recovery action when available.</li>
+                      <li>If the device identity does not match, use the explicit repair or rejoin flow instead of reusing an old invite.</li>
+                    </ol>
+                  </details>
+                </>
+              ) : (
+                <span className="lite-invite-muted">Invite details were created earlier. Create a new invite if you need to copy the command again.</span>
+              )}
+            </div>
+          ) : null}
+          </GlassCard> : null}
+        </details>
+
+
       </div>
 
       <ResultNotice result={result?.status === 'removed' ? result : (latestInvite ? null : result)} error={actionError} />
