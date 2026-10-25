@@ -110,10 +110,12 @@ describe('Pocket Lab Lite UI performance policy guards', () => {
 
   it('keeps below-the-fold detail cards and refresh feedback cheap to paint', () => {
     const css = read('src/index.css');
+    const azureCss = read('src/lite/theme/azureHorizon.css');
     expect(css).toContain('.lite-progressive-details-grid > .lite-progressive-detail-section');
     expect(css).toContain('content-visibility: auto;');
     expect(css).toContain('contain-intrinsic-size: auto 7.5rem;');
     expect(css).toContain('.lite-refresh-progress-ring');
+    expect(azureCss).toContain('html[data-lite-theme] .lite-refresh-progress-ring');
     expect(css).not.toContain('.lite-refresh-status-popover');
     expect(css).toContain('backdrop-filter: none !important;');
     expect(css).toContain('.theme-pocket-lite-daylight .pocket-app-shell > header');
