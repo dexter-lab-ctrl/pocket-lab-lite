@@ -173,12 +173,12 @@ export default function RecoveryScreen() {
   const repository = { ...(details?.repository || {}), ...(data?.repository || {}) };
   const latestBackupVerified = latestBackup?.verification_status === 'verified';
   const latestPreview = mergeOptional(details?.latest_restore_preview, data?.latest_restore_preview);
-  const latestPreviewReady = latestPreview?.status === 'ready';
+  const latestPreviewReady = latestPreview?.status === 'ready' && latestPreview?.restore_allowed !== false;
   const backupLocations = recoveryLocationsData || details?.backup_locations || data?.backup_locations || {};
   const selectedRestorePoint = selectedBackup || latestBackup;
   const selectedRestorePreview = latestPreview && selectedRestorePoint?.backup_id === latestPreview?.backup_id ? latestPreview : null;
   const selectedBackupVerified = selectedRestorePoint?.verification_status === 'verified';
-  const selectedPreviewReady = selectedRestorePreview?.status === 'ready';
+  const selectedPreviewReady = selectedRestorePreview?.status === 'ready' && selectedRestorePreview?.restore_allowed !== false;
   const selectedBackupLocation = selectedRestorePoint?.location || selectedRestorePreview?.location || null;
   const selectedBackupLocationReady = isRecoveryLocationReady(selectedBackupLocation);
   const lastRestore = mergeOptional(details?.last_restore, data?.last_restore);
@@ -550,10 +550,10 @@ export default function RecoveryScreen() {
     const restoreLocationReady = !restoreLocation
       || isRecoveryLocationReady(restoreLocation);
     if (backupOverride) setSelectedBackup(backupOverride);
-    if (!restorePoint?.backup_id || !restorePreview?.preview_id || !restoreLocationReady) return;
+    if (!restorePoint?.backup_id || !restorePreview?.preview_id || restorePreview.restore_allowed === false || !restoreLocationReady) return;
     const flowCheck = recoveryFlow.requestRestore({
       verified: restorePoint?.verification_status === 'verified',
-      previewReady: restorePreview?.status === 'ready',
+      previewReady: restorePreview?.status === 'ready' && restorePreview.restore_allowed !== false,
       explicitBackup: Boolean(restorePoint?.backup_id && restorePoint.backup_id !== 'latest'),
     });
     if (!flowCheck.ok) return;
