@@ -10,7 +10,7 @@ export function isRecoveryLocationReady(location) {
   const item = record(location);
   return item.available !== false
     && item.ready !== false
-    && !['missing', 'read_only', 'low_space', 'unavailable', 'error'].includes(norm(item.status));
+    && !['available', 'missing', 'read_only', 'low_space', 'unavailable', 'error', 'repository_missing', 'repository_invalid'].includes(norm(item.status));
 };
 const validTime = (value) => {
   if (typeof value !== 'string' || !value || !Number.isFinite(Date.parse(value))) return '';
