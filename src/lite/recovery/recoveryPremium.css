@@ -72,3 +72,175 @@ html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premi
   grid-template-columns: minmax(0, 1fr);
   overflow: visible;
 }
+
+/* Azure Horizon Recovery P0–P3: root-owned semantic colors in both appearances.
+   High specificity intentionally supersedes legacy Daylight-only declarations
+   in src/index.css without changing styles for other screens. */
+html[data-lite-theme] .lite-recovery-premium-screen {color:var(--azure-text);}
+html[data-lite-theme] .lite-recovery-premium-layout {
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:1rem;align-items:stretch;min-width:0;
+}
+html[data-lite-theme] .lite-recovery-premium-layout > * {min-width:0;height:100%;}
+html[data-lite-theme] .lite-recovery-premium-protection,
+html[data-lite-theme] .lite-recovery-premium-journey,
+html[data-lite-theme] .lite-recovery-premium-timeline {
+  color:var(--azure-text);background:var(--azure-surface);border-color:var(--azure-border);
+  box-shadow:var(--azure-shadow);backdrop-filter:none;
+}
+html[data-lite-theme] .lite-recovery-premium-brand > svg {
+  color:var(--azure-accent);background:var(--azure-accent-subtle);border-color:var(--azure-border);
+}
+html[data-lite-theme] .lite-recovery-premium-eyebrow {color:var(--azure-accent);}
+html[data-lite-theme] .lite-recovery-premium-status,
+html[data-lite-theme] .lite-recovery-premium-backup-date,
+html[data-lite-theme] .lite-recovery-premium-disabled-reason,
+html[data-lite-theme] .lite-recovery-premium-indicators :is(span,small),
+html[data-lite-theme] .lite-recovery-premium-timeline-list small {color:var(--azure-muted);}
+html[data-lite-theme] .lite-recovery-premium-indicators li,
+html[data-lite-theme] .lite-recovery-premium-stage-grid button,
+html[data-lite-theme] .lite-recovery-premium-journey-explanation {
+  background:var(--azure-raised);color:var(--azure-text);
+  border-color:var(--azure-border);box-shadow:none;
+}
+html[data-lite-theme] .lite-recovery-premium-indicators li {
+  border-inline-start:3px solid var(--azure-neutral);min-height:6.2rem;
+}
+html[data-lite-theme] .lite-recovery-premium-indicators li[data-state="completed"] {border-inline-start-color:var(--azure-success);}
+html[data-lite-theme] .lite-recovery-premium-indicators li[data-state="blocked"] {border-inline-start-color:var(--azure-danger);}
+html[data-lite-theme] .lite-recovery-premium-indicators li[data-state="needs_action"] {border-inline-start-color:var(--azure-warning);}
+html[data-lite-theme] .lite-recovery-premium-indicators small {font-size:.78rem;line-height:1.45;}
+html[data-lite-theme] .lite-recovery-premium-stage-grid button {
+  min-height:5.25rem;min-width:0;cursor:pointer;
+}
+html[data-lite-theme] .lite-recovery-premium-stage-grid button.is-selected {
+  background:var(--azure-selected);border-color:var(--azure-focus);outline:2px solid var(--azure-focus);
+}
+html[data-lite-theme] .lite-recovery-premium-timeline-icon {background:var(--azure-accent-subtle);color:var(--azure-info);border-color:var(--azure-border);}
+html[data-lite-theme] :is(.lite-recovery-premium-screen,.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-evidence-sheet) :is(button,a,input,select,textarea,[role="tab"],[role="tabpanel"]):focus-visible {
+  outline:3px solid var(--azure-focus);outline-offset:3px;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-evidence-sheet) {
+  background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border);
+  box-shadow:var(--azure-panel-shadow);min-width:0;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-evidence-sheet) :is(.lite-overlay-head,.lite-overlay-scroll) {
+  background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border);min-width:0;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-evidence-sheet) :is(button,input,select,textarea) {color-scheme:inherit;}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet) :is(input,select,textarea) {
+  color:var(--azure-text);background:var(--azure-input);border:1px solid var(--azure-strong-border);
+}
+html[data-lite-theme] .lite-recovery-manage-tabs {
+  position:sticky;top:0;z-index:3;display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:.35rem;padding:.35rem;margin:0;border-radius:.9rem;
+  background:var(--azure-raised);border:1px solid var(--azure-border);
+  box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;
+}
+html[data-lite-theme] .lite-recovery-manage-tabs button {
+  min-width:0;min-height:44px;width:100%;padding:.55rem .4rem;white-space:normal;
+  background:transparent;color:var(--azure-text);border:1px solid transparent;
+  border-radius:var(--azure-radius-control);font-weight:650;
+}
+html[data-lite-theme] .lite-recovery-manage-tabs button[aria-selected="true"] {
+  background:var(--azure-selected);border-color:var(--azure-strong-border);
+  color:var(--azure-text);box-shadow:inset 0 -3px var(--azure-accent);
+}
+html[data-lite-theme] .lite-recovery-manage-tabs button:hover {background:var(--azure-hover);}
+html[data-lite-theme] .lite-recovery-manage-section,
+html[data-lite-theme] .lite-recovery-manage-content,
+html[data-lite-theme] .lite-recovery-database-manage-content {color:var(--azure-text);}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-evidence-sheet)
+  :is(.lite-recovery-manage-section-heading,.lite-recovery-manage-action-row,.lite-recovery-manage-subsection,
+  .lite-recovery-manage-app-list article,.lite-recovery-manage-compact-list > div,
+  .lite-recovery-recent-list > article,.lite-recovery-protection-grid > article,
+  .lite-recovery-location-current,.lite-recovery-location-choice,
+  .lite-recovery-native-confirm-backup,.lite-recovery-native-confirm-section,
+  .lite-recovery-impact,.lite-recovery-history-action-row,.lite-recovery-database-history article,
+  .lite-recovery-database-manage-content > section,.lite-recovery-evidence-item) {
+  color:var(--azure-text);background:var(--azure-raised);border:1px solid var(--azure-border);
+  box-shadow:none;backdrop-filter:none;min-width:0;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-evidence-sheet)
+  :is(p,small,dt,.lite-recovery-location-picker-note,.lite-recovery-location-picker-footnote,
+  .lite-recovery-history-select span,.lite-recovery-manage-section-heading > span,
+  .lite-recovery-manage-action-copy p,.lite-recovery-native-confirm-head span) {
+  color:var(--azure-muted);overflow-wrap:anywhere;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-evidence-sheet)
+  :is(strong,h2,h3,dd,.lite-recovery-manage-action-title strong,.lite-recovery-location-current strong,
+  .lite-recovery-manage-app-list strong,.lite-recovery-history-select strong) {
+  color:var(--azure-text);overflow-wrap:anywhere;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-evidence-sheet)
+  :is(.lite-recovery-location-picker,.lite-recovery-location-candidates,.lite-recovery-manage-evidence-callout,
+  .lite-recovery-native-confirm,.lite-recovery-database-technical,.lite-progressive-details) {
+  background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border);
+}
+html[data-lite-theme] .lite-recovery-history-action-row.is-selected,
+html[data-lite-theme] .lite-recovery-location-choice.is-selected {
+  background:var(--azure-selected);border-color:var(--azure-accent);
+  box-shadow:inset 3px 0 var(--azure-accent);
+}
+html[data-lite-theme] .lite-recovery-history-select,
+html[data-lite-theme] .lite-recovery-location-choice > button {
+  color:var(--azure-text);background:transparent;
+}
+html[data-lite-theme] .lite-recovery-desktop-panel-tools {
+  display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;
+}
+html[data-lite-theme] .lite-recovery-desktop-panel-tools button {
+  display:inline-flex;align-items:center;justify-content:center;gap:.3rem;
+  min-width:44px;min-height:44px;padding:.45rem;border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-control);background:var(--azure-raised);color:var(--azure-text);
+  cursor:pointer;touch-action:none;
+}
+html[data-lite-theme] .lite-recovery-desktop-panel-tools button:hover {background:var(--azure-hover);}
+html[data-lite-theme] .lite-recovery-premium-layout .lite-recovery-premium-stage-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+html[data-lite-theme] .lite-recovery-native-confirm-actions {display:flex;flex-wrap:wrap;gap:.65rem;justify-content:flex-end;}
+html[data-lite-theme] .lite-recovery-native-confirm-actions button {min-height:44px;}
+
+@media(min-width:701px) {
+  html[data-lite-theme] .lite-recovery-manage-sheet.is-movable {
+    position:fixed;min-height:0;max-height:none;margin:0;
+    display:flex;flex-direction:column;overflow:hidden;
+    border-radius:var(--azure-radius-card);
+  }
+  html[data-lite-theme] .lite-recovery-manage-sheet.is-movable .lite-recovery-manage-scroll {
+    flex:1 1 auto;min-height:0;overflow-y:auto;
+  }
+}
+@media(max-width:900px) {
+  html[data-lite-theme] .lite-recovery-premium-layout {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-premium-layout .lite-recovery-premium-stage-grid {grid-template-columns:repeat(4,minmax(0,1fr));}
+}
+@media(max-width:700px) {
+  html[data-lite-theme] .lite-recovery-manage-sheet:not(.is-movable) {
+    position:relative;margin:0;width:100%;max-width:100%;
+    max-height:calc(var(--lite-visual-viewport-height,100dvh) - env(safe-area-inset-top) - .4rem);
+    border-radius:1.25rem 1.25rem 0 0;
+  }
+  html[data-lite-theme] .lite-recovery-premium-indicators {grid-template-columns:repeat(2,minmax(0,1fr));}
+  html[data-lite-theme] .lite-recovery-premium-actions {display:grid;grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-premium-actions > button {width:100%;}
+  html[data-lite-theme] .lite-recovery-premium-layout .lite-recovery-premium-stage-grid {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-premium-stage-grid button {
+    min-height:3.4rem;display:flex;justify-content:flex-start;gap:.75rem;padding:.75rem;
+  }
+  html[data-lite-theme] .lite-recovery-premium-stage-grid button span {margin-inline-start:auto;text-align:end;}
+  html[data-lite-theme] .lite-recovery-manage-tabs {grid-template-columns:repeat(2,minmax(0,1fr));}
+  html[data-lite-theme] .lite-recovery-native-confirm-actions {display:grid;grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-native-confirm-actions button {width:100%;}
+  html[data-lite-theme] .lite-recovery-protection-grid {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-history-row-actions {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+  html[data-lite-theme] .lite-recovery-history-row-actions button {width:100%;min-width:0;}
+}
+@media(max-width:360px) {
+  html[data-lite-theme] .lite-recovery-premium-indicators {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-history-row-actions {grid-template-columns:minmax(0,1fr);}
+}
+@media(prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-recovery-manage-scroll {scroll-behavior:auto;}
+  html[data-lite-theme] .lite-recovery-desktop-panel-tools * {transition:none;animation:none;}
+}
