@@ -13,12 +13,31 @@ void RECOVERY_HISTORY_SECTION_LAZY_BY_DEFAULT;
 void RECOVERY_HISTORY_NO_ALWAYS_RENDERED_ROWS;
 void RECOVERY_HISTORY_CURSOR_PAGINATION_R3;
 
-function safeHistoryItems(history = [], latestPreviewReady = false) {
+export function recoveryHistoryEligibility({ backup = {}, selectedBackupId = '', preview = null, saved = false } = {}) {
+  const backupId = backup?.backup_id || backup?.id || backup?.snapshot_id || '';
+  const locationStatus = String(backup?.location?.status || '').toLowerCase();
+  const locationUnavailable = backup?.location?.available === false
+    || ['missing', 'read_only', 'low_space', 'unavailable', 'repository_missing', 'repository_invalid'].includes(locationStatus);
+  const verified = backup?.verification_status === 'verified';
+  const selected = Boolean(backupId && backupId === selectedBackupId);
+  const previewMatches = Boolean(backupId && preview?.preview_id && preview?.backup_id === backupId
+    && preview?.status === 'ready' && preview?.restore_allowed !== false);
+  const canRecover = !saved && verified && selected && previewMatches && !locationUnavailable;
+  const reason = saved ? 'Live recovery state is unavailable.'
+    : !selected ? 'Select this backup to review restoration.'
+    : !verified ? 'Verify this backup before restoring.'
+    : locationUnavailable ? 'Reconnect the backup destination.'
+    : !previewMatches ? 'Prepare a fresh matching restore preview.'
+    : 'Review the consequences before confirming.';
+  return { selected, verified, previewMatches, locationUnavailable, canRecover, reason };
+}
+
+function safeHistoryItems(history = [], latestPreview = null) {
   return (Array.isArray(history) ? history : [])
     .filter(Boolean)
     .map((backup) => ({
       id: backup.backup_id || backup.id || backup.snapshot_id,
-      title: backup.verification_status === 'verified' ? 'Backup verified and ready' : backup.summary || 'Backup created',
+      title: backup.verification_status === 'verified' ? 'Backup verified' : backup.summary || 'Backup created',
       meta: [
         backup.created_at ? formatLiteTime(backup.created_at) : '',
         `${backup.included_file_count || 0} item(s)`,
@@ -36,7 +55,7 @@ function formatSize(bytes) {
   return value >= 1024 * 1024 ? `${(value / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(value / 1024))} KB`;
 }
 
-const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHistory = [], latestPreviewReady = false, savedStateOnly = false, selectedBackupId = '', onSelectBackup, onVerify, onPreview, onRecover }) {
+const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHistory = [], latestPreviewReady = false, latestPreview = null, savedStateOnly = false, selectedBackupId = '', onSelectBackup, onVerify, onPreview, onRecover }) {
   const [cursor, setCursor] = useState('');
   const [pageOrder, setPageOrder] = useState(['first']);
   const [pageItems, setPageItems] = useState({ first: Array.isArray(initialHistory) ? initialHistory : [] });
@@ -70,7 +89,7 @@ const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHisto
       return true;
     });
   }, [pageItems, pageOrder]);
-  const items = useMemo(() => safeHistoryItems(history, latestPreviewReady), [history, latestPreviewReady]);
+  const items = useMemo(() => safeHistoryItems(history, latestPreview), [history, latestPreview]);
   const nextCursor = String(query.data?.next_cursor || '');
   const hasMore = Boolean(!query.savedStateOnly && query.data?.has_more && nextCursor);
   const historySavedStateOnly = Boolean(savedStateOnly || query.savedStateOnly);
@@ -109,23 +128,22 @@ const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHisto
         <div className="lite-recovery-history-action-list" aria-label="Timestamped restore points">
           {history.length ? history.map((backup) => {
             const id = backup.backup_id || backup.id || backup.snapshot_id;
-            const selected = id === selectedBackupId;
-            const verified = backup.verification_status === 'verified';
-            const locationUnavailable = backup.location && (
-              backup.location.available === false
-              || ['missing', 'read_only', 'low_space', 'unavailable'].includes(String(backup.location.status || '').toLowerCase())
-            );
+            const eligibility = recoveryHistoryEligibility({
+              backup, selectedBackupId, preview: latestPreview, saved: historySavedStateOnly,
+            });
+            const { selected, verified, locationUnavailable, canRecover } = eligibility;
             return (
               <article key={id} className={`lite-recovery-history-action-row${selected ? ' is-selected' : ''}`}>
                 <button type="button" className="lite-recovery-history-select" onClick={() => onSelectBackup?.(backup)} aria-pressed={selected}>
-                  <strong>{backup.created_at ? formatLiteTime(backup.created_at) : 'Timestamp unavailable'}</strong>
+                  <strong>{selected ? 'Selected backup · ' : ''}{backup.created_at ? formatLiteTime(backup.created_at) : 'Timestamp unavailable'}</strong>
                   <span>{verified ? 'Verified' : 'Needs verification'} · {formatSize(backup.size_bytes)} · {backup.location?.display_name ? `From ${backup.location.display_name} · ` : ''}{locationUnavailable ? 'Location unavailable · Reconnect this storage to recover.' : backup.summary || 'Pocket Lab restore point'}</span>
+                   {selected ? <small>{eligibility.reason}</small> : null}
                 </button>
                 <div className="lite-recovery-history-row-actions">
                   <LiteButton tone="secondary" onClick={() => onSelectBackup?.(backup)}>View details</LiteButton>
-                  <LiteButton tone="secondary" onClick={() => onVerify?.(backup)} disabled={!id || locationUnavailable}>Verify</LiteButton>
-                  <LiteButton tone="secondary" onClick={() => onPreview?.(backup)} disabled={!id || locationUnavailable}>Preview</LiteButton>
-                  <LiteButton tone="danger" onClick={() => onRecover?.(backup)} disabled={!verified || !selected || !latestPreviewReady || locationUnavailable}>Recover</LiteButton>
+                  <LiteButton tone="secondary" onClick={() => onVerify?.(backup)} disabled={!id || locationUnavailable || historySavedStateOnly}>Verify</LiteButton>
+                  <LiteButton tone="secondary" onClick={() => onPreview?.(backup)} disabled={!id || !verified || locationUnavailable || historySavedStateOnly}>Preview</LiteButton>
+                  <LiteButton tone="danger" onClick={() => onRecover?.(backup)} disabled={!canRecover}>Recover</LiteButton>
                 </div>
               </article>
             );
