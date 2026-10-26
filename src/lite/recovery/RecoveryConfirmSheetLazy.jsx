@@ -39,7 +39,7 @@ export default function RecoveryConfirmSheetLazy({
           <span>Confirmation required</span>
           <h3>{title}</h3>
         </div>
-        <StatusBadge status="review">Protected action</StatusBadge>
+        <StatusBadge status="review">Confirmation required</StatusBadge>
       </div>
 
       <section className="lite-recovery-native-confirm-backup" aria-label="Selected backup">
@@ -47,6 +47,7 @@ export default function RecoveryConfirmSheetLazy({
         <small>{[backup?.verification_status === 'verified' ? 'Verified' : 'Verification required', sizeLabel].filter(Boolean).join(' · ')}</small>
         {!databaseRestore ? <span>Recover from: {location?.display_name || backup?.location?.display_name || 'Pocket Lab protected backup'}</span> : null}
         {!databaseRestore ? <span>Restore to: This Server Phone</span> : null}
+        <span>Matching restore preview: {impact.ready ? 'Confirmed for this backup' : 'Not confirmed'}</span>
       </section>
 
       <section className="lite-recovery-impact" aria-label="Restore impact preview">
@@ -73,7 +74,7 @@ export default function RecoveryConfirmSheetLazy({
         ],
         willNot: [
           'Expose secrets, tokens, or private keys in this screen.',
-          'Change photos, media, Android shared storage, or anything excluded by the preview.',
+          'Include any component the current preview lists as excluded.',
         ],
         reversible: 'The pre-restore checkpoint is kept so recovery has a known safe point.',
         availability: 'Pocket Lab may briefly restart protected services while the restore is verified.',
@@ -85,13 +86,14 @@ export default function RecoveryConfirmSheetLazy({
           <div><ShieldCheck className="h-5 w-5" /><strong>Restore scope</strong></div>
           {includedComponents.length ? <p><strong>Included:</strong> {includedComponents.join(', ')}</p> : null}
           {excludedComponents.length ? <p><strong>Excluded and unchanged:</strong> {excludedComponents.join(', ')}</p> : null}
-          <p>Photo/media files and Android shared storage will not be changed.</p>
+          <p>PhotoPrism media and device photos are not automatically included in a workspace backup.</p>
         </section>
       ) : null}
 
+      {!impact.ready ? <p className="lite-recovery-confirm-blocker" role="alert">Restore cannot be confirmed: verify the selected backup and prepare a current matching preview on an available destination.</p> : null}
       <div className="lite-recovery-native-confirm-actions">
         <LiteButton tone="secondary" onClick={onCancel} disabled={busy}>Cancel</LiteButton>
-        <LiteButton tone="danger" onClick={onConfirm} disabled={busy}>
+        <LiteButton tone="danger" onClick={onConfirm} disabled={busy || !impact.ready}>
           {busy ? 'Restoring…' : databaseRestore ? 'Restore Database' : 'Restore Backup'}
         </LiteButton>
       </div>
