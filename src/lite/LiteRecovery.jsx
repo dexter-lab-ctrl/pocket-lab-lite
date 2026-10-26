@@ -235,7 +235,11 @@ export default function RecoveryScreen() {
   const databaseRestoreGuard = databaseProtection?.restore_guard || {};
   const activeDatabaseRestore = databaseProtection?.active_restore || null;
   const databaseBackupVerified = latestDatabaseBackup?.verification_status === 'verified';
-  const databasePreviewReady = latestDatabasePreview?.status === 'ready' && latestDatabasePreview?.restore_allowed !== false;
+  const databasePreviewReady = Boolean(
+    latestDatabaseBackup?.backup_id && latestDatabasePreview?.preview_id
+    && latestDatabasePreview.backup_id === latestDatabaseBackup.backup_id
+    && latestDatabasePreview.status === 'ready' && latestDatabasePreview.restore_allowed !== false
+  );
   const databaseWriteBlocked = recoveryWriteBlocked
     || databaseMaintenance?.active === true
     || databaseRestoreGuard?.unresolved === true;
@@ -466,7 +470,7 @@ export default function RecoveryScreen() {
   }
 
   function requestDatabaseRestore() {
-    if (!latestDatabaseBackup?.backup_id || !latestDatabasePreview?.preview_id || databaseWriteBlocked) return;
+    if (!databaseBackupVerified || !databasePreviewReady || databaseWriteBlocked) return;
     setRestoreConfirmation('database');
   }
 
@@ -557,7 +561,10 @@ export default function RecoveryScreen() {
   }
 
   async function confirmRestoreLatestBackup() {
-    if (!selectedRestorePoint?.backup_id || !selectedRestorePreview?.preview_id) return;
+    if (recoveryWriteBlocked || !selectedBackupVerified || !selectedPreviewReady
+      || !selectedBackupLocationReady || !selectedRestorePoint?.backup_id
+      || !selectedRestorePreview?.preview_id
+      || selectedRestorePreview.backup_id !== selectedRestorePoint.backup_id) return;
     setRestoreConfirmation('');
     recoveryFlow.confirmRestore();
     triggerLiteHaptic('confirm');
@@ -754,6 +761,8 @@ export default function RecoveryScreen() {
             checkpoint={checkpoint}
             repository={repository}
             history={history}
+            recoveryWriteBlocked={recoveryWriteBlocked}
+            recoveryWriteBlockedReason={recoveryWriteBlockedReason}
             savedStateOnly={savedStateOnly || detailsSavedStateOnly}
             latestBackupVerified={selectedBackupVerified}
             latestPreviewReady={selectedPreviewReady}
