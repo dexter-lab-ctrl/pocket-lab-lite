@@ -175,8 +175,8 @@ export const AzureBlackOverview = {
   ...createLiteStory('recovery', 'recovery-verified', { theme: 'dark', viewport: 'desktop' }),
   play: async ({ canvasElement }) => {
     const canvas = await expectRecovery(canvasElement);
-    await expect(canvas.findByText(/Workspace protection/i)).resolves.toBeTruthy();
-    await expect(canvas.findByText(/Selected destination/i)).resolves.toBeTruthy();
+    await expect(await canvas.findByText(/Workspace protection/i)).toBeInTheDocument();
+    await expect(await canvas.findByText(/Selected destination/i)).toBeInTheDocument();
   },
 };
 export const AzureDaylightOverview = createLiteStory('recovery', 'recovery-verified', { theme: 'light', viewport: 'desktop' });
