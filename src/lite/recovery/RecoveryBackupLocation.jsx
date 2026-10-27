@@ -57,7 +57,7 @@ export default function RecoveryBackupLocation({
         <div className="lite-recovery-location-icon" aria-hidden="true"><ShieldCheck className="h-5 w-5" /></div>
         <div>
           <strong>{selected?.display_name || 'Pocket Lab private backup folder'}</strong>
-          <span>{selectedReady && selected?.repository_present ? 'Encrypted repository ready for backup' : selected?.repository_present ? 'Repository found · check readiness before writing' : 'Repository not yet confirmed ready'}</span>
+          <span>{selectedReady && selected?.repository_present ? 'Encrypted repository ready for backup' : selected?.repository_present ? 'Repository found · readiness not confirmed' : 'Repository not yet confirmed ready'}</span>
           <small>{formatBytes(selected?.free_bytes) || (selected?.last_checked_at ? `Checked ${formatLiteTime(selected.last_checked_at)}` : 'Storage health is being checked.')}</small>
         </div>
         <LiteButton tone="secondary" onClick={() => setExpanded((value) => !value)} disabled={!canChange} ariaLabel="Change backup location">
@@ -81,7 +81,10 @@ export default function RecoveryBackupLocation({
                     aria-pressed={selectedChoice}
                   >
                     {selectedChoice ? <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> : <HardDrive className="h-4 w-4" aria-hidden="true" />}
-                    <span><strong>{location.display_name}</strong><small>{location.repository_present ? 'Encrypted repository ready' : location.reason_code === 'will_create' ? 'Will be created when selected' : 'Protected Pocket Lab location'}</small></span>
+                    <span><strong>{location.display_name}</strong><small>{location.status === 'ready' && location.ready !== false && location.available !== false && location.repository_present
+                      ? 'Encrypted repository ready' : location.repository_present
+                        ? 'Repository found · readiness not confirmed' : location.reason_code === 'will_create'
+                          ? 'Will be created when selected' : 'Protected Pocket Lab location'}</small></span>
                   </button>
                   <StatusBadge status={statusTone(location)}>{statusLabel(location)}</StatusBadge>
                   {!location.is_default && onForget ? <LiteButton tone="secondary" onClick={() => onForget(location.location_id)} disabled={!canChange || selectedChoice}>Forget</LiteButton> : null}
