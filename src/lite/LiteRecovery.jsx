@@ -688,6 +688,9 @@ export default function RecoveryScreen() {
               <h2 data-testid="parity-recovery-summary">{premiumHero.headline}</h2>
               <p>{premiumHero.summary}</p>
               {premiumHero.time ? <p className="lite-recovery-premium-backup-date" data-testid="parity-latest-backup-id" data-backup-id={latestBackup?.backup_id || ''}>Latest backup: <time dateTime={premiumHero.time}>{formatLiteTime(premiumHero.time)}</time></p> : null}
+              {premiumHero.verified && latestBackup?.verified_at && !savedStateOnly && !projectionStale && !isExpired && backendReachable ? (
+                <p className="lite-recovery-premium-verification-date">Last verified: <time dateTime={latestBackup.verified_at}>{formatLiteTime(latestBackup.verified_at)}</time></p>
+              ) : null}
             </div>
           </div>
           <ul className="lite-recovery-premium-indicators" aria-label="Recovery status" data-recovery-summary-facts="true">
