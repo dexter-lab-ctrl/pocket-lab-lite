@@ -99,6 +99,32 @@ test.describe('Azure Horizon Recovery P0–P4 semantic, accessible and protected
     await expect(dialog.getByRole('tab', { name: 'Restore' })).toBeVisible();
     await assertNoHorizontalOverflow(page);
   });
+  test('Manage tab controls retain real labelled targets without eagerly rendering heavy panels', async ({ page }) => {
+    const dialog = await openManage(page, 'recovery-preview-ready', 'dark');
+    for (const section of ['Backup', 'Restore', 'Protection', 'History'] as const) {
+      await dialog.getByRole('tab', { name: section }).click();
+      const mapped = await dialog.getByRole('tab').evaluateAll((tabs) => tabs.every((tab) => {
+        const target = tab.getAttribute('aria-controls');
+        return Boolean(target && document.getElementById(target));
+      }));
+      expect(mapped).toBe(true);
+      await expect(dialog.getByRole('tabpanel', { name: section })).toBeVisible();
+    }
+  });
+  test('blocked restore provides a readable prerequisite without submitting a command', async ({ page }) => {
+    await openRecovery(page, 'recovery-restore-blocked', 'dark');
+    const sends: string[] = [];
+    page.on('request', (req) => {
+      if (req.method() !== 'GET' && req.url().includes('/api/lite/recovery/restore')) sends.push(req.url());
+    });
+    await page.getByRole('button', { name: 'Manage Recovery' }).click();
+    const dialog = page.getByRole('dialog', { name: /Manage backups and recovery/i });
+    await dialog.getByRole('tab', { name: 'Restore' }).click();
+    const restore = dialog.locator('.lite-recovery-manage-action-row').filter({ hasText: 'Restore selected backup' });
+    await expect(restore.getByRole('button', { name: 'Restore', exact: true })).toBeDisabled();
+    await expect(restore.locator('.lite-recovery-action-disabled-reason')).toBeVisible();
+    expect(sends).toEqual([]);
+  });
   test('narrow mobile navigation keeps the active Recovery tab visible', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openRecovery(page, 'recovery-verified');
