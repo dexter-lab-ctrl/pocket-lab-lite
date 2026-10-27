@@ -10,9 +10,9 @@ import {
 import { recoveryHistoryEligibility, recoveryHistoryItems } from './RecoveryBackupHistory.jsx';
 
 // Synthetic fixtures: no backup payloads, filesystem writes, authorization tokens or secrets.
-const backup = Object.freeze({ backup_id: 'synthetic-a', created_at: '2026-10-10T10:00:00Z', verification_status: 'verified' });
-const preview = Object.freeze({ preview_id: 'synthetic-preview-a', backup_id: backup.backup_id, status: 'ready', change_count: 2, included_components: ['workspace settings'], excluded_components: ['media'] });
 const readyLocation = Object.freeze({ location_id: 'approved-a', display_name: 'Protected storage', status: 'ready', ready: true, available: true });
+const backup = Object.freeze({ backup_id: 'synthetic-a', created_at: '2026-10-10T10:00:00Z', verification_status: 'verified', location: readyLocation });
+const preview = Object.freeze({ preview_id: 'synthetic-preview-a', backup_id: backup.backup_id, status: 'ready', change_count: 2, included_components: ['workspace settings'], excluded_components: ['media'] });
 const facts = (options = {}) => recoveryOverviewFacts({
   backup, preview, locations: { selected_location: readyLocation }, ...options,
 });
@@ -48,6 +48,10 @@ describe('Azure Horizon Recovery semantic overview', () => {
   it('does not equate available with ready for a protected restore', () => {
     expect(isRecoveryLocationReady({ status: 'available' })).toBe(false);
     expect(isRecoveryLocationReady(readyLocation)).toBe(true);
+    expect(isRecoveryLocationReady(null)).toBe(false);
+    expect(isRecoveryLocationReady({ status: 'unknown' })).toBe(false);
+    expect(isRecoveryLocationReady({ status: 'ready', available: false })).toBe(false);
+    expect(recoveryRestoreImpact({ backup: { ...backup, location: null }, preview }).ready).toBe(false);
     expect(recoveryRestoreImpact({ backup, preview, location: { status: 'available' } }).ready).toBe(false);
   });
   it('requires a matching preview identity and a verified backup', () => {
@@ -105,8 +109,9 @@ describe('Azure Horizon Recovery history eligibility stays per selected backup',
     expect(eligibility({ preview: { ...preview, status: 'expired' } }).canRecover).toBe(false);
     expect(eligibility({ preview: { ...preview, restore_allowed: false } }).canRecover).toBe(false);
     expect(eligibility({ saved: true }).canRecover).toBe(false);
+    expect(eligibility({ backup: { ...backup, location: null } }).canRecover).toBe(false);
   });
-  it.each(['missing', 'read_only', 'low_space', 'unavailable'])('blocks unavailable destination %s', (status) => {
+  it.each(['available', 'unknown', 'missing', 'read_only', 'low_space', 'unavailable'])('blocks unavailable destination %s', (status) => {
     const location = { status };
     expect(eligibility({ backup: { ...backup, location } }).canRecover).toBe(false);
   });
