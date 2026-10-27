@@ -63,6 +63,8 @@
     "test:identity:premium:unit": "vitest run src/lite/identity/*.test.js src/lite/identity/*.test.jsx",
     "test:identity:premium:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-identity-premium-refinement.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:identity:premium:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-identity-premium-visual.spec.ts --project=mocked-desktop --project=mocked-mobile",
+    "test:recovery:azure:readiness": "vitest run src/lite/recovery/recoveryAzureHorizon.test.js src/lite/recovery/RecoveryAzureHorizon.test.jsx src/lite/recovery/RecoveryConfirmSheetLazy.test.jsx",
+    "test:recovery:azure:reflow": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-recovery.spec.ts --grep '320px|responsive landing|Manage tab controls|blocked restore' --project=mocked-desktop --project=mocked-mobile",
     "test:recovery:azure:unit": "vitest run src/lite/recovery/recoveryPremiumView.test.js src/lite/recovery/recoveryAzureHorizon.test.js src/lite/recovery/RecoveryAzureHorizon.test.jsx src/lite/recovery/RecoveryJourney.test.jsx src/lite/recovery/RecoveryConfirmSheetLazy.test.jsx src/lite/catalog/useDesktopManageGeometry.test.jsx",
     "test:recovery:azure:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-recovery.spec.ts tests/e2e/lite-recovery-premium-refinement.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:recovery:azure:a11y": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-azure-horizon-recovery.spec.ts --grep 'WCAG AA|200% text' --project=mocked-desktop --project=mocked-mobile",
