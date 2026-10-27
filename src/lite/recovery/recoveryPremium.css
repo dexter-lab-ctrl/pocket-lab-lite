@@ -50,12 +50,52 @@
    effect creates large backdrop-filter compositor layers during qualification
    scrolling. Keep the qualification-only paint reduction scoped to these
    nested decorative headers; normal product rendering is unchanged. */
-html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-journey > header,
-html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-timeline > header {
+html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-layout > .lite-recovery-premium-journey > header,
+html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-layout > .lite-recovery-premium-timeline > header {
   background: transparent !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+/* Recovery cards are declared after the shared Azure performance bridge, so
+   keep their normal depth treatment from reintroducing a compositor layer on
+   the measured desktop scroll path. The product presentation is unchanged
+   outside the explicit qualification mode. */
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-recovery-premium-screen .lite-recovery-premium-protection,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-recovery-premium-screen .lite-recovery-premium-journey,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-recovery-premium-screen .lite-recovery-premium-timeline {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* The overview is a single, bounded Recovery surface. Content visibility
+   containment is useful for longer screens, but its visibility boundary is
+   itself crossed by the desktop qualification scroll and can introduce a
+   missed compositor frame. Keep this explicit measured path stable. */
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-recovery-premium-screen {
+  content-visibility: visible !important;
+  contain: none !important;
+}
+
+/* Azure's shared Daylight layer adds depth to page headers, freshness
+   feedback, and secondary controls. Those are decorative on the Recovery
+   overview and otherwise remain in the document scroll paint path. Remove
+   only that decoration for the explicit PR #588 qualification build; the
+   normal Recovery surface keeps its product presentation. */
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-screen-stage-recovery .lite-page-header,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-screen-stage-recovery .lite-page-header :is(.pocket-button, .lite-refresh-button),
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-screen-stage-recovery .lite-ux-freshness,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-screen-stage-recovery .lite-recovery-premium-screen :is(.pocket-button, .lite-recovery-premium-stage-grid button),
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-screen-stage-recovery .lite-recovery-premium-layout > :is(.lite-recovery-premium-journey, .lite-recovery-premium-timeline) > header,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-screen-stage-recovery .lite-motion-reveal {
+  box-shadow: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  will-change: auto !important;
+  transform: none !important;
 }
 
 .lite-recovery-impact { display:grid; gap:.7rem; padding:.9rem; border:1px solid var(--lite-border,#8293aa); border-radius:.9rem; }
