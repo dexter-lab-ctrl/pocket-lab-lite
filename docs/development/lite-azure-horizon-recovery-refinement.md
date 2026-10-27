@@ -270,3 +270,76 @@ The existing synthetic qualification mechanism was used only within the isolated
 `task lite:docs:generate` completed and regenerated deterministic contracts and documentation projections. `task lite:docs:check` completed **PASS** with the repository Node 24.16.0 toolchain; the initial no-Node invocation was an environment-only failure and was not treated as a repository failure. `task lite:check` completed **PASS** (exit 0), including 52/62 mocked E2E tests with 10 repository-defined skips, 2/2 accessibility tests, 74/74 documentation browser tests, generated-artifact redaction, contract/platform/runtime/parity/knowledge/enterprise checks and the runtime-network safety gate. The exact post-documentation Git HEAD and exact-head CI run are recorded in the PR qualification update after the normal push of the completed candidate.
 
 The Server Phone remained a read-only runtime consumer on clean `main`; its existing health/readiness and NATS evidence were inspected without mutation. The pre-existing Recovery database projection GET timeout remains documented separately and was not attributed to this UI branch. PR #631 must remain **OPEN — DRAFT — NOT MERGED** pending review of the remaining Android absolute gate, Owner-gated coverage limitation, external CI result and unrelated Apps/Devices findings.
+
+
+---
+
+## 2026-10-28 — source-only readiness and accessibility refinement
+
+> **[IMPLEMENTED]** Additional targeted source commits authored on `feat/azure-horizon-recovery-ui` from GitHub `main` `b685d2ce3c19f11d590932d7fd37f6e3ad3dc470`.
+> **[NOT RUN / UNVALIDATED]** No tests, checks, builds, linting, formatting, static validation, screenshots, baseline updates, CI log investigations, runtime probes, Android/CDP qualification, backup or restore operation were executed **in this session**.
+> Earlier qualification and performance observations recorded above are historical records from other commits and must not be applied to this head.
+
+### Scope and implementation inventory
+
+The current `main` already carried the P0–P4 Azure Recovery overview, four Manage sections, shared geometry, three facts, theme styling, source tests, Storybook, Playwright and performance scripts. This increment **does not rebuild or claim authorship of those existing capabilities**. It addresses specific remaining source gaps:
+
+| Scope | Source change | Rationale | Qualification |
+|---|---|---|---|
+| P0 theme and text | `src/lite/recovery/recoveryPremium.css` | Semantic `--azure-*` for prerequisite messaging, focus-visible inheritance, technical wrapping, portal-safe confirmation, readable 320px typography | [NOT RUN] rendered light/dark/System, 200% text, actual AA contrast |
+| P1 overview | `src/lite/LiteRecovery.jsx` | Verification timestamp only if backend `verified_at` exists, is verified and state is fresh/live; no fabricated timestamps | [NOT RUN] mocked and backend parity |
+| P2 Manage | `src/lite/recovery/RecoveryManageSheetLazy.jsx` | Explicit per-row action blockers; persistent `aria-controls` targets for inactive tabpanels without eagerly mounting their heavy content | [NOT RUN] keyboard, screen reader, focus, portal |
+| P3 destination | `recoveryPremiumView.js`, `RecoveryBackupLocation.jsx` | Only backend `status: ready` with no explicit negative flags counts as ready; `repository_present` no longer implies write readiness | [NOT RUN] real candidates and historical backup data |
+| P3 history | `RecoveryBackupHistory.jsx` | A recoverable row must have an explicit ready backup location, matching selected backup, verified state, matching preview and current reads; blocked reasons remain text-visible | [NOT RUN] cursor/history selection and accessibility |
+| P3 protected restore | `LiteRecovery.jsx`, `RecoveryConfirmSheetLazy.jsx` | Missing workspace location fails closed; database confirmation independently checks its own backup/preview identity because database recovery does not use a workspace backup location | [NOT RUN] nested modal and server authorization |
+| P4 tests | `recoveryAzureHorizon.test.js`, `RecoveryAzureHorizon.test.jsx`, `RecoveryConfirmSheetLazy.test.jsx`, `lite-azure-horizon-recovery.spec.ts` | Explicit ready/available/unknown/missing, database mismatch, disabled explanation and live tabpanel target cases | [DEFINED / NOT RUN] |
+| P4 visual/story/performance | `LiteRecovery.stories.jsx`, `lite-azure-horizon-recovery-visual.spec.ts`, `lite-azure-horizon-recovery-performance.spec.ts` | Adds blocked history/restore stories, Black/Daylight mobile blocked-state candidates, synthetic preview/history sampling | [DEFINED / NOT RUN] new baselines unapproved |
+| P4 tasks | `package.json`, `tasks/Taskfile.lite.yml` | Bounded readiness/reflow commands plus Taskfile aliases for the current Recovery Azure suites, not a new runner | [DEFINED / NOT RUN] |
+
+### Exact reuse evidence for this increment
+
+| Merged PR | Source of truth in current repository | Reused by Recovery |
+|---|---|---|
+| #606 | `src/lite/LiteUi.jsx`, `src/lite/LiteUx.jsx`, `src/lite/LiteOverlay.jsx` | `PageHeader`, `GlassCard`, `LiteButton`, `StatusBadge`, `StateSurface`, `LiteRefreshButton`, `LiteFreshness`, `LiteSheet`, `LiteFlowStatusPanel`, `LiteConsequenceSummary` |
+| #622 | `src/lite/theme/azureHorizon.css` and `azureHorizonTokens.css` | Existing semantic `--azure-*` token ownership and `html[data-lite-theme]` cascade; no Recovery provider |
+| #623 | `src/lite/components/useDesktopManageGeometry.js` | `useDesktopManageGeometry` return values `panelRef`, `desktopPanel`, `panelStyle`, `reset`, `startPanelInteraction`, `adjustPanelWithKeyboard`; no independent geometry engine |
+| #624 | `src/lite/LiteOverlay.jsx` and `src/lite/LiteUx.jsx` | Non-draggable nested `LiteSheet` confirmation, protected focus/close, `LiteConsequenceSummary`; not Identity authentication |
+| #630 | `src/lite/LiteUi.jsx`, `src/lite/recovery/recoveryPremiumView.js` | Backend-derived `StateSurface`/badges, current vs saved/unknown distinction, explicit disabled reasons |
+| #588 and #589 | Existing `tests/e2e/lite-performance-contract.ts`, `lite-performance-helpers.ts`, Android scripts and immutable performance budgets | Existing measurement framework, cheap static paint, lazy panels, RAF-throttled geometry; no rewritten threshold or new dependency |
+
+### Safety distinctions to qualify
+
+1. **Verified backup is not recovery ready.** Backup verification and readiness of the destination, same-backup preview, freshness, owner/Enterprise authorization, server-side guards and protected confirmation remain distinct. On unknown destination `RecoveryBackupHistory` and the workspace Restore controls now fail closed. Backend remains final authority.
+2. **Workspace and database restores are different scopes.** Workspace confirmation demands an explicitly ready workspace destination; database confirmation demands its own verified database backup and matching ready preview, subject to existing database guard, maintenance block and FastAPI authorization.
+3. **Accepted is not committed.** `useLiteRecoveryFlow` must reconcile backend results. Rollback, rollback_failed, committed and validating_active stages remain distinct and should not be inferred from button clicks.
+4. **Empty or outdated data is not a write permit.** No Dexie/local snapshot, expired projection, unrelated backup preview or stale destination should activate a destructive action.
+5. **Cross-tab behavior stays untouched.** Neither `useDesktopManageGeometry.js`, `LiteOverlay.jsx`, shared token definitions nor the backend/worker/agent were changed in this increment.
+
+### Deferred qualification — executable only in the future Codex session
+
+Every command below is **NOT RUN — DEFERRED TO CODEX STABILIZATION**:
+
+```bash
+npm run test:recovery:azure:readiness
+npm run test:recovery:azure:reflow
+npm run test:recovery:azure:unit
+npm run test:recovery:azure:mocked
+npm run test:recovery:azure:a11y
+npm run test:recovery:azure:geometry
+npm run test:recovery:azure:visual
+npm run test:recovery:azure:perf
+npm run test:recovery:azure:qualification
+task lite:ui:recovery:azure:readiness
+task lite:ui:recovery:azure:reflow
+npm run test:mock-regression
+npm run test:a11y:states
+npm run test:perf
+npm run build
+task lite:check
+```
+
+**DEFINED — BASELINE CAPTURE AND APPROVAL DEFERRED:** `recovery-{light,dark}-mobile-blocked-prerequisites-candidate.png` and all new/changed screenshots. Stabilization must review the visual diff intentionally, not update or bless snapshots to silence failures. Check 320/360/375/390/430 px, tablet, 701 px breakpoint, landscape, nested portal theme inheritance, 200% text, keyboard movement/resize/reset and protected modal focus. Measure non-text and normal-text contrast; no WCAG certification exists for this increment. Verify backend contract projections against a disposable authorized environment only after explicit risk review, not production backup repositories.
+
+**Risks [UNVALIDATED]:** Some older backend backup records may lack explicit destination status and will now show blocked instead of presumed ready. Real destination `ready` semantics, history paging, layout overflow, CSS specificity, focus on nested dialogs, Storybook stories, incidental tests and baseline candidates all require future examination. The change intentionally favors refusing a destructive workflow over making a false recovery-readiness claim. The rollback strategy is a targeted revert of these commits before merge; do not manipulate live backup files.
+
+**CI disposition:** CI may start by GitHub automation; no job logs were examined, no workflow reruns or fixes were attempted, no merge authorization is implied. Feature branch and draft PR are reserved for a dedicated Codex qualification session.
