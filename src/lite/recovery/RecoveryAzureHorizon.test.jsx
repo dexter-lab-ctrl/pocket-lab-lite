@@ -43,7 +43,7 @@ describe('Azure Horizon Recovery accessible compositions', () => {
   it('shows explicit protected confirmation, preview linkage and cancel', () => {
     const cancel = vi.fn();
     const confirm = vi.fn();
-    render(<RecoveryConfirmSheetLazy backup={backup} preview={preview} onCancel={cancel} onConfirm={confirm} />);
+    render(<RecoveryConfirmSheetLazy backup={backup} preview={preview} location={selected} onCancel={cancel} onConfirm={confirm} />);
     expect(screen.getByText(/Confirmed for this backup/i)).toBeTruthy();
     expect(screen.getByText(/Lite settings/i)).toBeTruthy();
     expect(within(screen.getByRole('region', { name: 'Restore scope' })).getByText('photos')).toBeTruthy();
