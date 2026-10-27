@@ -180,7 +180,7 @@ export default function RecoveryScreen() {
   const selectedBackupVerified = selectedRestorePoint?.verification_status === 'verified';
   const selectedPreviewReady = selectedRestorePreview?.status === 'ready' && selectedRestorePreview?.restore_allowed !== false;
   const selectedBackupLocation = selectedRestorePoint?.location || selectedRestorePreview?.location || null;
-  const selectedBackupLocationReady = isRecoveryLocationReady(selectedBackupLocation);
+  const selectedBackupLocationReady = isRecoveryLocationReady(selectedBackupLocation); // Unknown is not ready.
   const lastRestore = mergeOptional(details?.last_restore, data?.last_restore);
   const checkpoint = mergeOptional(details?.pre_restore_checkpoint, data?.pre_restore_checkpoint);
   const serviceRestart = details?.last_restore?.service_restart || {};
@@ -547,8 +547,7 @@ export default function RecoveryScreen() {
     const restorePoint = backupOverride || selectedRestorePoint;
     const restorePreview = latestPreview && restorePoint?.backup_id === latestPreview?.backup_id ? latestPreview : null;
     const restoreLocation = restorePoint?.location || restorePreview?.location || null;
-    const restoreLocationReady = !restoreLocation
-      || isRecoveryLocationReady(restoreLocation);
+    const restoreLocationReady = isRecoveryLocationReady(restoreLocation);
     if (backupOverride) setSelectedBackup(backupOverride);
     if (!restorePoint?.backup_id || !restorePreview?.preview_id || restorePreview.restore_allowed === false || !restoreLocationReady) return;
     const flowCheck = recoveryFlow.requestRestore({
