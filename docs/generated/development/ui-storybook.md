@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 38b7e3b191b890247dd23334a95947788e0836e39810601dd4b21109e36c3eb3
+source_fingerprint: 23b69816f224abebd5033f1a1e65e29e081d47691fcc87be78787af7e5e997ce
 schema_revision: 1
 validation_status: generated
 ---
@@ -369,6 +369,22 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `PremiumManageOpen`
 - `PremiumRestoreImpact`
 - `PremiumConfirmation`
+- `AzureBlackOverview`
+- `AzureDaylightOverview`
+- `AzureSystemOverview`
+- `AzureBlackMobile`
+- `AzureDaylightMobile`
+- `AzureUnverified`
+- `AzureDestinationUnavailable`
+- `AzureSavedState`
+- `AzureActiveRestore`
+- `AzureRollbackReported`
+- `AzureLargeTextMobile`
+- `AzureManageBackup`
+- `AzureManageRestore`
+- `AzureManageProtection`
+- `AzureManageHistory`
+- `AzureMobileManageSheet`
 
 ## LiteRecoveryParity
 

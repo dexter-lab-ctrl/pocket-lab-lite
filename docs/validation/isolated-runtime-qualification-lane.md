@@ -191,12 +191,15 @@ before acting. A stale PID or missing ownership proof is a hard stop.
 The Dev-PC run uses bounded readiness and subprocess timeouts, loopback-only
 ports, a 128 MiB JetStream file-store cap, 16 MiB per-stream limits, limited
 synthetic media, one WebDAV fixture, one worker, one supervisor, and one
-synthetic agent. Temporary files, ledgers, configs, logs, and evidence live
-under the run root. The manifest records a point-in-time CPU, RSS,
-live-process, run-root, and synthetic-destination sample against explicit
-qualification-only budgets (`8` live owned processes, `256 MiB` run root,
-`64 MiB` destination). The controller does not install packages or change
-host services.
+synthetic agent. Disposable files, ledgers, configs, logs, and evidence live
+under the run root. The detached candidate Git worktree is immutable source
+input: its `candidate_source_bytes` and file count remain in the manifest for
+provenance, while the unchanged point-in-time `256 MiB` root budget applies to
+the disposable runtime portion (`runtime_root_bytes`) excluding that source
+tree. The manifest also records CPU, RSS, live-process, total-root, and
+synthetic-destination samples against explicit qualification-only budgets (`8`
+live owned processes and `64 MiB` destination). The controller does not
+install packages or change host services.
 
 Physical Android resource limits and battery/thermal thresholds are not
 invented by this lane. Physical execution is blocked unless a separately

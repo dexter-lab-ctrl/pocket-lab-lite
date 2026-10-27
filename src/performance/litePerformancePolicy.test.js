@@ -123,8 +123,8 @@ describe('Pocket Lab Lite UI performance policy guards', () => {
 
   it('keeps nested Recovery premium headers from creating duplicate glass layers', () => {
     const css = read('src/lite/recovery/recoveryPremium.css');
-    expect(css).toContain("html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-journey > header");
-    expect(css).toContain("html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-timeline > header");
+    expect(css).toContain("html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-layout > .lite-recovery-premium-journey > header");
+    expect(css).toContain("html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-layout > .lite-recovery-premium-timeline > header");
     expect(css).toContain('backdrop-filter: none !important;');
     expect(css).toContain('normal product rendering is unchanged');
   });

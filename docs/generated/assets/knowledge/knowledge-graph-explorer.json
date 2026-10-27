@@ -15377,6 +15377,39 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-recovery-performance.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-recovery-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-recovery-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-recovery-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-recovery.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-recovery.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-recovery.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-azure-horizon-rules-performance.spec.ts",
       "name": "tests/e2e/lite-azure-horizon-rules-performance.spec.ts",
       "source_refs": [
@@ -27334,6 +27367,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-azure-horizon-recovery-visual.spec.ts"
+      ],
+      "id": "rel:2bf61af020679917",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "docs/generated/production/release.md"
       ],
       "id": "rel:2c009fa7cd10cad4",
@@ -30186,6 +30233,20 @@
       "id": "rel:38b161f591881646",
       "source": "component:invite-state",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-recovery-visual.spec.ts"
+      ],
+      "id": "rel:38c0718e8a536e74",
+      "source": "journey:rollback",
+      "target": "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -71461,20 +71522,6 @@
       "source": "component:app-lifecycle-worker",
       "target": "subject:pocketlab.events.release.check_degraded",
       "type": "publishes"
-    },
-    {
-      "derivation": {
-        "generator": "scripts/docs/knowledge/generate_knowledge.py",
-        "generator_version": 3,
-        "method": "deterministic-canonical-correlation"
-      },
-      "evidence": [
-        "tests/e2e/lite-mocked.spec.ts"
-      ],
-      "id": "rel:f198a88478aee088",
-      "source": "domain:recovery",
-      "target": "test:tests/e2e/lite-mocked.spec.ts",
-      "type": "verified_by"
     },
     {
       "derivation": {

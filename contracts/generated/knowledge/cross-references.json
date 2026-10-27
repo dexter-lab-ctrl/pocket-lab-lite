@@ -16779,6 +16779,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts": [
+        {
+          "source": "journey:rollback",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-azure-horizon-rules-visual.spec.ts": [
         {
           "source": "reason:disabled",
@@ -16872,10 +16882,6 @@
         },
         {
           "source": "domain:identity",
-          "type": "verified_by"
-        },
-        {
-          "source": "domain:recovery",
           "type": "verified_by"
         },
         {
@@ -28465,10 +28471,6 @@
           "type": "verified_by"
         },
         {
-          "target": "test:tests/e2e/lite-mocked.spec.ts",
-          "type": "verified_by"
-        },
-        {
           "target": "test:tests/e2e/lite-p4-regression.spec.ts",
           "type": "verified_by"
         },
@@ -30763,6 +30765,10 @@
         {
           "target": "component:release-state",
           "type": "uses"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
+          "type": "verified_by"
         }
       ],
       "journey:rules-authorization": [
@@ -32222,6 +32228,10 @@
         },
         {
           "target": "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
           "type": "verified_by"
         },
         {
@@ -36501,6 +36511,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "058e8e8a5e6326009008236bc1d052b32ebb7c481dae026631fc57d7538a878a"
+    "source_fingerprint": "bec2df011bdc728bfbf50ce42fb60a9b65bd4fd12148e492da54ccd271dfe1b0"
   }
 }

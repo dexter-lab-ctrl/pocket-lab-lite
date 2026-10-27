@@ -101,6 +101,53 @@ tasks:
     cmds:
       - npm run test:rules:premium:perf
 
+  # Azure Horizon Recovery P0–P4. Author only; DO NOT RUN in this implementation session.
+  lite:test:recovery:azure:unit:
+    desc: Unit and presentation safety cases for Azure Recovery; deferred qualification
+    cmds:
+      - npm run test:recovery:azure:unit
+
+  lite:test:recovery:azure:mocked:
+    desc: Recovery mocked responsive, protected flow and operational truth cases
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:recovery:azure:mocked
+
+  lite:test:recovery:azure:a11y:
+    desc: Recovery WCAG, 200 percent enlargement and reduced motion cases
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:recovery:azure:a11y
+
+  lite:test:recovery:azure:geometry:
+    desc: Recovery desktop shared geometry and mobile non-draggable Manage contract
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:recovery:azure:geometry
+
+  lite:test:recovery:azure:visual:
+    desc: Recovery visual scenarios; baseline capture and owner approval deferred
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:recovery:azure:visual
+
+  lite:test:recovery:azure:perf:
+    desc: Recovery supplemental interaction sampling with PR 588 budgets unchanged
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:recovery:azure:perf
+
+  lite:test:recovery:azure:storybook:
+    desc: Build existing Storybook with Azure Recovery synthetic states
+    cmds:
+      - npm run test:recovery:azure:storybook
+
+  lite:test:recovery:azure:qualification:
+    desc: Future Codex qualification after implementing Recovery P0–P4
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:recovery:azure:qualification
+
   lite:test:recovery:premium:unit:
     desc: Run authored Recovery truth selectors and educational Journey component coverage
     cmds:

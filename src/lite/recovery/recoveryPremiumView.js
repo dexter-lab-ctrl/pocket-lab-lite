@@ -1,6 +1,6 @@
 // Read-only Recovery presentation. Never infer operation completion or restore authority.
 const ACTIVE = new Set(['accepted', 'pending', 'queued', 'running', 'working', 'in_progress', 'restoring']);
-const FAILED = new Set(['failed', 'failure', 'error', 'blocked', 'cancelled', 'canceled']);
+const FAILED = new Set(['failed', 'failure', 'error', 'blocked', 'cancelled', 'canceled', 'rolled_back', 'rollback_failed']);
 const BLOCKED = new Set(['blocked', 'unavailable', 'not_available', 'read_only']);
 const COMPLETE = new Set(['succeeded', 'completed', 'complete', 'success', 'done']);
 const string = (value) => typeof value === 'string' ? value : '';
@@ -10,7 +10,7 @@ export function isRecoveryLocationReady(location) {
   const item = record(location);
   return item.available !== false
     && item.ready !== false
-    && !['missing', 'read_only', 'low_space', 'unavailable', 'error'].includes(norm(item.status));
+    && !['available', 'missing', 'read_only', 'low_space', 'unavailable', 'error', 'repository_missing', 'repository_invalid'].includes(norm(item.status));
 };
 const validTime = (value) => {
   if (typeof value !== 'string' || !value || !Number.isFinite(Date.parse(value))) return '';
@@ -49,7 +49,7 @@ export function recoveryPremiumHero({ data = {}, backup = null, preview = null, 
     blocked: repoUnavailable && !dbBlocked ? 'Needs attention' : 'Protected',
     in_progress: 'In progress',
     failed: 'Needs attention',
-    available: 'Protection ready',
+    available: 'Verified backup',
     needs_action: 'Review recommended',
   }[state];
   return {
@@ -131,4 +131,55 @@ export function recoveryRestoreImpact({ backup = {}, preview = {}, location = nu
     location: string(l.display_name) || string(b.location?.display_name) || '',
     locationReady: readyLocation,
   };
+}
+
+
+// Azure Horizon overview facts are read-only presentation. A verified backup
+// never grants restore authority, and a destination marked "available" is not
+// automatically writable or ready.
+export function recoveryOverviewFacts({
+  backup = null, preview = null, locations = {}, saved = false, stale = false,
+  reachable = true,
+} = {}) {
+  const unconfirmed = saved || stale || reachable === false;
+  const b = record(backup);
+  const p = record(preview);
+  const locationList = Array.isArray(locations?.locations) ? locations.locations : [];
+  const destination = record(locations?.selected_location || locationList.find((item) => item.is_selected) || b.location);
+  const destinationState = norm(destination.status);
+  const verified = b.backup_id && norm(b.verification_status) === 'verified';
+  const matched = Boolean(b.backup_id && p.preview_id && p.backup_id === b.backup_id);
+  const previewReady = matched && verified && norm(p.status) === 'ready' && p.restore_allowed !== false;
+  const fact = (id, title, label, detail, state) => ({ id, title, label, detail, state });
+  if (unconfirmed) {
+    return [
+      fact('backup', 'Latest backup', 'Not confirmed', b.created_at ? 'Saved record · live verification unavailable' : 'Live backup status unavailable', 'unknown'),
+      fact('destination', 'Destination', 'Not confirmed', destination.display_name || 'Live storage readiness unavailable', 'unknown'),
+      fact('preview', 'Restore preview', 'Not confirmed', 'A current matching preview is required', 'unknown'),
+    ];
+  }
+  const backupFact = fact(
+    'backup', 'Latest backup',
+    verified ? 'Verified' : b.backup_id ? 'Needs verification' : 'No backup',
+    b.created_at || (b.backup_id ? 'Time not reported' : 'Create a backup to begin'),
+    verified ? 'completed' : 'needs_action',
+  );
+  const destinationLabel = destinationState === 'ready' && destination.available !== false && destination.ready !== false
+    ? 'Ready'
+    : ({ available: 'Available', low_space: 'Low space', read_only: 'Read-only', missing: 'Missing',
+      unavailable: 'Unavailable', permission_required: 'Unavailable', repository_invalid: 'Unavailable',
+      repository_missing: 'Missing' })[destinationState] || 'Unknown';
+  const destinationFact = fact(
+    'destination', 'Selected destination', destinationLabel,
+    destination.display_name || 'No confirmed selected location',
+    destinationLabel === 'Ready' ? 'completed' : ['Missing', 'Unavailable', 'Read-only', 'Low space'].includes(destinationLabel) ? 'blocked' : 'unknown',
+  );
+  const previewFact = fact(
+    'preview', 'Restore preview',
+    previewReady ? 'Preview ready' : matched && norm(p.status) === 'expired' ? 'Preview expired' : p.preview_id && !matched ? 'Different backup' : 'Preview required',
+    previewReady ? 'Matches the latest verified backup · confirmation still required'
+      : 'Verify and preview the selected backup before restoring',
+    previewReady ? 'available' : 'needs_action',
+  );
+  return [backupFact, destinationFact, previewFact];
 }

@@ -1043,7 +1043,8 @@ function mockPremiumRecoveryProjection(name = 'healthy') {
   const first = name === 'recovery-no-backups';
   const unverified = ['recovery-unverified', 'recovery-backup-failed'].includes(name);
   const verificationFailed = name === 'recovery-verification-failed';
-  const previewReady = ['recovery-preview-ready', 'recovery-ready', 'recovery-restore-running', 'recovery-restore-completed', 'recovery-restore-failed', 'healthy'].includes(name);
+  const rollbackCompleted = name === 'recovery-rollback-completed';
+  const previewReady = ['recovery-preview-ready', 'recovery-ready', 'recovery-restore-running', 'recovery-restore-completed', 'recovery-restore-failed', 'recovery-rollback-completed', 'healthy'].includes(name);
   const restoreBlocked = name === 'recovery-restore-blocked';
   const stale = name === 'recovery-projection-too-old' || name === 'offline-saved';
   const backup = first ? null : {
@@ -1063,18 +1064,42 @@ function mockPremiumRecoveryProjection(name = 'healthy') {
     completed_at:mockIso(-200000),health_validation:{status:'healthy'},service_restart:{status:'succeeded'},
   } : name === 'recovery-restore-failed' ? {
     restore_id:'restore-mock-failed',status:'failed',summary:'Restore could not finish.',completed_at:mockIso(-200000),
+  } : rollbackCompleted ? {
+    restore_id:'restore-mock-rollback',backup_id:backup?.backup_id,preview_id:restorePreview?.preview_id,
+    checkpoint_id:'checkpoint-mock-rollback',status:'rolled_back',phase:'rolled_back',
+    summary:'Rollback completed from the pre-restore checkpoint.',started_at:mockIso(-300000),completed_at:mockIso(-200000),
+    stage_history:[
+      { id:'checkpointing', phase:'checkpointing', status:'completed' },
+      { id:'checkpoint-ready', phase:'checkpoint_ready', status:'completed' },
+      { id:'rollback-started', phase:'rollback_started', status:'completed' },
+      { id:'rollback-validating', phase:'rollback_validating', status:'completed' },
+      { id:'rolled-back', phase:'rolled_back', status:'current' },
+    ],
   } : null;
   const repositoryAvailable = !['recovery-repository-unavailable','recovery-storage-unavailable'].includes(name);
+  const databaseProtection = rollbackCompleted ? {
+    status:'healthy', summary:'Rollback completed from the pre-restore checkpoint.',
+    latest_backup:{ backup_id:'db-backup-mock-001', status:'verified', verification_status:'verified', created_at:mockIso(-2700000), verified_at:mockIso(-2400000), summary:'Database backup verified.', sanitized:true },
+    backup_history:[], latest_restore_preview:null, last_restore:lastRestore, active_restore:null,
+    restore_guard:{ unresolved:false, rollback_failed:false, phase:'rolled_back', api_worker_restart_allowed:true, summary:'Rollback completed; the restore was not committed.', sanitized:true },
+    maintenance:{ active:false, state:'idle', writers_stopped:false, summary:'Database maintenance is idle.', sanitized:true },
+    wal:{ journal_mode:'wal', wal_bytes:0, shm_bytes:0, wal_warning:false, maintenance_active:false, writers_stopped:false, sanitized:true },
+    rollback_available:false, updated_at:mockIso(), sanitized:true,
+  } : null;
   return {
     status: stale ? 'degraded' : restoreBlocked || verificationFailed || !repositoryAvailable ? 'review' : 'healthy',
+    summary: rollbackCompleted ? 'Rollback completed from the pre-restore checkpoint.' : undefined,
     read_degraded: stale, degraded_reason:stale ? 'projection_too_old' : '',
     repository: { ready: repositoryAvailable, status: repositoryAvailable ? 'ready' : 'unavailable',engine:'restic' },
     repository_readiness: { ready: repositoryAvailable, engine:'restic' },
     last_backup: backup, latest_backup:backup, latest_restore_preview:restorePreview, last_restore:lastRestore,
+    pre_restore_checkpoint: rollbackCompleted ? { status:'created', checkpoint_id:'checkpoint-mock-rollback', summary:'Checkpoint saved before the restore attempt.' } : undefined,
+    database_protection: databaseProtection || undefined,
     backup_history: backup ? [{...backup, summary:'Current synthetic backup record'}] : [],
     available_restore_points: backup ? [backup] : [],
     recent_activity: first ? [] : [
       { id:'backup-mock-001',kind:'backup',status:'completed',summary:'Synthetic backup record saved.',occurred_at:mockIso(-3600000) },
+      ...(rollbackCompleted ? [{ id:'restore-mock-rollback',kind:'restore',status:'rolled_back',summary:'Rollback completed from the pre-restore checkpoint.',occurred_at:mockIso(-200000) }] : []),
     ],
     current_operation: name === 'recovery-backup-running' ? {status:'running',action:'backup_now',summary:'Creating a backup.'} : name === 'recovery-restore-running' ? {status:'running',action:'recovery_restore',summary:'Restoring.'} : null,
   };
@@ -1749,51 +1774,55 @@ export const handlers = [
       recent_decisions: decisions,
     });
   }),
-  http.get('/api/lite/recovery/database', () => HttpResponse.json({
-    status: 'healthy',
-    summary: 'Database protection is ready.',
-    latest_backup: {
-      backup_id: 'db-backup-mock-001',
-      status: 'verified',
-      verification_status: 'verified',
-      created_at: mockIso(-45 * 60 * 1000),
-      verified_at: mockIso(-40 * 60 * 1000),
-      summary: 'Database backup verified.',
+  http.get('/api/lite/recovery/database', ({ request }) => {
+    const rollbackDatabase = mockPremiumRecoveryProjection(rawScenario()).database_protection;
+    return HttpResponse.json({
+      status: 'healthy',
+      summary: 'Database protection is ready.',
+      latest_backup: {
+        backup_id: 'db-backup-mock-001',
+        status: 'verified',
+        verification_status: 'verified',
+        created_at: mockIso(-45 * 60 * 1000),
+        verified_at: mockIso(-40 * 60 * 1000),
+        summary: 'Database backup verified.',
+        sanitized: true,
+      },
+      backup_history: [],
+      latest_restore_preview: null,
+      last_restore: null,
+      restore_history: { count: 0, items: [] },
+      projection_reconciliation: { status: 'healthy', summary: 'Database recovery projection is current.' },
+      active_restore: null,
+      restore_guard: {
+        unresolved: false,
+        rollback_failed: false,
+        api_worker_restart_allowed: true,
+        summary: 'No database restore is active.',
+        sanitized: true,
+      },
+      maintenance: {
+        active: false,
+        state: 'idle',
+        writers_stopped: false,
+        summary: 'Database maintenance is idle.',
+        sanitized: true,
+      },
+      wal: {
+        journal_mode: 'wal',
+        wal_bytes: 0,
+        shm_bytes: 0,
+        wal_warning: false,
+        maintenance_active: false,
+        writers_stopped: false,
+        sanitized: true,
+      },
+      rollback_available: false,
+      updated_at: mockIso(),
       sanitized: true,
-    },
-    backup_history: [],
-    latest_restore_preview: null,
-    last_restore: null,
-    restore_history: { count: 0, items: [] },
-    projection_reconciliation: { status: 'healthy', summary: 'Database recovery projection is current.' },
-    active_restore: null,
-    restore_guard: {
-      unresolved: false,
-      rollback_failed: false,
-      api_worker_restart_allowed: true,
-      summary: 'No database restore is active.',
-      sanitized: true,
-    },
-    maintenance: {
-      active: false,
-      state: 'idle',
-      writers_stopped: false,
-      summary: 'Database maintenance is idle.',
-      sanitized: true,
-    },
-    wal: {
-      journal_mode: 'wal',
-      wal_bytes: 0,
-      shm_bytes: 0,
-      wal_warning: false,
-      maintenance_active: false,
-      writers_stopped: false,
-      sanitized: true,
-    },
-    rollback_available: false,
-    updated_at: mockIso(),
-    sanitized: true,
-  })),
+      ...(rollbackDatabase || {}),
+    }, { headers: liteSafeReadHeaders(request) });
+  }),
   http.get('/api/lite/recovery/summary', ({ request }) => {
     const currentScenario = rawScenario();
     const savedScenario = scenario() === 'nats-down';

@@ -9,11 +9,12 @@ function statusLabel(location = {}) {
   if (location.status === 'low_space') return 'Low space';
   if (location.status === 'read_only') return 'Read-only';
   if (['missing', 'unavailable', 'permission_required', 'repository_invalid', 'repository_missing'].includes(location.status)) return 'Unavailable';
-  return 'Checking';
+  return location.status === 'checking' ? 'Checking' : 'Unknown';
 }
 
 function statusTone(location = {}) {
-  if (location.status === 'ready' || location.status === 'available') return 'healthy';
+  if (location.status === 'ready') return 'healthy';
+  if (location.status === 'available') return 'neutral';
   if (location.status === 'checking') return 'checking';
   return 'review';
 }
@@ -39,13 +40,15 @@ export default function RecoveryBackupLocation({
   const selected = locations?.selected_location || registered.find((item) => item.is_selected) || null;
   const choices = useMemo(() => registered.filter((item) => item.location_id), [registered]);
   const canChange = !disabled && !busy;
+  const selectedReady = Boolean(selected && selected.status === 'ready'
+    && selected.ready !== false && selected.available !== false);
 
   return (
     <section className="lite-recovery-manage-subsection" aria-labelledby="recovery-backup-location-heading" data-recovery-backup-location="true">
       <div className="lite-recovery-location-head">
         <div>
           <strong id="recovery-backup-location-heading">Backup location</strong>
-          <p>Encrypted restore points are stored on this protected Server Phone.</p>
+          <p>Select a backend-approved protected destination for encrypted backups.</p>
         </div>
         <StatusBadge status={statusTone(selected)}>{statusLabel(selected || {})}</StatusBadge>
       </div>
@@ -54,7 +57,7 @@ export default function RecoveryBackupLocation({
         <div className="lite-recovery-location-icon" aria-hidden="true"><ShieldCheck className="h-5 w-5" /></div>
         <div>
           <strong>{selected?.display_name || 'Pocket Lab private backup folder'}</strong>
-          <span>{selected?.repository_present ? 'Encrypted repository ready' : 'The encrypted repository will be initialized on the first backup.'}</span>
+          <span>{selectedReady && selected?.repository_present ? 'Encrypted repository ready for backup' : selected?.repository_present ? 'Repository found · check readiness before writing' : 'Repository not yet confirmed ready'}</span>
           <small>{formatBytes(selected?.free_bytes) || (selected?.last_checked_at ? `Checked ${formatLiteTime(selected.last_checked_at)}` : 'Storage health is being checked.')}</small>
         </div>
         <LiteButton tone="secondary" onClick={() => setExpanded((value) => !value)} disabled={!canChange} ariaLabel="Change backup location">
@@ -101,7 +104,7 @@ export default function RecoveryBackupLocation({
             </div>
           ) : null}
 
-          <p className="lite-recovery-location-picker-footnote">The Android system folder picker is not available in this PWA. Location selection remains protected and auditable.</p>
+          <p className="lite-recovery-location-picker-footnote">The Android system folder picker is not available in this PWA. Locations are backend-approved. Forgetting a location removes its registration; it does not claim to delete physical backup files.</p>
         </div>
       ) : null}
     </section>

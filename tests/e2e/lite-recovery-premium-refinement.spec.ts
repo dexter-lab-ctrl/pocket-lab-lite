@@ -49,7 +49,7 @@ test.describe('Premium Recovery Center — mocked UX, safety and accessibility',
     await page.getByRole('button', { name: 'Manage Recovery' }).click();
     const manage = page.getByRole('dialog', { name: /Manage backups and recovery/i });
     await manage.getByRole('tab', { name: 'Restore' }).click();
-    const restoreRow = manage.locator('.lite-recovery-manage-action-row').filter({ hasText: 'Restore latest backup' });
+    const restoreRow = manage.locator('.lite-recovery-manage-action-row').filter({ hasText: 'Restore selected backup' });
     await detailsResponse;
     const restoreButton = restoreRow.getByRole('button', { name: 'Restore', exact: true });
     await expect(restoreButton).toBeEnabled();

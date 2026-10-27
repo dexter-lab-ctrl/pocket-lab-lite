@@ -167,3 +167,48 @@ export const PremiumConfirmation = {
     notes:'Protected confirm flow must be qualified by an isolated stateful test; opening Manage is not proof of confirmation.'}),
   play: async ({canvasElement}) => openManageRecovery(canvasElement,'Restore'),
 };
+
+
+// Azure Horizon Recovery P0–P4 — source-defined synthetic scenario coverage.
+// DEFINED / UNVALIDATED: these stories are not visual baseline approvals.
+export const AzureBlackOverview = {
+  ...createLiteStory('recovery', 'recovery-verified', { theme: 'dark', viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectRecovery(canvasElement);
+    await expect(await canvas.findByText(/Workspace protection/i)).toBeInTheDocument();
+    await expect(await canvas.findByText(/Selected destination/i)).toBeInTheDocument();
+  },
+};
+export const AzureDaylightOverview = createLiteStory('recovery', 'recovery-verified', { theme: 'light', viewport: 'desktop' });
+export const AzureSystemOverview = createLiteStory('recovery', 'recovery-verified', { theme: 'system', viewport: 'desktop' });
+export const AzureBlackMobile = createLiteStory('recovery', 'recovery-preview-ready', { theme: 'dark', viewport: 'mobile390' });
+export const AzureDaylightMobile = createLiteStory('recovery', 'recovery-no-backups', { theme: 'light', viewport: 'mobile360' });
+export const AzureUnverified = createLiteStory('recovery', 'recovery-unverified', { theme: 'dark', viewport: 'desktop' });
+export const AzureDestinationUnavailable = createLiteStory('recovery', 'recovery-repository-unavailable', { theme: 'dark' });
+export const AzureSavedState = createLiteStory('recovery', 'recovery-projection-too-old', { theme: 'dark' });
+export const AzureActiveRestore = createLiteStory('recovery', 'recovery-restore-running', { theme: 'dark' });
+export const AzureRollbackReported = createLiteStory('recovery', 'recovery-rollback-completed', { theme: 'dark' });
+export const AzureLargeTextMobile = createLiteStory('recovery', 'recovery-restore-blocked', {
+  theme: 'dark', viewport: 'mobile360', textScale: 2,
+  notes: '200% text enlargement and long blocked-state guidance. Geometry and overflow require later browser qualification.',
+});
+export const AzureManageBackup = {
+  ...createLiteStory('recovery', 'recovery-verified', { theme: 'dark', viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageRecovery(canvasElement, 'Backup'),
+};
+export const AzureManageRestore = {
+  ...createLiteStory('recovery', 'recovery-preview-ready', { theme: 'light', viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageRecovery(canvasElement, 'Restore'),
+};
+export const AzureManageProtection = {
+  ...createLiteStory('recovery', 'recovery-ready', { theme: 'dark', viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageRecovery(canvasElement, 'Protection'),
+};
+export const AzureManageHistory = {
+  ...createLiteStory('recovery', 'recovery-verified', { theme: 'light', viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageRecovery(canvasElement, 'History'),
+};
+export const AzureMobileManageSheet = {
+  ...createLiteStory('recovery', 'recovery-preview-ready', { theme: 'dark', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => openManageRecovery(canvasElement, 'Restore'),
+};

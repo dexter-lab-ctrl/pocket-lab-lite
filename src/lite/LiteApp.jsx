@@ -453,11 +453,36 @@ function LiteAppShell() {
   const transitionRef = useRef(null);
   const focusScreenAfterNavigationRef = useRef(false);
   const screenStageRef = useRef(null);
+  const mobileNavRef = useRef(null);
   const backendHealthyForPrefetch = online && !error && !loading && !workspaceApp && String(status?.overall || '').toLowerCase() !== 'unavailable';
   const activeScreenId = normalizeLiteScreenId(active);
   const activeScreenEntry = getLiteScreenEntry(activeScreenId);
   const activeRetryGeneration = screenRetryGeneration[activeScreenId] || 0;
   const ActiveScreen = getLiteScreenComponent(activeScreenId, activeRetryGeneration);
+
+  useEffect(() => {
+    const nav = mobileNavRef.current;
+    const activeButton = nav?.querySelector('button[aria-current="page"]');
+    if (!nav || !activeButton) return;
+    const revealActiveButton = () => {
+      const navBounds = nav.getBoundingClientRect();
+      const buttonBounds = activeButton.getBoundingClientRect();
+      if (buttonBounds.left >= navBounds.left && buttonBounds.right <= navBounds.right) return;
+      const centeredLeft = nav.scrollLeft
+        + (buttonBounds.left - navBounds.left)
+        - Math.max(0, (nav.clientWidth - buttonBounds.width) / 2);
+      nav.scrollTo({ left: Math.max(0, centeredLeft), behavior: 'auto' });
+    };
+    revealActiveButton();
+    const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(revealActiveButton) : null;
+    resizeObserver?.observe(nav);
+    resizeObserver?.observe(activeButton);
+    window.addEventListener('resize', revealActiveButton);
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', revealActiveButton);
+    };
+  }, [activeScreenId]);
 
   useEffect(() => {
     const syncWorkspaceFromHistory = () => {
@@ -746,7 +771,7 @@ function LiteAppShell() {
 
       <LiteQuickNavigate open={quickNavigateOpen && !workspaceApp} onClose={() => setQuickNavigateOpen(false)} onNavigate={(id) => commitScreenNavigation(id)} items={NAV_ITEMS} activeId={activeScreenId} />
 
-      <nav className="pocket-nav-dock scrollbar-none" aria-label="Pocket Lab sections" data-lite-perf-primitive="navigation">
+      <nav ref={mobileNavRef} className="pocket-nav-dock scrollbar-none" aria-label="Pocket Lab sections" data-lite-perf-primitive="navigation">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = activeScreenId === item.id;

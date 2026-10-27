@@ -13,15 +13,15 @@ const RESTORE_PHASE_LABELS = {
   ready_to_promote: 'Ready to restore',
   promoting: 'Restoring Pocket Lab',
   validating_active: 'Checking restored data',
-  committed: 'Restore complete',
+  committed: 'Restore committed',
   rollback_started: 'Rolling back safely',
   rollback_validating: 'Checking recovered state',
-  rolled_back: 'Recovery complete',
-  rollback_failed: 'Recovery needs attention',
+  rolled_back: 'Rolled back — restore not committed',
+  rollback_failed: 'Rollback failed — attention required',
 };
 
 function restorePhaseLabel(phase = '') {
-  return RESTORE_PHASE_LABELS[String(phase || '').toLowerCase()] || 'Ready';
+  return RESTORE_PHASE_LABELS[String(phase || '').toLowerCase()] || 'State not reported';
 }
 
 function backupLabel(backup) {
@@ -29,6 +29,45 @@ function backupLabel(backup) {
   const state = backup.verification_status === 'verified' ? 'Verified' : 'Not verified';
   const when = backup.created_at ? formatLiteTime(backup.created_at) : 'Time unavailable';
   return `${state} · ${when}`;
+}
+
+function DatabaseRestoreTimeline({ restoreState, currentPhase }) {
+  // A phase is marked confirmed only when a backend stage record exists.
+  const observed = Array.isArray(restoreState?.stage_history) ? restoreState.stage_history
+    : Array.isArray(restoreState?.timeline) ? restoreState.timeline : [];
+  const stages = observed
+    .map((entry, index) => {
+      const phase = String(typeof entry === 'string' ? entry : entry?.phase || entry?.stage || '').toLowerCase();
+      return Object.hasOwn(RESTORE_PHASE_LABELS, phase) ? {
+        id: String(typeof entry === 'string' ? index : entry?.id || index),
+        label: restorePhaseLabel(phase), phase,
+        state: String(typeof entry === 'string' ? 'recorded' : entry?.status || 'recorded').toLowerCase(),
+      } : null;
+    }).filter(Boolean);
+  if (currentPhase && Object.hasOwn(RESTORE_PHASE_LABELS, currentPhase)
+    && !stages.some((stage) => stage.phase === currentPhase)) {
+    stages.push({ id: 'current', label: restorePhaseLabel(currentPhase), phase: currentPhase, state: 'current' });
+  }
+  return (
+    <section className="lite-recovery-database-stage-section" aria-label="Database recovery progress">
+      <span>Recovery stages</span>
+      <h3>Backend-reported progress</h3>
+      {stages.length ? (
+        <ol className="lite-recovery-database-stage-timeline">
+          {stages.map((stage) => (
+            <li key={stage.id} data-recovery-database-stage={stage.phase}
+              data-state={stage.state} aria-current={stage.phase === currentPhase ? 'step' : undefined}>
+              <strong>{stage.label}</strong>
+              <small>{stage.state === 'current' ? 'Current reported stage'
+                : stage.state === 'completed' || stage.state === 'succeeded' ? 'Confirmed by backend'
+                  : 'Reported: ' + stage.state.replace(/_/g, ' ')}</small>
+            </li>
+          ))}
+        </ol>
+      ) : <p>No restore stage has been reported. A backup record is not a running restore.</p>}
+      <p>There is no estimated percentage. Rollback is a recovery outcome, not a successful restore.</p>
+    </section>
+  );
 }
 
 export default function RecoveryDatabaseDetailsLazy({
@@ -50,10 +89,13 @@ export default function RecoveryDatabaseDetailsLazy({
     ? databaseProtection.backup_history.slice(0, 10)
     : [];
   const verified = latestBackup?.verification_status === 'verified';
-  const previewReady = latestPreview?.status === 'ready' && latestPreview?.restore_allowed !== false;
+  const previewReady = Boolean(verified && latestBackup?.backup_id && latestPreview?.preview_id
+    && latestPreview.backup_id === latestBackup.backup_id
+    && latestPreview.status === 'ready' && latestPreview.restore_allowed !== false);
   const rollbackAvailable = Boolean(databaseProtection.rollback_available || lastRestore?.rollback_available);
   const restoreState = activeRestore || lastRestore || {};
-  const restorePhase = restoreGuard?.phase || restoreState?.phase || restoreState?.terminal_status || '';
+  const reportedPhase = String(restoreGuard?.phase || restoreState?.phase || restoreState?.terminal_status || '').toLowerCase();
+  const restorePhase = Object.hasOwn(RESTORE_PHASE_LABELS, reportedPhase) ? reportedPhase : '';
   const recoveryBlocked = restoreGuard?.rollback_failed === true || restorePhase === 'rollback_failed';
   const maintenanceStatusLabel = restorePhase
     ? restorePhaseLabel(restorePhase)
@@ -115,9 +157,11 @@ export default function RecoveryDatabaseDetailsLazy({
         <p>{friendlyLiteText(latestPreview?.summary, 'Preview restore checks the selected backup without replacing the live data.')}</p>
       </section>
 
+      <DatabaseRestoreTimeline restoreState={restoreState} currentPhase={restorePhase} />
+
       <section>
         <span>Restore</span>
-        <h3>{restorePhase ? restorePhaseLabel(restorePhase) : lastRestore?.status === 'completed' ? 'Recovery completed' : 'Confirmation required'}</h3>
+        <h3>{restorePhase ? restorePhaseLabel(restorePhase) : lastRestore?.status === 'completed' ? 'Backend reports restore completed' : 'Confirmation required'}</h3>
         <p>{friendlyLiteText(restoreState?.summary, 'Restore checkpoints current state, validates the backup, and rolls back automatically on failure.')}</p>
         <strong>{rollbackAvailable ? 'Rollback available' : 'Rollback is created during restore'}</strong>
       </section>

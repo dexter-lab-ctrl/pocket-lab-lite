@@ -95,6 +95,8 @@ export default function RecoveryManageSheetLazy({
   repository = {},
   history = [],
   savedStateOnly = false,
+  recoveryWriteBlocked = false,
+  recoveryWriteBlockedReason = '',
   latestBackupVerified = false,
   latestPreviewReady = false,
   restoreSucceeded = false,
@@ -172,6 +174,10 @@ export default function RecoveryManageSheetLazy({
         ))}
       </div>
 
+      {savedStateOnly || recoveryWriteBlocked ? (
+        <StateSurface tone="degraded" title="Recovery changes unavailable"
+          description={recoveryWriteBlockedReason || 'Saved or outdated information is for review only. Refresh and reconnect before starting protected work.'} />
+      ) : null}
       {detailsLoading ? <LoadingCard label="Loading recovery workspace…" /> : null}
       {detailsError ? (
         <StateSurface tone="degraded" title="Recovery information is temporarily unavailable" description={detailsError}>
@@ -281,7 +287,16 @@ export default function RecoveryManageSheetLazy({
               <dt>Expected items</dt><dd>{impact.count === null ? 'Not reported' : impact.count}</dd>
               <dt>Excluded</dt><dd>{impact.excluded.length ? impact.excluded.join(', ') : 'Not reported'}</dd>
             </dl>
-            <p>Restoring still requires explicit confirmation and server-owned checkpoint and health checks.</p>
+            <p>A verified backup, matching current preview, available destination, live authority and confirmation are all required.</p>
+            {!impact.ready || recoveryWriteBlocked ? (
+              <p className="lite-recovery-restore-blocked-reason" role="status">
+                {recoveryWriteBlocked ? recoveryWriteBlockedReason || 'Live recovery authority unavailable.' :
+                  !latestBackup ? 'Select a backup first.' :
+                  !impact.verified ? 'Verify the selected backup first.' :
+                  !latestPreview?.preview_id ? 'Preview the selected backup first.' :
+                  !impact.locationReady ? 'The backup destination is unavailable.' : 'Refresh or prepare a matching restore preview.'}
+              </p>
+            ) : null}
           </section>
           <div className="lite-recovery-manage-action-list">
             <RecoveryActionRow
@@ -312,14 +327,14 @@ export default function RecoveryManageSheetLazy({
             />
             <RecoveryActionRow
               icon={RotateCcw}
-              title="Restore latest backup"
-              description={restoreSucceeded ? lastRestore?.summary || 'The last restore completed.' : 'Creates a safety checkpoint and requires explicit confirmation.'}
-              status={restoreSucceeded ? 'Completed' : latestPreviewReady && latestBackupVerified ? 'Ready' : 'Protected'}
-              statusTone={restoreSucceeded ? 'healthy' : latestPreviewReady && latestBackupVerified ? 'review' : 'unknown'}
+              title="Restore selected backup"
+              description="Creates a checkpoint and requires explicit confirmation. A prior successful restore does not authorize this selected backup."
+              status={impact.ready && !recoveryWriteBlocked ? 'Review and confirm' : 'Protected'}
+              statusTone={impact.ready && !recoveryWriteBlocked ? 'review' : 'unknown'}
               actionLabel="Restore"
               busyLabel="Restoring…"
               busy={busy === 'restore'}
-              disabled={Boolean(busy) || !impact.ready || databaseWriteBlocked || savedStateOnly}
+              disabled={Boolean(busy) || !impact.ready || databaseWriteBlocked || savedStateOnly || recoveryWriteBlocked}
               tone="danger"
               onAction={onRestore}
               onDetails={() => onOpenActionDetails('restore')}
@@ -345,14 +360,14 @@ export default function RecoveryManageSheetLazy({
           <div className="lite-recovery-protection-grid">
             <article>
               <ShieldCheck className="h-5 w-5" />
-              <div><strong>Protected data</strong><p>Pocket Lab Lite state, app metadata, rules, and safe evidence references.</p></div>
+              <div><strong>Protected data</strong><p>Only the backend-reported included components are confirmed.</p></div>
               <StatusBadge status={protectedItems.length ? 'healthy' : 'unknown'}>{protectedItems.length ? 'Reported' : 'Not reported'}</StatusBadge>
               <ul>{protectedItems.slice(0, 6).map((item) => <li key={item}>{item}</li>)}</ul>
             </article>
             <article>
               <HardDrive className="h-5 w-5" />
-              <div><strong>Excluded data</strong><p>Raw secrets, caches, temporary files, and large media stay outside the default backup.</p></div>
-              <StatusBadge status="unknown">Excluded</StatusBadge>
+              <div><strong>Excluded data</strong><p>Only backend-reported exclusions are definitive. Do not assume device photos or app media are protected.</p></div>
+              <StatusBadge status="unknown">{excludedItems.length ? 'Reported' : 'Not reported'}</StatusBadge>
               <ul>{excludedItems.slice(0, 6).map((item) => <li key={item}>{item}</li>)}</ul>
             </article>
             <article>
@@ -389,8 +404,8 @@ export default function RecoveryManageSheetLazy({
           <React.Suspense fallback={<div className="lite-recovery-history-loading">Loading backup history…</div>}>
             <RecoveryBackupHistory
               initialHistory={history}
-              latestPreviewReady={latestPreviewReady}
-              savedStateOnly={savedStateOnly}
+              latestPreview={latestPreview}
+               savedStateOnly={savedStateOnly || recoveryWriteBlocked}
               selectedBackupId={selectedBackupId}
               onSelectBackup={onSelectBackup}
               onVerify={onVerify}

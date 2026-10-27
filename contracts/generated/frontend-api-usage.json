@@ -3588,7 +3588,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "db511b07d6fdb218d181ab5ab01e0f7a9a35de9043c023c5eb4dcb6c56b3f5ab",
+    "aggregate_fingerprint": "ab3808a9ee8662aa505652014087112f1077e4dddf00aa097ae1e0077d598de1",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3604,7 +3604,7 @@
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a",
       "src/lib/liteApi.js": "fd0665bc72800c06c3de1887bc158b6d0d19b3ba7c5ca8bd7972fe251be80bdd",
       "src/lite/LiteActionProgress.jsx": "880d1bf891c3f76ef42e4565c01b0d2a39a9660a6f2d0ac9f909f0fce458f5a5",
-      "src/lite/LiteApp.jsx": "b719960ac531fbed75453bd423a3ed0769e5babef7dafa9a435fad922596c082",
+      "src/lite/LiteApp.jsx": "712a4bb5fec0f47ab02a066db5796438eb4e95f111cb32cd0440631fef975fa6",
       "src/lite/LiteAzureHorizon.stories.jsx": "734d1321be4f5f5b95ace42215f0d6390c9b1cc39f089edacc7f718ddd319c72",
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
       "src/lite/LiteCatalog.stories.jsx": "ce89eb1f96658d44771d9347b382ef80a7d697fe1ae718c57de4019aa6e7243f",
@@ -3626,8 +3626,8 @@
       "src/lite/LiteP2.stories.jsx": "f66e0f95c35fb98e41958542676821d9dfd89331e5ebfc3ba7de6a575ea47577",
       "src/lite/LiteP3.stories.jsx": "f6d4a3d8e0e3a6f2b97e3462098fc84c9f99ddbaddeae5844c1ed9eb0926005e",
       "src/lite/LitePrimitives.stories.jsx": "c4b0683344593c453a08ef2c79967c7b52b0d6fda1320dd6f8091452ad714751",
-      "src/lite/LiteRecovery.jsx": "7823542ede4d3e94de2ab24beeda6c7c612435a21a69261ac682bff0a5842720",
-      "src/lite/LiteRecovery.stories.jsx": "6453a707144e1a1c665fe3e612c8bc4ed70908ad17cd2feeb5b49db9b0ff2801",
+      "src/lite/LiteRecovery.jsx": "57ff6472c0d9b7f8cd50a84c3ae76e2e3a3213bc49aeb278cbb3039f6c149134",
+      "src/lite/LiteRecovery.stories.jsx": "348e3d81b92b75e3c9c29680ffe65d8f9110cd57fcfc21ef030ffdfcd7f05c3e",
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "c42cd0646545ddd7107a1321e9f565fb70ea8a1215bafb23cbf9dd4a413acf89",
       "src/lite/LiteRevisionSyncBridge.jsx": "f4eb52b13ea61c36fbe428836ec43f7c2df6e09eccd62e85230723dd2389309f",
@@ -3643,7 +3643,7 @@
       "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "86028142a9f9b74b7defd17dbfc25eda92cb6f41acf79e5a9a7bc7bcff79c674",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "ef48fad7c8a54e5f5ef37f62de033fb1528a00e97adf2e17f3654d702ffb8a7f"
+      "src/mocks/handlers.js": "782cb8d40e9b5561b3302cd364fc60f855cc8003538b695a58e6f95d0fdbe1cd"
     },
     "validation_state": "generated"
   }

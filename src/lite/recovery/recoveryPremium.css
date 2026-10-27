@@ -4,6 +4,7 @@
 .lite-recovery-premium-screen :is(h2,h3,p,strong,span,small,time,button,li) { min-width:0; overflow-wrap:anywhere; word-break:normal; }
 .lite-recovery-premium-screen button:focus-visible,.lite-recovery-premium-screen [role="tab"]:focus-visible { outline:3px solid var(--lite-accent, #165ead); outline-offset:3px; }
 .lite-recovery-premium-eyebrow,.lite-recovery-premium-status { display:block; }
+.lite-recovery-location-head > .pocket-badge { flex:0 0 auto; white-space:nowrap; }
 .lite-recovery-premium-eyebrow { font-size:.83rem; font-weight:750; letter-spacing:.035em; color:var(--lite-text-muted, #536275); }
 .lite-recovery-premium-status { font-size:.82rem; font-weight:700; color:var(--lite-text-muted, #536275); }
 .lite-recovery-premium-protection { display:grid; gap:1rem; padding:clamp(1rem, 3vw, 1.7rem); }
@@ -44,18 +45,62 @@
 .lite-recovery-premium-timeline-list li > div { display:grid; gap:.25rem; min-width:0; }
 .lite-recovery-premium-timeline-list small { color:var(--lite-text-muted,#536275); }
 .lite-recovery-premium-timeline-empty { padding:.65rem 0; }
+.lite-recovery-database-stage-timeline { list-style:none; display:grid; gap:.55rem; padding:0; margin:.75rem 0 0; }
+.lite-recovery-database-stage-timeline li { display:grid; gap:.18rem; min-width:0; padding:.65rem .75rem; border:1px solid var(--lite-border,#8293aa); border-radius:.75rem; background:var(--lite-surface-subtle,rgba(118,143,171,.09)); }
+.lite-recovery-database-stage-timeline strong,.lite-recovery-database-stage-timeline small { display:block; min-width:0; overflow-wrap:anywhere; }
+.lite-recovery-database-stage-timeline small { color:var(--lite-text-muted,#536275); line-height:1.4; }
 
 /* The daylight theme gives every header a glass surface. Recovery Journey and
    Recent Activity headers live inside already-opaque cards, so repeating that
    effect creates large backdrop-filter compositor layers during qualification
    scrolling. Keep the qualification-only paint reduction scoped to these
    nested decorative headers; normal product rendering is unchanged. */
-html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-journey > header,
-html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-screen > .lite-recovery-premium-timeline > header {
+html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-layout > .lite-recovery-premium-journey > header,
+html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premium-layout > .lite-recovery-premium-timeline > header {
   background: transparent !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+/* Recovery cards are declared after the shared Azure performance bridge, so
+   keep their normal depth treatment from reintroducing a compositor layer on
+   the measured desktop scroll path. The product presentation is unchanged
+   outside the explicit qualification mode. */
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-recovery-premium-screen .lite-recovery-premium-protection,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-recovery-premium-screen .lite-recovery-premium-journey,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-recovery-premium-screen .lite-recovery-premium-timeline {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* The overview is a single, bounded Recovery surface. Content visibility
+   containment is useful for longer screens, but its visibility boundary is
+   itself crossed by the desktop qualification scroll and can introduce a
+   missed compositor frame. Keep this explicit measured path stable. */
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-recovery-premium-screen {
+  content-visibility: visible !important;
+  contain: none !important;
+}
+
+/* Azure's shared Daylight layer adds depth to page headers, freshness
+   feedback, and secondary controls. Those are decorative on the Recovery
+   overview and otherwise remain in the document scroll paint path. Remove
+   only that decoration for the explicit PR #588 qualification build; the
+   normal Recovery surface keeps its product presentation. */
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-screen-stage-recovery .lite-page-header,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-screen-stage-recovery .lite-page-header :is(.pocket-button, .lite-refresh-button),
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-screen-stage-recovery .lite-ux-freshness,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-screen-stage-recovery .lite-recovery-premium-screen :is(.pocket-button, .lite-recovery-premium-stage-grid button),
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-screen-stage-recovery .lite-recovery-premium-layout > :is(.lite-recovery-premium-journey, .lite-recovery-premium-timeline) > header,
+html[data-lite-perf-mode='true'][data-lite-theme] .lite-screen-stage-recovery .lite-motion-reveal {
+  box-shadow: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  will-change: auto !important;
+  transform: none !important;
 }
 
 .lite-recovery-impact { display:grid; gap:.7rem; padding:.9rem; border:1px solid var(--lite-border,#8293aa); border-radius:.9rem; }
@@ -64,11 +109,215 @@ html[data-lite-perf-mode='true'].theme-pocket-lite-daylight .lite-recovery-premi
 .lite-recovery-impact dd { font-weight:650; }
 .lite-recovery-manage-sheet :is(button,p,small,strong,span),.lite-recovery-confirm-sheet :is(button,p,small,strong,span) { overflow-wrap:anywhere; white-space:normal; min-width:0; max-width:100%; }
 @media(max-width:640px) { .lite-recovery-premium-indicators { grid-template-columns:repeat(2,minmax(0,1fr)); } .lite-recovery-premium-stage-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .lite-recovery-premium-actions { display:grid; grid-template-columns:1fr; } .lite-recovery-premium-actions button { width:100%; } .lite-recovery-impact dl { grid-template-columns:1fr; } }
-@media(max-width:360px) { .lite-recovery-premium-indicators { grid-template-columns:1fr; } }
+@media(max-width:360px) {
+  .lite-recovery-premium-indicators { grid-template-columns:1fr; }
+  .lite-recovery-premium-brand { display:grid; grid-template-columns:minmax(0,1fr); gap:.65rem; }
+  .lite-recovery-premium-brand > svg { width:3rem; height:3rem; }
+}
 @media(prefers-reduced-motion:reduce) { .lite-recovery-premium-screen *, .lite-recovery-premium-screen *::before,.lite-recovery-premium-screen *::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; scroll-behavior:auto!important; } }
 
 /* Higher specificity than the legacy R1 daylight two-column hero. */
 .theme-pocket-lite-daylight .lite-recovery-r1-hero.lite-recovery-premium-protection {
   grid-template-columns: minmax(0, 1fr);
   overflow: visible;
+}
+
+/* Azure Horizon Recovery P0–P3: root-owned semantic colors in both appearances.
+   High specificity intentionally supersedes legacy Daylight-only declarations
+   in src/index.css without changing styles for other screens. */
+html[data-lite-theme] .lite-recovery-premium-screen {color:var(--azure-text);}
+html[data-lite-theme] .lite-recovery-premium-layout {
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:1rem;align-items:stretch;min-width:0;
+}
+html[data-lite-theme] .lite-recovery-premium-layout > * {min-width:0;height:100%;}
+html[data-lite-theme] .lite-recovery-premium-protection,
+html[data-lite-theme] .lite-recovery-premium-journey,
+html[data-lite-theme] .lite-recovery-premium-timeline {
+  color:var(--azure-text);background:var(--azure-surface);border-color:var(--azure-border);
+  box-shadow:var(--azure-shadow);backdrop-filter:none;
+}
+html[data-lite-theme] .lite-recovery-premium-brand > svg {
+  color:var(--azure-accent);background:var(--azure-accent-subtle);border-color:var(--azure-border);
+}
+html[data-lite-theme] .lite-recovery-premium-eyebrow {color:var(--azure-accent);}
+html[data-lite-theme] .lite-recovery-premium-status,
+html[data-lite-theme] .lite-recovery-premium-backup-date,
+html[data-lite-theme] .lite-recovery-premium-disabled-reason,
+html[data-lite-theme] .lite-recovery-premium-indicators :is(span,small),
+html[data-lite-theme] .lite-recovery-premium-timeline-list small {color:var(--azure-muted);}
+html[data-lite-theme] .lite-recovery-premium-indicators li,
+html[data-lite-theme] .lite-recovery-premium-stage-grid button,
+html[data-lite-theme] .lite-recovery-premium-journey-explanation {
+  background:var(--azure-raised);color:var(--azure-text);
+  border-color:var(--azure-border);box-shadow:none;
+}
+html[data-lite-theme] .lite-recovery-premium-indicators li {
+  border-inline-start:3px solid var(--azure-neutral);min-height:6.2rem;
+}
+html[data-lite-theme] .lite-recovery-premium-indicators li[data-state="completed"] {border-inline-start-color:var(--azure-success);}
+html[data-lite-theme] .lite-recovery-premium-indicators li[data-state="blocked"] {border-inline-start-color:var(--azure-danger);}
+html[data-lite-theme] .lite-recovery-premium-indicators li[data-state="needs_action"] {border-inline-start-color:var(--azure-warning);}
+html[data-lite-theme] .lite-recovery-premium-indicators small {font-size:.78rem;line-height:1.45;}
+html[data-lite-theme] .lite-recovery-premium-stage-grid button {
+  min-height:5.25rem;min-width:0;cursor:pointer;
+}
+html[data-lite-theme] .lite-recovery-premium-stage-grid button.is-selected {
+  background:var(--azure-selected);border-color:var(--azure-focus);outline:2px solid var(--azure-focus);
+}
+html[data-lite-theme] .lite-recovery-premium-timeline-icon {background:var(--azure-accent-subtle);color:var(--azure-info);border-color:var(--azure-border);}
+html[data-lite-theme] .lite-recovery-database-stage-timeline li {background:var(--azure-raised);border-color:var(--azure-border);color:var(--azure-text);}
+html[data-lite-theme] .lite-recovery-database-stage-timeline small {color:var(--azure-muted);}
+html[data-lite-theme] :is(.lite-recovery-premium-screen,.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-evidence-sheet) :is(button,a,input,select,textarea,[role="tab"],[role="tabpanel"]):focus-visible {
+  outline:3px solid var(--azure-focus);outline-offset:3px;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-evidence-sheet) {
+  background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border);
+  box-shadow:var(--azure-panel-shadow);min-width:0;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-evidence-sheet) :is(.lite-overlay-head,.lite-overlay-scroll) {
+  background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border);min-width:0;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-evidence-sheet)
+  :is(.lite-recovery-details-loading,.lite-recovery-history-loading) {
+  background:var(--azure-raised) !important;color:var(--azure-text) !important;border-color:var(--azure-border) !important;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-evidence-sheet) :is(button,input,select,textarea) {color-scheme:inherit;}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet) :is(input,select,textarea) {
+  color:var(--azure-text);background:var(--azure-input);border:1px solid var(--azure-strong-border);
+}
+html[data-lite-theme] .lite-recovery-manage-tabs {
+  position:sticky;top:0;z-index:3;display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:.35rem;padding:.35rem;margin:0;border-radius:.9rem;
+  background:var(--azure-raised);border:1px solid var(--azure-border);
+  box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;
+}
+html[data-lite-theme] .lite-recovery-manage-tabs button {
+  min-width:0;min-height:44px;width:100%;padding:.55rem .4rem;white-space:normal;
+  background:transparent;color:var(--azure-text);border:1px solid transparent;
+  border-radius:var(--azure-radius-control);font-weight:650;
+}
+html[data-lite-theme] .lite-recovery-manage-tabs button[aria-selected="true"] {
+  background:var(--azure-selected);border-color:var(--azure-strong-border);
+  color:var(--azure-text);box-shadow:inset 0 -3px var(--azure-accent);
+}
+html[data-lite-theme] .lite-recovery-manage-tabs button:hover {background:var(--azure-hover);}
+html[data-lite-theme] .lite-recovery-manage-section,
+html[data-lite-theme] .lite-recovery-manage-content,
+html[data-lite-theme] .lite-recovery-database-manage-content {color:var(--azure-text);}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-evidence-sheet)
+  :is(.lite-recovery-manage-section-heading,.lite-recovery-manage-action-row,.lite-recovery-manage-subsection,
+  .lite-recovery-manage-app-list article,.lite-recovery-manage-compact-list > div,
+  .lite-recovery-recent-list > article,.lite-recovery-protection-grid > article,
+  .lite-recovery-location-current,.lite-recovery-location-choice,
+  .lite-recovery-native-confirm-backup,.lite-recovery-native-confirm-section,
+  .lite-recovery-impact,.lite-recovery-history-action-row,.lite-recovery-database-history article,
+  .lite-recovery-database-manage-content > section,.lite-recovery-evidence-item) {
+  color:var(--azure-text);background:var(--azure-raised);border:1px solid var(--azure-border);
+  box-shadow:none;backdrop-filter:none;min-width:0;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-evidence-sheet)
+  :is(p,small,dt,.lite-recovery-location-picker-note,.lite-recovery-location-picker-footnote,
+  .lite-recovery-location-current span,.lite-recovery-location-current small,.lite-recovery-location-choice small,
+  .lite-recovery-history-select span,.lite-recovery-manage-section-heading > span,
+  .lite-recovery-manage-action-copy p,.lite-recovery-native-confirm-head span) {
+  color:var(--azure-muted);overflow-wrap:anywhere;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-evidence-sheet)
+  :is(strong,h2,h3,dd,.lite-recovery-manage-action-title strong,.lite-recovery-location-current strong,
+  .lite-recovery-manage-app-list strong,.lite-recovery-history-select strong) {
+  color:var(--azure-text);overflow-wrap:anywhere;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-evidence-sheet)
+  :is(.lite-recovery-location-picker,.lite-recovery-location-candidates,.lite-recovery-manage-evidence-callout,
+  .lite-recovery-native-confirm,.lite-recovery-database-technical,.lite-progressive-details) {
+  background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border);
+}
+html[data-lite-theme] .lite-recovery-history-action-row.is-selected,
+html[data-lite-theme] .lite-recovery-location-choice.is-selected {
+  background:var(--azure-selected);border-color:var(--azure-accent);
+  box-shadow:inset 3px 0 var(--azure-accent);
+}
+html[data-lite-theme] .lite-recovery-history-select,
+html[data-lite-theme] .lite-recovery-location-choice > button {
+  color:var(--azure-text);background:transparent;
+}
+html[data-lite-theme] .lite-recovery-desktop-panel-tools {
+  display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;
+}
+html[data-lite-theme] .lite-recovery-desktop-panel-tools button {
+  display:inline-flex;align-items:center;justify-content:center;gap:.3rem;
+  min-width:44px;min-height:44px;padding:.45rem;border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-control);background:var(--azure-raised);color:var(--azure-text);
+  cursor:pointer;touch-action:none;
+}
+html[data-lite-theme] .lite-recovery-desktop-panel-tools button:hover {background:var(--azure-hover);}
+html[data-lite-theme] .lite-recovery-premium-layout .lite-recovery-premium-stage-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+html[data-lite-theme] .lite-recovery-native-confirm-actions {display:flex;flex-wrap:wrap;gap:.65rem;justify-content:flex-end;}
+html[data-lite-theme] .lite-recovery-native-confirm-actions button {min-height:44px;}
+
+@media(min-width:701px) {
+  html[data-lite-theme] .lite-recovery-manage-sheet.is-movable {
+    position:fixed;min-height:0;max-height:none;margin:0;
+    display:flex;flex-direction:column;overflow:hidden;
+    border-radius:var(--azure-radius-card);
+  }
+  html[data-lite-theme] .lite-recovery-manage-sheet.is-movable .lite-recovery-manage-scroll {
+    flex:1 1 auto;min-height:0;overflow-y:auto;
+  }
+}
+@media(max-width:900px) {
+  html[data-lite-theme] .lite-recovery-premium-layout {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-premium-layout .lite-recovery-premium-stage-grid {grid-template-columns:repeat(4,minmax(0,1fr));}
+}
+@media(max-width:700px) {
+  html[data-lite-theme] .lite-recovery-manage-sheet:not(.is-movable) {
+    position:relative;margin:0;width:100%;max-width:100%;
+    max-height:calc(var(--lite-visual-viewport-height,100dvh) - env(safe-area-inset-top) - .4rem);
+    border-radius:1.25rem 1.25rem 0 0;
+  }
+  html[data-lite-theme] .lite-recovery-premium-indicators {grid-template-columns:repeat(2,minmax(0,1fr));}
+  html[data-lite-theme] .lite-recovery-premium-actions {display:grid;grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-premium-actions > button {width:100%;}
+  html[data-lite-theme] .lite-recovery-premium-layout .lite-recovery-premium-stage-grid {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-premium-stage-grid button {
+    min-height:3.4rem;display:flex;justify-content:flex-start;gap:.75rem;padding:.75rem;
+  }
+  html[data-lite-theme] .lite-recovery-premium-stage-grid button span {margin-inline-start:auto;text-align:end;}
+  html[data-lite-theme] .lite-recovery-manage-tabs {grid-template-columns:repeat(2,minmax(0,1fr));}
+  html[data-lite-theme] .lite-recovery-native-confirm-actions {display:grid;grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-native-confirm-actions button {width:100%;}
+  html[data-lite-theme] .lite-recovery-protection-grid {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-history-row-actions {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+  html[data-lite-theme] .lite-recovery-history-row-actions button {width:100%;min-width:0;}
+}
+@media(max-width:360px) {
+  html[data-lite-theme] .lite-recovery-premium-protection {gap:.6rem;padding:.75rem;}
+  html[data-lite-theme] .lite-recovery-premium-indicators {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-history-row-actions {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-premium-brand {gap:.35rem;}
+  html[data-lite-theme] .lite-recovery-premium-brand > svg {width:2.5rem;height:2.5rem;padding:.4rem;}
+  html[data-lite-theme] .lite-recovery-premium-brand h2 {font-size:.95rem;}
+  html[data-lite-theme] .lite-recovery-premium-brand h2 {margin:.1rem 0 .2rem;}
+  html[data-lite-theme] .lite-recovery-premium-brand p {line-height:1.3;}
+  html[data-lite-theme] .lite-recovery-premium-backup-date {font-size:.7rem;}
+  html[data-lite-theme] .lite-recovery-premium-journey h2,
+  html[data-lite-theme] .lite-recovery-premium-timeline h2 {font-size:.95rem;}
+  html[data-lite-theme] .lite-recovery-premium-layout .lite-recovery-premium-stage-grid {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-premium-stage-grid button {
+    display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;
+    align-items:center;column-gap:.5rem;row-gap:.15rem;
+  }
+  html[data-lite-theme] .lite-recovery-premium-stage-grid button > svg {grid-row:1 / span 2;}
+  html[data-lite-theme] .lite-recovery-premium-stage-grid button strong {grid-column:2;min-width:0;}
+  html[data-lite-theme] .lite-recovery-premium-stage-grid button span {grid-column:2;margin-inline-start:0;text-align:left;}
+  html[data-lite-theme] .lite-recovery-premium-stage-grid button span {font-size:.65rem;}
+  html[data-lite-theme] .lite-recovery-premium-indicators span {font-size:.75rem;}
+  html[data-lite-theme] .lite-recovery-premium-actions button {font-size:.8rem;}
+  html[data-lite-theme] .lite-recovery-premium-screen :is(h2,h3,p,strong,span,small,time,button,li) {overflow-wrap:break-word;word-break:normal;}
+}
+@media(prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-recovery-manage-scroll {scroll-behavior:auto;}
+  html[data-lite-theme] .lite-recovery-desktop-panel-tools * {transition:none;animation:none;}
 }

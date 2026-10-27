@@ -14,7 +14,7 @@
     "scenario": "devices-online",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "0ea9526e0698d2f2ea8adf0e990640ba732029a47116b88669c0af1f11a0ec18",
+    "source_fingerprint": "36ccd55b1db635f002514ddc18927d4825fe6c68c9817c28ea0854957dd29472",
     "validation_status": "generated"
   }
 }
