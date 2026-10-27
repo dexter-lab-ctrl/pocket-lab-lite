@@ -5,6 +5,7 @@ import { selectRecoveryHistorySnapshotView } from '../../lib/liteViewModels.js';
 import { useLiteQuery } from '../../hooks/useLiteQuery.js';
 import LiteHistorySection from '../components/LiteHistorySection.jsx';
 import { GlassCard, LiteButton, StatusBadge } from '../LiteUi.jsx';
+import { isRecoveryLocationReady } from './recoveryPremiumView.js';
 
 const RECOVERY_HISTORY_SECTION_LAZY_BY_DEFAULT = true;
 const RECOVERY_HISTORY_NO_ALWAYS_RENDERED_ROWS = true;
@@ -15,9 +16,7 @@ void RECOVERY_HISTORY_CURSOR_PAGINATION_R3;
 
 export function recoveryHistoryEligibility({ backup = {}, selectedBackupId = '', preview = null, saved = false } = {}) {
   const backupId = backup?.backup_id || backup?.id || backup?.snapshot_id || '';
-  const locationStatus = String(backup?.location?.status || '').toLowerCase();
-  const locationUnavailable = backup?.location?.available === false
-    || ['missing', 'read_only', 'low_space', 'unavailable', 'repository_missing', 'repository_invalid'].includes(locationStatus);
+  const locationUnavailable = !isRecoveryLocationReady(backup?.location);
   const verified = backup?.verification_status === 'verified';
   const selected = Boolean(backupId && backupId === selectedBackupId);
   const previewMatches = Boolean(backupId && preview?.preview_id && preview?.backup_id === backupId
@@ -26,7 +25,7 @@ export function recoveryHistoryEligibility({ backup = {}, selectedBackupId = '',
   const reason = saved ? 'Live recovery state is unavailable.'
     : !selected ? 'Select this backup to review restoration.'
     : !verified ? 'Verify this backup before restoring.'
-    : locationUnavailable ? 'Reconnect the backup destination.'
+    : locationUnavailable ? 'The backup destination must report Ready before restoration.'
     : !previewMatches ? 'Prepare a fresh matching restore preview.'
     : 'Review the consequences before confirming.';
   return { selected, verified, previewMatches, locationUnavailable, canRecover, reason };
@@ -141,16 +140,16 @@ const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHisto
             const { selected, verified, locationUnavailable, canRecover } = eligibility;
             return (
               <article key={id} className={`lite-recovery-history-action-row${selected ? ' is-selected' : ''}`}>
-                <button type="button" className="lite-recovery-history-select" onClick={() => onSelectBackup?.(backup)} aria-pressed={selected}>
+                <button type="button" className="lite-recovery-history-select" onClick={() => onSelectBackup?.(backup)} aria-pressed={selected} aria-describedby={`recovery-history-prerequisite-${id}`}>
                   <strong>{selected ? 'Selected backup · ' : ''}{backup.created_at ? formatLiteTime(backup.created_at) : 'Timestamp unavailable'}</strong>
                   <span>{verified ? 'Verified' : 'Needs verification'} · {formatSize(backup.size_bytes)} · {backup.location?.display_name ? `From ${backup.location.display_name} · ` : ''}{locationUnavailable ? 'Location unavailable · Reconnect this storage to recover.' : backup.summary || 'Pocket Lab restore point'}</span>
-                   {selected ? <small>{eligibility.reason}</small> : null}
+                  <small className="lite-recovery-history-prerequisite" id={`recovery-history-prerequisite-${id}`}>{eligibility.reason}</small>
                 </button>
                 <div className="lite-recovery-history-row-actions">
                   <LiteButton tone="secondary" onClick={() => onSelectBackup?.(backup)}>View details</LiteButton>
                   <LiteButton tone="secondary" onClick={() => onVerify?.(backup)} disabled={!id || locationUnavailable || historySavedStateOnly}>Verify</LiteButton>
                   <LiteButton tone="secondary" onClick={() => onPreview?.(backup)} disabled={!id || !verified || locationUnavailable || historySavedStateOnly}>Preview</LiteButton>
-                  <LiteButton tone="danger" onClick={() => onRecover?.(backup)} disabled={!canRecover}>Recover</LiteButton>
+                  <LiteButton tone="danger" onClick={() => onRecover?.(backup)} disabled={!canRecover} ariaLabel={canRecover ? 'Recover selected verified backup' : `Recover unavailable: ${eligibility.reason}`}>Recover</LiteButton>
                 </div>
               </article>
             );
