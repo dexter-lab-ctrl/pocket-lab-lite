@@ -4,6 +4,7 @@
 .lite-recovery-premium-screen :is(h2,h3,p,strong,span,small,time,button,li) { min-width:0; overflow-wrap:anywhere; word-break:normal; }
 .lite-recovery-premium-screen button:focus-visible,.lite-recovery-premium-screen [role="tab"]:focus-visible { outline:3px solid var(--lite-accent, #165ead); outline-offset:3px; }
 .lite-recovery-premium-eyebrow,.lite-recovery-premium-status { display:block; }
+.lite-recovery-location-head > .pocket-badge { flex:0 0 auto; white-space:nowrap; }
 .lite-recovery-premium-eyebrow { font-size:.83rem; font-weight:750; letter-spacing:.035em; color:var(--lite-text-muted, #536275); }
 .lite-recovery-premium-status { font-size:.82rem; font-weight:700; color:var(--lite-text-muted, #536275); }
 .lite-recovery-premium-protection { display:grid; gap:1rem; padding:clamp(1rem, 3vw, 1.7rem); }

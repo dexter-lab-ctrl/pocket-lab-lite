@@ -83,6 +83,9 @@ test.describe('Azure Horizon Recovery P0–P4 semantic, accessible and protected
         expect(bounds.x).toBeGreaterThanOrEqual(-1);
         expect(bounds.x + bounds.width).toBeLessThanOrEqual(width + 1);
       }
+      const locationStatus = dialog.locator('.lite-recovery-location-head > [data-lite-perf-primitive="status-badge"]');
+      await expect(locationStatus).toHaveCSS('white-space', 'nowrap');
+      expect(await locationStatus.evaluate((node) => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
       await dialog.getByRole('tab', { name: 'Restore' }).click();
       await assertNoHorizontalOverflow(page);
     });
