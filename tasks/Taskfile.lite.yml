@@ -62,6 +62,46 @@ tasks:
       - npm run test:identity:azure:qualification
 
 
+  lite:ui:recovery:azure:readiness:
+    desc: Qualify Recovery destination/preview guards and protected database confirmation
+    cmds:
+      - npm run test:recovery:azure:readiness
+
+  lite:ui:recovery:azure:reflow:
+    desc: Qualify 320px/200-percent Recovery reflow and blocked-action explanations
+    cmds:
+      - npm run test:recovery:azure:reflow
+
+  lite:ui:recovery:azure:unit:
+    desc: Reuse existing Azure Recovery source and shared geometry tests
+    cmds:
+      - npm run test:recovery:azure:unit
+
+  lite:ui:recovery:azure:mocked:
+    desc: Reuse existing mocked desktop and mobile Recovery operations scenarios
+    cmds:
+      - npm run test:recovery:azure:mocked
+
+  lite:ui:recovery:azure:a11y:
+    desc: Run deferred WCAG and enlarged-text scenarios for Recovery
+    cmds:
+      - npm run test:recovery:azure:a11y
+
+  lite:ui:recovery:azure:visual:
+    desc: Compare Recovery visual candidates only after explicit screenshot baseline review
+    cmds:
+      - npm run test:recovery:azure:visual
+
+  lite:ui:recovery:azure:perf:
+    desc: Reuse PR 588/589 budgets with supplemental Recovery interaction sampling
+    cmds:
+      - npm run test:recovery:azure:perf
+
+  lite:ui:recovery:azure:qualification:
+    desc: Full Azure Recovery qualification reserved for a dedicated Codex session
+    cmds:
+      - npm run test:recovery:azure:qualification
+
   lite:ui:p4:visual-review:
     desc: Compare committed P4 visual contracts against manually approved reference snapshots
     cmds:
