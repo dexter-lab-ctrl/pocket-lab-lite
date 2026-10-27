@@ -208,6 +208,20 @@ export const AzureManageHistory = {
   ...createLiteStory('recovery', 'recovery-verified', { theme: 'light', viewport: 'desktop' }),
   play: async ({ canvasElement }) => openManageRecovery(canvasElement, 'History'),
 };
+export const AzureHistoryPrerequisites = {
+  ...createLiteStory('recovery', 'recovery-restore-blocked', {
+    theme: 'dark', viewport: 'desktop',
+    notes: 'Restore requires a verified backup, a ready destination, current matching preview and live authorization.',
+  }),
+  play: async ({ canvasElement }) => openManageRecovery(canvasElement, 'History'),
+};
+export const AzureBlockedRestoreGuidance = {
+  ...createLiteStory('recovery', 'recovery-restore-blocked', {
+    theme: 'light', viewport: 'mobile390',
+    notes: 'Blocked-state guidance is visible without color and no restore command is issued.',
+  }),
+  play: async ({ canvasElement }) => openManageRecovery(canvasElement, 'Restore'),
+};
 export const AzureMobileManageSheet = {
   ...createLiteStory('recovery', 'recovery-preview-ready', { theme: 'dark', viewport: 'mobile390' }),
   play: async ({ canvasElement }) => openManageRecovery(canvasElement, 'Restore'),
