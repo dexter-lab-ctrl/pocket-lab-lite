@@ -94,7 +94,8 @@ export default function RecoveryDatabaseDetailsLazy({
     && latestPreview.status === 'ready' && latestPreview.restore_allowed !== false);
   const rollbackAvailable = Boolean(databaseProtection.rollback_available || lastRestore?.rollback_available);
   const restoreState = activeRestore || lastRestore || {};
-  const restorePhase = restoreGuard?.phase || restoreState?.phase || restoreState?.terminal_status || '';
+  const reportedPhase = String(restoreGuard?.phase || restoreState?.phase || restoreState?.terminal_status || '').toLowerCase();
+  const restorePhase = Object.hasOwn(RESTORE_PHASE_LABELS, reportedPhase) ? reportedPhase : '';
   const recoveryBlocked = restoreGuard?.rollback_failed === true || restorePhase === 'rollback_failed';
   const maintenanceStatusLabel = restorePhase
     ? restorePhaseLabel(restorePhase)

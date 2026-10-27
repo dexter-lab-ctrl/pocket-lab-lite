@@ -1,9 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// DEFINED — BASELINE CAPTURE AND APPROVAL DEFERRED.
-// Screenshots contain synthetic MSW state only. Do not auto-create/approve baselines.
-// All visual cases are deferred to the dedicated Codex stabilization session.
+// Canonical synthetic Recovery baselines captured and reviewed during stabilization.
+// Screenshots contain MSW state only; they are not evidence of a production restore.
 for (const theme of ['light', 'dark', 'system'] as const) {
   for (const width of [320, 360, 375, 390, 430, 768, 1024, 1440]) {
     test(`Recovery Azure overview: ${theme} ${width}px`, async ({ page }) => {
@@ -28,6 +27,9 @@ for (const theme of ['light', 'dark', 'system'] as const) {
       await installScenario(page, scenario);
       await page.goto('/?screen=recovery');
       await waitForLiteScreenToSettle(page, 'recovery');
+      if (scenario === 'recovery-rollback-completed') {
+        await expect(page.getByText('Rollback completed from the pre-restore checkpoint.', { exact: true }).first()).toBeVisible();
+      }
       await expect(page.locator('.lite-recovery-premium-screen')).toHaveScreenshot(
         `recovery-${theme}-${scenario}.png`, { animations: 'disabled' },
       );
@@ -44,12 +46,36 @@ for (const theme of ['light', 'dark', 'system'] as const) {
         await page.getByRole('button', { name: 'Manage Recovery' }).click();
         const panel = page.getByRole('dialog', { name: /Manage backups and recovery/i });
         await panel.getByRole('tab', { name: section }).click();
+        if (section === 'History') {
+          await expect(panel.locator('.lite-recovery-history-card')).toBeVisible();
+          await expect(panel.locator('.lite-recovery-history-loading')).toHaveCount(0);
+        }
         await expect(panel).toHaveScreenshot(
           `recovery-${theme}-manage-${width}-${section.toLowerCase()}.png`, { animations: 'disabled' },
         );
       });
     }
   }
+}
+for (const theme of ['light', 'dark', 'system'] as const) {
+  test(`Recovery database rollback details: ${theme}`, async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.addInitScript((value) => localStorage.setItem('pocketlab:appearance', value), theme);
+    await installScenario(page, 'recovery-rollback-completed');
+    await page.goto('/?screen=recovery');
+    await waitForLiteScreenToSettle(page, 'recovery');
+    await page.getByRole('button', { name: 'Manage Recovery' }).click();
+    const manage = page.getByRole('dialog', { name: /Manage backups and recovery/i });
+    await manage.getByRole('tab', { name: 'Protection' }).click();
+    await manage.getByRole('button', { name: 'Protection details' }).click();
+    const database = page.getByRole('dialog', { name: /Pocket Lab data protection/i });
+    const progress = database.locator('[aria-label="Database recovery progress"]');
+    await expect(progress).toBeVisible();
+    await progress.scrollIntoViewIfNeeded();
+    await expect(progress.getByText('Rolled back — restore not committed', { exact: true })).toBeVisible();
+    await expect(progress.getByText('Checkpoint saved', { exact: true })).toBeVisible();
+    await expect(progress).toHaveScreenshot(`recovery-${theme}-database-rollback.png`, { animations: 'disabled' });
+  });
 }
 test('Recovery protected confirmation visual — synthetic preview, no restore dispatched', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });

@@ -71,6 +71,14 @@ describe('Azure Horizon Recovery semantic overview', () => {
     expect(recoveryJourneyStatus({ backup, preview, restore: { restore_id: 'r', status: 'accepted' } }).restore).not.toBe('completed');
     expect(recoveryJourneyStatus({ backup, preview, restore: { restore_id: 'r', status: 'running' } }).restore).toBe('in_progress');
     expect(recoveryJourneyStatus({ backup, preview, restore: { restore_id: 'r', status: 'failed' } }).restore).toBe('failed');
+    expect(recoveryJourneyStatus({ backup, preview, restore: { restore_id: 'r', status: 'rolled_back' } }).restore).toBe('failed');
+  });
+  it('keeps rollback outcomes visibly distinct from a committed restore', () => {
+    const hero = recoveryPremiumHero({ backup, preview, data: { last_restore: { status: 'rolled_back', summary: 'Rollback completed.' } } });
+    expect(hero.state).toBe('failed');
+    expect(hero.statusLabel).toBe('Needs attention');
+    const activity = recoveryPremiumActivity({ restore: { restore_id: 'r', status: 'rolled_back', summary: 'Rollback completed.' } });
+    expect(activity[0].state).toBe('failed');
   });
   it('retains event versus current-record provenance and unknown time', () => {
     const snapshot = recoveryPremiumActivity({ backup })[0];

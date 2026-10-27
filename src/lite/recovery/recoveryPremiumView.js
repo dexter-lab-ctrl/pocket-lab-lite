@@ -1,6 +1,6 @@
 // Read-only Recovery presentation. Never infer operation completion or restore authority.
 const ACTIVE = new Set(['accepted', 'pending', 'queued', 'running', 'working', 'in_progress', 'restoring']);
-const FAILED = new Set(['failed', 'failure', 'error', 'blocked', 'cancelled', 'canceled']);
+const FAILED = new Set(['failed', 'failure', 'error', 'blocked', 'cancelled', 'canceled', 'rolled_back', 'rollback_failed']);
 const BLOCKED = new Set(['blocked', 'unavailable', 'not_available', 'read_only']);
 const COMPLETE = new Set(['succeeded', 'completed', 'complete', 'success', 'done']);
 const string = (value) => typeof value === 'string' ? value : '';

@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// DEFINED — NOT RUN. Synthetic, safe MSW scenarios only. Never dispatch a confirmed restore.
+// Stabilization qualification: synthetic, safe MSW scenarios only. Never dispatch a confirmed restore.
 async function openRecovery(page: Page, scenario = 'recovery-verified', appearance: 'light' | 'dark' | 'system' = 'dark') {
   await page.addInitScript((value) => localStorage.setItem('pocketlab:appearance', value), appearance);
   await installScenario(page, scenario);
@@ -98,6 +98,23 @@ test.describe('Azure Horizon Recovery P0–P4 semantic, accessible and protected
     await expect(dialog.getByRole('tab', { name: 'Backup' })).toBeVisible();
     await expect(dialog.getByRole('tab', { name: 'Restore' })).toBeVisible();
     await assertNoHorizontalOverflow(page);
+  });
+  test('narrow mobile navigation keeps the active Recovery tab visible', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openRecovery(page, 'recovery-verified');
+    const nav = page.locator('.pocket-nav-dock');
+    const active = nav.locator('button[aria-current="page"]');
+    await expect(active).toHaveText('Recovery');
+    const visibility = await active.evaluate((button) => {
+      const navElement = button.parentElement;
+      if (!navElement) return { visible: false };
+      const navBounds = navElement.getBoundingClientRect();
+      const buttonBounds = button.getBoundingClientRect();
+      return {
+        visible: buttonBounds.left >= navBounds.left - 1 && buttonBounds.right <= navBounds.right + 1,
+      };
+    });
+    expect(visibility.visible).toBe(true);
   });
   test('Back Up, Verify, Preview, Restore journey remains educational, not a one-click execution', async ({ page }) => {
     await openRecovery(page, 'recovery-unverified');
