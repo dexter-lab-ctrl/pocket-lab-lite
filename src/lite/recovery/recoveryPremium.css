@@ -127,6 +127,10 @@ html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-action-deta
 html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-evidence-sheet) :is(.lite-overlay-head,.lite-overlay-scroll) {
   background:var(--azure-surface);color:var(--azure-text);border-color:var(--azure-border);min-width:0;
 }
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-evidence-sheet)
+  :is(.lite-recovery-details-loading,.lite-recovery-history-loading) {
+  background:var(--azure-raised) !important;color:var(--azure-text) !important;border-color:var(--azure-border) !important;
+}
 html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-evidence-sheet) :is(button,input,select,textarea) {color-scheme:inherit;}
 html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet) :is(input,select,textarea) {
   color:var(--azure-text);background:var(--azure-input);border:1px solid var(--azure-strong-border);
@@ -164,6 +168,7 @@ html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-confirm-she
 }
 html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-evidence-sheet)
   :is(p,small,dt,.lite-recovery-location-picker-note,.lite-recovery-location-picker-footnote,
+  .lite-recovery-location-current span,.lite-recovery-location-current small,.lite-recovery-location-choice small,
   .lite-recovery-history-select span,.lite-recovery-manage-section-heading > span,
   .lite-recovery-manage-action-copy p,.lite-recovery-native-confirm-head span) {
   color:var(--azure-muted);overflow-wrap:anywhere;

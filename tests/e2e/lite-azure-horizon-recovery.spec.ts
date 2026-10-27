@@ -44,7 +44,7 @@ test.describe('Azure Horizon Recovery P0–P4 semantic, accessible and protected
       await expect(dialog.getByRole('tab', { name: 'Restore' })).toHaveAttribute('aria-selected', 'true');
       await expect(dialog.getByRole('tabpanel', { name: 'Restore' })).toBeVisible();
       await dialog.getByRole('tab', { name: 'Protection' }).click();
-      await expect(dialog.getByRole('tabpanel', { name: 'Protection' })).toContainText('Included');
+      await expect(dialog.getByRole('tabpanel', { name: 'Protection' }).getByText('Protected data', { exact: true })).toBeVisible();
       await dialog.getByRole('tab', { name: 'History' }).click();
       await expect(dialog.getByRole('tabpanel', { name: 'History' })).toBeVisible();
       const style = await dialog.evaluate((node) => ({ background: getComputedStyle(node).backgroundColor, color: getComputedStyle(node).color }));

@@ -7,7 +7,7 @@ import {
   recoveryPremiumActivity,
   recoveryRestoreImpact,
 } from './recoveryPremiumView.js';
-import { recoveryHistoryEligibility } from './RecoveryBackupHistory.jsx';
+import { recoveryHistoryEligibility, recoveryHistoryItems } from './RecoveryBackupHistory.jsx';
 
 // Synthetic fixtures: no backup payloads, filesystem writes, authorization tokens or secrets.
 const backup = Object.freeze({ backup_id: 'synthetic-a', created_at: '2026-10-10T10:00:00Z', verification_status: 'verified' });
@@ -83,6 +83,12 @@ describe('Azure Horizon Recovery semantic overview', () => {
 });
 
 describe('Azure Horizon Recovery history eligibility stays per selected backup', () => {
+  it('projects preview readiness only onto the matching backup row', () => {
+    const other = { ...backup, backup_id: 'synthetic-other' };
+    const items = recoveryHistoryItems([backup, other], preview);
+    expect(items[0].meta).toContain('Preview ready');
+    expect(items[1].meta).not.toContain('Preview ready');
+  });
   it('permits only a verified, selected, matching, current restore preview', () => {
     expect(eligibility().canRecover).toBe(true);
     expect(eligibility({ backup: { ...backup, verification_status: 'pending' } }).canRecover).toBe(false);

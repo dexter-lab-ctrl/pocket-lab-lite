@@ -328,7 +328,7 @@ export default function RecoveryManageSheetLazy({
             <RecoveryActionRow
               icon={RotateCcw}
               title="Restore selected backup"
-              description="Creates a checkpoint and requires confirmation. A prior successful restore does not authorize this selected backup."
+              description="Creates a checkpoint and requires explicit confirmation. A prior successful restore does not authorize this selected backup."
               status={impact.ready && !recoveryWriteBlocked ? 'Review and confirm' : 'Protected'}
               statusTone={impact.ready && !recoveryWriteBlocked ? 'review' : 'unknown'}
               actionLabel="Restore"
@@ -404,8 +404,7 @@ export default function RecoveryManageSheetLazy({
           <React.Suspense fallback={<div className="lite-recovery-history-loading">Loading backup history…</div>}>
             <RecoveryBackupHistory
               initialHistory={history}
-              latestPreviewReady={latestPreviewReady}
-               latestPreview={latestPreview}
+              latestPreview={latestPreview}
                savedStateOnly={savedStateOnly || recoveryWriteBlocked}
               selectedBackupId={selectedBackupId}
               onSelectBackup={onSelectBackup}

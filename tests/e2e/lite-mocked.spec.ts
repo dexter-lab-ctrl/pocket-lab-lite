@@ -601,7 +601,8 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       await page.goto('/?screen=recovery');
       const recovery = page.locator('[data-lite-screen-id="recovery"]');
       await expect(recovery).toBeVisible();
-      await expect(recovery).toContainText(/Backup & Restore|Recovery information|Create your first protected backup/i);
+      await expect(recovery.getByRole('heading', { name: 'Recovery', exact: true })).toBeVisible();
+      await expect(recovery).toContainText('Protect your workspace and review each step before restoring anything.');
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 
       const manage = recovery.getByRole('button', { name: 'Manage Recovery' });

@@ -32,20 +32,27 @@ export function recoveryHistoryEligibility({ backup = {}, selectedBackupId = '',
   return { selected, verified, previewMatches, locationUnavailable, canRecover, reason };
 }
 
-function safeHistoryItems(history = [], latestPreview = null) {
+export function recoveryHistoryItems(history = [], latestPreview = null) {
   return (Array.isArray(history) ? history : [])
     .filter(Boolean)
-    .map((backup) => ({
-      id: backup.backup_id || backup.id || backup.snapshot_id,
-      title: backup.verification_status === 'verified' ? 'Backup verified' : backup.summary || 'Backup created',
-      meta: [
+    .map((backup) => {
+      const id = backup.backup_id || backup.id || backup.snapshot_id;
+      const previewReady = Boolean(latestPreview?.preview_id
+        && latestPreview.backup_id === id
+        && latestPreview.status === 'ready'
+        && latestPreview.restore_allowed !== false);
+      return {
+        id,
+        title: backup.verification_status === 'verified' ? 'Backup verified' : backup.summary || 'Backup created',
+        meta: [
         backup.created_at ? formatLiteTime(backup.created_at) : '',
         `${backup.included_file_count || 0} item(s)`,
         backup.verification_status === 'verified' ? 'Verified' : 'Needs verification',
         backup.location?.display_name ? `From ${backup.location.display_name}` : '',
-        latestPreviewReady ? 'Preview ready' : '',
-      ].filter(Boolean).join(' · '),
-    }))
+        previewReady ? 'Preview ready' : '',
+        ].filter(Boolean).join(' · '),
+      };
+    })
     .filter((item) => item.id);
 }
 
@@ -55,7 +62,7 @@ function formatSize(bytes) {
   return value >= 1024 * 1024 ? `${(value / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(value / 1024))} KB`;
 }
 
-const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHistory = [], latestPreviewReady = false, latestPreview = null, savedStateOnly = false, selectedBackupId = '', onSelectBackup, onVerify, onPreview, onRecover }) {
+const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHistory = [], latestPreview = null, savedStateOnly = false, selectedBackupId = '', onSelectBackup, onVerify, onPreview, onRecover }) {
   const [cursor, setCursor] = useState('');
   const [pageOrder, setPageOrder] = useState(['first']);
   const [pageItems, setPageItems] = useState({ first: Array.isArray(initialHistory) ? initialHistory : [] });
@@ -89,7 +96,7 @@ const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHisto
       return true;
     });
   }, [pageItems, pageOrder]);
-  const items = useMemo(() => safeHistoryItems(history, latestPreview), [history, latestPreview]);
+  const items = useMemo(() => recoveryHistoryItems(history, latestPreview), [history, latestPreview]);
   const nextCursor = String(query.data?.next_cursor || '');
   const hasMore = Boolean(!query.savedStateOnly && query.data?.has_more && nextCursor);
   const historySavedStateOnly = Boolean(savedStateOnly || query.savedStateOnly);
