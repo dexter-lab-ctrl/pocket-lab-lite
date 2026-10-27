@@ -26,6 +26,13 @@ export default function RecoveryConfirmSheetLazy({
   const backupLabel = backup?.created_at ? formatLiteTime(backup.created_at) : 'Selected verified backup';
   const sizeLabel = backup?.size_bytes ? formatSize(backup.size_bytes) : null;
   const impact = recoveryRestoreImpact({ backup, preview, location });
+  // Database recovery has its own backend guard; it does not use a workspace
+  // destination. Never borrow workspace location readiness for database restore.
+  const confirmationReady = databaseRestore
+    ? Boolean(backup?.backup_id && backup?.verification_status === 'verified'
+      && preview?.preview_id && preview?.backup_id === backup.backup_id
+      && preview?.status === 'ready' && preview?.restore_allowed !== false)
+    : impact.ready;
   const includedComponents = impact.included;
   const excludedComponents = impact.excluded;
 
@@ -47,7 +54,7 @@ export default function RecoveryConfirmSheetLazy({
         <small>{[backup?.verification_status === 'verified' ? 'Verified' : 'Verification required', sizeLabel].filter(Boolean).join(' · ')}</small>
         {!databaseRestore ? <span>Recover from: {location?.display_name || backup?.location?.display_name || 'Pocket Lab protected backup'}</span> : null}
         {!databaseRestore ? <span>Restore to: This Server Phone</span> : null}
-        <span>Matching restore preview: {impact.ready ? 'Confirmed for this backup' : 'Not confirmed'}</span>
+        <span>Matching restore preview: {confirmationReady ? 'Confirmed for this backup' : 'Not confirmed'}</span>
       </section>
 
       <section className="lite-recovery-impact" aria-label="Restore impact preview">
@@ -56,10 +63,10 @@ export default function RecoveryConfirmSheetLazy({
           <dt>Selected backup</dt><dd>{impact.backupId || 'Not reported'}</dd>
           <dt>Verification</dt><dd>{impact.verified ? 'Verified' : 'Not confirmed'}</dd>
           <dt>Created</dt><dd>{impact.createdAt ? formatLiteTime(impact.createdAt) : 'Not reported'}</dd>
-          <dt>Matching preview</dt><dd>{impact.ready ? 'Ready' : 'Not ready or not confirmed'}</dd>
+          <dt>Matching preview</dt><dd>{confirmationReady ? 'Ready' : 'Not ready or not confirmed'}</dd>
           <dt>Expected items</dt><dd>{impact.count === null ? 'Impact not reported' : impact.count}</dd>
           <dt>Backup location</dt><dd>{impact.location || 'Not reported'}</dd>
-          <dt>Location status</dt><dd>{impact.location ? (impact.locationReady ? 'Available' : 'Unavailable') : 'Not reported'}</dd>
+          <dt>Location status</dt><dd>{databaseRestore ? 'Database protection guard' : impact.location ? (impact.locationReady ? 'Ready' : 'Not ready') : 'Not reported'}</dd>
         </dl>
         <p>The backend decides what is safe to restore. An unavailable impact count never means zero.</p>
       </section>
@@ -90,10 +97,10 @@ export default function RecoveryConfirmSheetLazy({
         </section>
       ) : null}
 
-      {!impact.ready ? <p className="lite-recovery-confirm-blocker" role="alert">Restore cannot be confirmed: verify the selected backup and prepare a current matching preview on an available destination.</p> : null}
+      {!confirmationReady ? <p className="lite-recovery-confirm-blocker" role="alert">Restore cannot be confirmed: verify the selected backup and prepare a current matching preview on an available destination.</p> : null}
       <div className="lite-recovery-native-confirm-actions">
         <LiteButton tone="secondary" onClick={onCancel} disabled={busy}>Cancel</LiteButton>
-        <LiteButton tone="danger" onClick={onConfirm} disabled={busy || !impact.ready}>
+        <LiteButton tone="danger" onClick={onConfirm} disabled={busy || !confirmationReady}>
           {busy ? 'Restoring…' : databaseRestore ? 'Restore Database' : 'Restore Backup'}
         </LiteButton>
       </div>
