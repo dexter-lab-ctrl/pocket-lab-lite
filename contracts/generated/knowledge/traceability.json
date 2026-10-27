@@ -4073,7 +4073,6 @@
         "test:tests/docs/test_documentation_intelligence.py",
         "test:tests/docs/test_living_knowledgebase.py",
         "test:tests/docs/test_operational_health_bridge.py",
-        "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-p4-regression.spec.ts",
         "test:tests/e2e/lite-ux-maturity.spec.ts",
         "test:tests/parity/test_intelligent_runtime_parity.py"
@@ -4547,9 +4546,11 @@
       "entity": "journey:rollback",
       "name": "Rollback",
       "note": "A test link does not by itself prove runtime verification.",
-      "tests": [],
+      "tests": [
+        "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts"
+      ],
       "type": "journey",
-      "verification_status": "unvalidated"
+      "verification_status": "test-linked"
     },
     {
       "entity": "journey:rules-authorization",
@@ -4786,6 +4787,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "058e8e8a5e6326009008236bc1d052b32ebb7c481dae026631fc57d7538a878a"
+    "source_fingerprint": "bec2df011bdc728bfbf50ce42fb60a9b65bd4fd12148e492da54ccd271dfe1b0"
   }
 }

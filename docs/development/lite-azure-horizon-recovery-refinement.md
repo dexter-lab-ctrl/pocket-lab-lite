@@ -214,3 +214,59 @@ No Apps/Devices/Identity/Rules/Security API or styling implementation was change
 **[DEFERRED]** Codex stabilization; owner review of visual baselines; physical Android baseline attribution; backend-authoritative controlled restore tests.
 
 **MERGE: NOT AUTHORIZED. DRAFT PR MUST REMAIN OPEN.**
+
+---
+
+## 42. Final Narrow Qualification Closure — 2026-10-27
+
+This section is the later stabilization record. Sections 1–41 above remain the historical implementation-only handoff and are intentionally not rewritten.
+
+### Provenance
+
+| Item | Evidence |
+|---|---|
+| Base | `origin/main` `1b951448f86a0b76fefc2ebeb7c4229090f63fff` |
+| Starting feature HEAD | `1a8d40e5d2bf70af5d4577ec158d3b74c245ca5a` |
+| Validated functional/UI candidate | `032126e880d6462fec901dc567ef423be7377284` |
+| Branch | `feat/azure-horizon-recovery-ui` |
+| PR | [#631](https://github.com/dexter-lab-ctrl/pocket-lab-lite/pull/631), open and draft |
+
+### Dev-PC qualification
+
+- Recovery Azure unit: **52/52 PASS**.
+- Premium Recovery unit: **11/11 PASS**.
+- Recovery mocked semantic/protected/responsive suite: **90/90 PASS**.
+- Premium Recovery mocked suite: **28/28 PASS**.
+- Recovery accessibility and enlarged-text suite: **8/8 PASS**.
+- Shared geometry/protected-confirmation suite: **24/24 PASS**.
+- Recovery interaction performance: **8/8 PASS**.
+- Recovery canonical visual suite: **180/180 PASS** across Black/Daylight/System, 320–1440px, Manage tabs, rollback, protected confirmation, moved/resized desktop and 200% text.
+- Storybook build, production build and bundle-budget gate: **PASS**. Bundle warnings remain warnings; thresholds were not changed.
+- Cross-state accessibility: **36/36 PASS**.
+- Recovery legacy visual reconciliation: **12/12 Recovery snapshots reviewed, regenerated and passing**. Apps/Catalog legacy failures were not changed.
+
+### Physical Android and CDP
+
+The repository-owned bridge was refreshed with normal elevated Windows PowerShell/UAC, using Windows `adb.exe` and the persisted CDP bridge state. The authorized device was `SM-S911B`; Chrome was `156.0.8078.47`; the qualified bridge used ADB Chrome port `9222` and the WSL CDP bridge on `19223`. The candidate server used the documented Dev-PC loopback plus read-only SSH transport to the existing Server Phone runtime.
+
+The exact candidate manifest, response provenance, page metadata and CDP target all reported `032126e880d6462fec901dc567ef423be7377284`. Three Android repetitions collected foreground animation frames with the screen awake, battery saver off, battery at 94% and thermal status 0. Recovery overview, scrolling, Manage, History, backup details and safe cancellation interactions rendered on physical Chrome. No restore or production mutation was attempted.
+
+The Android qualifier returned its true absolute-gate miss: 28 reports, 1 absolute target pass, 2 absolute gate passes, 1 `PLATFORM_DOMINATED`, 27 `MIXED`, 0 `APP_INCREMENTAL_COST`, 0 `WITHIN_BASELINE`, and 0 `INCONCLUSIVE`. The Recovery rows were mixed/target-miss evidence only; no Recovery-attributable incremental cost was found against the immutable main comparison. The Owner-gated Identity confirmation surface was not exposed by the authorized runtime and remains unqualified.
+
+### Performance and CI attribution
+
+- The exact candidate Android run preserved the PR #588/#589 thresholds and stop conditions. Absolute frame/commit misses remain a **GATE MISS**, not a pass; the evidence does not justify a Recovery performance rewrite.
+- The aggregate mocked performance suite remains **54/56** because the two Devices nested-detail React commit hard gates remain above 28 ms desktop / 25.5 ms mobile. They are outside this PR and were not changed.
+- The isolated runtime budget root cause was candidate source and reviewed visual-baseline bytes being included in the disposable runtime tree measurement. The unchanged 256 MiB cap was retained. Old feature accounting observed 287,160,685 bytes versus 268,435,456; patched exact feature accounting measured 6,468,229 runtime-root bytes, while patched main measured 6,450,779. Cleanup and synthetic-principal revocation passed in both lanes.
+
+### Visual, accessibility and safety disposition
+
+The approved Recovery visual changes are limited to the 12 legacy Recovery snapshots listed by the targeted state and overlay tests. Apps/Catalog visual baselines remain an explicit separate maintenance item: the final aggregate results are six Apps state failures and two Apps Manage overlay failures, with Recovery passing. Axe/WCAG checks, focus restoration, keyboard tabs, protected confirmation cancellation, reduced motion, touch targets, mobile overflow and 200% text checks passed for the Recovery coverage. The fixed mobile navigation overlay remains shared-shell behavior; Recovery content remains scrollable and its active tab is discoverable.
+
+The existing synthetic qualification mechanism was used only within the isolated disposable lane. Synthetic principal creation, scoped access and revocation passed; `owner_equivalent: false` remains truthful, so this is not Owner-equivalent live authorization evidence. No real credentials, secrets, production backup, restore, database mutation, service restart or deployment was used.
+
+### Documentation and remaining gates
+
+`task lite:docs:generate` completed and regenerated deterministic contracts and documentation projections. `task lite:docs:check` completed **PASS** with the repository Node 24.16.0 toolchain; the initial no-Node invocation was an environment-only failure and was not treated as a repository failure. `task lite:check` completed **PASS** (exit 0), including 52/62 mocked E2E tests with 10 repository-defined skips, 2/2 accessibility tests, 74/74 documentation browser tests, generated-artifact redaction, contract/platform/runtime/parity/knowledge/enterprise checks and the runtime-network safety gate. The exact post-documentation Git HEAD and exact-head CI run are recorded in the PR qualification update after the normal push of the completed candidate.
+
+The Server Phone remained a read-only runtime consumer on clean `main`; its existing health/readiness and NATS evidence were inspected without mutation. The pre-existing Recovery database projection GET timeout remains documented separately and was not attributed to this UI branch. PR #631 must remain **OPEN — DRAFT — NOT MERGED** pending review of the remaining Android absolute gate, Owner-gated coverage limitation, external CI result and unrelated Apps/Devices findings.

@@ -2463,6 +2463,36 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-recovery-performance.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-recovery-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-recovery-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-recovery-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-recovery.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-recovery.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-recovery.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-azure-horizon-rules-performance.spec.ts",
       "name": "tests/e2e/lite-azure-horizon-rules-performance.spec.ts",
       "source_refs": [
@@ -3027,6 +3057,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "058e8e8a5e6326009008236bc1d052b32ebb7c481dae026631fc57d7538a878a"
+    "source_fingerprint": "bec2df011bdc728bfbf50ce42fb60a9b65bd4fd12148e492da54ccd271dfe1b0"
   }
 }

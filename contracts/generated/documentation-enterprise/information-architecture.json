@@ -2474,6 +2474,12 @@
           "target": "component:release-state"
         },
         {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:rollback",
+          "target": "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts"
+        },
+        {
           "depth": 2,
           "relation_type": "reads",
           "source": "api:get:/api/lite/release",
@@ -2508,12 +2514,6 @@
           "relation_type": "depends_on",
           "source": "component:last-known-good",
           "target": "table:lite_installed_release_identity"
-        },
-        {
-          "depth": 2,
-          "relation_type": "depends_on",
-          "source": "component:last-known-good",
-          "target": "table:release_runtime_projection"
         },
         {
           "depth": 2,
@@ -2934,6 +2934,7 @@
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
         "test:tests/parity/test_api_contract_fences.py"
       ],
       "title": "Release Feature Journey",
@@ -4690,7 +4691,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 512,
+  "page_count": 513,
   "page_types": [
     "overview",
     "guide",
@@ -4934,6 +4935,29 @@
       "source_or_generator": "development/lite-azure-horizon-identity-access.md",
       "title": "Azure Horizon — Identity & Access (stabilization and qualification record)",
       "url": "/development/lite-azure-horizon-identity-access/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-recovery-refinement.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "recovery",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-recovery-refinement",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-recovery-refinement.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-recovery-refinement.md",
+      "title": "Azure Horizon Recovery — P0–P4 engineering record",
+      "url": "/development/lite-azure-horizon-recovery-refinement/"
     },
     {
       "additional_audiences": [],
@@ -18135,7 +18159,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "880a0dad8ec47fed433f808d1200107630b25cc870909427566634c078235c66",
+  "source_fingerprint": "ecd739170b4790fff00580d0684941cc5cacd24571fff69aa862d6c69f61c5a4",
   "top_level": [
     "start-here",
     "use",

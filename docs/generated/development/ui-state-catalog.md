@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 90dca7a4200b6a1a45f60b82bab11074bf1c84ca53ccf25860e4a7a87e33fc49
+source_fingerprint: 572ac8901a1a2f72ef1eda278f763b553e3e1ca2c29a2f3dfc3935e367facb3f
 schema_revision: 1
 validation_status: generated
 ---
@@ -160,6 +160,16 @@ validation_status: generated
 | `pocket-lab-lite-recovery-premiumdarktheme` | recovery | `recovery-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumdarktheme-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-premiumlargetext` | recovery | `recovery-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumlargetext-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-recovery-premiumlongtext` | recovery | `recovery-restore-blocked` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-premiumlongtext-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-azuredaylightoverview` | recovery | `recovery-verified` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-azuredaylightoverview-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-azuresystemoverview` | recovery | `recovery-verified` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-azuresystemoverview-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-azureblackmobile` | recovery | `recovery-preview-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-azureblackmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-azuredaylightmobile` | recovery | `recovery-no-backups` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-azuredaylightmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-azureunverified` | recovery | `recovery-unverified` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-azureunverified-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-azuredestinationunavailable` | recovery | `recovery-repository-unavailable` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-azuredestinationunavailable-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-azuresavedstate` | recovery | `recovery-projection-too-old` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-azuresavedstate-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-azureactiverestore` | recovery | `recovery-restore-running` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-azureactiverestore-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-azurerollbackreported` | recovery | `recovery-rollback-completed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-azurerollbackreported-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-recovery-azurelargetextmobile` | recovery | `recovery-restore-blocked` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-recovery-azurelargetextmobile-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-noscanhistory` | security | `security-first-run` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-noscanhistory-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-profiledatastale` | security | `security-profile-stale` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-profiledatastale-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-progressstages` | security | `security-progress` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-progressstages-{viewport}.png` | fixture-dependent |

@@ -6289,6 +6289,17 @@
       "target_type": "troubleshooting"
     },
     {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:release:d3438e4866747c4b",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/release",
+      "target": "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
+      "target_type": "test"
+    },
+    {
       "depth": 2,
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
@@ -6439,17 +6450,6 @@
       "source": "page:generated/enterprise/journeys/release",
       "target": "component:release-state",
       "target_type": "component"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:release:f188b145aa4bca5e",
-      "relation_type": "depends_on",
-      "source": "page:generated/enterprise/journeys/release",
-      "target": "table:release_runtime_projection",
-      "target_type": "table"
     },
     {
       "depth": 2,

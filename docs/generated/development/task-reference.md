@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 38b7e3b191b890247dd23334a95947788e0836e39810601dd4b21109e36c3eb3
+source_fingerprint: 23b69816f224abebd5033f1a1e65e29e081d47691fcc87be78787af7e5e997ce
 schema_revision: 1
 validation_status: generated
 ---
@@ -275,6 +275,14 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:identity:premium:unit`
 - `lite:test:identity:premium:visual`
 - `lite:test:lighthouse`
+- `lite:test:recovery:azure:a11y`
+- `lite:test:recovery:azure:geometry`
+- `lite:test:recovery:azure:mocked`
+- `lite:test:recovery:azure:perf`
+- `lite:test:recovery:azure:qualification`
+- `lite:test:recovery:azure:storybook`
+- `lite:test:recovery:azure:unit`
+- `lite:test:recovery:azure:visual`
 - `lite:test:recovery:premium:mocked`
 - `lite:test:recovery:premium:perf`
 - `lite:test:recovery:premium:unit`
@@ -473,6 +481,18 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:identity:premium:visual` → `lite:playwright:preflight`
 - `lite:test:lighthouse` → `lite:dev:scratch:prepare`
 - `lite:test:lighthouse` → `lite:playwright:preflight`
+- `lite:test:recovery:azure:a11y` → `lite:dev:scratch:prepare`
+- `lite:test:recovery:azure:a11y` → `lite:playwright:preflight`
+- `lite:test:recovery:azure:geometry` → `lite:dev:scratch:prepare`
+- `lite:test:recovery:azure:geometry` → `lite:playwright:preflight`
+- `lite:test:recovery:azure:mocked` → `lite:dev:scratch:prepare`
+- `lite:test:recovery:azure:mocked` → `lite:playwright:preflight`
+- `lite:test:recovery:azure:perf` → `lite:dev:scratch:prepare`
+- `lite:test:recovery:azure:perf` → `lite:playwright:preflight`
+- `lite:test:recovery:azure:qualification` → `lite:dev:scratch:prepare`
+- `lite:test:recovery:azure:qualification` → `lite:playwright:preflight`
+- `lite:test:recovery:azure:visual` → `lite:dev:scratch:prepare`
+- `lite:test:recovery:azure:visual` → `lite:playwright:preflight`
 - `lite:test:recovery:premium:mocked` → `lite:dev:scratch:prepare`
 - `lite:test:recovery:premium:mocked` → `lite:playwright:preflight`
 - `lite:test:recovery:premium:perf` → `lite:dev:scratch:prepare`

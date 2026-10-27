@@ -11991,6 +11991,346 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
+        "npm run test:recovery:azure:a11y"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:recovery:azure:a11y",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:recovery:azure:a11y",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Recovery WCAG, 200 percent enlargement and reduced motion cases",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:recovery:azure:geometry"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:recovery:azure:geometry",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:recovery:azure:geometry",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Recovery desktop shared geometry and mobile non-draggable Manage contract",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:recovery:azure:mocked"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:recovery:azure:mocked",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:recovery:azure:mocked",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Recovery mocked responsive, protected flow and operational truth cases",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:recovery:azure:perf"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:recovery:azure:perf",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:recovery:azure:perf",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Recovery supplemental interaction sampling with PR 588 budgets unchanged",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:recovery:azure:qualification"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:recovery:azure:qualification",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:recovery:azure:qualification",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Future Codex qualification after implementing Recovery P0–P4",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:recovery:azure:storybook"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:test:recovery:azure:storybook",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:recovery:azure:storybook",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Build existing Storybook with Azure Recovery synthetic states",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:recovery:azure:unit"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:test:recovery:azure:unit",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:recovery:azure:unit",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Unit and presentation safety cases for Azure Recovery; deferred qualification",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:recovery:azure:visual"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:recovery:azure:visual",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:recovery:azure:visual",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Recovery visual scenarios; baseline capture and owner approval deferred",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Recovery-diagnostics loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
         "npm run test:recovery:premium:mocked"
       ],
       "dependencies": [

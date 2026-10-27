@@ -31232,6 +31232,36 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-recovery-performance.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-recovery-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-recovery-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-recovery-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-recovery.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-recovery.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-recovery.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-azure-horizon-rules-performance.spec.ts",
       "name": "tests/e2e/lite-azure-horizon-rules-performance.spec.ts",
       "source_refs": [
@@ -35031,6 +35061,9 @@
         "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-identity.spec.ts",
         "test:tests/e2e/lite-azure-horizon-performance.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-recovery-performance.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-recovery.spec.ts",
         "test:tests/e2e/lite-azure-horizon-rules-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-rules-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-rules.spec.ts",
@@ -36563,6 +36596,9 @@
         "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-identity.spec.ts",
         "test:tests/e2e/lite-azure-horizon-performance.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-recovery-performance.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-recovery.spec.ts",
         "test:tests/e2e/lite-azure-horizon-rules-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-rules-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-rules.spec.ts",
@@ -53505,6 +53541,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts": [
+        {
+          "source": "journey:rollback",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-azure-horizon-rules-visual.spec.ts": [
         {
           "source": "reason:disabled",
@@ -53598,10 +53644,6 @@
         },
         {
           "source": "domain:identity",
-          "type": "verified_by"
-        },
-        {
-          "source": "domain:recovery",
           "type": "verified_by"
         },
         {
@@ -65191,10 +65233,6 @@
           "type": "verified_by"
         },
         {
-          "target": "test:tests/e2e/lite-mocked.spec.ts",
-          "type": "verified_by"
-        },
-        {
           "target": "test:tests/e2e/lite-p4-regression.spec.ts",
           "type": "verified_by"
         },
@@ -67489,6 +67527,10 @@
         {
           "target": "component:release-state",
           "type": "uses"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
+          "type": "verified_by"
         }
       ],
       "journey:rules-authorization": [
@@ -68948,6 +68990,10 @@
         },
         {
           "target": "test:tests/e2e/lite-azure-horizon-identity-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
           "type": "verified_by"
         },
         {
@@ -79911,6 +79957,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-azure-horizon-recovery-visual.spec.ts"
+      ],
+      "id": "rel:2bf61af020679917",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "docs/generated/production/release.md"
       ],
       "id": "rel:2c009fa7cd10cad4",
@@ -81748,6 +81803,15 @@
       "id": "rel:38b161f591881646",
       "source": "component:invite-state",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-recovery-visual.spec.ts"
+      ],
+      "id": "rel:38c0718e8a536e74",
+      "source": "journey:rollback",
+      "target": "test:tests/e2e/lite-azure-horizon-recovery-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -108356,15 +108420,6 @@
     },
     {
       "evidence": [
-        "tests/e2e/lite-mocked.spec.ts"
-      ],
-      "id": "rel:f198a88478aee088",
-      "source": "domain:recovery",
-      "target": "test:tests/e2e/lite-mocked.spec.ts",
-      "type": "verified_by"
-    },
-    {
-      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:f1b07e64cca2aa0a",
@@ -110338,9 +110393,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "058e8e8a5e6326009008236bc1d052b32ebb7c481dae026631fc57d7538a878a",
+  "source_fingerprint": "bec2df011bdc728bfbf50ce42fb60a9b65bd4fd12148e492da54ccd271dfe1b0",
   "statistics": {
-    "entity_count": 1450,
+    "entity_count": 1453,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -110357,14 +110412,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 302,
+      "test": 305,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4093,
-    "source_count": 339
+    "relation_count": 4094,
+    "source_count": 342
   }
 }
