@@ -1736,13 +1736,24 @@ class QualificationRun:
         total_cpu_user = sum(item["cpu_user_ms"] for item in process_usage.values())
         total_cpu_system = sum(item["cpu_system_ms"] for item in process_usage.values())
         total_rss = sum(item["rss_kib"] for item in process_usage.values())
+        # The detached candidate worktree is immutable source input, not
+        # disposable runtime state. Keep its size in the evidence so source
+        # growth remains visible, but do not let committed fixtures (for
+        # example, reviewed visual baselines) consume the runtime-data cap.
         root_bytes, root_files = _tree_size_bytes(self.paths.root)
+        candidate_source_bytes, candidate_source_files = _tree_size_bytes(self.paths.worktree)
+        runtime_root_bytes = max(0, root_bytes - candidate_source_bytes)
+        runtime_root_files = max(0, root_files - candidate_source_files)
         destination_bytes, destination_files = _tree_size_bytes(self.paths.destination)
         live_owned = len(process_usage)
         observed = {
             "live_owned_processes": live_owned,
             "root_bytes": root_bytes,
             "root_files": root_files,
+            "runtime_root_bytes": runtime_root_bytes,
+            "runtime_root_files": runtime_root_files,
+            "candidate_source_bytes": candidate_source_bytes,
+            "candidate_source_files": candidate_source_files,
             "destination_bytes": destination_bytes,
             "destination_files": destination_files,
             "cpu_user_ms": total_cpu_user,
@@ -1758,7 +1769,7 @@ class QualificationRun:
         }
         within_budget = (
             live_owned <= budget["max_live_owned_processes"]
-            and root_bytes <= budget["max_root_bytes"]
+            and runtime_root_bytes <= budget["max_root_bytes"]
             and destination_bytes <= budget["max_destination_bytes"]
         )
         return {"status": "PASS" if within_budget else "FAIL", "budget": budget, "observed": observed}

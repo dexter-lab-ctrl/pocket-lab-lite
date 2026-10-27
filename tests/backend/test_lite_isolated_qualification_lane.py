@@ -141,6 +141,29 @@ def test_controller_namespaces_are_run_bound():
     assert module.RUN_ID_RE.fullmatch(second)
 
 
+def test_runtime_budget_excludes_immutable_candidate_source_tree(tmp_path):
+    spec = importlib.util.spec_from_file_location("isolated_qualification_budget", CONTROLLER)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    import sys
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    root = tmp_path / "run"
+    candidate = root / "candidate"
+    candidate.mkdir(parents=True)
+    (candidate / "reviewed-baseline.png").write_bytes(b"source-fixture")
+    (root / "state.json").write_bytes(b"runtime-state")
+
+    root_bytes, root_files = module._tree_size_bytes(root)
+    source_bytes, source_files = module._tree_size_bytes(candidate)
+
+    assert source_files == 1
+    assert source_bytes == len(b"source-fixture")
+    assert root_files == source_files + 1
+    assert root_bytes - source_bytes == len(b"runtime-state")
+
+
 def test_full_task_exposes_explicit_isolated_dependency_paths():
     taskfile = TASKFILE.read_text(encoding="utf-8")
     assert 'NATS_SERVER_BIN: \'{{default "" .NATS_SERVER_BIN}}\'' in taskfile
