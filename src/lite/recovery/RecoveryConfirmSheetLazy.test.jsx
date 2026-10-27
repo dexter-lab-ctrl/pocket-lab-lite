@@ -27,7 +27,7 @@ describe('protected restore impact confirmation',()=>{
     'blocks workspace restore with unconfirmed location %#', (candidate) => {
       const confirm=vi.fn();
       render(<RecoveryConfirmSheetLazy backup={backup} preview={preview} location={candidate} onCancel={()=>{}} onConfirm={confirm} />);
-      expect(screen.getByRole('button',{name:'Restore Backup'})).toBeDisabled();
+      expect(screen.getByRole('button',{name:'Restore Backup'}).disabled).toBe(true);
       fireEvent.click(screen.getByRole('button',{name:'Restore Backup'}));
       expect(confirm).not.toHaveBeenCalled();
     });
@@ -35,12 +35,12 @@ describe('protected restore impact confirmation',()=>{
     const confirm=vi.fn();
     render(<RecoveryConfirmSheetLazy kind="database" backup={backup} preview={preview} onCancel={()=>{}} onConfirm={confirm} />);
     const button=screen.getByRole('button',{name:'Restore Database'});
-    expect(button).toBeEnabled();
+    expect(button.disabled).toBe(false);
     fireEvent.click(button);
     expect(confirm).toHaveBeenCalledOnce();
   });
   it('fails closed on a mismatched database preview', () => {
     render(<RecoveryConfirmSheetLazy kind="database" backup={backup} preview={{...preview,backup_id:'other'}} onCancel={()=>{}} onConfirm={vi.fn()} />);
-    expect(screen.getByRole('button',{name:'Restore Database'})).toBeDisabled();
+    expect(screen.getByRole('button',{name:'Restore Database'}).disabled).toBe(true);
   });
 });
