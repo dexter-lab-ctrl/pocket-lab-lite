@@ -8,9 +8,11 @@ const norm = (value) => string(value).trim().toLowerCase();
 const record = (value) => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 export function isRecoveryLocationReady(location) {
   const item = record(location);
-  return item.available !== false
-    && item.ready !== false
-    && !['available', 'missing', 'read_only', 'low_space', 'unavailable', 'error', 'repository_missing', 'repository_invalid'].includes(norm(item.status));
+  // Unknown, missing and merely "available" destinations are not recovery-ready.
+  // Only a backend-reported ready destination can support an eligible restore.
+  return norm(item.status) === 'ready'
+    && item.available !== false
+    && item.ready !== false;
 };
 const validTime = (value) => {
   if (typeof value !== 'string' || !value || !Number.isFinite(Date.parse(value))) return '';
@@ -117,7 +119,7 @@ export function recoveryPremiumActivity({ activity = [], backup = null, restore 
   }).slice(0, 3);
 }
 export function recoveryRestoreImpact({ backup = {}, preview = {}, location = null } = {}) {
-  const b = record(backup), p = record(preview), l = record(location);
+  const b = record(backup), p = record(preview), l = record(location || record(backup).location);
   const matched = Boolean(b.backup_id && p.preview_id && p.backup_id === b.backup_id);
   const verified = norm(b.verification_status) === 'verified';
   const readyLocation = isRecoveryLocationReady(l);
