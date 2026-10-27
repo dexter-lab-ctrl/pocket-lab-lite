@@ -143,6 +143,7 @@ html[data-lite-theme] .lite-recovery-premium-brand > svg {
 html[data-lite-theme] .lite-recovery-premium-eyebrow {color:var(--azure-accent);}
 html[data-lite-theme] .lite-recovery-premium-status,
 html[data-lite-theme] .lite-recovery-premium-backup-date,
+html[data-lite-theme] .lite-recovery-premium-verification-date,
 html[data-lite-theme] .lite-recovery-premium-disabled-reason,
 html[data-lite-theme] .lite-recovery-premium-indicators :is(span,small),
 html[data-lite-theme] .lite-recovery-premium-timeline-list small {color:var(--azure-muted);}
@@ -159,6 +160,36 @@ html[data-lite-theme] .lite-recovery-premium-indicators li[data-state="completed
 html[data-lite-theme] .lite-recovery-premium-indicators li[data-state="blocked"] {border-inline-start-color:var(--azure-danger);}
 html[data-lite-theme] .lite-recovery-premium-indicators li[data-state="needs_action"] {border-inline-start-color:var(--azure-warning);}
 html[data-lite-theme] .lite-recovery-premium-indicators small {font-size:.78rem;line-height:1.45;}
+html[data-lite-theme] .lite-recovery-history-prerequisite,
+html[data-lite-theme] .lite-recovery-action-disabled-reason {
+  display:block;margin-top:.35rem;color:var(--azure-muted);
+  font-size:.8125rem;line-height:1.5;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-recovery-action-disabled-reason {
+  border-inline-start:3px solid var(--azure-warning);
+  padding-inline-start:.6rem;
+}
+html[data-lite-theme] .lite-recovery-manage-sheet :is(.lite-recovery-manage-tabs,.lite-recovery-history-action-list,
+  .lite-recovery-history-row-actions,.lite-recovery-location-choice-list,.lite-recovery-location-current) {
+  min-width:0;max-width:100%;
+}
+html[data-lite-theme] .lite-recovery-manage-sheet :is(.lite-recovery-history-select,.lite-recovery-location-choice > button) {
+  min-height:44px;min-width:0;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-recovery-manage-sheet .lite-recovery-history-action-row :is(.pocket-button,button) {
+  min-height:44px;
+}
+html[data-lite-theme] .lite-recovery-confirm-sheet .lite-recovery-impact dd,
+html[data-lite-theme] .lite-recovery-database-manage-sheet .lite-recovery-database-technical dd {
+  overflow-wrap:anywhere;word-break:break-word;
+}
+html[data-lite-theme] .lite-recovery-confirm-sheet .lite-recovery-native-confirm-actions {
+  padding-bottom:max(.25rem,env(safe-area-inset-bottom));
+}
+html[data-lite-theme] .lite-recovery-manage-sheet :is(input,select,textarea),
+html[data-lite-theme] .lite-recovery-confirm-sheet :is(input,select,textarea) {
+  color-scheme:inherit;
+}
 html[data-lite-theme] .lite-recovery-premium-stage-grid button {
   min-height:5.25rem;min-width:0;cursor:pointer;
 }
@@ -298,12 +329,12 @@ html[data-lite-theme] .lite-recovery-native-confirm-actions button {min-height:4
   html[data-lite-theme] .lite-recovery-history-row-actions {grid-template-columns:minmax(0,1fr);}
   html[data-lite-theme] .lite-recovery-premium-brand {gap:.35rem;}
   html[data-lite-theme] .lite-recovery-premium-brand > svg {width:2.5rem;height:2.5rem;padding:.4rem;}
-  html[data-lite-theme] .lite-recovery-premium-brand h2 {font-size:.95rem;}
-  html[data-lite-theme] .lite-recovery-premium-brand h2 {margin:.1rem 0 .2rem;}
+  html[data-lite-theme] .lite-recovery-premium-brand h2 {font-size:clamp(1.15rem,5vw,1.5rem);}
+  html[data-lite-theme] .lite-recovery-premium-brand h2 {margin:.15rem 0 .3rem;}
   html[data-lite-theme] .lite-recovery-premium-brand p {line-height:1.3;}
-  html[data-lite-theme] .lite-recovery-premium-backup-date {font-size:.7rem;}
+  html[data-lite-theme] .lite-recovery-premium-backup-date {font-size:.875rem;}
   html[data-lite-theme] .lite-recovery-premium-journey h2,
-  html[data-lite-theme] .lite-recovery-premium-timeline h2 {font-size:.95rem;}
+  html[data-lite-theme] .lite-recovery-premium-timeline h2 {font-size:1.05rem;}
   html[data-lite-theme] .lite-recovery-premium-layout .lite-recovery-premium-stage-grid {grid-template-columns:minmax(0,1fr);}
   html[data-lite-theme] .lite-recovery-premium-stage-grid button {
     display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;
@@ -312,7 +343,7 @@ html[data-lite-theme] .lite-recovery-native-confirm-actions button {min-height:4
   html[data-lite-theme] .lite-recovery-premium-stage-grid button > svg {grid-row:1 / span 2;}
   html[data-lite-theme] .lite-recovery-premium-stage-grid button strong {grid-column:2;min-width:0;}
   html[data-lite-theme] .lite-recovery-premium-stage-grid button span {grid-column:2;margin-inline-start:0;text-align:left;}
-  html[data-lite-theme] .lite-recovery-premium-stage-grid button span {font-size:.65rem;}
+  html[data-lite-theme] .lite-recovery-premium-stage-grid button span {font-size:.8125rem;}
   html[data-lite-theme] .lite-recovery-premium-indicators span {font-size:.75rem;}
   html[data-lite-theme] .lite-recovery-premium-actions button {font-size:.8rem;}
   html[data-lite-theme] .lite-recovery-premium-screen :is(h2,h3,p,strong,span,small,time,button,li) {overflow-wrap:break-word;word-break:normal;}
