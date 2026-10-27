@@ -23,11 +23,21 @@ for (const appearance of ['light', 'dark'] as const) {
       await expect(panel).toBeVisible();
       const manageOpenMs = clock() - openStarted;
       const switchStarted = clock();
+      const previewStarted = clock();
       await panel.getByRole('tab', { name: 'Restore' }).click();
       await expect(panel.getByRole('tabpanel', { name: 'Restore' })).toBeVisible();
+      const restorePreviewDisplayMs = clock() - previewStarted;
       await panel.getByRole('tab', { name: 'History' }).click();
       await expect(panel.getByRole('tabpanel', { name: 'History' })).toBeVisible();
+      const historyExpansionMs = clock() - switchStarted;
       const sectionSwitchMs = clock() - switchStarted;
+      let backupSelectionMs: number | null = null;
+      const selectBackup = panel.locator('.lite-recovery-history-select').first();
+      if (await selectBackup.count()) {
+        const selectionStarted = clock();
+        await selectBackup.click();
+        backupSelectionMs = clock() - selectionStarted;
+      }
       let keyboardGeometryMs: number | null = null;
       if (width >= 701) {
         const geometryStarted = clock();
@@ -37,7 +47,10 @@ for (const appearance of ['light', 'dark'] as const) {
         await page.keyboard.press('ArrowLeft');
         keyboardGeometryMs = clock() - geometryStarted;
       }
-      const measurements = { firstPaintMs, journeyMs, manageOpenMs, sectionSwitchMs, keyboardGeometryMs };
+      const measurements = {
+        firstPaintMs, journeyMs, manageOpenMs, sectionSwitchMs,
+        historyExpansionMs, restorePreviewDisplayMs, backupSelectionMs, keyboardGeometryMs,
+      };
       expect(Object.values(measurements).filter((value): value is number => value !== null).every(value => value >= 0 && Number.isFinite(value))).toBe(true);
       await testInfo.attach('azure-recovery-interaction-samples', {
         body: JSON.stringify({ ...measurements, width, appearance, contract: 'PR588-PR589 unchanged; supplemental only' }, null, 2),
