@@ -40,6 +40,7 @@ function RecoveryActionRow({
   busyLabel,
   busy = false,
   disabled = false,
+  disabledReason = '',
   tone = 'secondary',
   onAction,
   detailsLabel = 'Details',
@@ -57,6 +58,7 @@ function RecoveryActionRow({
           {status ? <StatusBadge status={statusTone}>{status}</StatusBadge> : null}
         </div>
         <p>{description}</p>
+        {disabled && !busy && disabledReason ? <small className="lite-recovery-action-disabled-reason" role="note">{disabledReason}</small> : null}
         {children}
       </div>
       <div className="lite-recovery-manage-action-buttons">
@@ -173,6 +175,11 @@ export default function RecoveryManageSheetLazy({
           </button>
         ))}
       </div>
+      {/* Keep aria-controls targets stable without mounting inactive, heavy panels. */}
+      {RECOVERY_MANAGE_SECTIONS.filter((item) => item.id !== activeSection).map((item) => (
+        <div key={item.id} id={`recovery-manage-panel-${item.id}`} role="tabpanel"
+          aria-labelledby={`recovery-manage-tab-${item.id}`} hidden />
+      ))}
 
       {savedStateOnly || recoveryWriteBlocked ? (
         <StateSurface tone="degraded" title="Recovery changes unavailable"
@@ -207,6 +214,7 @@ export default function RecoveryManageSheetLazy({
               busyLabel="Starting backup…"
               busy={busy === 'backup'}
               disabled={Boolean(busy) || databaseWriteBlocked}
+              disabledReason={databaseWriteBlocked ? recoveryWriteBlockedReason || 'Database or workspace protection currently blocks backup changes.' : ''}
               onAction={onBackup}
             />
             <RecoveryActionRow
@@ -309,6 +317,7 @@ export default function RecoveryManageSheetLazy({
               busyLabel="Checking…"
               busy={busy === 'verify'}
               disabled={Boolean(busy) || !latestBackup || databaseWriteBlocked}
+              disabledReason={databaseWriteBlocked ? recoveryWriteBlockedReason || 'Protected changes are unavailable.' : !latestBackup ? 'Create or select a backup first.' : ''}
               onAction={onVerify}
               onDetails={() => onOpenActionDetails('verify')}
             />
@@ -322,6 +331,7 @@ export default function RecoveryManageSheetLazy({
               busyLabel="Preparing…"
               busy={busy === 'preview'}
               disabled={Boolean(busy) || !latestBackup || databaseWriteBlocked}
+              disabledReason={databaseWriteBlocked ? recoveryWriteBlockedReason || 'Protected changes are unavailable.' : !latestBackup ? 'Select a verified backup first.' : ''}
               onAction={onPreview}
               onDetails={() => onOpenActionDetails('preview')}
             />
@@ -335,6 +345,7 @@ export default function RecoveryManageSheetLazy({
               busyLabel="Restoring…"
               busy={busy === 'restore'}
               disabled={Boolean(busy) || !impact.ready || databaseWriteBlocked || savedStateOnly || recoveryWriteBlocked}
+              disabledReason={recoveryWriteBlocked ? recoveryWriteBlockedReason || 'Live recovery authority is unavailable.' : !impact.verified ? 'Verification required.' : !impact.locationReady ? 'Destination must report Ready.' : !impact.ready ? 'A fresh matching restore preview is required.' : ''}
               tone="danger"
               onAction={onRestore}
               onDetails={() => onOpenActionDetails('restore')}
@@ -405,7 +416,7 @@ export default function RecoveryManageSheetLazy({
             <RecoveryBackupHistory
               initialHistory={history}
               latestPreview={latestPreview}
-               savedStateOnly={savedStateOnly || recoveryWriteBlocked}
+              savedStateOnly={savedStateOnly || recoveryWriteBlocked}
               selectedBackupId={selectedBackupId}
               onSelectBackup={onSelectBackup}
               onVerify={onVerify}
