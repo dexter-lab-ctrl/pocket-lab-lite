@@ -77,6 +77,21 @@ for (const theme of ['light', 'dark', 'system'] as const) {
     await expect(progress).toHaveScreenshot(`recovery-${theme}-database-rollback.png`, { animations: 'disabled' });
   });
 }
+// DEFINED — BASELINE CAPTURE AND APPROVAL DEFERRED. Do not auto-approve.
+for (const theme of ['light', 'dark'] as const) {
+  test(`Recovery blocked prerequisite guidance visual candidate: ${theme}`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript((value) => localStorage.setItem('pocketlab:appearance', value), theme);
+    await installScenario(page, 'recovery-restore-blocked');
+    await page.goto('/?screen=recovery');
+    await waitForLiteScreenToSettle(page, 'recovery');
+    await page.getByRole('button', { name: 'Manage Recovery' }).click();
+    const panel = page.getByRole('dialog', { name: /Manage backups and recovery/i });
+    await panel.getByRole('tab', { name: 'Restore' }).click();
+    await expect(panel.locator('.lite-recovery-action-disabled-reason')).toBeVisible();
+    await expect(panel).toHaveScreenshot(`recovery-${theme}-mobile-blocked-prerequisites-candidate.png`, { animations: 'disabled' });
+  });
+}
 test('Recovery protected confirmation visual — synthetic preview, no restore dispatched', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await installScenario(page, 'recovery-preview-ready');
