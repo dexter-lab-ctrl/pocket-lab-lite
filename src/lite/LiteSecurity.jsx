@@ -2412,7 +2412,7 @@ export default function SecurityScreen() {
     backendReachable: effectiveBackendReachable,
   });
   const safetyScore = safetyStory.score.value;
-  const safetyScoreReported = safetyStory.score.provenance === 'backend_reported';
+  const safetyScoreReported = activeProfileHasRun && safetyStory.score.provenance === 'backend_reported' && typeof safetyStory.score.value === 'number' && Number.isFinite(safetyStory.score.value);
   const safetyLabel = runStatus === 'queued'
     ? 'Safety check queued'
     : runStatus === 'running'
