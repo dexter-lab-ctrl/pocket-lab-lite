@@ -737,3 +737,268 @@ html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details :is(
   background-color:var(--azure-surface) !important;
   color:var(--azure-text) !important;
 }
+
+/* Final Azure Horizon Apps ownership. The portal inherits semantic tokens
+   from html[data-lite-theme], including the resolved System preference. */
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-actions,
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-card-actions {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: .75rem;
+  min-width: 0;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-actions > .pocket-button,
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-card-actions > .pocket-button {
+  flex: 0 1 auto;
+  min-width: 6.5rem;
+  min-height: 44px;
+  padding: .65rem 1rem;
+  border-radius: var(--azure-radius-control);
+  white-space: normal;
+  line-height: 1.35;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer {
+  --apps-premium-surface: var(--azure-surface);
+  --apps-premium-secondary: var(--azure-raised);
+  --apps-premium-border: var(--azure-border);
+  --apps-premium-text: var(--azure-text);
+  --apps-premium-muted: var(--azure-muted);
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer
+  :is(.lite-catalog-manage-sheet,.lite-catalog-manage-head,.lite-catalog-manage-scroll,.lite-catalog-manage-section-viewport) {
+  background-color: var(--azure-surface);
+  color: var(--azure-text);
+  background-image: none;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer
+  :is(.lite-catalog-action-groups,.lite-app-action-group,.lite-app-action-row,.lite-catalog-premium-backup-path > span,
+      .lite-catalog-premium-flow-step,.lite-catalog-premium-fact-list > div,.lite-catalog-action-reasons article,
+      .lite-catalog-premium-how-guide > li,.lite-catalog-storage-panel--sheet) {
+  background-color: var(--azure-raised);
+  color: var(--azure-text);
+  background-image: none;
+  border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer
+  :is(.lite-catalog-premium-backup,.lite-catalog-premium-flow,.lite-catalog-premium-storage-details,
+      .lite-catalog-premium-action-notices,.lite-catalog-manage-section-hint,.lite-catalog-manage-section-loading) {
+  background-color: var(--azure-surface);
+  color: var(--azure-text);
+  background-image: none;
+  border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer
+  :is(.lite-catalog-premium-state.is-review,.lite-catalog-premium-backup-guidance.is-review,.lite-app-action-row.is-review) {
+  background: var(--azure-warning-subtle);
+  color: var(--azure-text);
+  border-color: var(--azure-warning);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer
+  .lite-app-action-row.is-disabled {
+  background: var(--azure-neutral-subtle);
+  color: var(--azure-text);
+  border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer
+  :is(.lite-catalog-storage-chips span,.lite-catalog-action-reasons span,.lite-catalog-storage-hint,.lite-catalog-storage-empty) {
+  color: var(--azure-muted);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs {
+  display: flex;
+  gap: .35rem;
+  padding: .35rem;
+  margin: .2rem 0 .7rem;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-raised);
+  box-shadow: none;
+  scrollbar-width: thin;
+  scroll-padding-inline: .35rem;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs button {
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 44px;
+  padding: .55rem .7rem;
+  border: 1px solid transparent;
+  border-radius: var(--azure-radius-control);
+  background: transparent;
+  color: var(--azure-text);
+  box-shadow: none;
+  font-weight: 650;
+  line-height: 1.3;
+  scroll-snap-align: start;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs button[aria-selected="true"] {
+  background: var(--azure-selected);
+  border-color: var(--azure-strong-border);
+  color: var(--azure-text);
+  box-shadow: inset 0 -3px var(--azure-accent);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs button:hover {
+  background: var(--azure-hover);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer
+  :is(.lite-catalog-manage-section-tabs button,.lite-catalog-manage-panel-tool,.lite-catalog-manage-grip,
+      .lite-catalog-manage-close,.lite-catalog-premium-disclosure summary):focus-visible {
+  outline: 2px solid var(--azure-focus);
+  outline-offset: 2px;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-disclosure {
+  min-width: 0;
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-surface);
+  color: var(--azure-text);
+  padding: .65rem .8rem;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer
+  .lite-catalog-premium-disclosure > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  min-height: 44px;
+  width: 100%;
+  padding: .4rem .2rem;
+  list-style: none;
+  color: var(--azure-text);
+  font-size: .88rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer
+  .lite-catalog-premium-disclosure > summary::-webkit-details-marker { display: none; }
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer
+  .lite-catalog-premium-disclosure > summary::after {
+  content: '';
+  display: block;
+  flex: 0 0 9px;
+  width: 9px;
+  height: 9px;
+  margin: 0 .35rem 4px 0;
+  border-inline-end: 2px solid var(--azure-accent);
+  border-bottom: 2px solid var(--azure-accent);
+  transform: rotate(45deg);
+  transition: transform .15s ease;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer
+  .lite-catalog-premium-disclosure[open] > summary::after {
+  transform: rotate(225deg) translate(-3px,-3px);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer
+  .lite-catalog-premium-disclosure[open] > summary {
+  border-bottom: 1px solid var(--azure-border);
+  margin-bottom: .65rem;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto auto;
+  align-items: start;
+  gap: .75rem;
+  background: var(--azure-surface);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head > div:first-child {
+  min-width: 0;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-desktop-controls {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-panel-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  border-color: var(--azure-border);
+  background: var(--azure-raised);
+  color: var(--azure-text);
+  font-size: .76rem;
+  padding: .45rem .55rem;
+  min-height: 44px;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-close {
+  width: 44px;
+  height: 44px;
+  border-color: var(--azure-border);
+  background: var(--azure-raised);
+  color: var(--azure-text);
+  z-index: 3;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-mobile-grip-bar {display:none;}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-resize-grip { display:none; }
+@media (max-width:700px) {
+  html[data-lite-theme] .lite-catalog-screen .lite-catalog-actions,
+  html[data-lite-theme] .lite-catalog-screen .lite-catalog-card-actions {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+  html[data-lite-theme] .lite-catalog-screen .lite-catalog-actions > .pocket-button,
+  html[data-lite-theme] .lite-catalog-screen .lite-catalog-card-actions > .pocket-button {
+    min-width: 0;
+    width: 100%;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-sheet.is-mobile-resizable {
+    height: 72dvh;
+    min-height: 0;
+    max-height: calc(var(--lite-visual-viewport-height, 100dvh) - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 1rem);
+    transition: height .16s ease-out;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-mobile-grip-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: .25rem .6rem;
+    background: var(--azure-surface);
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-grip {
+    flex: 1 1 auto;
+    max-width: 5rem;
+    margin: 0 auto;
+    min-height: 44px;
+    cursor: ns-resize;
+    touch-action: none;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head {
+    grid-template-columns: minmax(0,1fr) auto;
+    align-items: start;
+    gap: .75rem;
+    padding: .35rem .65rem .75rem;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-desktop-controls {display:none;}
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-scroll {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-sheet.is-compact .lite-catalog-manage-scroll {
+    display: none;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-how-guide,
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup-path,
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-fact-list {
+    grid-template-columns: minmax(0,1fr);
+  }
+  [data-lite-manage-portal="true"] .lite-shared-element-cue { display:none; }
+}
+@media (max-width:360px) {
+  html[data-lite-theme] .lite-catalog-screen .lite-catalog-actions,
+  html[data-lite-theme] .lite-catalog-screen .lite-catalog-card-actions {grid-template-columns:minmax(0,1fr);}
+}
+@media (prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-sheet.is-mobile-resizable,
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-disclosure > summary::after {
+    transition:none;
+  }
+}
