@@ -11,6 +11,9 @@ import {
   FileCheck,
   Fingerprint,
   LayoutGrid,
+  Move,
+  Maximize2,
+  RotateCcw,
   Lock,
   Menu,
   Network,
@@ -52,6 +55,7 @@ import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy
 import { acceptSecurityProgressEvent } from '../lib/securityProgressEvents.js';
 import { shouldUseLiteSecurityProgressStream } from '../lib/liteSecurityProgressPolicy.js';
 import { LiteSheet } from './LiteOverlay.jsx';
+import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 import {
   GlassCard,
@@ -546,7 +550,11 @@ const SECURITY_MANAGE_SECTIONS = [
   { id: 'checks', label: 'Checks' },
   { id: 'changes', label: 'Changes' },
   { id: 'issues', label: 'Issues' },
+  { id: 'coverage', label: 'Coverage' },
+  { id: 'check_path', label: 'Check path' },
+  { id: 'evidence', label: 'Evidence' },
   { id: 'history', label: 'History' },
+  { id: 'technical_details', label: 'Technical details' },
 ];
 
 const SECURITY_MANAGE_SECTION_DESCRIPTIONS = {
@@ -554,7 +562,11 @@ const SECURITY_MANAGE_SECTION_DESCRIPTIONS = {
   checks: 'Choose a check and open coverage, path, evidence, or technical detail only when needed.',
   changes: 'New, resolved, and still-present safety changes.',
   issues: 'Compact review rows with focused finding details.',
-  history: 'Recent safety trend summary with lazy details.',
+  coverage: 'Completed, partial, timed-out, skipped and unavailable checks.',
+  check_path: 'Backend-reported execution steps and tool outcomes.',
+  evidence: 'Sanitized records and check receipts.',
+  history: 'Recent profile-matched results, loaded on demand.',
+  technical_details: 'Safe diagnostic facts and scanner metadata.',
 };
 
 const DEFAULT_APP_COVERAGE_SUMMARY = {
@@ -1940,6 +1952,12 @@ export default function SecurityScreen() {
   const [securityCompletionSettling, setSecurityCompletionSettling] = useState(false);
   const securityManageOpen = useLiteUiStore((state) => state.securityManageOpen);
   const setSecurityManageOpen = useLiteUiStore((state) => state.setSecurityManageOpen);
+  const {
+    panelRef: safetyManagePanelRef, desktopPanel: safetyManageDesktop,
+    panelStyle: safetyManagePanelStyle, announcement: safetyManageAnnouncement,
+    reset: resetSafetyManagePanel, startPanelInteraction: startSafetyManageInteraction,
+    adjustPanelWithKeyboard: adjustSafetyManageKeyboard,
+  } = useDesktopManageGeometry({ open: securityManageOpen, defaultWidth: 720, minWidth: 420, minHeight: 420 });
   const activeSecurityDetails = useLiteUiStore((state) => state.activeSecurityDetailsPanel);
   const setActiveSecurityDetails = useLiteUiStore((state) => state.setActiveSecurityDetailsPanel);
   const securityManageSection = useLiteUiStore((state) => state.activeSecurityManageSection);
@@ -3152,25 +3170,36 @@ export default function SecurityScreen() {
         open={securityManageOpen}
         onClose={closeSecurityManage}
         eyebrow="Safety Center"
-        title="Manage Security"
+        title="Manage Safety"
         description="Review changes, coverage, activity, and protected check records in one focused workspace."
         layerClassName="lite-security-manage-layer"
-        className={`lite-security-manage-shell lite-security-manage-panel ${securityMotionReduced ? '' : 'lite-security-phase4-panel-motion'}`.trim()}
+        className={`lite-security-manage-shell lite-security-manage-panel ${safetyManageDesktop ? 'is-movable' : ''} ${securityMotionReduced ? '' : 'lite-security-phase4-panel-motion'}`.trim()}
         bodyClassName="lite-security-manage-scroll"
         headerClassName="lite-security-manage-head"
         closeClassName="lite-security-manage-close"
         gripClassName="lite-security-manage-grip"
         variant="security"
-        motion={securityMotionReduced ? 'none' : 'safe-grip'}
-        surfaceProps={{ 'data-security-phase5-manage-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'manage-shell' }}
+        motion={safetyManageDesktop || securityMotionReduced ? 'none' : 'safe-grip'}
+        surfaceRef={safetyManagePanelRef}
+        surfaceStyle={safetyManagePanelStyle}
+        surfaceProps={{ 'data-security-phase5-manage-shell': 'true', 'data-security-manage-layout': safetyManageDesktop ? 'desktop-movable' : 'mobile-sheet', 'data-security-react-spring': 'manage-shell' }}
+        headerActions={safetyManageDesktop ? <div className="lite-security-manage-desktop-tools" role="group" aria-label="Desktop Safety panel controls">
+          <button type="button" aria-label="Move Safety panel" title="Drag or use arrow keys; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight" onPointerDown={(event) => startSafetyManageInteraction('move', event)} onKeyDown={(event) => adjustSafetyManageKeyboard('move', event)}><Move size={16} aria-hidden="true" /></button>
+          <button type="button" aria-label="Reset Safety panel position and size" onClick={resetSafetyManagePanel}><RotateCcw size={16} aria-hidden="true" /> Reset</button>
+          <button type="button" aria-label="Resize Safety panel" title="Drag or use arrow keys; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight" onPointerDown={(event) => startSafetyManageInteraction('resize', event)} onKeyDown={(event) => adjustSafetyManageKeyboard('resize', event)}><Maximize2 size={16} aria-hidden="true" /></button>
+          <span className="sr-only" role="status" aria-live="polite">{safetyManageAnnouncement}</span>
+        </div> : null}
       >
         <ManageMotionDiv style={securityMotionReduced ? undefined : manageScrollSpring} className="lite-security-manage-scroll-frame" data-security-react-spring="manage-scroll-frame">
+        <p className="lite-security-horizon-manage-context">Profile: <strong>{activeProfileMeta.label}</strong> · {savedSecurityDetails ? 'Saved result' : lastCheckedLabel} · {evidenceStatusLabel}</p>
         <ManageMotionDiv style={securityMotionReduced ? undefined : manageTabsSpring} className="lite-security-manage-tabs lite-security-premium-v2-manage-tabs-motion" role="tablist" aria-label="Security Manage sections" data-security-react-spring="manage-tabs">
           {SECURITY_MANAGE_SECTIONS.map((section) => (
             <button
               key={section.id}
               type="button"
               role="tab"
+              id={'safety-manage-tab-' + section.id}
+              aria-controls="safety-manage-active-panel"
               aria-selected={activeManageSection === section.id}
               aria-label={`Open ${section.label} in Security Manage`}
               className={`lite-security-manage-tab-button ${activeManageSection === section.id ? 'is-active' : ''}`.trim()}
@@ -3181,7 +3210,7 @@ export default function SecurityScreen() {
           ))}
         </ManageMotionDiv>
 
-        <ManageMotionSection style={securityMotionReduced ? undefined : manageSectionSpring} className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection} data-security-react-spring="manage-section">
+        <ManageMotionSection style={securityMotionReduced ? undefined : manageSectionSpring} className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} role="tabpanel" id="safety-manage-active-panel" aria-labelledby={'safety-manage-tab-' + activeManageSection} aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection} data-security-react-spring="manage-section">
           <div className="lite-security-manage-section-head">
             <span>{activeManageSectionMeta.label}</span>
             <h3>{activeManageSectionMeta.label}</h3>
