@@ -2786,12 +2786,11 @@ export default function SecurityScreen() {
     if (securityScanAlreadyRunning()) { blockDuplicateSecurityScan(); return; }
     chooseSecurityProfile(profile);
     if (profile === 'full') {
-      await startFullLocalCheck();
+      openFullLocalConfirm(event);
       return;
     }
     if (profile === 'app') {
-      setAppCheckTarget({ app_id: 'photoprism', app_label: 'PhotoPrism' });
-      await startAppCheck({ app_id: 'photoprism', app_label: 'PhotoPrism' });
+      openAppCheckConfirm({ app_id: 'photoprism', app_label: 'PhotoPrism' }, event);
       return;
     }
     await scan();
