@@ -52,7 +52,7 @@ import AppActionRow from './AppActionRow.jsx';
 import AppSummaryCard from './AppSummaryCard.jsx';
 import AppActionProgressSlot from './AppActionProgressSlot.jsx';
 import { selectPhotoBackupFacts, selectSupplementalActionNotices } from './appsOperationalView.js';
-import { LiteContextualActionCue, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteReducedMotion } from '../LiteMotion.jsx';
+import { LiteContextualActionCue, LiteFlipGroup, LiteMotionReveal, LitePressableButton, triggerLiteTactileFeedback, useLiteReducedMotion } from '../LiteMotion.jsx';
 import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 const loadAppActionDetails = () => import('./AppActionDetailsLazy.jsx');
 const AppActionDetailsLazy = React.lazy(loadAppActionDetails);
