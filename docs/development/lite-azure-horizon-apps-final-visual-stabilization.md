@@ -223,7 +223,7 @@ This section is the current, dated qualification record for PR #634. It retains 
 | Feature branch | `feat/azure-horizon-apps-final-polish` |
 | Initial branch SHA | `4f2c1ad326466464719a4ce4c3751fa3d17e8637` |
 | Base `main` SHA | `2f25837463009b940a330817c3a9c412f9e1a4b8` |
-| Final Dev-PC candidate SHA | `345d6db03110bcb6145e92c0c898d582d74de0c2` |
+| Final Dev-PC candidate SHA | The exact feature HEAD used by the final Apps-only candidate run; recorded in the qualification output and PR update |
 | Candidate manifest | **PASS** — exact `source_commit`, sanitized manifest and existing loopback runtime transport |
 | Candidate build | **PASS** — `vite build`, 2,248 modules transformed |
 | PR state | **OPEN / DRAFT / NOT MERGED** |
@@ -263,10 +263,10 @@ The previously recorded Pocket Lab-owned bridge was cleaned through the official
 
 - Android Chrome `156.0.8078.47`, DevTools Protocol `1.3`, package identity `com.android.chrome`.
 - `npm run check:perf:android-cdp`: **PASS** — CDP attach passed with one context and three pages at the final preflight.
-- Final candidate run at SHA `345d6db03110bcb6145e92c0c898d582d74de0c2`: manifest, ADB candidate setup, loopback endpoint identity and candidate reactivation: **PASS**.
+- Final candidate run at the exact feature HEAD: manifest, ADB candidate setup, loopback endpoint identity and candidate reactivation: **PASS**.
 - Apps-only runner: **BLOCKED / INCONCLUSIVE** at the required foreground-animation gate; Android Chrome delivered zero foreground animation frames after the bounded official wake/retry path.
 
-The sanitized evidence captured for the final attempt is under `.pocketlab-dev/performance/android-apps-345d6db03110bcb6145e92c0c898d582d74de0c2/`, including `device-state-final.json` and `device-power-final.json`. The latter records `mWakefulness=Dozing`, `mWakefulnessChanging=false` and `mHalInteractiveModeEnabled=false`. No seven-screen physical matrix was run. No physical Apps screenshots, gesture measurements, LoAF samples or Android performance budget claims are promoted to PASS.
+The sanitized evidence captured for the final attempt is under `.pocketlab-dev/performance/android-apps-<candidate-sha>/`, including `device-state-final.json` and `device-power-final.json`. The latter records `mWakefulness=Dozing`, `mWakefulnessChanging=false` and `mHalInteractiveModeEnabled=false`. No seven-screen physical matrix was run. No physical Apps screenshots, gesture measurements, LoAF samples or Android performance budget claims are promoted to PASS.
 
 This is classified as an external device/platform blocker, not an Apps source regression. The candidate process, ADB reverse and session-owned WSL forwarding were cleaned after the attempt; the owned candidate state is absent.
 
