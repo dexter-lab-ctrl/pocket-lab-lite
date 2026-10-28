@@ -238,6 +238,7 @@ The candidate was built on Dev PC with the repository's existing performance-can
 | Mocked grip drag was intermittently landing during the CSS height transition | The regression test started coordinate dragging before the close/open transition had settled. The test now waits for the established animation boundary before dispatching the grip gesture; production behavior was not weakened. | Apps mocked suite passed 72/72 at final HEAD. Commit `51aca7e4`. |
 | Apps-only Android attempt was coupled to unrelated repository-wide evidence | The new Apps wrapper invoked `check:render-budgets`, which re-read shared historical Home/Devices evidence and made unrelated target misses appear as Apps qualification failures. The wrapper now exits with the scoped Apps result; the Apps qualifier continues to enforce its own evidence gates. | `bash -n scripts/dev/lite/run-ui-performance-android-apps.sh`; exact candidate attempt at final HEAD. Commit `345d6db0`. |
 | Android candidate foreground target was not deterministic after preflight attach | The Apps-only runner now reuses the existing candidate-origin page activation/foreground RAF checks and explicitly reactivates the official candidate with `-Wake -OpenCandidate` before measurement. | Candidate manifest/CDP identity passed at four Apps-only attempts; the remaining failure is the external Android Dozing state recorded in §16.4. Commits `fa6ae871` and `93437569`. |
+| CI performance policy guard rejected the equivalent safe-grip expression ordering | `LiteOverlay` already enforced `safe-grip`, open-state, performance-mode and mobile-snap conditions, but the source contract asserted the protected guard in a specific order. The expression was reordered without changing its boolean behavior. | `src/performance/litePerformancePolicy.test.js`: 13/13; `npm run test:perf:components`: 27/27; commit `df0ca203`. |
 
 No Server Phone application source, runtime configuration, credentials or PM2 state was changed.
 
@@ -252,6 +253,7 @@ No Server Phone application source, runtime configuration, credentials or PM2 st
 | `npm run test:apps:final:storybook` | **PASS** — Storybook production build; existing bundle/eval warnings only |
 | `npm run build` | **PASS** — Vite production build; existing large-chunk warnings only |
 | `npm run test:apps:final:performance` | **PARTIAL** — Apps performance tests 8/8 passed; the chained repository-wide checker reported 2 hard failures and 18 target misses in unrelated Devices/Home/Identity/Recovery/Rules/Security samples |
+| `npm run test:perf:qualification` | **PASS** — 56 mocked performance tests, bundle budget PASS, 70 evidence records, 0 hard gate failures; 25 non-gating target misses remain outside Apps |
 
 Existing Apps regression coverage also passed at the implementation checkpoint: Apps Azure mocked 64/64, Apps premium unit 35/35, Apps premium a11y 4/4, Apps premium theme 10/10, Devices regression 2/2; the existing premium mocked and geometry suites retained their documented intentional skips (61/64 and 43/44 passed, respectively).
 
