@@ -225,5 +225,8 @@ else
   printf '[ui-performance-android-apps] baseline attribution reports: %s\n' "$baseline_output"
 fi
 
-npm run check:render-budgets
+# The Apps-only qualifier writes scoped evidence and owns its physical gates.
+# Do not run the repository-wide evidence checker here: it reads the shared
+# .pocketlab-dev/performance tree and would re-evaluate unrelated historical
+# Home/Devices samples as part of this Apps qualification.
 exit "${qualifier_status:-0}"
