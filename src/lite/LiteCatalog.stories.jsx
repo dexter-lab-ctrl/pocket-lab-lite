@@ -338,3 +338,92 @@ export const AzurePolishActionDetailsBlack = {
   ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'desktop',status:'unvalidated'}),
   play: AzurePolishActionDetailsDaylight.play,
 };
+
+
+/* Final Azure Horizon Apps source-authored stories. No Storybook runs or
+   screenshot promotions were performed in the authoring session. */
+async function openFinalManage(canvasElement) {
+  await openManage(canvasElement);
+  return within(canvasElement.ownerDocument.body).findByRole('dialog',{name:/Manage PhotoPrism/i});
+}
+export const AzureFinalDaylightCatalog = createLiteStory('catalog','catalog-multi-app',{theme:'daylight',viewport:'desktop',status:'unvalidated'});
+export const AzureFinalBlackCatalog = createLiteStory('catalog','catalog-multi-app',{theme:'dark',viewport:'desktop',status:'unvalidated'});
+export const AzureFinalSystemCatalog = createLiteStory('catalog','catalog-ready',{theme:'system',viewport:'mobile390',status:'unvalidated'});
+export const AzureFinalGenericSecondApp = createLiteStory('catalog','catalog-multi-app',{theme:'dark',viewport:'desktop',status:'unvalidated'});
+export const AzureFinalOfflineState = createLiteStory('catalog','offline-saved',{theme:'dark',viewport:'mobile390',status:'unvalidated'});
+export const AzureFinalLongText = createLiteStory('catalog','catalog-ready',{theme:'daylight',viewport:'mobile360',textScale:2,status:'unvalidated'});
+export const AzureFinalDesktopManageControls = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'desktop',status:'unvalidated'}),
+  play: async ({canvasElement}) => {
+    const dialog=await openFinalManage(canvasElement);
+    const view=within(dialog);
+    await expect(view.getByRole('button',{name:'Move app management panel'})).toBeVisible();
+    await expect(view.getByRole('button',{name:'Reset app panel position and size'})).toBeVisible();
+    await expect(view.getByRole('button',{name:'Resize app management panel'})).toBeVisible();
+  },
+};
+export const AzureFinalMobileMedium = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'daylight',viewport:'mobile390',status:'unvalidated'}),
+  play: async ({canvasElement}) => {
+    const dialog=await openFinalManage(canvasElement);
+    await expect(dialog).toHaveAttribute('data-lite-sheet-snap','medium');
+  },
+};
+export const AzureFinalMobileCompact = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'mobile390',status:'unvalidated'}),
+  play: async ({canvasElement}) => {
+    const dialog=await openFinalManage(canvasElement);
+    await userEvent.click(within(dialog).getByRole('button',{name:'Compact',exact:true}));
+    await expect(dialog).toHaveAttribute('data-lite-sheet-snap','compact');
+  },
+};
+export const AzureFinalMobileExpanded = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'mobile390',status:'unvalidated'}),
+  play: async ({canvasElement}) => {
+    const dialog=await openFinalManage(canvasElement);
+    await userEvent.click(within(dialog).getByRole('button',{name:'Expand',exact:true}));
+    await expect(dialog).toHaveAttribute('data-lite-sheet-snap','expanded');
+  },
+};
+export const AzureFinalStorageDisclosureExpanded = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'mobile390',status:'unvalidated'}),
+  play: async ({canvasElement}) => {
+    const dialog=await openFinalManage(canvasElement);
+    const disclosure=dialog.querySelector('.lite-catalog-premium-storage-details');
+    if(disclosure) await userEvent.click(within(disclosure).getByText('Storage and device details'));
+  },
+};
+export const AzureFinalNoticesDisclosureExpanded = {
+  ...createLiteStory('catalog','app-media-not-ready',{theme:'dark',viewport:'desktop',status:'unvalidated'}),
+  play: async ({canvasElement}) => {
+    const dialog=await openFinalManage(canvasElement);
+    const disclosure=dialog.querySelector('.lite-catalog-premium-action-notices');
+    if(disclosure) await userEvent.click(within(disclosure).getByText('Other action notices'));
+  },
+};
+export const AzureFinalPhotoGuideExpanded = {
+  ...createLiteStory('catalog','photo-backup-completed',{theme:'daylight',viewport:'mobile390',status:'unvalidated'}),
+  play: async ({canvasElement}) => {
+    const dialog=await openFinalManage(canvasElement);
+    const guide=dialog.querySelector('.lite-catalog-premium-backup-actions details');
+    if(guide) await userEvent.click(within(guide).getByText('How photo backup works'));
+  },
+};
+export const AzureFinalPhotoBackupReady = {
+  ...createLiteStory('catalog','photo-backup-completed',{theme:'dark',viewport:'mobile390',status:'unvalidated'}),
+  play: async ({canvasElement}) => { await openFinalManage(canvasElement); },
+};
+export const AzureFinalPhotoBackupNotReady = {
+  ...createLiteStory('catalog','photo-backup-remote-unavailable',{theme:'daylight',viewport:'mobile390',status:'unvalidated'}),
+  play: async ({canvasElement}) => { await openFinalManage(canvasElement); },
+};
+export const AzureFinalNestedActionDetails = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'desktop',status:'unvalidated'}),
+  play: async ({canvasElement}) => {
+    const dialog=await openFinalManage(canvasElement);
+    const flow=within(dialog).getByRole('region',{name:'Photo workflow'});
+    await userEvent.click(within(flow).getByRole('button',{name:'View details'}));
+    const body=within(canvasElement.ownerDocument.body);
+    await expect(await body.findByRole('dialog',{name:/Import photos|Photo/})).toBeInTheDocument();
+  },
+};
