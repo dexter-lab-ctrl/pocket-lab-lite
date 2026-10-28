@@ -775,7 +775,14 @@ def build_browser_projection(model: dict[str, Any]) -> dict[str, Any]:
             "symbols": symbols, "generated": bool(facts.get("generated")), "critical": bool(node.get("critical")), "loc": facts.get("loc"), "size": facts.get("size_bytes"),
         })
     # Browser relationships stay compact but retain external label metadata.
-    rels = [{"id": r["id"], "t": r["type"], "a": r["source"], "b": r["target"], "c": r["confidence"]} for r in model["relationships"] if r["type"] != "DEFINES"]
+    # The tree already carries containment through ``children_by_parent``;
+    # omitting those redundant edges keeps the static browser payload bounded
+    # as tracked visual evidence grows without reducing canonical model data.
+    rels = [
+        {"id": r["id"], "t": r["type"], "a": r["source"], "b": r["target"], "c": r["confidence"]}
+        for r in model["relationships"]
+        if r["type"] not in {"DEFINES", "CONTAINS"}
+    ]
     search = {}
     for node in nodes:
         external_terms = []
