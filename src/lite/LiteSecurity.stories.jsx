@@ -14,7 +14,7 @@ async function openManageSection(canvasElement, label = 'Overview') {
   const manage = await canvas.findByRole('button', { name: /Manage Security details/i });
   await userEvent.click(manage);
   const body = within(canvasElement.ownerDocument.body);
-  const dialog = await body.findByRole('dialog', { name: /Manage Security/i });
+  const dialog = await body.findByRole('dialog', { name: /Manage Safety/i });
   await expect(dialog).toBeInTheDocument();
   if (label !== 'Overview') {
     const tab = within(dialog).getByRole('tab', { name: new RegExp(`Open ${label} in Security Manage`, 'i') });
@@ -122,4 +122,39 @@ export const OfflineSavedManageOpen = {
     const quickScan = within(canvasElement).queryByRole('button', { name: /Run Quick Safety Check|Reconnect to run Quick Safety Check/i });
     if (quickScan) await expect(quickScan).toBeDisabled();
   },
+};
+
+/* Azure Horizon P0–P3 deterministic story cases.
+   DEFINED — CAPTURE AND APPROVAL DEFERRED. */
+export const AzureBlackDesktop = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'desktop' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectSecurity(canvasElement);
+    await expect(canvas.getByRole('heading', { name: 'Safety overview' })).toBeInTheDocument();
+    await expect(canvas.getByRole('region', { name: /Coverage and checks/i })).toBeInTheDocument();
+  },
+};
+export const AzureDaylightDesktop = createLiteStory('security', 'security-action-needed', { theme: 'daylight', viewport: 'desktop' });
+export const AzureSystemMobile = createLiteStory('security', 'security-quick-healthy', { theme: 'system', viewport: 'mobile390' });
+export const AzureBlackMobile320 = createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'mobile320' });
+export const AzureDaylightLargeText = createLiteStory('security', 'security-action-needed', { theme: 'daylight', viewport: 'mobile360', textScale: 2 });
+export const AzureBlackPartialCoverage = createLiteStory('security', 'security-scanner-unavailable', { theme: 'dark', viewport: 'desktop' });
+export const AzureSavedState = createLiteStory('security', 'security-profile-stale', { theme: 'dark', viewport: 'mobile390' });
+export const AzureActiveFullCheck = createLiteStory('security', 'security-full-running', { theme: 'dark', viewport: 'desktop' });
+export const AzureFirstRunNoScore = createLiteStory('security', 'security-first-run', { theme: 'daylight', viewport: 'mobile390' });
+export const AzureManageChecks = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Checks'),
+};
+export const AzureManageCoverage = {
+  ...createLiteStory('security', 'security-scanner-unavailable', { theme: 'dark', viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Coverage'),
+};
+export const AzureManageEvidenceMobile = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'daylight', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Evidence'),
+};
+export const AzureManageTechnicalMobile = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Technical details'),
 };
