@@ -2744,6 +2744,21 @@ export default function SecurityScreen() {
     window.setTimeout(() => securityDetailsTriggerRef.current?.focus?.(), 0);
   }
 
+  function onSecurityManageTabKeyDown(event, sectionId) {
+    const ids = SECURITY_MANAGE_SECTIONS.map((item) => item.id);
+    const index = ids.indexOf(sectionId);
+    let next = index;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % ids.length;
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + ids.length) % ids.length;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = ids.length - 1;
+    else return;
+    event.preventDefault();
+    const targetId = ids[next];
+    chooseSecurityManageSection(targetId);
+    event.currentTarget.parentElement?.querySelector('#safety-manage-tab-' + targetId)?.focus();
+  }
+
   function chooseSecurityManageSection(sectionId) {
     setSecurityManageSection(sectionId);
     if (['changes', 'issues', 'coverage', 'check_path', 'evidence', 'history', 'technical_details'].includes(sectionId)) {
@@ -3257,6 +3272,8 @@ export default function SecurityScreen() {
               type="button"
               role="tab"
               id={'safety-manage-tab-' + section.id}
+              tabIndex={activeManageSection === section.id ? 0 : -1}
+              onKeyDown={(event) => onSecurityManageTabKeyDown(event, section.id)}
               aria-controls="safety-manage-active-panel"
               aria-selected={activeManageSection === section.id}
               aria-label={`Open ${section.label} in Security Manage`}
