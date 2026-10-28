@@ -25084,11 +25084,13 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
     box-shadow 160ms ease, transform 160ms ease;
 }
 
+/* Selected Apps tabs share Recovery's semantic segmented-control state.
+   This compatibility selector must not override the component's tab geometry. */
 [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button.is-active {
-  background: var(--azure-selected) !important;
-  border-color: var(--azure-accent) !important;
-  color: var(--azure-text) !important;
-  box-shadow: 0 0 0 1px var(--azure-border) !important;
+  background: var(--azure-selected);
+  border-color: var(--azure-strong-border);
+  color: var(--azure-text);
+  box-shadow: inset 0 -3px var(--azure-accent);
 }
 
 [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button::before {
