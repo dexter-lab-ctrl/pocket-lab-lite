@@ -163,6 +163,13 @@ try {
 }
 NODE
 
+# The preflight CDP client is intentionally disconnected before measurement.
+# Re-activate the exact ADB-reverse candidate target through the official
+# helper at that boundary so Android Chrome delivers foreground RAF callbacks
+# to the measured Apps page.
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+  -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -Wake -OpenCandidate
+
 run_apps_qualifier() {
   local status=0
   set +e
