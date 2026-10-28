@@ -56,6 +56,7 @@ import { acceptSecurityProgressEvent } from '../lib/securityProgressEvents.js';
 import { shouldUseLiteSecurityProgressStream } from '../lib/liteSecurityProgressPolicy.js';
 import { LiteSheet } from './LiteOverlay.jsx';
 import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
+import { areComparableSafetyRuns, isMeasuredSafetyProgress, safetyCoverageQuality } from './security/safetyAzurePresentation.js';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 import {
   GlassCard,
@@ -2348,7 +2349,7 @@ export default function SecurityScreen() {
   const effectiveBackendReachable = backendReachable !== false || scanInProgress || Boolean(liveSecurityProgressData?.active_scan) || localSecurityProgressActive;
   const liveProgress = liveSecurityProgress(scanProgress, runStatus, busy, progressNow);
   const scanProgressPercent = liveProgress.percent;
-  const measuredScanProgress = !result?.optimistic && typeof scanProgress?.percent === 'number' && Number.isFinite(scanProgress.percent);
+  const measuredScanProgress = isMeasuredSafetyProgress(scanProgress, result?.optimistic);
   const scanProgressEta = liveProgress.eta;
   const scanProgressStatusText = ['complete', 'completed'].includes(String(scanProgressEta || '').toLowerCase()) ? 'complete' : 'working';
   const scanProgressLabel = securityProgressStage(scanProgress, runStatus);
@@ -2900,6 +2901,7 @@ export default function SecurityScreen() {
         : 'Run Safety Check to begin';
   const evidenceSaved = Boolean(activeProfileHasRun && (latestEvidenceReceipt || evidenceReceipt || currentEvidenceRefs.length || evidenceFileCount));
   const coverageIsReported = Boolean(activeProfileHasRun && (activeProfileView?.coverage_summary || activeProfileRun?.coverage_summary || (activeProfileIsLatest && data?.coverage_summary)));
+  const coverageQuality = safetyCoverageQuality(coverageSummary, coverageIsReported);
   const evidenceStatusLabel = evidenceSaved ? 'Evidence saved' : 'Evidence pending';
   const safetyCenterSummary = safetyStory.headline;
   const securityRefreshStatusLabel = refreshing && !scanInProgress
@@ -3177,7 +3179,7 @@ export default function SecurityScreen() {
           <GlassCard as="section" className="lite-security-horizon-insight" aria-label="Coverage and checks">
             <div className="lite-security-horizon-insight-heading"><span>02 / Scope</span><h2>Coverage &amp; checks</h2></div>
             <p>{!coverageIsReported ? 'Coverage has not been confirmed for this profile.' :
-              (partialCoverageTargets.length || timedOutCoverageTargets.length || missingCoverageTargets.length) ?
+              coverageQuality === 'incomplete' ?
               'Some checks were partial, missing or timed out. Review before interpreting the score.' :
               'Review completed checks and deliberate exclusions for this profile.'}</p>
             <dl className="lite-security-horizon-coverage">
@@ -3194,7 +3196,7 @@ export default function SecurityScreen() {
           <div>
             <span className="lite-security-horizon-eyebrow">03 / Recent</span><h2>Recent checks &amp; changes</h2>
             <p>{activeProfileHasRun ? lastCheckedLabel : 'A recent result appears after a completed check.'}</p>
-            <p>{previousHistory && latestHistory && (scanProfile !== 'app' || (previousHistory.app_id || 'photoprism') === (latestHistory.app_id || 'photoprism')) ?
+            <p>{areComparableSafetyRuns(latestHistory, previousHistory) ?
               'A previous result for this profile is available for review.' : 'No confirmed comparable prior check.'}</p>
           </div>
           <LiteButton tone="secondary" onClick={() => { setSecurityManageSection('history'); setSecurityManageOpen(true); }}>View history</LiteButton>
