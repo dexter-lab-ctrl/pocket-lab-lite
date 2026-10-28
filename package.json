@@ -50,6 +50,8 @@
     "test:perf": "npm run test:perf:components && npm run test:perf:mocked",
     "check:perf:android-cdp": "bash scripts/dev/lite/run-ui-performance-android-cdp.sh --check-only",
     "test:perf:android-cdp": "bash scripts/dev/lite/run-ui-performance-android-cdp.sh",
+    "test:perf:android:apps": "bash scripts/dev/lite/run-ui-performance-android-apps.sh",
+    "test:perf:android:apps:baseline": "bash scripts/dev/lite/run-ui-performance-android-apps.sh --baseline",
     "test:perf:android-baseline": "bash scripts/dev/lite/run-ui-performance-android-candidate.sh --baseline",
     "analyze:perf:android-baseline": "bash scripts/dev/lite/analyze-ui-performance-android-baseline.sh",
     "check:perf:android-baseline": "bash scripts/dev/lite/analyze-ui-performance-android-baseline.sh --fail-on-app-cost",

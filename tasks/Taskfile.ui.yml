@@ -515,6 +515,16 @@ tasks:
     cmds:
       - npm run test:apps:final:performance
 
+  lite:test:apps:final:android:
+    desc: Run the Apps-only physical Android candidate qualification without the seven-screen matrix
+    cmds:
+      - npm run test:perf:android:apps
+
+  lite:test:apps:final:android:baseline:
+    desc: Run scoped Apps-only Android baseline attribution with PR588/PR589 thresholds unchanged
+    cmds:
+      - npm run test:perf:android:apps:baseline
+
   lite:test:apps:final:qualification:
     desc: Deferred all-scope Apps final-polish qualification (visual references need owner approval)
     deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
