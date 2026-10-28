@@ -197,7 +197,7 @@ test.describe('Apps Azure Horizon final polish — authored, not executed',()=>{
       if(scenario.startsWith('photo-backup')){
         const panel=await openManage(page);
         const backup=panel.getByRole('region',{name:'Photo backup'});
-        await expect(backup).toContainText('App-record backups are separate');
+        await expect(backup).toContainText(/app-record backups are separate/i);
       }
     });
   }
