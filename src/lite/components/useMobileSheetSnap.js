@@ -79,7 +79,7 @@ export function useMobileSheetSnap({ open, enabled = false, surfaceRef, initialS
     dragRef.current = null;
     const vh = getViewportHeight();
     const next = cancelled ? state : closestMobileSheetState(drag.height + drag.y - event.clientY, vh);
-    if (surfaceRef?.current) surfaceRef.current.style.height = '';
+    if (surfaceRef?.current) surfaceRef.current.style.height = `${Math.round(mobileSheetHeight(next, vh))}px`;
     setState(next);
     if (event.currentTarget.hasPointerCapture?.(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   }, [getViewportHeight, state, surfaceRef]);
