@@ -2956,9 +2956,7 @@ export default function SecurityScreen() {
   const safetyCardSpring = useSpring({
     to: {
       scale: securityLivePresentation ? 1.006 : 1,
-      boxShadow: securityLivePresentation
-        ? '0 24px 70px rgba(14, 165, 233, 0.17), 0 12px 32px rgba(15, 23, 42, 0.08)'
-        : '0 18px 54px rgba(15, 23, 42, 0.09), 0 1px 0 rgba(255, 255, 255, 0.82) inset',
+      boxShadow: 'var(--azure-shadow)',
     },
     immediate: securityMotionReduced || securityLivePresentation,
     config: SECURITY_SPRING_CONFIG.micro,
