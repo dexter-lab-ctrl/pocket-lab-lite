@@ -101,6 +101,53 @@ tasks:
     cmds:
       - npm run test:rules:premium:perf
 
+  # Azure Horizon Safety Center P0–P3. DEFINED — DO NOT RUN in this implementation session.
+  lite:test:safety:azure:unit:
+    desc: Safety result provenance, measurement, coverage and profile matching (deferred)
+    cmds:
+      - npm run test:safety:azure:unit
+
+  lite:test:safety:azure:mocked:
+    desc: Synthetic Safety flows, nine-section Manage, semantic and mobile/desktop cases
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:safety:azure:mocked
+
+  lite:test:safety:azure:a11y:
+    desc: Safety Axe WCAG AA and 200 percent enlargement; definition only
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:safety:azure:a11y
+
+  lite:test:safety:azure:geometry:
+    desc: Reused desktop Safety panel movement/resizing, clamping and mobile sheet
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:safety:azure:geometry
+
+  lite:test:safety:azure:visual:
+    desc: Unapproved Azure Safety visual scenario baselines; capture requires stabilization
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:safety:azure:visual
+
+  lite:test:safety:azure:perf:
+    desc: Supplemental Safety interaction samples; PR588 and PR589 budgets unchanged
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:safety:azure:perf
+
+  lite:test:safety:azure:storybook:
+    desc: Build existing Storybook with new Azure Safety synthetic states
+    cmds:
+      - npm run test:safety:azure:storybook
+
+  lite:test:safety:azure:qualification:
+    desc: Full future Codex stabilization; intentionally not executed now
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:safety:azure:qualification
+
   # Azure Horizon Recovery P0–P4. Author only; DO NOT RUN in this implementation session.
   lite:test:recovery:azure:unit:
     desc: Unit and presentation safety cases for Azure Recovery; deferred qualification
