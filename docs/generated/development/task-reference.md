@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 23b69816f224abebd5033f1a1e65e29e081d47691fcc87be78787af7e5e997ce
+source_fingerprint: 7fe29823135eee597cbfc107b456d177dd7bc7cacb73f2101d6ae10577cbc055
 schema_revision: 1
 validation_status: generated
 ---
@@ -301,6 +301,14 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:rules:premium:unit`
 - `lite:test:rules:premium:visual`
 - `lite:test:runtime`
+- `lite:test:safety:azure:a11y`
+- `lite:test:safety:azure:geometry`
+- `lite:test:safety:azure:mocked`
+- `lite:test:safety:azure:perf`
+- `lite:test:safety:azure:qualification`
+- `lite:test:safety:azure:storybook`
+- `lite:test:safety:azure:unit`
+- `lite:test:safety:azure:visual`
 - `lite:test:storybook`
 - `lite:test:ux:maturity`
 - `lite:test:visual`
@@ -517,6 +525,18 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:rules:premium:perf` → `lite:playwright:preflight`
 - `lite:test:rules:premium:visual` → `lite:dev:scratch:prepare`
 - `lite:test:rules:premium:visual` → `lite:playwright:preflight`
+- `lite:test:safety:azure:a11y` → `lite:dev:scratch:prepare`
+- `lite:test:safety:azure:a11y` → `lite:playwright:preflight`
+- `lite:test:safety:azure:geometry` → `lite:dev:scratch:prepare`
+- `lite:test:safety:azure:geometry` → `lite:playwright:preflight`
+- `lite:test:safety:azure:mocked` → `lite:dev:scratch:prepare`
+- `lite:test:safety:azure:mocked` → `lite:playwright:preflight`
+- `lite:test:safety:azure:perf` → `lite:dev:scratch:prepare`
+- `lite:test:safety:azure:perf` → `lite:playwright:preflight`
+- `lite:test:safety:azure:qualification` → `lite:dev:scratch:prepare`
+- `lite:test:safety:azure:qualification` → `lite:playwright:preflight`
+- `lite:test:safety:azure:visual` → `lite:dev:scratch:prepare`
+- `lite:test:safety:azure:visual` → `lite:playwright:preflight`
 - `lite:test:storybook` → `lite:dev:scratch:prepare`
 - `lite:test:storybook` → `lite:playwright:preflight`
 - `lite:test:visual` → `lite:dev:scratch:prepare`

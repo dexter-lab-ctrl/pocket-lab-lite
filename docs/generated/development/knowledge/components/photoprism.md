@@ -103,6 +103,8 @@ Provides the verified managed photo application under a same-origin Caddy path.
 - verified_by: `tests/e2e/lite-azure-horizon-apps-performance.spec.ts`
 - verified_by: `tests/e2e/lite-azure-horizon-apps-visual.spec.ts`
 - verified_by: `tests/e2e/lite-azure-horizon-apps.spec.ts`
+- verified_by: `tests/e2e/lite-azure-horizon-safety-visual.spec.ts`
+- verified_by: `tests/e2e/lite-azure-horizon-safety.spec.ts`
 - verified_by: `tests/e2e/lite-content-stress.spec.ts`
 - verified_by: `tests/e2e/lite-identity-premium-refinement.spec.ts`
 - verified_by: `tests/e2e/lite-mocked.spec.ts`

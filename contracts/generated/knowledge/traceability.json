@@ -3369,6 +3369,8 @@
         "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-safety.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
@@ -4200,6 +4202,9 @@
         "test:tests/docs/threat-model-enterprise-ux.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/lite-accessibility-states.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-safety-performance.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-safety.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-mocked.spec.ts",
         "test:tests/e2e/lite-performance-live.spec.ts",
@@ -4625,7 +4630,8 @@
         "test:tests/backend/test_lite_security_s8_idle_reconciliation.py",
         "test:tests/backend/test_lite_ux_maturity_contract.py",
         "test:tests/backend/test_lite_workload_admission.py",
-        "test:tests/docs/test_enterprise_completion.py"
+        "test:tests/docs/test_enterprise_completion.py",
+        "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts"
       ],
       "type": "journey",
       "verification_status": "test-linked"
@@ -4787,6 +4793,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "bec2df011bdc728bfbf50ce42fb60a9b65bd4fd12148e492da54ccd271dfe1b0"
+    "source_fingerprint": "bd2c94b8c42690acb0a303567e6a732d6e72fc4414abd2f257130733dca47a11"
   }
 }

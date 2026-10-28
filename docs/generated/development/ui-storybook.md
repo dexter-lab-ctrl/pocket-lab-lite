@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 23b69816f224abebd5033f1a1e65e29e081d47691fcc87be78787af7e5e997ce
+source_fingerprint: 7fe29823135eee597cbfc107b456d177dd7bc7cacb73f2101d6ae10577cbc055
 schema_revision: 1
 validation_status: generated
 ---
@@ -481,6 +481,19 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `UrgentFindingManageOpen`
 - `ScannerUnavailableManageOpen`
 - `OfflineSavedManageOpen`
+- `AzureBlackDesktop`
+- `AzureDaylightDesktop`
+- `AzureSystemMobile`
+- `AzureBlackMobile320`
+- `AzureDaylightLargeText`
+- `AzureBlackPartialCoverage`
+- `AzureSavedState`
+- `AzureActiveFullCheck`
+- `AzureFirstRunNoScore`
+- `AzureManageChecks`
+- `AzureManageCoverage`
+- `AzureManageEvidenceMobile`
+- `AzureManageTechnicalMobile`
 
 ## LiteUx
 

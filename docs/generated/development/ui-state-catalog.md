@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 572ac8901a1a2f72ef1eda278f763b553e3e1ca2c29a2f3dfc3935e367facb3f
+source_fingerprint: 0d161199e9e3f70f266bfabaa34b0eb0671f7934e737e7c5552668e23347e347
 schema_revision: 1
 validation_status: generated
 ---
@@ -174,5 +174,13 @@ validation_status: generated
 | `pocket-lab-lite-security-profiledatastale` | security | `security-profile-stale` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-profiledatastale-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-progressstages` | security | `security-progress` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-progressstages-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-unsupportedappprofileroute` | security | `security-unsupported-app-route` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-unsupportedappprofileroute-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-azuredaylightdesktop` | security | `security-action-needed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-azuredaylightdesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-azuresystemmobile` | security | `security-quick-healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-azuresystemmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-azureblackmobile320` | security | `security-quick-healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-azureblackmobile320-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-azuredaylightlargetext` | security | `security-action-needed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-azuredaylightlargetext-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-azureblackpartialcoverage` | security | `security-scanner-unavailable` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-azureblackpartialcoverage-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-azuresavedstate` | security | `security-profile-stale` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-azuresavedstate-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-azureactivefullcheck` | security | `security-full-running` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-azureactivefullcheck-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-azurefirstrunnoscore` | security | `security-first-run` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-azurefirstrunnoscore-{viewport}.png` | fixture-dependent |
 
 Screenshot files are produced by the existing WSL2-aware external Chrome resolver. A missing screenshot is not reported as PASS.

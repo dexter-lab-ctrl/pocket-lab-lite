@@ -16795,6 +16795,40 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-azure-horizon-safety-performance.spec.ts": [
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:security-scan",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-azure-horizon-safety.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-azure-horizon-visual.spec.ts": [
         {
           "source": "reason:disabled",
@@ -24135,6 +24169,14 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-safety.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-content-stress.spec.ts",
           "type": "verified_by"
         },
@@ -29451,6 +29493,18 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-azure-horizon-safety-performance.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-safety.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-content-stress.spec.ts",
           "type": "verified_by"
         },
@@ -31055,6 +31109,10 @@
         {
           "target": "test:tests/docs/test_enterprise_completion.py",
           "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
+          "type": "verified_by"
         }
       ],
       "journey:startup": [
@@ -32236,6 +32294,10 @@
         },
         {
           "target": "test:tests/e2e/lite-azure-horizon-rules-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
           "type": "verified_by"
         },
         {
@@ -36511,6 +36573,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "bec2df011bdc728bfbf50ce42fb60a9b65bd4fd12148e492da54ccd271dfe1b0"
+    "source_fingerprint": "bd2c94b8c42690acb0a303567e6a732d6e72fc4414abd2f257130733dca47a11"
   }
 }
