@@ -29,6 +29,6 @@ export function filterCatalogApps(items, query, bucket = 'all') {
 export function distinctCatalogStatusSummary(description, statusSummary) {
   const summary = String(statusSummary || '').trim();
   if (!summary) return '';
-  const normalize = (value) => String(value || '').trim().replace(/\\s+/g, ' ').replace(/[.!?]+$/, '').toLocaleLowerCase();
+  const normalize = (value) => String(value || '').trim().replace(/\s+/g, ' ').replace(/[.!?]+$/, '').toLocaleLowerCase();
   return normalize(description) === normalize(summary) ? '' : summary;
 }
