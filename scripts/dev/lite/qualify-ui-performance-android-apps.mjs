@@ -732,13 +732,26 @@ async function qualifyApps() {
     fail('Candidate manifest failed the exact-SHA, sanitized, loopback runtime contract.');
   }
 
-  await proveCandidatePage(page, new URL(candidatePagePath, base).toString());
-  let foregroundReady = await receivesAnimationFrames(page);
-  for (let attempt = 0; !foregroundReady && attempt < 2; attempt += 1) {
-    await activateCandidate(page);
-    await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+  // Android Chrome may expose several candidate targets. Reuse the target
+  // opened through the owned ADB reverse first, then try the other candidate
+  // targets with bounded reloads. DOM access alone is not sufficient physical
+  // evidence: the selected target must deliver foreground RAF callbacks.
+  let foregroundReady = false;
+  const foregroundCandidates = [page, ...candidatePages.filter((candidate) => candidate !== page)];
+  for (const candidate of foregroundCandidates) {
+    page = candidate;
+    await activateCandidate(candidate);
+    await proveCandidatePage(candidate, new URL(candidatePagePath, base).toString());
     await requireWakeLock();
-    foregroundReady = await receivesAnimationFrames(page);
+    foregroundReady = await receivesAnimationFrames(candidate);
+    for (let attempt = 0; !foregroundReady && attempt < 2; attempt += 1) {
+      await activateCandidate(candidate);
+      await candidate.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+      await requireWakeLock();
+      await activateCandidate(candidate);
+      foregroundReady = await receivesAnimationFrames(candidate);
+    }
+    if (foregroundReady) break;
   }
   if (!foregroundReady) fail('Android candidate target did not deliver foreground animation frames.');
   await Promise.all(candidatePages.filter((candidate) => candidate !== page).map((candidate) => candidate.close().catch(() => {})));
