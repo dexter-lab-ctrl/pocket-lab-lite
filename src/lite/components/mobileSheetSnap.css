@@ -1,0 +1,73 @@
+/* Shared opt-in snap-sheet presentation. Existing LiteSheet users are unchanged. */
+.lite-sheet-mobile-snap-actions,
+.lite-catalog-mobile-snap-actions {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: .4rem;
+}
+.lite-sheet-mobile-snap-actions button,
+.lite-catalog-mobile-snap-actions button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: .4rem .65rem;
+  border: 1px solid var(--azure-border);
+  background: var(--azure-raised);
+  border-radius: var(--azure-radius-control);
+  color: var(--azure-text);
+  font-size: .76rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+.lite-sheet-mobile-snap-actions button:disabled,
+.lite-catalog-mobile-snap-actions button:disabled {
+  color: var(--azure-muted);
+  opacity: .6;
+  cursor: not-allowed;
+}
+.lite-sheet-mobile-snap-actions button:focus-visible,
+.lite-catalog-mobile-snap-actions button:focus-visible {
+  outline: 2px solid var(--azure-focus);
+  outline-offset: 2px;
+}
+@media (max-width:700px) {
+  html[data-lite-theme] .lite-overlay-surface.is-mobile-resizable {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: calc(var(--lite-visual-viewport-height, 100dvh) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1rem);
+    overflow: hidden;
+    transition: height .16s ease-out;
+  }
+  html[data-lite-theme] .lite-overlay-surface.is-mobile-resizable .lite-overlay-head {
+    position: relative;
+    z-index: 2;
+    flex: none;
+    background: var(--azure-surface);
+  }
+  html[data-lite-theme] .lite-overlay-surface.is-mobile-resizable .lite-overlay-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  html[data-lite-theme] .lite-overlay-surface.is-mobile-resizable[data-lite-sheet-snap="compact"] .lite-overlay-scroll {
+    display: none;
+  }
+  html[data-lite-theme] .lite-overlay-surface.is-mobile-resizable .lite-overlay-grip {
+    touch-action: none;
+    cursor: ns-resize;
+  }
+  html[data-lite-theme] .lite-overlay-surface.is-mobile-resizable .lite-overlay-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .55rem;
+  }
+}
+@media (min-width:701px) {
+  .lite-sheet-mobile-snap-actions,
+  .lite-catalog-mobile-snap-actions { display: none; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .lite-overlay-surface.is-mobile-resizable { transition: none; }
+}
