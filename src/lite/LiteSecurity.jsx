@@ -3185,7 +3185,7 @@ export default function SecurityScreen() {
                 <div className="lite-security-horizon-finding" key={item.id || item.summary}>
                   <span className="lite-security-horizon-severity">{item.severity || 'Review'}</span>
                   <strong>{securityFindingLabel(item)}</strong>
-                  <p>{item.recommendation || item.summary || 'Review the affected scope and evidence.'}</p>
+                  <p>Open the finding to review scope, supporting evidence, and the next safe step.</p>
                 </div>
               )) : <p>No review items reported for this profile. Confirm coverage and tool outcomes before relying on the result.</p>}
             <LiteButton tone="secondary" onClick={() => { setSecurityManageSection('issues'); setSecurityManageOpen(true); }}>Review issues</LiteButton>
@@ -3210,8 +3210,10 @@ export default function SecurityScreen() {
           <div>
             <span className="lite-security-horizon-eyebrow">03 / Recent</span><h2>Recent checks &amp; changes</h2>
             <p>{activeProfileHasRun ? lastCheckedLabel : 'A recent result appears after a completed check.'}</p>
+            {activeProfileHasRun && activeProfileIsLatest ?
+              <p>Changes: {deltaStats.map((item) => item.label + ' ' + item.value).join(' · ')}</p> : null}
             <p>{areComparableSafetyRuns(latestHistory, previousHistory) ?
-              'A previous result for this profile is available for review.' : 'No confirmed comparable prior check.'}</p>
+              'A previous scored result for this profile and app is comparable.' : 'No confirmed comparable prior scored result.'}</p>
           </div>
           <LiteButton tone="secondary" onClick={() => { setSecurityManageSection('history'); setSecurityManageOpen(true); }}>View history</LiteButton>
         </GlassCard>
