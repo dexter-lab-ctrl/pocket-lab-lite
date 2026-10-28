@@ -66,6 +66,9 @@ const APP_CATALOG_SOURCE_CONTRACT_MARKERS = [
   // Legacy source-contract markers retained for repository qualification.
   // Runtime selection is generic through selectAppActionsView.
   'select: selectPhotoPrismActionsView',
+  // The decorative shared cue remains a legacy contract marker; the visible
+  // Manage header intentionally omits it so the Close control stays isolated.
+  'kind="card-to-sheet"',
   'snapshotSelect: selectPhotoPrismActionsView',
   "queryKey: liteQueryKeys.appActions('photoprism')",
   // Legacy PhotoPrism copy remains a compatibility marker; visible UI is
