@@ -145,6 +145,9 @@ test.describe('Apps Azure Horizon final polish — authored, not executed',()=>{
     await expect(dialog).toHaveAttribute('data-lite-sheet-snap','compact');
     await page.keyboard.press('End');
     await expect(dialog).toHaveAttribute('data-lite-sheet-snap','expanded');
+    // The snap height is animated; wait for the grip to stop moving before a
+    // coordinate-driven pointer sequence so capture starts on the grip itself.
+    await page.waitForTimeout(250);
     const rect=await grip.boundingBox();
     if(rect){
       await page.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2);

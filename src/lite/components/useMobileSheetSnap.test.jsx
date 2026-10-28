@@ -91,4 +91,17 @@ describe('opt-in mobile sheet geometry — authored, not executed', () => {
     expect(before).toMatch(/px$/);
     expect(hook.result.current.gripProps.onPointerDown).toBeTypeOf('function');
   });
+  it('resets the snap state across close and reopen', () => {
+    const surface = document.createElement('section');
+    const surfaceRef = { current: surface };
+    const hook = renderHook(({ open }) => useMobileSheetSnap({ open, enabled: true, surfaceRef }), {
+      initialProps: { open: true },
+    });
+    act(() => hook.result.current.expand());
+    expect(hook.result.current.state).toBe('expanded');
+    hook.rerender({ open: false });
+    expect(hook.result.current.state).toBe('medium');
+    hook.rerender({ open: true });
+    expect(hook.result.current.state).toBe('medium');
+  });
 });

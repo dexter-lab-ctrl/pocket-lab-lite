@@ -23,7 +23,8 @@ export function closestMobileSheetState(height, viewportHeight) {
 }
 
 export function useMobileSheetSnap({ open, enabled = false, surfaceRef, initialState = 'medium' } = {}) {
-  const [state, setState] = useState(MOBILE_SHEET_STATES.includes(initialState) ? initialState : 'medium');
+  const initialSnapState = MOBILE_SHEET_STATES.includes(initialState) ? initialState : 'medium';
+  const [state, setState] = useState(initialSnapState);
   const [viewportHeight, setViewportHeight] = useState(() => typeof window === 'undefined' ? 720 : window.visualViewport?.height || window.innerHeight);
   const dragRef = useRef(null);
   const heightRef = useRef(mobileSheetHeight(state, viewportHeight));
@@ -31,6 +32,12 @@ export function useMobileSheetSnap({ open, enabled = false, surfaceRef, initialS
   const getViewportHeight = useCallback(() => (
     typeof window === 'undefined' ? 720 : window.visualViewport?.height || window.innerHeight
   ), []);
+
+  useEffect(() => {
+    if (open) return;
+    dragRef.current = null;
+    setState((current) => current === initialSnapState ? current : initialSnapState);
+  }, [initialSnapState, open]);
 
   useEffect(() => {
     if (!active) return undefined;
