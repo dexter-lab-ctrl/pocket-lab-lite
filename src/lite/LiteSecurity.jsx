@@ -3160,6 +3160,47 @@ export default function SecurityScreen() {
         </div>
       </animated.section>
 
+      {!securityLivePresentation ? <>
+        <div className="lite-security-horizon-overview-grid" data-security-horizon-overview="true" aria-label="Safety result details">
+          <GlassCard as="section" className="lite-security-horizon-insight" aria-label="Needs attention">
+            <div className="lite-security-horizon-insight-heading"><span>01 / Review</span><h2>Needs attention</h2></div>
+            {!activeProfileHasRun ? <p>No recorded check for this profile. Run a check before interpreting findings.</p> :
+              allReviewFindings.length ? allReviewFindings.slice(0, 2).map((item) => (
+                <div className="lite-security-horizon-finding" key={item.id || item.summary}>
+                  <span className="lite-security-horizon-severity">{item.severity || 'Review'}</span>
+                  <strong>{securityFindingLabel(item)}</strong>
+                  <p>{item.recommendation || item.summary || 'Review the affected scope and evidence.'}</p>
+                </div>
+              )) : <p>No review items reported for this profile. Confirm coverage and tool outcomes before relying on the result.</p>}
+            <LiteButton tone="secondary" onClick={() => { setSecurityManageSection('issues'); setSecurityManageOpen(true); }}>Review issues</LiteButton>
+          </GlassCard>
+          <GlassCard as="section" className="lite-security-horizon-insight" aria-label="Coverage and checks">
+            <div className="lite-security-horizon-insight-heading"><span>02 / Scope</span><h2>Coverage &amp; checks</h2></div>
+            <p>{!coverageIsReported ? 'Coverage has not been confirmed for this profile.' :
+              (partialCoverageTargets.length || timedOutCoverageTargets.length || missingCoverageTargets.length) ?
+              'Some checks were partial, missing or timed out. Review before interpreting the score.' :
+              'Review completed checks and deliberate exclusions for this profile.'}</p>
+            <dl className="lite-security-horizon-coverage">
+              <div><dt>Checked</dt><dd>{coverageIsReported ? checkedCoverageTargets.length : '—'}</dd></div>
+              <div><dt>Partial</dt><dd>{coverageIsReported ? partialCoverageTargets.length : '—'}</dd></div>
+              <div><dt>Timed out</dt><dd>{coverageIsReported ? timedOutCoverageTargets.length : '—'}</dd></div>
+              <div><dt>Skipped</dt><dd>{coverageIsReported ? skippedCoverageTargets.length : '—'}</dd></div>
+            </dl>
+            <p className="lite-security-horizon-tool-status">Lynis: {toolResults?.lynis?.status || 'Not reported'} · Trivy: {toolResults?.trivy?.status || 'Not reported'}</p>
+            <LiteButton tone="secondary" onClick={() => { setSecurityManageSection('coverage'); setSecurityManageOpen(true); }}>View coverage</LiteButton>
+          </GlassCard>
+        </div>
+        <GlassCard as="section" className="lite-security-horizon-recent" aria-label="Recent safety checks">
+          <div>
+            <span className="lite-security-horizon-eyebrow">03 / Recent</span><h2>Recent checks &amp; changes</h2>
+            <p>{activeProfileHasRun ? lastCheckedLabel : 'A recent result appears after a completed check.'}</p>
+            <p>{previousHistory && latestHistory && (scanProfile !== 'app' || (previousHistory.app_id || 'photoprism') === (latestHistory.app_id || 'photoprism')) ?
+              'A previous result for this profile is available for review.' : 'No confirmed comparable prior check.'}</p>
+          </div>
+          <LiteButton tone="secondary" onClick={() => { setSecurityManageSection('history'); setSecurityManageOpen(true); }}>View history</LiteButton>
+        </GlassCard>
+      </> : null}
+
       {loading ? <LoadingCard label="Loading safety summary..." /> : null}
 
       {error ? (
