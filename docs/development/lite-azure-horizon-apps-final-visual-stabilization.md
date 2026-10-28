@@ -1,7 +1,7 @@
 # Azure Horizon Apps — Final Visual Stabilization (P0–P2)
 
 > [!IMPORTANT]
-> **SOURCE AUTHORED, UNVALIDATED.** This file is an implementation handoff, not visual, accessibility, unit, desktop, Android or production runtime evidence. No tests, builds, checks, benchmarks, screenshots, documentation/contract generation, CI investigation, Android CDP or Server Phone qualification were executed in this authoring session.
+> **SOURCE-AUTHORING PROVENANCE RETAINED; SEE §16 FOR THE CURRENT QUALIFICATION RECORD.** Sections 1–15 preserve the original implementation handoff and its authoring-session disclosure. The dated addendum below supersedes its historical `NOT RUN` and deferred-status statements without rewriting that provenance.
 
 ## 1. Executive summary and provenance
 
@@ -150,7 +150,7 @@ The data flow remains **React/Vite PWA → Caddy → FastAPI `/api/lite/*` → N
 
 PR #588's frame/LoAF/React commit budgets and PR #589's attribution/stop-condition policy are unchanged. This implementation favors CSS-driven disclosure, limited React state changes on snap and the existing geometry hook. **No performance measurement or target claim is made.**
 
-## 12. Authored qualification inventory — NOT RUN
+## 12. Authored qualification inventory — historical authoring inventory
 
 | Coverage | Source |
 |---|---|
@@ -166,11 +166,11 @@ PR #588's frame/LoAF/React commit budgets and PR #589's attribution/stop-conditi
 
 Storybook states cover Daylight/Black/System, generic app, saved offline, 200% text, desktop controls, mobile Compact/Medium/Expanded, storage and notices disclosures, photo guide, ready/not-ready backup and nested Details.
 
-Visual specifications require human review and explicit snapshot promotion **in a later qualification session**. These specifications were not executed, and PNG files were not created.
+At authoring time, visual specifications required human review and explicit snapshot promotion in a later qualification session; the current no-update execution and its blocked acceptance status are recorded in §16.6.
 
-## 13. Deferred qualification plan
+## 13. Deferred qualification plan — historical authoring plan
 
-Run only in a separately authorized validation session; **none was run here**:
+The following was the original validation plan. The current execution record is in §16; the physical Android and canonical documentation gates remain explicitly scoped there:
 
 ```bash
 npm run test:apps:final:unit
@@ -197,7 +197,7 @@ Canonical MkDocs and contract generation/checking must be performed only in the 
 - The existing 60 FPS contract cannot be declared passing from authored sources.
 - No backend/API migration is necessary; revert the feature PR or the specific Apps CSS/controller/overlay commits on the feature branch if qualification identifies regressions. Keep main unchanged until separately authorized.
 
-## 15. Final disposition
+## 15. Historical final disposition — superseded by §16
 
 - **SOURCE:** Authored and committed on a feature branch.
 - **TESTS / STORIES / COMMANDS:** Authored, NOT RUN.
@@ -210,3 +210,92 @@ Canonical MkDocs and contract generation/checking must be performed only in the 
 > No validation tasks, tests, builds, checks, benchmarks, screenshots, documentation generation, contract generation, Android CDP qualification, or Server Phone runtime qualification were executed, as explicitly instructed. All newly implemented changes remain unvalidated.
 >
 > CI failures were not investigated or remediated.
+
+## 16. 2026-10-28 qualification addendum
+
+This section is the current, dated qualification record for PR #634. It retains the original source-authoring disclosure above and reports only commands actually executed at the stated scope.
+
+### 16.1 Git and candidate identity
+
+| Field | Result |
+|---|---|
+| Repository | `dexter-lab-ctrl/pocket-lab-lite` |
+| Feature branch | `feat/azure-horizon-apps-final-polish` |
+| Initial branch SHA | `4f2c1ad326466464719a4ce4c3751fa3d17e8637` |
+| Base `main` SHA | `2f25837463009b940a330817c3a9c412f9e1a4b8` |
+| Final Dev-PC candidate SHA | `345d6db03110bcb6145e92c0c898d582d74de0c2` |
+| Candidate manifest | **PASS** — exact `source_commit`, sanitized manifest and existing loopback runtime transport |
+| Candidate build | **PASS** — `vite build`, 2,248 modules transformed |
+| PR state | **OPEN / DRAFT / NOT MERGED** |
+
+The candidate was built on Dev PC with the repository's existing performance-candidate flags. No feature source was built, installed or deployed on the Server Phone.
+
+### 16.2 Implementation corrections
+
+| Symptom | Root cause and correction | Regression evidence |
+|---|---|---|
+| Apps Manage reopened with stale mobile snap state | The opt-in `useMobileSheetSnap` controller retained the previous state across close. The close transition now clears the active pointer/drag state and restores the configured initial snap state. | `src/lite/components/useMobileSheetSnap.test.jsx`: 7/7 final unit tests; Apps mocked reopen/gesture coverage passed. Commit `51aca7e4`. |
+| Mocked grip drag was intermittently landing during the CSS height transition | The regression test started coordinate dragging before the close/open transition had settled. The test now waits for the established animation boundary before dispatching the grip gesture; production behavior was not weakened. | Apps mocked suite passed 72/72 at final HEAD. Commit `51aca7e4`. |
+| Apps-only Android attempt was coupled to unrelated repository-wide evidence | The new Apps wrapper invoked `check:render-budgets`, which re-read shared historical Home/Devices evidence and made unrelated target misses appear as Apps qualification failures. The wrapper now exits with the scoped Apps result; the Apps qualifier continues to enforce its own evidence gates. | `bash -n scripts/dev/lite/run-ui-performance-android-apps.sh`; exact candidate attempt at final HEAD. Commit `345d6db0`. |
+| Android candidate foreground target was not deterministic after preflight attach | The Apps-only runner now reuses the existing candidate-origin page activation/foreground RAF checks and explicitly reactivates the official candidate with `-Wake -OpenCandidate` before measurement. | Candidate manifest/CDP identity passed at four Apps-only attempts; the remaining failure is the external Android Dozing state recorded in §16.4. Commits `fa6ae871` and `93437569`. |
+
+No Server Phone application source, runtime configuration, credentials or PM2 state was changed.
+
+### 16.3 Dev-PC qualification
+
+| Gate | Result |
+|---|---|
+| `npm run test:apps:final:unit` | **PASS** — 3 files, 17 tests |
+| `npm run test:apps:final:mocked` | **PASS** — 72 tests |
+| `npm run test:apps:final:a11y` | **PASS** — 12 tests |
+| `npm run test:apps:final:geometry` | **PASS** — 40 tests, including Devices shared geometry regression |
+| `npm run test:apps:final:storybook` | **PASS** — Storybook production build; existing bundle/eval warnings only |
+| `npm run build` | **PASS** — Vite production build; existing large-chunk warnings only |
+| `npm run test:apps:final:performance` | **PARTIAL** — Apps performance tests 8/8 passed; the chained repository-wide checker reported 2 hard failures and 18 target misses in unrelated Devices/Home/Identity/Recovery/Rules/Security samples |
+
+Existing Apps regression coverage also passed at the implementation checkpoint: Apps Azure mocked 64/64, Apps premium unit 35/35, Apps premium a11y 4/4, Apps premium theme 10/10, Devices regression 2/2; the existing premium mocked and geometry suites retained their documented intentional skips (61/64 and 43/44 passed, respectively).
+
+The Apps performance samples themselves remained within the established mocked gates. Catalog steady/open/close/section-switch/nested-details interactions reported frame p95 `16.7–16.8 ms`, severe-frame ratio `0`, and React commit p95 `0–10 ms` across mocked desktop/mobile. The PR #588/#589 thresholds were not changed.
+
+### 16.4 Android CDP and Apps-only physical result
+
+The previously recorded Pocket Lab-owned bridge was cleaned through the official elevated PowerShell cleanup path. One normal Windows UAC-approved elevated PowerShell operation was used for the bridge cleanup/setup; UAC was not bypassed and no unrelated mapping was removed. A fresh official bridge then reported:
+
+- Android Chrome `156.0.8078.47`, DevTools Protocol `1.3`, package identity `com.android.chrome`.
+- `npm run check:perf:android-cdp`: **PASS** — CDP attach passed with one context and three pages at the final preflight.
+- Final candidate run at SHA `345d6db03110bcb6145e92c0c898d582d74de0c2`: manifest, ADB candidate setup, loopback endpoint identity and candidate reactivation: **PASS**.
+- Apps-only runner: **BLOCKED / INCONCLUSIVE** at the required foreground-animation gate; Android Chrome delivered zero foreground animation frames after the bounded official wake/retry path.
+
+The sanitized evidence captured for the final attempt is under `.pocketlab-dev/performance/android-apps-345d6db03110bcb6145e92c0c898d582d74de0c2/`, including `device-state-final.json` and `device-power-final.json`. The latter records `mWakefulness=Dozing`, `mWakefulnessChanging=false` and `mHalInteractiveModeEnabled=false`. No seven-screen physical matrix was run. No physical Apps screenshots, gesture measurements, LoAF samples or Android performance budget claims are promoted to PASS.
+
+This is classified as an external device/platform blocker, not an Apps source regression. The candidate process, ADB reverse and session-owned WSL forwarding were cleaned after the attempt; the owned candidate state is absent.
+
+### 16.5 Server Phone read-only verification
+
+Using the configured `ssh pocketlab-termux` alias, read-only checks reported:
+
+- Checkout: `main`, SHA `2f25837463009b940a330817c3a9c412f9e1a4b8`, clean.
+- PM2: existing Caddy, FastAPI, NATS, worker, node-agent, supervisor, reconciler, telemetry and PhotoPrism services reported `online`.
+- API and Caddy health: **PASS**; API readiness: **PASS** with NATS connected and JetStream enabled.
+- NATS status: **PASS** — connected, JetStream enabled, no current/last error.
+- Production harness: **DISABLED** (`enabled=false`, no active sessions, no bypass). Authenticated Owner live qualification was not attempted or bypassed.
+- No Server Phone source, configuration, environment, dependency, database, enrollment, PM2 or runtime mutation was performed.
+
+### 16.6 Visual acceptance
+
+The 80-case visual specification was discovered and run without `--update-snapshots`. It stopped after the first missing-baseline cases and produced only temporary actuals, which were removed. No canonical PNG baseline exists for this suite, and no snapshot was accepted or committed. Visual acceptance is therefore **BLOCKED / NOT ACCEPTED** pending a stable physical Apps qualification and human review; the mocked functional, accessibility and geometry gates above remain the source-level evidence.
+
+### 16.7 Documentation, contracts and repository-wide gate
+
+The late-only canonical documentation phase was **NOT RUN** because the required physical Android and visual acceptance gates did not complete successfully. `task lite:docs:generate`, `task lite:docs:check` and `task lite:check` therefore have no PASS result in this qualification and must not be represented as completed. The source handoff itself now carries this dated addendum; generated documentation was not hand-edited.
+
+### 16.8 Current disposition
+
+- Dev-PC source, unit, mocked, accessibility, geometry, Storybook and build gates: **PASS**.
+- Scoped Apps mocked performance: **PASS**; unrelated repository-wide historical budget misses remain out of scope for PR #634.
+- Android CDP transport and exact candidate identity: **PASS**.
+- Physical Android Apps-only qualification: **BLOCKED / INCONCLUSIVE** by device Dozing / zero foreground RAFs.
+- Visual snapshot acceptance: **BLOCKED / NOT ACCEPTED**.
+- Server Phone read-only health and final `main` checkout: **PASS**.
+- Canonical docs/contracts and broad repository gate: **BLOCKED by the late-stage physical/visual prerequisites; NOT RUN**.
+- PR #634 remains **OPEN / DRAFT / NOT MERGED**. Merge readiness: **NO** until physical Apps evidence and the late documentation/repository gates are completed.
