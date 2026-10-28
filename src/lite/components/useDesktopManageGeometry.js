@@ -175,6 +175,11 @@ export function useDesktopManageGeometry({ open, defaultWidth = 560, minWidth = 
       left: `${geometry.left}px`, top: `${geometry.top}px`,
       width: `${geometry.width}px`, height: `${geometry.height}px`,
       right: 'auto', bottom: 'auto',
+      // The historical portal skin uses !important width/height rules. Keep
+      // the rendered surface aligned with the same clamped geometry instead
+      // of allowing that legacy skin to move or resize it independently.
+      '--lite-manage-panel-width': `${geometry.width}px`,
+      '--lite-manage-panel-height': `${geometry.height}px`,
     } : undefined,
   };
 }

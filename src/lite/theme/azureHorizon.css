@@ -502,11 +502,38 @@ html[data-lite-theme] .lite-security-manage-desktop-tools button{
   background:var(--azure-raised);color:var(--azure-text);touch-action:none;
 }
 html[data-lite-theme] .lite-security-manage-panel.is-movable {
-  position:fixed;max-width:calc(100vw - 2rem);max-height:calc(100dvh - 2rem);
+  position:fixed !important;
+  width:var(--lite-manage-panel-width, min(45rem, 48vw)) !important;
+  height:var(--lite-manage-panel-height, min(44rem, calc(100dvh - 2rem))) !important;
+  max-width:calc(100vw - 2rem);max-height:calc(100dvh - 2rem);
   min-width:min(420px,calc(100vw - 2rem));min-height:min(420px,calc(100dvh - 2rem));
-  margin:0;transform:none;overflow:hidden;
+  margin:0 !important;transform:none;overflow:hidden;
 }
 html[data-lite-theme] .lite-security-manage-panel.is-movable.is-interacting{transition:none;}
+
+/* Safety owns the Azure semantic palette. These high-specificity rules keep
+   older unscoped Security polish from leaking low-contrast daylight colors
+   into Black, System, and mobile portal surfaces. */
+html[data-lite-theme] .lite-security-horizon-manage-context {
+  color:var(--azure-text) !important;
+  background:var(--azure-raised) !important;
+  border-color:var(--azure-border) !important;
+}
+html[data-lite-theme] .lite-security-quick-profile-chip,
+html[data-lite-theme] .lite-security-profile-rollup-link,
+html[data-lite-theme] .lite-security-refresh-status-chip {
+  color:var(--azure-chip-text) !important;
+  background:var(--azure-accent-subtle) !important;
+  border-color:var(--azure-strong-border) !important;
+}
+html[data-lite-theme] .lite-security-safety-chip-ready {
+  color:var(--azure-success) !important;
+  background:var(--azure-success-subtle) !important;
+  border-color:var(--azure-success) !important;
+}
+html[data-lite-theme] .lite-security-s7-profile-cards[hidden] {
+  display:none !important;
+}
 @media(max-width:700px){
   html[data-lite-theme] .lite-security-manage-desktop-tools{display:none;}
   html[data-lite-theme] .lite-security-manage-panel{max-width:100%;max-height:100dvh;}

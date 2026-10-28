@@ -892,6 +892,29 @@ const mockLiteSecurityPayload = () => {
     };
   }
 
+  if (scenario() === 'nats-down') {
+    const savedAt = new Date(now - 2 * 60 * 1000).toISOString();
+    return {
+      ...base,
+      status: 'degraded',
+      summary: 'Showing saved Security information.',
+      read_degraded: true,
+      data_source: 'saved_snapshot',
+      offline_details: {
+        visible: true,
+        title: 'Showing saved Security details',
+        summary: 'Reconnect to run a new check or refresh live evidence. Saved details remain read-only.',
+      },
+      __liteSnapshot: {
+        cached: true,
+        stale: true,
+        source: 'cache',
+        savedAt,
+        checkedAt: savedAt,
+      },
+    };
+  }
+
   if (scenario() === 'security-low') {
     return {
       ...base,

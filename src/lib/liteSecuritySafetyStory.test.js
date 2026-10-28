@@ -63,6 +63,19 @@ describe('selectSecuritySafetyStoryView', () => {
     expect(story.primaryAction).toBeNull();
   });
 
+  it('does not promote an unknown summary status into a recorded first run', () => {
+    const story = selectSecuritySafetyStoryView({
+      status: 'unknown',
+      scan_profile: 'quick',
+      score: 0,
+      last_run: null,
+      history: [],
+    });
+
+    expect(story.state).toBe('unknown');
+    expect(story.score).toEqual({ value: null, provenance: 'not_reported' });
+  });
+
   it('treats an explicitly healthy completed result as complete', () => {
     const story = selectSecuritySafetyStoryView({
       status: 'healthy',
