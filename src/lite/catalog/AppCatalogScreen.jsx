@@ -1,7 +1,7 @@
 import { LiteProtectedConfirmation } from '../components/LiteSafeForms.jsx';
 import LiteNextSteps from '../components/LiteNextSteps.jsx';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { filterCatalogApps, sortCatalogApps } from './catalogPresentation.js';
+import { distinctCatalogStatusSummary, filterCatalogApps, sortCatalogApps } from './catalogPresentation.js';
 import { LiteDetailsPanel, useFocusTrap, useFocusReturn } from '../LiteOverlay.jsx';
 import { useDesktopManageGeometry } from '../components/useDesktopManageGeometry.js';
 import { useMobileSheetSnap } from '../components/useMobileSheetSnap.js';
@@ -3051,6 +3051,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const actionsClassName = 'lite-catalog-actions';
     const lifecycle = lifecycleProfile(app);
     const lifecycleAttention = lifecycleAttentionItems(lifecycle);
+    const appDescription = app?.description || app?.summary || 'Manage this self-hosted app from your private workspace.';
+    const statusSummary = distinctCatalogStatusSummary(appDescription, installed && lifecycle
+      ? lifecycle.summary || canonical.statusSummary || 'App status is not available.'
+      : app?.status_summary || app?.summary || 'Install to set up this app.');
     const buildManageViewModel = () => {
       const actionState = (actionId) => {
         const action = actionFromSnapshot(actionSnapshot, actionId, lifecycleAction(lifecycle, actionId));
@@ -3262,7 +3266,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <h2 title={app.name}>{app.name || app.id || 'Unnamed app'}</h2>
           </div>
         </div>
-        <p className="lite-catalog-app-description" title={app?.description || app?.summary || ''}>{app?.description || app?.summary || 'Manage this self-hosted app from your private workspace.'}</p>
+        <p className="lite-catalog-app-description" title={appDescription}>{appDescription}</p>
         {quickActionsOpen ? (
           <div className="lite-catalog-quick-actions" role="menu" aria-label={`${app.name} quick actions`}>
             <button type="button" onClick={(event) => { event.stopPropagation(); openApp(app, event); setQuickActionsAppId(null); }} disabled={!canOpen}>Open</button>
@@ -3270,10 +3274,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <button type="button" onClick={(event) => { event.stopPropagation(); setQuickActionsAppId(null); refresh(); refreshAppActions(app.id); }}>Refresh</button>
           </div>
         ) : null}
-        <p className="lite-catalog-premium-app-status" role="status">
-          {installed && lifecycle ? lifecycle.summary || canonical.statusSummary || 'App status is not available.'
-            : app?.status_summary || app?.summary || 'Install to set up this app.'}
-        </p>
+        {statusSummary ? <p className="lite-catalog-premium-app-status" role="status">{statusSummary}</p> : null}
         {installed && lifecycle ? (
           <CatalogManagePortal
             app={app}
