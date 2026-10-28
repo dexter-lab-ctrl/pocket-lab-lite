@@ -9143,6 +9143,17 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
+      "id": "link:journey:security:527b6481b2ed0e15",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/security",
+      "target": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
+      "target_type": "test"
+    },
+    {
+      "depth": 1,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
       "id": "link:journey:security:53f95ebfc0307f5e",
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/security",
@@ -9964,17 +9975,6 @@
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/security",
       "target": "test:tests/backend/test_lite_api.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
-      "id": "link:journey:security:f752bbd8a20af442",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/security",
-      "target": "test:tests/docs/test_enterprise_completion.py",
       "target_type": "test"
     },
     {

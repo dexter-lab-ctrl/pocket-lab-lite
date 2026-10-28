@@ -14,7 +14,7 @@
     "scenario": "catalog-installing",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "36ccd55b1db635f002514ddc18927d4825fe6c68c9817c28ea0854957dd29472",
+    "source_fingerprint": "ada993817bf264d22b52c5ed8e8cb695c6beeef8e54da543ad8bbe534426f4a3",
     "validation_status": "generated"
   }
 }

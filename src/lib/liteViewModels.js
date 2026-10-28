@@ -1988,7 +1988,22 @@ export function selectSecurityProfileLatestView(payload = {}) {
   const latest = {};
   const addRun = (input = null, fallbackProfile = '') => {
     const run = normalizeSecurityRun(input || {}) || null;
-    if (!run?.run_id && !run?.status && !run?.completed_at && !run?.started_at) return;
+    // A summary status or summary `updated_at` is not a run identity. In
+    // particular, an `unknown` status with score metadata is the backend's
+    // empty/first-run state and must not promote that metadata into a
+    // reported result. Run history is profile-specific, so require an
+    // identity or an execution timestamp from the source run itself.
+    const hasRunEvidence = Boolean(
+      run?.run_id
+      || input?.run_id
+      || input?.id
+      || input?.completed_at
+      || input?.started_at
+      || input?.requested_at
+      || input?.queued_at
+      || input?.checked_at
+    );
+    if (!hasRunEvidence) return;
     const profile = normalizeSecurityProfileId(run.scan_profile || fallbackProfile || input?.profile || (run.app_id ? 'app' : 'quick'));
     latest[profile] = newerSecurityRun(latest[profile], { ...run, scan_profile: profile });
   };
@@ -2034,7 +2049,8 @@ export function selectSecurityProfileView(payload = {}, profile = 'quick') {
   const latestRun = latestByProfile[profileId] || profileHistory[0] || null;
   const payloadProfile = normalizeSecurityProfileId(payload?.scan_profile || payload?.last_run?.scan_profile || (payload?.app_id ? 'app' : 'quick'));
   const latestRunId = payload?.last_run?.run_id || payload?.current_run?.run_id || payload?.latest_run?.run_id || payload?.run_id || '';
-  const isSelectedLatestPayload = Boolean(latestRun && latestRun.run_id && latestRunId && latestRun.run_id === latestRunId) || (!latestRunId && payloadProfile === profileId);
+  const isSelectedLatestPayload = Boolean(latestRun && latestRun.run_id && latestRunId && latestRun.run_id === latestRunId)
+    || Boolean(latestRun && !latestRunId && payloadProfile === profileId);
   const profilePayload = latestRun
     ? {
         ...payload,
@@ -2461,6 +2477,11 @@ export function selectSecuritySummaryView(payload = {}) {
       : undefined,
     updated_at: safeIso(payload?.updated_at || payload?.checked_at),
     checked_at: safeIso(payload?.checked_at || payload?.updated_at),
+    read_degraded: payload?.read_degraded === true,
+    data_source: safeString(payload?.data_source || ''),
+    offline_details: isObject(payload?.offline_details)
+      ? copySafeKeys(payload.offline_details, ['visible', 'title', 'summary'])
+      : null,
   });
   });
 }

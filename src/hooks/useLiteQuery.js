@@ -35,7 +35,11 @@ function snapshotMeta(data, refreshing = false) {
 
 function isSavedSnapshot(data) {
   const meta = data?.__liteSnapshot;
-  return Boolean(meta?.cached || meta?.stale || meta?.source === 'cache');
+  // Prepared read models mark a backend fallback explicitly when the live
+  // control plane is unavailable. Treat that state like a cached snapshot so
+  // unsafe actions stay blocked even when a selector has intentionally
+  // omitted transport metadata from its view model.
+  return Boolean(meta?.cached || meta?.stale || meta?.source === 'cache' || data?.read_degraded === true);
 }
 
 function initialDataUpdatedAt(data) {

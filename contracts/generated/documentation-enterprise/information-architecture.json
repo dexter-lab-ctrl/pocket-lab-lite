@@ -4372,6 +4372,12 @@
           "target": "test:tests/docs/test_enterprise_completion.py"
         },
         {
+          "depth": 1,
+          "relation_type": "verified_by",
+          "source": "journey:security-scan",
+          "target": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts"
+        },
+        {
           "depth": 2,
           "relation_type": "verified_by",
           "source": "api:get:/api/lite/security/details/{run_id}",
@@ -4610,12 +4616,6 @@
           "relation_type": "verified_by",
           "source": "component:security-state",
           "target": "test:tests/docs/test_documentation_presentation_polish.py"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:security-state",
-          "target": "test:tests/docs/test_enterprise_completion.py"
         }
       ],
       "expansion": {
@@ -4668,6 +4668,7 @@
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
+        "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
         "test:tests/parity/test_api_contract_fences.py"
       ],
       "title": "Security & Safety Feature Journey",
@@ -4691,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 513,
+  "page_count": 514,
   "page_types": [
     "overview",
     "guide",
@@ -4981,6 +4982,29 @@
       "source_or_generator": "development/lite-azure-horizon-rules-refinement.md",
       "title": "Azure Horizon — Safety Rules refinement",
       "url": "/development/lite-azure-horizon-rules-refinement/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-safety-refinement.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-safety-refinement",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-safety-refinement.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-safety-refinement.md",
+      "title": "Azure Horizon Safety Center — P0–P3 implementation and deferred qualification",
+      "url": "/development/lite-azure-horizon-safety-refinement/"
     },
     {
       "additional_audiences": [],
@@ -18159,7 +18183,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "ecd739170b4790fff00580d0684941cc5cacd24571fff69aa862d6c69f61c5a4",
+  "source_fingerprint": "72c809e8b0271cd4130b088b101f7b3f2f60a8a122c353b8c176bb18bce6d648",
   "top_level": [
     "start-here",
     "use",

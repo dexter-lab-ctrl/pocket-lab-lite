@@ -3588,7 +3588,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "ab3808a9ee8662aa505652014087112f1077e4dddf00aa097ae1e0077d598de1",
+    "aggregate_fingerprint": "ff1292a5e4881b79b7bada764880de7da95b95c1cccc9bcc9b173b44e487a4bc",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3635,15 +3635,15 @@
       "src/lite/LiteRules.stories.jsx": "cc62db7bf0a7fe2989bd264a34bd58c3a758e7077f55789f1fa2ae06158df405",
       "src/lite/LiteRulesEnterprise.jsx": "19868d99c7a2dd43201a0db851cf6a2d21cdb77f9eb4374734fbe58b3456111a",
       "src/lite/LiteScreenBoundary.jsx": "34c27301bd03cf3f5555738c61c6d5d3b313a772fd08a8115c8508888b53d5e1",
-      "src/lite/LiteSecurity.jsx": "369d1b0ada220761d4c6779e3f9d46bce0a256d4d3e6be7f99732b590a031cf2",
-      "src/lite/LiteSecurity.stories.jsx": "79f05679742bc975fca3e92795870e4d425415c83c83096a380c58467e74f2d5",
+      "src/lite/LiteSecurity.jsx": "352e3d5c3e82ee4ef0b46e7b0ad8ecdb3a61608dfbe19bd4b72fafa5c660bb50",
+      "src/lite/LiteSecurity.stories.jsx": "5e6c1ceb257b3eca47358e0abe1f4ec5aab8546868b26f80920f10c90efd0d16",
       "src/lite/LiteServiceWorkerUpdateNotice.jsx": "450c8d4f9d858bcfd2781e55ae52101c8f37bc57deceb1dbe847c775ffc2288a",
       "src/lite/LiteToastHost.jsx": "4f06f72d896b56b05e9e4e9bded54c077128cff3a52bb6a3ecf2a52a83214995",
       "src/lite/LiteUi.jsx": "23ea20f7ba5b30858ebe4737c6a5cd762166092a6d01a42a7b76af41f09fa816",
       "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "86028142a9f9b74b7defd17dbfc25eda92cb6f41acf79e5a9a7bc7bcff79c674",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "782cb8d40e9b5561b3302cd364fc60f855cc8003538b695a58e6f95d0fdbe1cd"
+      "src/mocks/handlers.js": "78ee0292efd9faa24b6bab2065ec51f030ac0c2a301974b6e64aad2f4ccf5bf3"
     },
     "validation_state": "generated"
   }

@@ -13011,6 +13011,346 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
+        "npm run test:safety:azure:a11y"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:safety:azure:a11y",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:safety:azure:a11y",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Safety Axe WCAG AA and 200 percent enlargement; definition only",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:safety:azure:geometry"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:safety:azure:geometry",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:safety:azure:geometry",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Reused desktop Safety panel movement/resizing, clamping and mobile sheet",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:safety:azure:mocked"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:safety:azure:mocked",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:safety:azure:mocked",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Synthetic Safety flows, nine-section Manage, semantic and mobile/desktop cases",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:safety:azure:perf"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:safety:azure:perf",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:safety:azure:perf",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Supplemental Safety interaction samples; PR588 and PR589 budgets unchanged",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:safety:azure:qualification"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:safety:azure:qualification",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:safety:azure:qualification",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Full future Codex stabilization; intentionally not executed now",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:safety:azure:storybook"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:test:safety:azure:storybook",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:safety:azure:storybook",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Build existing Storybook with new Azure Safety synthetic states",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:safety:azure:unit"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:test:safety:azure:unit",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:safety:azure:unit",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Safety result provenance, measurement, coverage and profile matching (deferred)",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:safety:azure:visual"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:safety:azure:visual",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:safety:azure:visual",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Unapproved Azure Safety visual scenario baselines; capture requires stabilization",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
         "npm run build-storybook",
         "{{.PYTHON}} scripts/docs/lite/generate_docs.py check-storybook",
         "node scripts/docs/lite/test-storybook.mjs"

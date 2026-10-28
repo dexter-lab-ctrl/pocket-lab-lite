@@ -2523,6 +2523,36 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-safety-performance.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-safety-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-safety-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-safety-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-safety.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-safety.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-safety.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
       "name": "tests/e2e/lite-azure-horizon-visual.spec.ts",
       "source_refs": [
@@ -3057,6 +3087,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "bec2df011bdc728bfbf50ce42fb60a9b65bd4fd12148e492da54ccd271dfe1b0"
+    "source_fingerprint": "bd2c94b8c42690acb0a303567e6a732d6e72fc4414abd2f257130733dca47a11"
   }
 }

@@ -15443,6 +15443,39 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-safety-performance.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-safety-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-safety-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-safety-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-safety.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-safety.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-safety.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
       "name": "tests/e2e/lite-azure-horizon-visual.spec.ts",
       "source_refs": [
@@ -22598,6 +22631,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-azure-horizon-safety.spec.ts"
+      ],
+      "id": "rel:178e4ba0f11fc7a5",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-azure-horizon-safety.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_photo_backup_reliability.py"
       ],
       "id": "rel:17a9e9c53a0174a4",
@@ -23389,6 +23436,20 @@
       "id": "rel:1ad0208cbcbacdd0",
       "source": "reason:owned_security_run_missing",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-safety-visual.spec.ts"
+      ],
+      "id": "rel:1af0374f934bc3c1",
+      "source": "journey:security-scan",
+      "target": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -32374,6 +32435,20 @@
       "id": "rel:4138f59f2c7c0393",
       "source": "requirement:architecture-08",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-safety-visual.spec.ts"
+      ],
+      "id": "rel:413c1af029b6529c",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -49899,6 +49974,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-azure-horizon-safety.spec.ts"
+      ],
+      "id": "rel:8f4772561200c8fc",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-azure-horizon-safety.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:8f5509bc280785ab",
@@ -56075,6 +56164,20 @@
       "source": "component:photoprism",
       "target": "threat-model:application-container",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-safety-performance.spec.ts"
+      ],
+      "id": "rel:abfb8a8b2e2f550a",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-azure-horizon-safety-performance.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -63328,6 +63431,20 @@
       "source": "component:invite-state",
       "target": "boundary:durable-state",
       "type": "protected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-safety-visual.spec.ts"
+      ],
+      "id": "rel:ce125c995ce1ebaa",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -73212,6 +73329,20 @@
       "id": "rel:f8e86264755dc4d4",
       "source": "domain:security",
       "target": "test:tests/backend/test_lite_security_sqlite_s3_s5.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-safety-visual.spec.ts"
+      ],
+      "id": "rel:f8ed8868e4dbd705",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
       "type": "verified_by"
     },
     {

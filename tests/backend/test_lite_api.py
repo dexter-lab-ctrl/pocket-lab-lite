@@ -6691,7 +6691,8 @@ def test_lite_security_phase5_safety_center_manage_contract():
     assert "data-security-phase5-summary-first" in security
     assert "data-security-phase5-manage-shell" in security
     assert "Run Safety Check" in security
-    assert ">Manage<" in security
+    assert 'ariaLabel="Manage Security details"' in security
+    assert ">Manage Safety</LiteButton>" in security
     assert "SECURITY_MANAGE_SECTIONS" in security
     for section_id in ["overview", "changes", "issues", "check_path", "evidence", "history", "technical_details"]:
         assert section_id in security
