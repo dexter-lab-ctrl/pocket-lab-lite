@@ -286,6 +286,7 @@ export function LiteSheet({
     else if (surfaceRef && typeof surfaceRef === 'object') surfaceRef.current = node;
   }, [surfaceRef]);
   const variantClasses = LITE_SHEET_VARIANTS[variant] || LITE_SHEET_VARIANTS.manage;
+  const closeLabelOverride = closeLabel ? { 'aria-label': closeLabel } : {};
   const reducedMotionRef = useReducedMotionPreference();
   // Qualification mode already disables sheet motion at the CSS/runtime
   // boundary. Keep the same semantic sheet surface, but avoid instantiating
@@ -408,7 +409,7 @@ export function LiteSheet({
               <button type="button" onClick={mobileSheet.contract} disabled={!mobileSheet.canContract}>Compact</button>
               <button type="button" onClick={mobileSheet.expand} disabled={!mobileSheet.canExpand}>Expand</button>
             </div> : null}
-            <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={onClose} aria-label={closeLabel || variantClasses.closeLabel}>
+            <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={onClose} aria-label={variantClasses.closeLabel} {...closeLabelOverride}>
               <X className="h-4 w-4" />
             </button>
           </div>

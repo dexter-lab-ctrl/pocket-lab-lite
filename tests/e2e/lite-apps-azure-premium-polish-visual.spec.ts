@@ -19,6 +19,7 @@ async function manage(page:any){
   await page.locator('.lite-catalog-app-card').getByRole('button',{name:'Manage',exact:true}).first().click();
   const dialog=page.getByRole('dialog',{name:/Manage PhotoPrism/i});
   await expect(dialog).toBeVisible();
+  await dialog.locator('.lite-catalog-manage-scroll').evaluate((node:any)=>{node.scrollTop=0;});
   return dialog;
 }
 for(const theme of ['light','dark'] as const) {
@@ -41,6 +42,16 @@ for(const theme of ['light','dark'] as const) {
       if(await photos.count()) await photos.click();
       await dialog.locator('.lite-catalog-manage-scroll').evaluate((node:any)=>{node.scrollTop=0;});
       await expect(dialog).toHaveScreenshot(`premium-${theme}-${scenario}.png`,{animations:'disabled'});
+    });
+  }
+  for(const width of [390,1280]) {
+    test(`premium ${theme} Photo workflow rail ${width}`,async({page})=>{
+      await open(page,theme,'catalog-ready',width);
+      const dialog=await manage(page);
+      await dialog.getByRole('tab',{name:'Photos'}).click();
+      const flow=dialog.getByRole('region',{name:'Photo workflow'});
+      await expect(flow).toBeVisible();
+      await expect(flow).toHaveScreenshot(`premium-${theme}-photo-workflow-${width}.png`,{animations:'disabled'});
     });
   }
   test(`premium ${theme} Action Details and disclosure expansion`,async({page})=>{

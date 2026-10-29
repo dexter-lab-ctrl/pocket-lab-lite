@@ -106,6 +106,91 @@ test.describe('Azure Apps premium theme and responsive contracts — validated m
       }
       expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
     });
+    test(`${theme}: Photo workflow is a connected, responsive stage rail`,async({page})=>{
+      await catalog(page,'catalog-ready',theme,1280);
+      const panel=await photos(page);
+      const flow=panel.getByRole('region',{name:'Photo workflow'});
+      await expect(flow).toBeVisible();
+      if(await panel.getByText('Phone storage is already connected.',{exact:true}).count()) {
+        await expect(flow.getByText('Phone',{exact:true})).toBeVisible();
+      }
+      const desktop=await flow.evaluate((node)=>{
+        const steps=Array.from(node.querySelectorAll('.lite-catalog-premium-flow-step'));
+        const icons=steps.map((step)=>{
+          const box=step.querySelector('.lite-catalog-premium-flow-icon')?.getBoundingClientRect();
+          return {width:box?.width || 0,height:box?.height || 0};
+        });
+        const rail=node.querySelector('.lite-catalog-premium-flow-steps')?.getBoundingClientRect();
+        const connectors=Array.from(node.querySelectorAll('.lite-catalog-premium-flow-connector')).map((connector)=>{
+          const box=connector.getBoundingClientRect();
+          return {width:box.width,height:box.height};
+        });
+        const flowBox=node.getBoundingClientRect();
+        const railBox=rail || flowBox;
+        return {
+          stepCount:steps.length,
+          connectorCount:connectors.length,
+          icons,
+          connectors,
+          railDisplay:getComputedStyle(node.querySelector('.lite-catalog-premium-flow-steps')).display,
+          stageCenters:steps.map((step)=>{
+            const box=step.getBoundingClientRect();
+            return box.left+box.width/2;
+          }),
+          overflow:steps.some((step)=>{
+            const box=step.getBoundingClientRect();
+            return box.left < railBox.left-1 || box.right > railBox.right+1;
+          }),
+          footerDisplay:getComputedStyle(node.querySelector('.lite-catalog-premium-flow-foot')).display,
+          summary:node.querySelector('.lite-catalog-premium-flow-foot p')?.textContent?.trim() || '',
+          detailLabel:node.querySelector('.lite-catalog-premium-flow-foot button')?.textContent?.trim() || '',
+        };
+      });
+      expect(desktop.stepCount).toBe(3);
+      expect(desktop.connectorCount).toBe(2);
+      expect(desktop.railDisplay).toBe('grid');
+      expect(desktop.footerDisplay).toBe('grid');
+      expect(desktop.summary).not.toBe('');
+      expect(desktop.detailLabel).toBe('View details');
+      expect(desktop.overflow).toBe(false);
+      expect(Math.max(...desktop.stageCenters)-Math.min(...desktop.stageCenters)).toBeGreaterThan(0);
+      const iconSizes=desktop.icons.map((icon)=>icon.width);
+      expect(Math.max(...iconSizes)-Math.min(...iconSizes)).toBeLessThanOrEqual(1);
+      for(const icon of desktop.icons){
+        expect(icon.width).toBeGreaterThanOrEqual(40);
+        expect(icon.height).toBeGreaterThanOrEqual(40);
+      }
+      for(const connector of desktop.connectors){
+        expect(connector.width).toBeGreaterThan(0);
+        expect(connector.height).toBeGreaterThan(0);
+      }
+
+      for(const width of [390,360,320]){
+        await page.setViewportSize({width,height:780});
+        const mobile=await flow.evaluate((node)=>{
+          const rail=node.querySelector('.lite-catalog-premium-flow-steps');
+          const railBox=rail?.getBoundingClientRect();
+          const steps=Array.from(node.querySelectorAll('.lite-catalog-premium-flow-step'));
+          const connectors=Array.from(node.querySelectorAll('.lite-catalog-premium-flow-connector'));
+          return {
+            railColumns:rail ? getComputedStyle(rail).gridTemplateColumns : '',
+            stepsWithinRail:steps.every((step)=>{
+              const box=step.getBoundingClientRect();
+              return box.left >= (railBox?.left || 0)-1 && box.right <= (railBox?.right || 0)+1;
+            }),
+            connectorsVisible:connectors.every((connector)=>{
+              const box=connector.getBoundingClientRect();
+              return box.width > 0 && box.height > 0;
+            }),
+            documentOverflow:document.documentElement.scrollWidth > innerWidth+2,
+          };
+        });
+        expect(mobile.stepsWithinRail).toBe(true);
+        expect(mobile.connectorsVisible).toBe(true);
+        expect(mobile.documentOverflow).toBe(false);
+        if(width<=360) expect(mobile.railColumns.split(' ').length).toBe(1);
+      }
+    });
     test(`${theme}: nested Details toolbar is isolated, labelled and collision-free`,async({page})=>{
       await catalog(page,'catalog-ready',theme,1280);
       const panel=await photos(page);
