@@ -72,6 +72,185 @@ test.describe('Azure Apps premium theme and responsive contracts — validated m
       await expect(details).toHaveCount(0);
       await expect(panel).toBeVisible();
     });
+    test(`${theme}: action rows keep an aligned icon and typography contract`,async({page})=>{
+      await catalog(page,'catalog-ready',theme,390);
+      const panel=await photos(page);
+      const rows=panel.locator('.lite-app-action-row');
+      await expect(rows.first()).toBeVisible();
+      const measurements=await rows.evaluateAll((nodes)=>nodes.map((node)=>{
+        const main=node.querySelector('.lite-app-action-row-main');
+        const icon=node.querySelector('.lite-app-action-row-icon');
+        const copy=node.querySelector('.lite-app-action-row-copy');
+        const iconBox=icon?.getBoundingClientRect();
+        const firstCopyLine=copy?.firstElementChild?.getBoundingClientRect();
+        const copyChildren=copy ? Array.from(copy.children).map((child)=>getComputedStyle(child).display) : [];
+        return {
+          mainDisplay:main ? getComputedStyle(main).display : '',
+          iconDisplay:icon ? getComputedStyle(icon).display : '',
+          copyDisplay:copy ? getComputedStyle(copy).display : '',
+          iconWidth:iconBox?.width || 0,
+          iconHeight:iconBox?.height || 0,
+          iconToCopyGap:(firstCopyLine?.left || 0)-(iconBox?.right || 0),
+          copyChildren,
+        };
+      }));
+      expect(measurements.length).toBeGreaterThan(0);
+      for(const measurement of measurements){
+        expect(measurement.mainDisplay).toBe('grid');
+        expect(measurement.iconDisplay).toBe('grid');
+        expect(measurement.copyDisplay).toBe('grid');
+        expect(measurement.iconWidth).toBeGreaterThanOrEqual(32);
+        expect(measurement.iconHeight).toBeGreaterThanOrEqual(32);
+        expect(measurement.iconToCopyGap).toBeGreaterThanOrEqual(4);
+        expect(measurement.copyChildren).toEqual(['block','block','block']);
+      }
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
+    });
+    test(`${theme}: Photo workflow is a connected, responsive stage rail`,async({page})=>{
+      await catalog(page,'catalog-ready',theme,1280);
+      const panel=await photos(page);
+      const flow=panel.getByRole('region',{name:'Photo workflow'});
+      await expect(flow).toBeVisible();
+      if(await panel.getByText('Phone storage is already connected.',{exact:true}).count()) {
+        await expect(flow.getByText('Phone',{exact:true})).toBeVisible();
+      }
+      const desktop=await flow.evaluate((node)=>{
+        const steps=Array.from(node.querySelectorAll('.lite-catalog-premium-flow-step'));
+        const icons=steps.map((step)=>{
+          const box=step.querySelector('.lite-catalog-premium-flow-icon')?.getBoundingClientRect();
+          return {width:box?.width || 0,height:box?.height || 0};
+        });
+        const rail=node.querySelector('.lite-catalog-premium-flow-steps')?.getBoundingClientRect();
+        const connectors=Array.from(node.querySelectorAll('.lite-catalog-premium-flow-connector')).map((connector)=>{
+          const box=connector.getBoundingClientRect();
+          return {width:box.width,height:box.height};
+        });
+        const flowBox=node.getBoundingClientRect();
+        const railBox=rail || flowBox;
+        return {
+          stepCount:steps.length,
+          connectorCount:connectors.length,
+          icons,
+          connectors,
+          railDisplay:getComputedStyle(node.querySelector('.lite-catalog-premium-flow-steps')).display,
+          stageCenters:steps.map((step)=>{
+            const box=step.getBoundingClientRect();
+            return box.left+box.width/2;
+          }),
+          overflow:steps.some((step)=>{
+            const box=step.getBoundingClientRect();
+            return box.left < railBox.left-1 || box.right > railBox.right+1;
+          }),
+          footerDisplay:getComputedStyle(node.querySelector('.lite-catalog-premium-flow-foot')).display,
+          summary:node.querySelector('.lite-catalog-premium-flow-foot p')?.textContent?.trim() || '',
+          detailLabel:node.querySelector('.lite-catalog-premium-flow-foot button')?.textContent?.trim() || '',
+        };
+      });
+      expect(desktop.stepCount).toBe(3);
+      expect(desktop.connectorCount).toBe(2);
+      expect(desktop.railDisplay).toBe('grid');
+      expect(desktop.footerDisplay).toBe('grid');
+      expect(desktop.summary).not.toBe('');
+      expect(desktop.detailLabel).toBe('View details');
+      expect(desktop.overflow).toBe(false);
+      expect(Math.max(...desktop.stageCenters)-Math.min(...desktop.stageCenters)).toBeGreaterThan(0);
+      const iconSizes=desktop.icons.map((icon)=>icon.width);
+      expect(Math.max(...iconSizes)-Math.min(...iconSizes)).toBeLessThanOrEqual(1);
+      for(const icon of desktop.icons){
+        expect(icon.width).toBeGreaterThanOrEqual(40);
+        expect(icon.height).toBeGreaterThanOrEqual(40);
+      }
+      for(const connector of desktop.connectors){
+        expect(connector.width).toBeGreaterThan(0);
+        expect(connector.height).toBeGreaterThan(0);
+      }
+
+      for(const width of [390,360,320]){
+        await page.setViewportSize({width,height:780});
+        const mobile=await flow.evaluate((node)=>{
+          const rail=node.querySelector('.lite-catalog-premium-flow-steps');
+          const railBox=rail?.getBoundingClientRect();
+          const steps=Array.from(node.querySelectorAll('.lite-catalog-premium-flow-step'));
+          const connectors=Array.from(node.querySelectorAll('.lite-catalog-premium-flow-connector'));
+          return {
+            railColumns:rail ? getComputedStyle(rail).gridTemplateColumns : '',
+            stepsWithinRail:steps.every((step)=>{
+              const box=step.getBoundingClientRect();
+              return box.left >= (railBox?.left || 0)-1 && box.right <= (railBox?.right || 0)+1;
+            }),
+            connectorsVisible:connectors.every((connector)=>{
+              const box=connector.getBoundingClientRect();
+              return box.width > 0 && box.height > 0;
+            }),
+            documentOverflow:document.documentElement.scrollWidth > innerWidth+2,
+          };
+        });
+        expect(mobile.stepsWithinRail).toBe(true);
+        expect(mobile.connectorsVisible).toBe(true);
+        expect(mobile.documentOverflow).toBe(false);
+        if(width<=360) expect(mobile.railColumns.split(' ').length).toBe(1);
+      }
+    });
+    test(`${theme}: nested Details toolbar is isolated, labelled and collision-free`,async({page})=>{
+      await catalog(page,'catalog-ready',theme,1280);
+      const panel=await photos(page);
+      await panel.getByRole('region',{name:'Photo workflow'}).getByRole('button',{name:'View details'}).click();
+      const details=page.locator('.lite-details-overlay-layer .lite-details-panel');
+      await expect(details).toBeVisible();
+      const toolbar=details.locator('[data-lite-overlay-panel-tools="desktop"]');
+      await expect(toolbar).toHaveAttribute('aria-label','Desktop Import photos panel controls');
+      await expect(toolbar.getByRole('button',{name:'Move Import photos panel'})).toHaveText('Move');
+      await expect(toolbar.getByRole('button',{name:'Reset Import photos position and size'})).toHaveText('Reset');
+      await expect(toolbar.getByRole('button',{name:'Resize Import photos panel'})).toHaveText('Resize');
+      await expect(details.getByRole('button',{name:'Close Action Details'})).toBeVisible();
+      const detailsBox=await details.boundingBox();
+      const controls=await toolbar.getByRole('button').evaluateAll((buttons)=>buttons.map((button)=>{
+        const box=button.getBoundingClientRect();
+        return {left:box.left,right:box.right,top:box.top,bottom:box.bottom};
+      }));
+      expect(detailsBox).toBeTruthy();
+      expect(controls).toHaveLength(3);
+      for(const control of controls){
+        expect(control.left).toBeGreaterThanOrEqual((detailsBox?.left || 0)-1);
+        expect(control.right).toBeLessThanOrEqual((detailsBox?.x || 0)+(detailsBox?.width || 0)+1);
+      }
+      for(let index=1;index<controls.length;index++){
+        expect(controls[index].left).toBeGreaterThanOrEqual(controls[index-1].right+2);
+      }
+      const parentBefore=await panel.boundingBox();
+      const nestedBefore=await details.boundingBox();
+      await toolbar.getByRole('button',{name:'Move Import photos panel'}).focus();
+      await page.keyboard.press('ArrowLeft');
+      const nestedMoved=await details.boundingBox();
+      const parentAfter=await panel.boundingBox();
+      expect(nestedMoved?.x).toBeLessThanOrEqual(nestedBefore?.x || 0);
+      expect(parentAfter?.x).toBeCloseTo(parentBefore?.x || 0,0);
+      const moveBox=await toolbar.getByRole('button',{name:'Move Import photos panel'}).boundingBox();
+      if(!moveBox) throw new Error('Nested Move control bounds unavailable');
+      const pointerMoveBefore=await details.boundingBox();
+      await page.mouse.move(moveBox.x+moveBox.width/2,moveBox.y+moveBox.height/2);
+      await page.mouse.down();
+      await page.mouse.move(moveBox.x+moveBox.width/2+48,moveBox.y+moveBox.height/2+24,{steps:3});
+      await page.mouse.up();
+      const pointerMoved=await details.boundingBox();
+      expect(pointerMoved?.x).toBeGreaterThan(pointerMoveBefore?.x || 0);
+      expect(pointerMoved?.y).toBeGreaterThan(pointerMoveBefore?.y || 0);
+      const resizeBox=await toolbar.getByRole('button',{name:'Resize Import photos panel'}).boundingBox();
+      if(!resizeBox) throw new Error('Nested Resize control bounds unavailable');
+      const pointerResizeBefore=await details.boundingBox();
+      await page.mouse.move(resizeBox.x+resizeBox.width/2,resizeBox.y+resizeBox.height/2);
+      await page.mouse.down();
+      await page.mouse.move(resizeBox.x+resizeBox.width/2+40,resizeBox.y+resizeBox.height/2+32,{steps:3});
+      await page.mouse.up();
+      const pointerResized=await details.boundingBox();
+      expect(pointerResized?.width).toBeGreaterThanOrEqual(pointerResizeBefore?.width || 0);
+      expect(pointerResized?.height).toBeGreaterThanOrEqual(pointerResizeBefore?.height || 0);
+      await toolbar.getByRole('button',{name:'Reset Import photos position and size'}).click();
+      await expect(details).toBeVisible();
+      await details.getByRole('button',{name:'Close Action Details'}).click();
+      await expect(details).toHaveCount(0);
+      await expect(panel).toBeVisible();
+    });
     test(`${theme}: tablist arrows, Home and End preserve selection`,async({page})=>{
       await catalog(page,'catalog-ready',theme);
       const panel=await manage(page);

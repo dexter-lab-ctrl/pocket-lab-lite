@@ -267,6 +267,7 @@ export function LiteSheet({
   surfaceProps = {},
   gripProps = {},
   closeRef: externalCloseRef,
+  closeLabel,
   SurfaceComponent = 'section',
   variant = 'manage',
   motion = 'none',
@@ -285,6 +286,7 @@ export function LiteSheet({
     else if (surfaceRef && typeof surfaceRef === 'object') surfaceRef.current = node;
   }, [surfaceRef]);
   const variantClasses = LITE_SHEET_VARIANTS[variant] || LITE_SHEET_VARIANTS.manage;
+  const closeLabelOverride = closeLabel ? { 'aria-label': closeLabel } : {};
   const reducedMotionRef = useReducedMotionPreference();
   // Qualification mode already disables sheet motion at the CSS/runtime
   // boundary. Keep the same semantic sheet surface, but avoid instantiating
@@ -407,7 +409,7 @@ export function LiteSheet({
               <button type="button" onClick={mobileSheet.contract} disabled={!mobileSheet.canContract}>Compact</button>
               <button type="button" onClick={mobileSheet.expand} disabled={!mobileSheet.canExpand}>Expand</button>
             </div> : null}
-            <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={onClose} aria-label={variantClasses.closeLabel}>
+            <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={onClose} aria-label={variantClasses.closeLabel} {...closeLabelOverride}>
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -423,22 +425,24 @@ export function LiteSheet({
 export function LiteDetailsPanel({
   open, onClose, title = 'Details', description = '', bodyRef, bodyClassName = '',
   children, variant = 'manage', className = '', desktopGeometry, mobileSnap = false,
+  desktopToolLabels = false, closeLabel,
 }) {
   const { panelRef, desktopPanel, panelStyle, announcement, reset,
     startPanelInteraction, adjustPanelWithKeyboard } = desktopGeometry || {};
-  const tools = desktopPanel ? <div className="lite-home-desktop-panel-tools" role="group" aria-label="Desktop Home panel controls">
+  const tools = desktopPanel ? <div className={`lite-overlay-desktop-panel-tools lite-home-desktop-panel-tools ${desktopToolLabels ? 'has-labels' : ''}`.trim()} data-lite-overlay-panel-tools="desktop" role="group" aria-label={`Desktop ${title} panel controls`}>
     <button type="button" aria-label={`Move ${title} panel`} title="Drag or use arrow keys to move; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
       onPointerDown={(event) => startPanelInteraction?.('move', event)}
-      onKeyDown={(event) => adjustPanelWithKeyboard?.('move', event)}><Move size={16} aria-hidden="true" /></button>
-    <button type="button" aria-label={`Reset ${title} position and size`} onClick={reset}><RotateCcw size={16} aria-hidden="true" /> Reset</button>
+      onKeyDown={(event) => adjustPanelWithKeyboard?.('move', event)}><Move size={16} aria-hidden="true" />{desktopToolLabels ? 'Move' : null}</button>
+    <button type="button" aria-label={`Reset ${title} position and size`} title="Reset panel position and size" onClick={reset}><RotateCcw size={16} aria-hidden="true" />{desktopToolLabels ? 'Reset' : null}</button>
     <button type="button" aria-label={`Resize ${title} panel`} title="Drag or use arrow keys to resize; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
       onPointerDown={(event) => startPanelInteraction?.('resize', event)}
-      onKeyDown={(event) => adjustPanelWithKeyboard?.('resize', event)}><Maximize2 size={16} aria-hidden="true" /></button>
+      onKeyDown={(event) => adjustPanelWithKeyboard?.('resize', event)}><Maximize2 size={16} aria-hidden="true" />{desktopToolLabels ? 'Resize' : null}</button>
     <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
   </div> : null;
   return (
     <LiteSheet open={open} onClose={onClose} title={title} eyebrow="Action Details"
       description={description} variant={variant} headerActions={tools} mobileSnap={mobileSnap && !desktopPanel}
+      closeLabel={closeLabel}
       layerClassName={`lite-details-overlay-layer ${variant === 'home' ? 'lite-home-panel-layer' : ''}`}
       className={`lite-details-panel ${className} ${desktopPanel ? 'is-movable' : ''}`.trim()}
       surfaceRef={panelRef} surfaceStyle={panelStyle}

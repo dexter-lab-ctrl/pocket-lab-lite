@@ -1510,14 +1510,17 @@ function PhotoPrismMediaFlowCard({ lifecycle, busyKey = '', phoneSource = false,
   return (
     <section className={`lite-catalog-media-flow-card lite-catalog-premium-flow is-${flow.state}`} aria-label="Photo workflow">
       <div className="lite-catalog-premium-flow-header">
-        <div><span>Photo workflow</span><strong>{flow.title}</strong></div>
+        <div className="lite-catalog-premium-flow-heading"><span>Photo workflow</span><strong>{flow.title}</strong></div>
         <span className={`lite-catalog-premium-state is-${flow.state}`}>{flow.badge}</span>
       </div>
       <ol className="lite-catalog-premium-flow-steps" aria-label={flow.ariaLabel}>
-        {flow.steps.map((step) => (
+        {flow.steps.map((step, index) => (
           <li key={step.id} className={`lite-catalog-premium-flow-step is-${step.state}`}>
             <span className="lite-catalog-premium-flow-icon">{icons[step.id]}</span>
             <strong>{step.label}</strong><small>{step.status}</small>
+            {index < flow.steps.length - 1 ? (
+              <span className={`lite-catalog-premium-flow-connector is-${step.state}`} aria-hidden="true" />
+            ) : null}
           </li>
         ))}
       </ol>
@@ -1537,6 +1540,14 @@ function mediaImportIsStale(media = {}) {
 
 function photoPrismMediaFlowState(lifecycle, busyKey = '', phoneSource = false) {
   const media = lifecycle?.media || {};
+  const mediaLabels = [
+    ...(Array.isArray(media.labels) ? media.labels : []),
+    ...(Array.isArray(lifecycle?.storage?.labels) ? lifecycle.storage.labels : []),
+  ].map((label) => String(label || '').toLowerCase());
+  const phoneSourceReported = phoneSource
+    || mediaLabels.some((label) => label.includes('phone') || label.includes('android shared storage'))
+    || (Array.isArray(media.mappings) && media.mappings.some(isPhoneStorageMapping));
+  const usesPhoneSource = Boolean(phoneSourceReported);
   const connected = Number(media.mapping_count ?? lifecycle?.storage?.mapping_count ?? 0) > 0
     || lifecycle?.storage?.status === 'connected';
   const status = normalizedActionValue(media?.last_import?.status);
@@ -1551,7 +1562,7 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '', phoneSource = false) 
   const transferStatus = executing ? 'Running' : queued || active ? 'Waiting' : completed ? 'Completed' : failed ? 'Needs review' : 'Not running';
   const prismStatus = completed ? 'Updated' : failed ? 'Check readiness' : active ? 'Waiting' : 'Not checked';
   const steps = [
-    { id: phoneSource ? 'phone' : 'source', label: phoneSource ? 'Phone' : 'Photo source', state: connected ? 'done' : 'idle', status: connected ? 'Connected' : 'Not connected' },
+    { id: usesPhoneSource ? 'phone' : 'source', label: usesPhoneSource ? 'Phone' : 'Photo source', state: connected ? 'done' : 'idle', status: connected ? 'Connected' : 'Not connected' },
     { id: 'transfer', label: 'Transfer', state: active ? 'running' : failed ? 'review' : completed ? 'done' : 'idle', status: transferStatus },
     { id: 'prism', label: 'PhotoPrism', state: completed ? 'done' : failed ? 'review' : 'idle', status: prismStatus },
   ];
@@ -2453,6 +2464,8 @@ function CatalogManagePortal({
           onClose={closeActionDetails}
           title={actionCopy(selectedDetailsEntry.actionId, selectedDetailsEntry.action).label}
           desktopGeometry={detailsGeometry}
+          desktopToolLabels
+          closeLabel="Close Action Details"
           mobileSnap
           bodyClassName="lite-apps-premium-details-scroll"
         >
