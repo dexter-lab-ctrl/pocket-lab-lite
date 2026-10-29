@@ -2453,6 +2453,8 @@ function CatalogManagePortal({
           onClose={closeActionDetails}
           title={actionCopy(selectedDetailsEntry.actionId, selectedDetailsEntry.action).label}
           desktopGeometry={detailsGeometry}
+          desktopToolLabels
+          closeLabel="Close Action Details"
           mobileSnap
           bodyClassName="lite-apps-premium-details-scroll"
         >
