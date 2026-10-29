@@ -74,3 +74,9 @@ def test_android_baseline_entry_points_are_repository_owned():
     assert "lite:ui:perf:android:baseline:" in taskfile
     assert "lite:ui:perf:android:baseline:analyze:" in taskfile
     assert "lite:ui:perf:android:baseline:check:" in taskfile
+
+
+def test_apps_android_runner_reads_catalog_manage_snap_state_from_dialog_root():
+    source = (ROOT / "scripts/dev/lite/qualify-ui-performance-android-apps.mjs").read_text(encoding="utf-8")
+    assert "await manage.getAttribute('data-lite-sheet-snap') !== null" in source
+    assert "const reopenedSnap = await manage.getAttribute('data-lite-sheet-snap')" in source

@@ -586,7 +586,11 @@ async function checkNestedDetails(manage) {
 
 async function checkMobileSnap(manage) {
   const layout = await manage.getAttribute('data-lite-apps-manage-layout');
-  const snap = manage.locator('[data-lite-sheet-snap]').first();
+  // Catalog Manage owns the snap marker on its dialog root. Keep a descendant
+  // fallback for shared LiteSheet consumers whose marker remains nested.
+  const snap = await manage.getAttribute('data-lite-sheet-snap') !== null
+    ? manage
+    : manage.locator('[data-lite-sheet-snap]').first();
   if (!await snap.count()) {
     gap('Mobile sheet snap', `Android rendered ${layout || 'desktop'} Manage geometry; mobile snap is covered by the Dev-PC geometry gate.`);
     return { mobile: false };
@@ -799,7 +803,8 @@ async function qualifyApps() {
   // not retain the previous mobile snap state.
   await manageButton.click();
   manage = await visibleManageDialog();
-  const reopenedSnap = await manage.locator('[data-lite-sheet-snap]').first().getAttribute('data-lite-sheet-snap').catch(() => null);
+  const reopenedSnap = await manage.getAttribute('data-lite-sheet-snap')
+    || await manage.locator('[data-lite-sheet-snap]').first().getAttribute('data-lite-sheet-snap').catch(() => null);
   if (reopenedSnap && reopenedSnap !== 'medium') fail(`Apps Manage reopened at ${reopenedSnap} instead of medium.`);
   await capture('manage-reopened', manage);
   await manage.getByRole('button', { name: 'Close app actions', exact: true }).click();
