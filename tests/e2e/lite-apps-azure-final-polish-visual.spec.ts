@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// New screenshot specifications only. Do NOT generate/approve PNGs in this PR.
-// Missing baselines are an intentional later owner-review/qualification gate.
+// Canonical screenshot references are owner-reviewed qualification artifacts.
+// Keep this suite deterministic: mocked data, fixed viewports and reduced motion.
 async function setup(page:Page, theme:'light'|'dark', width:number, scenario='catalog-ready') {
   await page.setViewportSize({width,height:width<=430?780:900});
   await page.emulateMedia({reducedMotion:'reduce'});
