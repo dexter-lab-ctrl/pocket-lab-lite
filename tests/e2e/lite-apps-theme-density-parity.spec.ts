@@ -115,14 +115,8 @@ test.describe('Apps Azure Horizon balanced density — IMPLEMENTED, QUALIFICATIO
         for (const page of pages) {
           await expectContained(page, width);
           await expect(page.locator('.lite-catalog-manage-sheet')).toHaveAttribute(
-            'data-lite-apps-manage-layout', width <= 700 ? 'mobile-sheet' : 'desktop-panel',
-          ).catch(async () => {
-            // Layout marker is carried on the dialog in the existing portal, not
-            // required on the sheet element itself.
-            await expect(page.getByRole('dialog', { name: /Manage / })).toHaveAttribute(
-              'data-lite-apps-manage-layout', width <= 700 ? 'mobile-sheet' : 'desktop-panel',
-            );
-          });
+            'data-lite-apps-manage-layout', width <= 700 ? 'mobile-sheet' : 'desktop-movable',
+          );
         }
         for (const page of pages) {
           const flow = page.getByRole('region', { name: 'Photo workflow' });
@@ -190,10 +184,10 @@ test.describe('Apps Azure Horizon balanced density — IMPLEMENTED, QUALIFICATIO
           await expect(manage).toHaveAttribute('data-lite-sheet-snap', snap);
           await expectContained(page, 390);
         }
-        await manage.getByRole('button', { name: 'Medium', exact: true }).click().catch(async () => {
-          await manage.getByRole('button', { name: 'Compact', exact: true }).click();
-        });
-        await expect(manage).toHaveAttribute('data-lite-sheet-snap', /compact|medium/);
+        await manage.getByRole('button', { name: 'Compact', exact: true }).click();
+        await expect(manage).toHaveAttribute('data-lite-sheet-snap', 'medium');
+        await manage.getByRole('button', { name: 'Compact', exact: true }).click();
+        await expect(manage).toHaveAttribute('data-lite-sheet-snap', 'compact');
         await manage.getByRole('button', { name: 'Close app actions' }).click();
         await expect(manage).toHaveCount(0);
       } finally { await page.close(); }
