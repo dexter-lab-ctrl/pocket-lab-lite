@@ -15,7 +15,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 141 |
+| Development loop | 151 |
 | Documentation loop | 57 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 36 |
@@ -8779,6 +8779,346 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** gate-defined
 
 **Example:** `task lite:test:apps:azure:visual`
+
+## `lite:test:apps:final:a11y`
+
+**Purpose:** Axe, focus, disclosure and tab semantics
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:final:a11y`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:final:a11y`
+
+## `lite:test:apps:final:android`
+
+**Purpose:** Run the Apps-only physical Android candidate qualification without the seven-screen matrix
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:perf:android:apps`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:final:android`
+
+## `lite:test:apps:final:android:baseline`
+
+**Purpose:** Run scoped Apps-only Android baseline attribution with PR588/PR589 thresholds unchanged
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:perf:android:apps:baseline`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:final:android:baseline`
+
+## `lite:test:apps:final:geometry`
+
+**Purpose:** Reused desktop panel and opt-in mobile sheet interaction contract
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:final:geometry`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:final:geometry`
+
+## `lite:test:apps:final:mocked`
+
+**Purpose:** Mocked Daylight Black System and responsive Apps interactions
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:final:mocked`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:final:mocked`
+
+## `lite:test:apps:final:performance`
+
+**Purpose:** Preserve existing PR588/PR589 performance gates and sample Apps interactions
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:final:performance`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:final:performance`
+
+## `lite:test:apps:final:qualification`
+
+**Purpose:** Deferred all-scope Apps final-polish qualification (visual references need owner approval)
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:final:qualification`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:final:qualification`
+
+## `lite:test:apps:final:storybook`
+
+**Purpose:** Build Apps final-polish Storybook states
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:final:storybook`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:final:storybook`
+
+## `lite:test:apps:final:unit`
+
+**Purpose:** Test Apps description, shared sheet snaps and existing geometry
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:final:unit`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:final:unit`
+
+## `lite:test:apps:final:visual`
+
+**Purpose:** Capture and compare new baselines only after explicit owner review
+
+**Audience:** developer
+
+**Dependencies:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm run test:apps:final:visual`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:dev:scratch:prepare, lite:playwright:preflight
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:test:apps:final:visual`
 
 ## `lite:test:apps:premium:a11y`
 

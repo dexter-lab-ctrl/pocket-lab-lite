@@ -304,3 +304,42 @@ The late-only canonical documentation phase was **NOT RUN** because the required
 - Server Phone read-only health and final `main` checkout: **PASS**.
 - Canonical docs/contracts and broad repository gate: **BLOCKED by the unresolved physical performance/visual prerequisites; NOT RUN**.
 - PR #634 remains **OPEN / DRAFT / NOT MERGED**. Merge readiness: **NO** until physical Apps evidence and the late documentation/repository gates are completed.
+
+## 17. 2026-10-29 continuation qualification
+
+This dated continuation supersedes the current-status statements in §16 while preserving their historical provenance. It records the final qualification work performed on the Dev PC; the physical Android hard-gate result remains separate from the source-level and visual results.
+
+### 17.1 Exact-SHA comparison and implementation correction
+
+| Field | Result |
+|---|---|
+| Independent `main` baseline | `2f25837463009b940a330817c3a9c412f9e1a4b8` |
+| Feature runtime SHA used for the final physical Apps run | `3bd307c69de1ff387524dbcbd5520924aac99474` |
+| Final Apps runner correction | `qualify-ui-performance-android-apps.mjs` now accepts the authoritative `data-lite-sheet-snap` marker on the Manage dialog root, with descendant fallback; reopen validation uses the same root-aware lookup. |
+| Regression coverage | `tests/backend/test_lite_android_performance_baseline.py` statically guards root-marker support; the focused file reported 5 passing tests and one pre-existing stale interaction-count assertion (`-27` vs current `-28`) inherited from the baseline. |
+| Correction commit | `3bd307c69de1ff387524dbcbd5520924aac99474` |
+
+The final physical comparison used the same Android device, Chrome `156.0.8078.47`, CDP transport, candidate flags, loopback runtime path and Apps scenarios for three main/feature repetitions in A/B/A order. It covered the 12 common interactions only; new PR-specific snap behavior was qualified separately. The broad seven-screen Android matrix was not run.
+
+### 17.2 Android Apps-only evidence
+
+- The exact candidate identity, manifest, source SHA and package identity passed the candidate contract checks.
+- The feature Apps-only run reached landing, Manage, disclosures, nested Action Details, close/reopen, section switching and compact/medium/expanded snap interactions. All 17 physical performance reports still failed at least one unchanged PR #588/#589 absolute target; no threshold or stop condition was modified.
+- The direct Android touch probe passed: opening at medium, touch drag up to expanded, touch drag down to compact, short touch settling, cancelled gesture, lost capture release, content scroll without sheet drag, and close/reopen to medium. Evidence: `.pocketlab-dev/performance/android-apps-3bd307c69de1ff387524dbcbd5520924aac99474/android-apps-mobile-touch.json`.
+- Common-interaction attribution was `PLATFORM_DOMINATED=7`, `MIXED=4`, `WITHIN_BASELINE=1`, `APP_INCREMENTAL_COST=0`, `INCONCLUSIVE=0`. The independent main A/C control itself was variable (`PLATFORM_DOMINATED=6`, `MIXED=5`, `WITHIN_BASELINE=1`), so the four mixed results are not a clean no-regression proof. The absolute physical gate is **FAIL**; relative attribution is **NO APP_INCREMENTAL_COST observed, but not a definitive no-regression PASS**.
+- The live catalog exposed only PhotoPrism. Generic second-app behavior is **MOCKED VERIFIED / PHYSICAL LIVE INCONCLUSIVE**; no app was installed on the Server Phone.
+
+### 17.3 Visual acceptance and late repository gates
+
+- The deterministic Apps visual suite contains 80 test cases and 84 reviewed canonical PNGs under `tests/e2e/lite-apps-azure-final-polish-visual.spec.ts-snapshots/`. The reviewed PNGs were committed in `c2bd37c29d22801623ea6c7c29bdf6a6a6b76eb2` after grouped contact-sheet review of daylight/black themes, responsive cards, Manage snaps, disclosures and nested details. The final comparison run reported `80 passed (4.9m)`.
+- Existing functional and Storybook coverage continues to cover system appearance, enlarged text and reduced motion; those states are not misrepresented as additional canonical PNGs in this suite.
+- `task lite:docs:generate` completed the repository generators, including contracts, platform/runtime, knowledge, architecture, enterprise and development/production projections. `task lite:docs:check` passed; Redocly reported the repository's existing 90 warnings while the OpenAPI description remained valid.
+- The broad `task lite:check` completed with zero exit codes for its recorded validation commands, including backend, Vitest, mocked Playwright, accessibility, Storybook, build, documentation-browser, strict-docs, redaction, contracts, architecture and runtime-network checks. Its recorded outputs are under `.pocketlab-dev/validation/commands/` and are session evidence, not canonical tracked artifacts.
+
+### 17.4 Final disposition for this continuation
+
+- Source, focused Dev-PC gates, mocked browser coverage, accessibility, geometry, Storybook, build, visual comparison, canonical documentation and broad Lite checks: **PASS**.
+- Android CDP identity, exact candidate provenance and physical touch interaction behavior: **PASS**.
+- Absolute Android Apps performance budget: **FAIL**. Relative main-versus-feature attribution: **INCONCLUSIVE / MIXED**, with no `APP_INCREMENTAL_COST` classification and no threshold weakening.
+- Server Phone remains a read-only consumer/evidence source; its final `main` state and runtime health must be recorded after the final push. Windows-owned bridge cleanup is likewise recorded separately after the normal UAC cleanup path completes.
+- PR #634 remains **OPEN / DRAFT / NOT MERGED**. Because the absolute physical hard gate is still failing and the mixed attribution is not definitive, merge readiness remains **NO** unless the repository's authorized policy explicitly accepts a documented baseline/platform exception.

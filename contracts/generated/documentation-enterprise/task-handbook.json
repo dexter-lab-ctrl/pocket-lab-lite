@@ -10503,6 +10503,422 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
+        "npm run test:apps:final:a11y"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:final:a11y",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:final:a11y",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Axe, focus, disclosure and tab semantics",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer/operator",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:perf:android:apps"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:final:android",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:final:android",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run the Apps-only physical Android candidate qualification without the seven-screen matrix",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer/operator",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:perf:android:apps:baseline"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:final:android:baseline",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:final:android:baseline",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run scoped Apps-only Android baseline attribution with PR588/PR589 thresholds unchanged",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:apps:final:geometry"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:final:geometry",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:final:geometry",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Reused desktop panel and opt-in mobile sheet interaction contract",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:apps:final:mocked"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:final:mocked",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:final:mocked",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Mocked Daylight Black System and responsive Apps interactions",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:apps:final:performance"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:final:performance",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:final:performance",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Preserve existing PR588/PR589 performance gates and sample Apps interactions",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:apps:final:qualification"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:final:qualification",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:final:qualification",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Deferred all-scope Apps final-polish qualification (visual references need owner approval)",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:apps:final:storybook"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:final:storybook",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:final:storybook",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Build Apps final-polish Storybook states",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:apps:final:unit"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:final:unit",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:final:unit",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Test Apps description, shared sheet snaps and existing geometry",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm run test:apps:final:visual"
+      ],
+      "dependencies": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "environment": [],
+      "example_invocation": "task lite:test:apps:final:visual",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:test:apps:final:visual",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Capture and compare new baselines only after explicit owner review",
+      "related_tasks": [
+        "lite:dev:scratch:prepare",
+        "lite:playwright:preflight"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.ui.yml",
+      "validation_outcome": "gate-defined",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
         "npm run test:apps:premium:a11y"
       ],
       "dependencies": [

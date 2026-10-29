@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 0d161199e9e3f70f266bfabaa34b0eb0671f7934e737e7c5552668e23347e347
+source_fingerprint: 1a75e299ffa63fc24e69a88dc3f675fa33b0234d7f6b6e16369288f14a9a31fc
 schema_revision: 1
 validation_status: generated
 ---
@@ -52,6 +52,12 @@ validation_status: generated
 | `pocket-lab-lite-apps-azurepolishgenericapp` | catalog | `catalog-multi-app` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-azurepolishgenericapp-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-apps-azurepolishzoom200` | catalog | `catalog-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-azurepolishzoom200-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-apps-azurepolishsavedoffline` | catalog | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-azurepolishsavedoffline-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-apps-azurefinaldaylightcatalog` | catalog | `catalog-multi-app` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-azurefinaldaylightcatalog-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-apps-azurefinalblackcatalog` | catalog | `catalog-multi-app` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-azurefinalblackcatalog-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-apps-azurefinalsystemcatalog` | catalog | `catalog-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-azurefinalsystemcatalog-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-apps-azurefinalgenericsecondapp` | catalog | `catalog-multi-app` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-azurefinalgenericsecondapp-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-apps-azurefinalofflinestate` | catalog | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-azurefinalofflinestate-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-apps-azurefinallongtext` | catalog | `catalog-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-azurefinallongtext-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-devices-serverhostonline` | devices | `devices-server-online` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-devices-serverhostonline-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-devices-capabilityverified` | devices | `devices-capability-verified` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-devices-capabilityverified-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-devices-capabilitypending` | devices | `devices-capability-pending` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-devices-capabilitypending-{viewport}.png` | fixture-dependent |
