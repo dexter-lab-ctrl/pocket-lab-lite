@@ -473,3 +473,60 @@ tasks:
     deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
     cmds:
       - npm run test:devices:azure:qualification
+
+  # Azure Horizon Apps final polish — authored only, qualification deliberately deferred.
+  lite:test:apps:final:unit:
+    desc: Test Apps description, shared sheet snaps and existing geometry
+    cmds:
+      - npm run test:apps:final:unit
+
+  lite:test:apps:final:mocked:
+    desc: Mocked Daylight Black System and responsive Apps interactions
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:final:mocked
+
+  lite:test:apps:final:a11y:
+    desc: Axe, focus, disclosure and tab semantics
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:final:a11y
+
+  lite:test:apps:final:geometry:
+    desc: Reused desktop panel and opt-in mobile sheet interaction contract
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:final:geometry
+
+  lite:test:apps:final:visual:
+    desc: Capture and compare new baselines only after explicit owner review
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:final:visual
+
+  lite:test:apps:final:storybook:
+    desc: Build Apps final-polish Storybook states
+    cmds:
+      - npm run test:apps:final:storybook
+
+  lite:test:apps:final:performance:
+    desc: Preserve existing PR588/PR589 performance gates and sample Apps interactions
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:final:performance
+
+  lite:test:apps:final:android:
+    desc: Run the Apps-only physical Android candidate qualification without the seven-screen matrix
+    cmds:
+      - npm run test:perf:android:apps
+
+  lite:test:apps:final:android:baseline:
+    desc: Run scoped Apps-only Android baseline attribution with PR588/PR589 thresholds unchanged
+    cmds:
+      - npm run test:perf:android:apps:baseline
+
+  lite:test:apps:final:qualification:
+    desc: Deferred all-scope Apps final-polish qualification (visual references need owner approval)
+    deps: [lite:dev:scratch:prepare, lite:playwright:preflight]
+    cmds:
+      - npm run test:apps:final:qualification

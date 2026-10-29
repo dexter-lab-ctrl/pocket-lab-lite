@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: ca2915d5d4e9a504025bb36da9daaa6bbf9f1bb5304e6b784453bd148c59ae65
+source_fingerprint: e2096eb103eb63de5062c2e33260a7a4c078cbeadd6f5ed1dd6ff5744325a9f5
 schema_revision: 1
 validation_status: generated
 ---
@@ -26,13 +26,18 @@ No current environment values are read or emitted. Secret-like names are classif
 | --- | --- | --- | --- | --- | --- |
 | `CHROME_PATH` | configuration | source-defined or empty | no | component-dependent | scripts/dev/check-lighthouse.sh, scripts/docs/generate_deployment_evidence.py |
 | `EDGE_STYLES` | configuration | source-defined or empty | no | component-dependent | scripts/docs/graphviz/graphviz_renderer.py |
+| `LITE_ANDROID_APPS_BASELINE_REPETITIONS` | configuration | 3 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh |
+| `LITE_ANDROID_APPS_OUTPUT_DIR` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh |
 | `LITE_ANDROID_BASELINE_REPETITIONS` | configuration | 3 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-baseline.sh |
-| `LITE_ANDROID_CDP_URL` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/run-ui-performance-qualified.py |
+| `LITE_ANDROID_CANDIDATE_REVERSE_VERIFIED` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh |
+| `LITE_ANDROID_CDP_BRIDGE_IDENTITY_VERIFIED` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh |
+| `LITE_ANDROID_CDP_DEVICE_IDENTITY_VERIFIED` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh |
+| `LITE_ANDROID_CDP_URL` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/run-ui-performance-qualified.py |
 | `LITE_ANDROID_EXPECTED_INTERACTION_REPORTS` | configuration | 28 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-baseline.sh |
 | `LITE_ANDROID_GATE` | configuration | 0 | yes | component-dependent | scripts/dev/lite/run-gate.sh |
 | `LITE_API_DIRECT_URL` | configuration | http://127.0.0.1:8000 | yes | component-dependent | Taskfile.yml, scripts/docs/lite/generate_docs.py, scripts/test/parity/run_schemathesis.sh, scripts/test/parity/run_schemathesis_discovery.sh |
 | `LITE_APP_OPERATION_ID` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh |
-| `LITE_BASE_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, playwright.config.ts, scripts/dev/lite/run-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-candidate.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/run-ui-performance-live.sh, scripts/dev/lite/run-ui-performance-qualified.py, scripts/docs/lite/generate_docs.py |
+| `LITE_BASE_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, playwright.config.ts, scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-candidate.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/run-ui-performance-live.sh, scripts/dev/lite/run-ui-performance-qualified.py, scripts/docs/lite/generate_docs.py |
 | `LITE_DOCS_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, scripts/docs/lite/generate_docs.py |
 | `LITE_E2E_LIVE` | configuration | 0 | yes | component-dependent | scripts/dev/lite/run-gate.sh, scripts/dev/lite/run-ui-performance-live.sh, scripts/dev/lite/run-ui-performance-qualified.py, scripts/docs/lite/generate_docs.py |
 | `LITE_E2E_MODE` | configuration | source-defined or empty | yes | component-dependent | playwright.config.ts, scripts/dev/lite/run-playwright-mocked.sh, scripts/dev/lite/run-ui-performance-qualified.py, scripts/test/parity/promote_runtime_verification.py |
@@ -59,7 +64,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `LITE_PARITY_TERMUX_EVIDENCE` | configuration | source-defined or empty | yes | component-dependent | scripts/test/parity/capture_live_recovery_parity.py |
 | `LITE_PERF_COLLECT_EVIDENCE` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-qualified.py |
 | `LITE_PERF_PRESERVE_EVIDENCE` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-qualified.py |
-| `LITE_PERF_SOURCE_COMMIT` | configuration | $(git rev-parse HEAD) | yes | component-dependent | scripts/dev/lite/analyze-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-candidate.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/ui_performance_candidate_server.py |
+| `LITE_PERF_SOURCE_COMMIT` | configuration | $(git rev-parse HEAD) | yes | component-dependent | scripts/dev/lite/analyze-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-candidate.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/ui_performance_candidate_server.py |
 | `LITE_QUALIFICATION_BROWSER_BRIDGE` | configuration | source-defined or empty | yes | component-dependent | playwright.config.ts, scripts/dev/lite/run-ui-performance-qualified.py |
 | `LITE_QUALIFICATION_INTERACTION` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-qualified.py |
 | `LITE_ROLES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py |
@@ -121,8 +126,8 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_ALLOW_REMOTE_ACCESS_FAULT` | configuration | 0 | yes | component-dependent | scripts/dev/check-lite-runtime-resilience-server-phone.sh |
 | `POCKETLAB_ALLOW_SIMULATED_ZTP` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/core/control_plane_core.py |
 | `POCKETLAB_ALLOW_TAILSCALE_API` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/core/control_plane_core.py |
-| `POCKETLAB_ANDROID_CDP_BRIDGE_PORT` | configuration | 19222 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-cdp.sh |
-| `POCKETLAB_ANDROID_CDP_LOCAL_PORT` | configuration | 9222 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-cdp.sh |
+| `POCKETLAB_ANDROID_CDP_BRIDGE_PORT` | configuration | 19222 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh |
+| `POCKETLAB_ANDROID_CDP_LOCAL_PORT` | configuration | 9222 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh |
 | `POCKETLAB_ANDROID_WAKE_BEFORE_QUALIFICATION` | configuration | 0 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-candidate.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh |
 | `POCKETLAB_API_BIND` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_API_DIR` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/core/control_plane_core.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
@@ -141,7 +146,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_BLOCKED_TOKEN` | secret | not documented for secret variables | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
 | `POCKETLAB_BLOCKED_URL` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
 | `POCKETLAB_BOOTSTRAP_DRY_RUN` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh |
-| `POCKETLAB_BUILD_ID` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-candidate.sh, scripts/dev/lite/run-ui-performance-candidate.sh |
+| `POCKETLAB_BUILD_ID` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-candidate.sh, scripts/dev/lite/run-ui-performance-candidate.sh |
 | `POCKETLAB_BUILD_VERSION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py |
 | `POCKETLAB_CADDYFILE` | configuration | $CADDYFILE | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_adapters.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py, pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py, scripts/dev/lite/run-photo-backup-candidate-qualification.py, scripts/docs/runtime/termux_runtime_probe.sh |
 | `POCKETLAB_CADDY_REFRESH_NESTED` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/restart-caddy-proxy.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh |
@@ -644,7 +649,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_NODE_ROLE` | configuration | compute | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py, scripts/dev/lite/run-isolated-runtime-qualification.py, scripts/dev/lite/run-photo-backup-candidate-qualification.py |
 | `POCKETLAB_NODE_ROLES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_NODE_ROLE_GENERATION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
-| `POCKETLAB_NODE_VERSION` | configuration | 24.16.0 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/run-ui-performance-live.sh |
+| `POCKETLAB_NODE_VERSION` | configuration | 24.16.0 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/run-ui-performance-live.sh |
 | `POCKETLAB_OASDIFF_BIN` | configuration | $ROOT/.pocketlab-dev/tools/parity/bin/oasdiff | yes | component-dependent | scripts/test/parity/run_oasdiff.sh |
 | `POCKETLAB_OASDIFF_VERSION` | configuration | 1.17.0 | yes | component-dependent | scripts/dev/lite/setup-parity-tools.sh |
 | `POCKETLAB_OBSERVABILITY_PROBE_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/observability_status.py |
@@ -944,7 +949,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_TEST_NATS_SUBMIT_OPERATION` | configuration | 0 | yes | component-dependent | scripts/dev/test-nats-stack.sh |
 | `POCKETLAB_THREAT_DRAGON_DIR` | configuration | $ROOT/.pocketlab/threat-dragon | yes | component-dependent | scripts/dev/setup-threat-dragon.sh |
 | `POCKETLAB_THREAT_MODEL_DIR` | configuration | $ROOT/contracts/security | yes | component-dependent | scripts/dev/setup-threat-dragon.sh |
-| `POCKETLAB_UI_PERF_CANDIDATE` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-candidate.sh, scripts/dev/lite/run-ui-performance-candidate.sh |
+| `POCKETLAB_UI_PERF_CANDIDATE` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-candidate.sh, scripts/dev/lite/run-ui-performance-candidate.sh |
 | `POCKETLAB_WINDOWS_REPO` | configuration | path supplied by the owning component | yes | component-dependent | scripts/dev/sync-wsl-to-windows.sh |
 | `POCKETLAB_WORKER_ACCEPTED_RECOVERY_GRACE_SECONDS` | configuration | 15 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/workers/pocketlab_worker.py |
 | `POCKETLAB_WORKER_COMMAND_SUBJECT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/workers/pocketlab_worker.py |

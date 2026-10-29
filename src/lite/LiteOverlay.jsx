@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Move, Maximize2, RotateCcw } from 'lucide-react';
+import { useMobileSheetSnap } from './components/useMobileSheetSnap.js';
+import './components/mobileSheetSnap.css';
 import { animated, useSpring } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
@@ -268,12 +270,14 @@ export function LiteSheet({
   SurfaceComponent = 'section',
   variant = 'manage',
   motion = 'none',
+  mobileSnap = false,
 }) {
   const generatedId = useId();
   const titleId = labelledBy || `lite-sheet-title-${generatedId}`;
   const internalCloseRef = useRef(null);
   const closeRef = externalCloseRef || internalCloseRef;
   const internalSurfaceRef = useRef(null);
+  const mobileSheet = useMobileSheetSnap({ open, enabled: mobileSnap, surfaceRef: internalSurfaceRef });
   const layerRef = useRef(null);
   const setSurfaceRef = useCallback((node) => {
     internalSurfaceRef.current = node;
@@ -285,7 +289,7 @@ export function LiteSheet({
   // Qualification mode already disables sheet motion at the CSS/runtime
   // boundary. Keep the same semantic sheet surface, but avoid instantiating
   // the gesture-driven spring path for measured Android interactions.
-  const safeMotionEnabled = motion === 'safe-grip' && open && !isLitePerformanceMode();
+  const safeMotionEnabled = motion === 'safe-grip' && open && !isLitePerformanceMode() && !mobileSnap;
 
   useVisualViewportHeight(open);
   // The fixed qualification sheet already owns the interaction surface. Avoid
@@ -352,9 +356,9 @@ export function LiteSheet({
     },
   );
 
-  const mergedGripProps = safeMotionEnabled
-    ? { ...bindGripDrag(), ...gripProps }
-    : gripProps;
+  const mergedGripProps = mobileSheet.active
+    ? { ...mobileSheet.gripProps, ...gripProps }
+    : safeMotionEnabled ? { ...bindGripDrag(), ...gripProps } : gripProps;
 
   const AnimatedSurface = useMemo(() => animated(SurfaceComponent), [SurfaceComponent]);
   const Surface = safeMotionEnabled ? AnimatedSurface : SurfaceComponent;
@@ -366,7 +370,7 @@ export function LiteSheet({
         touchAction: 'none',
         ...surfaceStyle,
       }
-    : surfaceStyle;
+    : { ...mobileSheet.style, ...surfaceStyle };
 
   if (!open) return null;
   return (
@@ -375,13 +379,14 @@ export function LiteSheet({
         <LiteBackdrop onClose={onClose} label={variantClasses.backdropLabel} className={variantClasses.backdrop} />
         <Surface
           ref={setSurfaceRef}
-          className={`lite-overlay-surface ${variantClasses.surface} ${className}`.trim()}
+          className={`lite-overlay-surface ${variantClasses.surface} ${className} ${mobileSheet.active ? 'is-mobile-resizable' : ''}`.trim()}
           style={motionStyle}
           role="dialog"
           tabIndex={-1}
           aria-modal="true"
           aria-labelledby={titleId}
           data-lite-sheet-variant={variant}
+           data-lite-sheet-snap={mobileSheet.active ? mobileSheet.state : undefined}
           data-lite-safe-motion={safeMotionEnabled ? 'safe-grip' : 'none'}
           data-lite-perf-primitive="sheet"
           data-lite-perf-motion="compositor"
@@ -398,6 +403,10 @@ export function LiteSheet({
               {description ? <p>{description}</p> : null}
             </div>
             {headerActions}
+            {mobileSheet.active ? <div className="lite-sheet-mobile-snap-actions" role="group" aria-label="Sheet size">
+              <button type="button" onClick={mobileSheet.contract} disabled={!mobileSheet.canContract}>Compact</button>
+              <button type="button" onClick={mobileSheet.expand} disabled={!mobileSheet.canExpand}>Expand</button>
+            </div> : null}
             <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={onClose} aria-label={variantClasses.closeLabel}>
               <X className="h-4 w-4" />
             </button>
@@ -413,7 +422,7 @@ export function LiteSheet({
 
 export function LiteDetailsPanel({
   open, onClose, title = 'Details', description = '', bodyRef, bodyClassName = '',
-  children, variant = 'manage', className = '', desktopGeometry,
+  children, variant = 'manage', className = '', desktopGeometry, mobileSnap = false,
 }) {
   const { panelRef, desktopPanel, panelStyle, announcement, reset,
     startPanelInteraction, adjustPanelWithKeyboard } = desktopGeometry || {};
@@ -429,7 +438,7 @@ export function LiteDetailsPanel({
   </div> : null;
   return (
     <LiteSheet open={open} onClose={onClose} title={title} eyebrow="Action Details"
-      description={description} variant={variant} headerActions={tools}
+      description={description} variant={variant} headerActions={tools} mobileSnap={mobileSnap && !desktopPanel}
       layerClassName={`lite-details-overlay-layer ${variant === 'home' ? 'lite-home-panel-layer' : ''}`}
       className={`lite-details-panel ${className} ${desktopPanel ? 'is-movable' : ''}`.trim()}
       surfaceRef={panelRef} surfaceStyle={panelStyle}

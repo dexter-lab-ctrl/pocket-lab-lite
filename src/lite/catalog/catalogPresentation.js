@@ -24,3 +24,11 @@ export function filterCatalogApps(items, query, bucket = 'all') {
     (bucket === 'all' || catalogStateBucket(item) === bucket)
     && (!needle || [item.name, item.title, item.id, item.description].some((value) => String(value || '').toLocaleLowerCase().includes(needle))));
 }
+
+/** Display a status summary only when it adds information beyond the app description. */
+export function distinctCatalogStatusSummary(description, statusSummary) {
+  const summary = String(statusSummary || '').trim();
+  if (!summary) return '';
+  const normalize = (value) => String(value || '').trim().replace(/\s+/g, ' ').replace(/[.!?]+$/, '').toLocaleLowerCase();
+  return normalize(description) === normalize(summary) ? '' : summary;
+}

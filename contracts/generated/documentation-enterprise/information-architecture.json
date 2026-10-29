@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 514,
+  "page_count": 515,
   "page_types": [
     "overview",
     "guide",
@@ -4821,6 +4821,29 @@
       "source_or_generator": "architecture/universal-app-platform.md",
       "title": "Universal App Platform",
       "url": "/architecture/universal-app-platform/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-apps-final-visual-stabilization.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "apps",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-apps-final-visual-stabilization",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-apps-final-visual-stabilization.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-apps-final-visual-stabilization.md",
+      "title": "Azure Horizon Apps — Final Visual Stabilization (P0–P2)",
+      "url": "/development/lite-azure-horizon-apps-final-visual-stabilization/"
     },
     {
       "additional_audiences": [],
@@ -18183,7 +18206,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "72c809e8b0271cd4130b088b101f7b3f2f60a8a122c353b8c176bb18bce6d648",
+  "source_fingerprint": "74065eafad8bd9869c5c4d5e0db3d6a71eff408126772a532350266fcf1f994f",
   "top_level": [
     "start-here",
     "use",

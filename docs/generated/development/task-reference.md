@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 7fe29823135eee597cbfc107b456d177dd7bc7cacb73f2101d6ae10577cbc055
+source_fingerprint: 48b1da7b71ae882ca1b8d104ed6bc032fa6a05b5d0ece1a196ee6b14c6b735f2
 schema_revision: 1
 validation_status: generated
 ---
@@ -236,6 +236,16 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:apps:azure:qualification`
 - `lite:test:apps:azure:unit`
 - `lite:test:apps:azure:visual`
+- `lite:test:apps:final:a11y`
+- `lite:test:apps:final:android`
+- `lite:test:apps:final:android:baseline`
+- `lite:test:apps:final:geometry`
+- `lite:test:apps:final:mocked`
+- `lite:test:apps:final:performance`
+- `lite:test:apps:final:qualification`
+- `lite:test:apps:final:storybook`
+- `lite:test:apps:final:unit`
+- `lite:test:apps:final:visual`
 - `lite:test:apps:premium:a11y`
 - `lite:test:apps:premium:devices-regression`
 - `lite:test:apps:premium:geometry`
@@ -434,6 +444,18 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:apps:azure:qualification` → `lite:playwright:preflight`
 - `lite:test:apps:azure:visual` → `lite:dev:scratch:prepare`
 - `lite:test:apps:azure:visual` → `lite:playwright:preflight`
+- `lite:test:apps:final:a11y` → `lite:dev:scratch:prepare`
+- `lite:test:apps:final:a11y` → `lite:playwright:preflight`
+- `lite:test:apps:final:geometry` → `lite:dev:scratch:prepare`
+- `lite:test:apps:final:geometry` → `lite:playwright:preflight`
+- `lite:test:apps:final:mocked` → `lite:dev:scratch:prepare`
+- `lite:test:apps:final:mocked` → `lite:playwright:preflight`
+- `lite:test:apps:final:performance` → `lite:dev:scratch:prepare`
+- `lite:test:apps:final:performance` → `lite:playwright:preflight`
+- `lite:test:apps:final:qualification` → `lite:dev:scratch:prepare`
+- `lite:test:apps:final:qualification` → `lite:playwright:preflight`
+- `lite:test:apps:final:visual` → `lite:dev:scratch:prepare`
+- `lite:test:apps:final:visual` → `lite:playwright:preflight`
 - `lite:test:apps:premium:a11y` → `lite:dev:scratch:prepare`
 - `lite:test:apps:premium:a11y` → `lite:playwright:preflight`
 - `lite:test:apps:premium:devices-regression` → `lite:dev:scratch:prepare`

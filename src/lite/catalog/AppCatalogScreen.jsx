@@ -1,9 +1,10 @@
 import { LiteProtectedConfirmation } from '../components/LiteSafeForms.jsx';
 import LiteNextSteps from '../components/LiteNextSteps.jsx';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { filterCatalogApps, sortCatalogApps } from './catalogPresentation.js';
+import { distinctCatalogStatusSummary, filterCatalogApps, sortCatalogApps } from './catalogPresentation.js';
 import { LiteDetailsPanel, useFocusTrap, useFocusReturn } from '../LiteOverlay.jsx';
 import { useDesktopManageGeometry } from '../components/useDesktopManageGeometry.js';
+import { useMobileSheetSnap } from '../components/useMobileSheetSnap.js';
 import './appsPremiumRefinement.css';
 import '../components/liteSafeForms.css';
 import { createPortal } from 'react-dom';
@@ -51,7 +52,7 @@ import AppActionRow from './AppActionRow.jsx';
 import AppSummaryCard from './AppSummaryCard.jsx';
 import AppActionProgressSlot from './AppActionProgressSlot.jsx';
 import { selectPhotoBackupFacts, selectSupplementalActionNotices } from './appsOperationalView.js';
-import { LiteContextualActionCue, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteReducedMotion } from '../LiteMotion.jsx';
+import { LiteContextualActionCue, LiteFlipGroup, LiteMotionReveal, LitePressableButton, triggerLiteTactileFeedback, useLiteReducedMotion } from '../LiteMotion.jsx';
 import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 const loadAppActionDetails = () => import('./AppActionDetailsLazy.jsx');
 const AppActionDetailsLazy = React.lazy(loadAppActionDetails);
@@ -65,6 +66,9 @@ const APP_CATALOG_SOURCE_CONTRACT_MARKERS = [
   // Legacy source-contract markers retained for repository qualification.
   // Runtime selection is generic through selectAppActionsView.
   'select: selectPhotoPrismActionsView',
+  // The decorative shared cue remains a legacy contract marker; the visible
+  // Manage header intentionally omits it so the Close control stays isolated.
+  'kind="card-to-sheet"',
   'snapshotSelect: selectPhotoPrismActionsView',
   "queryKey: liteQueryKeys.appActions('photoprism')",
   // Legacy PhotoPrism copy remains a compatibility marker; visible UI is
@@ -2070,6 +2074,8 @@ function CatalogManagePortal({
   const manageSheetRef = useRef(null);
   const manageScrollRef = useRef(null);
   const { panelRef: geometryPanelRef, desktopPanel, panelStyle, announcement, reset: resetPanelGeometry, startPanelInteraction, adjustPanelWithKeyboard } = useDesktopManageGeometry({ open: manageAppOpen, defaultWidth: 620 });
+  const detailsGeometry = useDesktopManageGeometry({ open: manageAppOpen && Boolean(detailsActionId), defaultWidth: 580 });
+  const mobileSheet = useMobileSheetSnap({ open: manageAppOpen, enabled: !desktopPanel, surfaceRef: manageSheetRef });
   useFocusTrap(manageAppOpen && !detailsActionId, manageSheetRef);
   useFocusReturn(manageAppOpen, manageCloseRef);
   const [manageBodyReady, setManageBodyReady] = useState(false);
@@ -2246,11 +2252,12 @@ function CatalogManagePortal({
       />
       <section
         ref={(node) => { manageSheetRef.current = node; geometryPanelRef.current = node; }}
-        className={`lite-catalog-manage-sheet ${desktopPanel ? 'is-movable' : ''}`}
+        className={`lite-catalog-manage-sheet ${desktopPanel ? 'is-movable' : 'is-mobile-resizable'} ${!desktopPanel && mobileSheet.state === 'compact' ? 'is-compact' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label={`Manage ${app.name}`}
         data-lite-apps-manage-layout={desktopPanel ? 'desktop-movable' : 'mobile-sheet'}
+        data-lite-sheet-snap={desktopPanel ? undefined : mobileSheet.state}
         tabIndex={-1}
         style={{
           position: desktopPanel ? 'fixed' : 'relative',
@@ -2270,33 +2277,35 @@ function CatalogManagePortal({
           border: '1px solid var(--azure-border)',
           borderRadius: 'var(--azure-radius-card)',
           boxShadow: 'var(--azure-panel-shadow)',
-          ...(desktopPanel ? panelStyle : {}),
+          ...(desktopPanel ? panelStyle : mobileSheet.style),
         }}
       >
-        <button
-          type="button"
-          className="lite-catalog-manage-grip"
-          aria-label="Dismiss app actions grip"
-          onClick={closeManageSheet}
-        >
-          <span aria-hidden="true" />
-        </button>
-        {desktopPanel ? (
-          <div className="lite-catalog-manage-desktop-controls" role="group" aria-label="Desktop app panel controls">
-            <button type="button" className="lite-catalog-manage-panel-tool" aria-label="Move app management panel" title="Drag or use arrow keys to move; Shift + arrow for larger steps" onPointerDown={(event) => startPanelInteraction('move', event)} onKeyDown={(event) => adjustPanelWithKeyboard('move', event)}><Move aria-hidden="true" size={17} /></button>
-            <span>App workspace</span>
-            <button type="button" className="lite-catalog-manage-panel-tool" aria-label="Reset app panel position and size" onClick={resetPanelGeometry}><RotateCcw aria-hidden="true" size={16} />Reset</button>
-            <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
+        {!desktopPanel ? (
+          <div className="lite-catalog-manage-mobile-grip-bar">
+            <button type="button" className="lite-catalog-manage-grip" {...mobileSheet.gripProps}>
+              <span aria-hidden="true" />
+            </button>
+            <div className="lite-catalog-mobile-snap-actions" role="group" aria-label="Sheet size">
+              <button type="button" onClick={mobileSheet.contract} disabled={!mobileSheet.canContract}>Compact</button>
+              <button type="button" onClick={mobileSheet.expand} disabled={!mobileSheet.canExpand}>Expand</button>
+            </div>
           </div>
         ) : null}
         <div className="lite-catalog-manage-head">
-          {isLitePerformanceMode() ? null : <LiteSharedElementCue kind="card-to-sheet" active label={app.name} />}
           <div>
             <span>Manage</span>
             <strong>{app.name}</strong>
             <p>{app?.description || mediaSummary || 'Review available app actions and readiness.'}</p>
             <span className="lite-catalog-manage-current-state">{canonical?.statusLabel || app?.status_summary || 'Status unknown'}{savedStateOnly ? ' · Saved information' : ''}</span>
           </div>
+          {desktopPanel ? (
+            <div className="lite-catalog-manage-desktop-controls" role="group" aria-label="Desktop app panel controls">
+              <button type="button" className="lite-catalog-manage-panel-tool" aria-label="Move app management panel" title="Drag or use arrow keys to move; Home resets" onPointerDown={(event) => startPanelInteraction('move', event)} onKeyDown={(event) => adjustPanelWithKeyboard('move', event)}><Move aria-hidden="true" size={16} />Move</button>
+              <button type="button" className="lite-catalog-manage-panel-tool" aria-label="Reset app panel position and size" onClick={resetPanelGeometry}><RotateCcw aria-hidden="true" size={16} />Reset</button>
+              <button type="button" className="lite-catalog-manage-panel-tool" aria-label="Resize app management panel" title="Drag or use arrow keys to resize; Home resets" onPointerDown={(event) => startPanelInteraction('resize', event)} onKeyDown={(event) => adjustPanelWithKeyboard('resize', event)}><Maximize2 aria-hidden="true" size={16} />Resize</button>
+              <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
+            </div>
+          ) : null}
           <button ref={manageCloseRef} type="button" className="lite-catalog-manage-close" onClick={closeManageSheet} aria-label="Close app actions">
             <X className="h-4 w-4" />
           </button>
@@ -2437,15 +2446,14 @@ function CatalogManagePortal({
             </>
           ) : <div className="lite-catalog-manage-section-loading" aria-busy="true">Preparing app actions…</div>}
         </div>
-        {desktopPanel ? (
-          <button type="button" className="lite-catalog-manage-resize-grip" aria-label="Resize app management panel" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Home" title="Drag to resize; arrow keys resize and Home resets" onPointerDown={(event) => startPanelInteraction('resize', event)} onKeyDown={(event) => adjustPanelWithKeyboard('resize', event)}><Maximize2 aria-hidden="true" size={18} /></button>
-        ) : null}
-      </section>
+       </section>
       {selectedDetailsEntry ? (
         <LiteDetailsPanel
           open
           onClose={closeActionDetails}
           title={actionCopy(selectedDetailsEntry.actionId, selectedDetailsEntry.action).label}
+          desktopGeometry={detailsGeometry}
+          mobileSnap
           bodyClassName="lite-apps-premium-details-scroll"
         >
           <React.Suspense fallback={<p className="lite-app-action-details-loading" role="status">Loading details…</p>}>
@@ -3046,6 +3054,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const actionsClassName = 'lite-catalog-actions';
     const lifecycle = lifecycleProfile(app);
     const lifecycleAttention = lifecycleAttentionItems(lifecycle);
+    const appDescription = app?.description || app?.summary || 'Manage this self-hosted app from your private workspace.';
+    const statusSummary = distinctCatalogStatusSummary(appDescription, installed && lifecycle
+      ? lifecycle.summary || canonical.statusSummary || 'App status is not available.'
+      : app?.status_summary || app?.summary || 'Install to set up this app.');
     const buildManageViewModel = () => {
       const actionState = (actionId) => {
         const action = actionFromSnapshot(actionSnapshot, actionId, lifecycleAction(lifecycle, actionId));
@@ -3257,7 +3269,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <h2 title={app.name}>{app.name || app.id || 'Unnamed app'}</h2>
           </div>
         </div>
-        <p className="lite-catalog-app-description" title={app?.description || app?.summary || ''}>{app?.description || app?.summary || 'Manage this self-hosted app from your private workspace.'}</p>
+        <p className="lite-catalog-app-description" title={appDescription}>{appDescription}</p>
         {quickActionsOpen ? (
           <div className="lite-catalog-quick-actions" role="menu" aria-label={`${app.name} quick actions`}>
             <button type="button" onClick={(event) => { event.stopPropagation(); openApp(app, event); setQuickActionsAppId(null); }} disabled={!canOpen}>Open</button>
@@ -3265,10 +3277,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <button type="button" onClick={(event) => { event.stopPropagation(); setQuickActionsAppId(null); refresh(); refreshAppActions(app.id); }}>Refresh</button>
           </div>
         ) : null}
-        <p className="lite-catalog-premium-app-status" role="status">
-          {installed && lifecycle ? lifecycle.summary || canonical.statusSummary || 'App status is not available.'
-            : app?.status_summary || app?.summary || 'Install to set up this app.'}
-        </p>
+        {statusSummary ? <p className="lite-catalog-premium-app-status" role="status">{statusSummary}</p> : null}
         {installed && lifecycle ? (
           <CatalogManagePortal
             app={app}

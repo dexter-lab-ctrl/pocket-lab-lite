@@ -31082,6 +31082,26 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-azure-final-polish-visual.spec.ts",
+      "name": "tests/e2e/lite-apps-azure-final-polish-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-azure-final-polish-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-azure-final-polish.spec.ts",
+      "name": "tests/e2e/lite-apps-azure-final-polish.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-azure-final-polish.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
       "name": "tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
       "source_refs": [
@@ -35076,6 +35096,8 @@
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
+        "test:tests/e2e/lite-apps-azure-final-polish-visual.spec.ts",
+        "test:tests/e2e/lite-apps-azure-final-polish.spec.ts",
         "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
         "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
         "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
@@ -36614,6 +36636,8 @@
         "test:tests/e2e/global-setup.ts",
         "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
+        "test:tests/e2e/lite-apps-azure-final-polish-visual.spec.ts",
+        "test:tests/e2e/lite-apps-azure-final-polish.spec.ts",
         "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
         "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
         "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
@@ -53489,6 +53513,22 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-apps-azure-final-polish-visual.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-apps-azure-final-polish.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts": [
         {
           "source": "component:photoprism",
@@ -60936,6 +60976,14 @@
         },
         {
           "target": "test:tests/e2e/lite-accessibility-states.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-apps-azure-final-polish-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-apps-azure-final-polish.spec.ts",
           "type": "verified_by"
         },
         {
@@ -69068,6 +69116,10 @@
         },
         {
           "target": "test:tests/docs/test_supply_chain_runner_hardening.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-apps-azure-final-polish-visual.spec.ts",
           "type": "verified_by"
         },
         {
@@ -93530,6 +93582,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-apps-azure-final-polish.spec.ts"
+      ],
+      "id": "rel:87e5d6512cce5595",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-apps-azure-final-polish.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:87f45fa6f490d9f4",
@@ -95211,6 +95272,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-apps-azure-final-polish-visual.spec.ts"
+      ],
+      "id": "rel:93f9da3c7927bedd",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-apps-azure-final-polish-visual.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:93fdc7d8f584114a",
@@ -95410,6 +95480,15 @@
       "id": "rel:956fa21b13ae5b93",
       "source": "api:post:/api/lite/apps/{app_id}/actions/{action_id}",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-apps-azure-final-polish-visual.spec.ts"
+      ],
+      "id": "rel:9580f5192289326a",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-apps-azure-final-polish-visual.spec.ts",
       "type": "verified_by"
     },
     {
@@ -110554,9 +110633,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "bd2c94b8c42690acb0a303567e6a732d6e72fc4414abd2f257130733dca47a11",
+  "source_fingerprint": "3dd28654c0bdf5d4a2f5b51f46768892f64efd254e4a90be367ecb98505145a8",
   "statistics": {
-    "entity_count": 1456,
+    "entity_count": 1458,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -110573,14 +110652,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 308,
+      "test": 310,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4101,
-    "source_count": 345
+    "relation_count": 4104,
+    "source_count": 347
   }
 }
