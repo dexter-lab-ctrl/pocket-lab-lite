@@ -471,3 +471,42 @@ export const BalancedDensityWrappedStatus = createLiteStory('catalog','app-media
   theme:'daylight',viewport:'mobile390',status:'unvalidated',
   notes:'Review multi-line readiness, badges, and disabled-action guidance.',
 });
+
+
+/* Azure Horizon Native App Library P0–P2: source-authored Storybook candidates.
+   Not executed or visually approved in this implementation session. */
+export const NativeLibrarySingleDaylight = createLiteStory('catalog','catalog-ready',{theme:'daylight',viewport:'mobile390',status:'unvalidated'});
+export const NativeLibrarySingleDark = createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'mobile390',status:'unvalidated'});
+export const NativeLibraryMultiDesktop = createLiteStory('catalog','catalog-multi-app',{theme:'daylight',viewport:'desktop',status:'unvalidated'});
+export const NativeLibraryMultiDark = createLiteStory('catalog','catalog-multi-app',{theme:'dark',viewport:'desktop',status:'unvalidated'});
+export const NativeLibrarySystem = createLiteStory('catalog','catalog-ready',{theme:'system',viewport:'desktop',status:'unvalidated'});
+export const NativeLibraryEmpty = createLiteStory('catalog','catalog-empty',{theme:'daylight',viewport:'mobile390',status:'unvalidated'});
+export const NativeLibraryOffline = createLiteStory('catalog','offline-saved',{theme:'dark',viewport:'mobile390',status:'unvalidated'});
+export const NativeLibraryNeedsAttention = createLiteStory('catalog','app-route-not-ready',{theme:'dark',viewport:'mobile390',status:'unvalidated'});
+export const NativeLibraryLongText = createLiteStory('catalog','catalog-multi-app',{theme:'dark',viewport:'mobile360',textScale:2,status:'unvalidated'});
+export const NativeManageOverview = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'daylight',viewport:'desktop',status:'unvalidated'}),
+  play: async({canvasElement}) => {
+    await openManage(canvasElement);
+    const dialog=await within(canvasElement.ownerDocument.body).findByRole('dialog',{name:/Manage PhotoPrism/i});
+    await expect(within(dialog).getByRole('region',{name:'App overview'})).toBeVisible();
+  }
+};
+export const NativeManageActivity = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'desktop',status:'unvalidated'}),
+  play: async({canvasElement}) => {
+    await openManage(canvasElement);
+    const dialog=await within(canvasElement.ownerDocument.body).findByRole('dialog',{name:/Manage PhotoPrism/i});
+    await userEvent.click(within(dialog).getByRole('tab',{name:'Activity'}));
+    await expect(within(dialog).getByRole('region',{name:'Recent app activity'})).toBeVisible();
+  }
+};
+export const NativeManagePhotosWorkflow = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'daylight',viewport:'mobile390',status:'unvalidated'}),
+  play: async({canvasElement}) => {
+    await openManage(canvasElement);
+    const dialog=await within(canvasElement.ownerDocument.body).findByRole('dialog',{name:/Manage PhotoPrism/i});
+    await userEvent.click(within(dialog).getByRole('tab',{name:'Photos'}));
+    await expect(within(dialog).getByRole('region',{name:'Photo workflow'})).toBeVisible();
+  }
+};

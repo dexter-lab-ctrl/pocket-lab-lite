@@ -335,6 +335,7 @@ def test_lite_catalog_worker_subject_registered():
 def test_lite_catalog_ui_is_https_aware_and_server_owned():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
+    catalog_css = Path("src/lite/catalog/appsPremiumRefinement.css").read_text()
 
     assert "PhotoPrism" in ui
     assert "Secure access ready" in ui
@@ -347,12 +348,13 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "lite-catalog-drawer" not in ui
     assert "lite-catalog-drawer" not in css
     assert "LiteDetailsPanel" in _lite_catalog_source()
-    assert "lite-catalog-premium-app-status" in ui
+    assert "lite-app-library-identity" in ui
+    assert "lite-app-library-actions" in ui
     assert "installed_running" in ui
     assert "Ready to open" not in css
     assert ">Ready<" in ui or "'Ready'" in ui
     assert "Open full screen" in ui
-    assert "lite-home-pill lite-catalog-hero-pill is-secure" in ui
+    assert "lite-app-library-heading" in ui
     assert "Remove app" in _lite_catalog_source()
     assert "Confirm remove" in _lite_catalog_source()
     assert "lite-catalog-access-card" in css
@@ -360,14 +362,14 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "Clock3" not in _lite_catalog_screen_source()
     assert "lite-catalog-status-badge" in ui
     assert "lite-catalog-trust-marker" not in ui
-    assert "Self-hosted app" not in ui
-    assert "/assets/apps/photoprism.svg" in ui
+    assert "lite-app-library-discover-reason" in ui
+    assert "trustedCatalogIconPath" in ui
     assert Path("public/assets/apps/photoprism.svg").exists()
-    assert "lite-catalog-hero-actions" in ui
-    assert "lite-catalog-hero-actions" in css
-    assert "lite-catalog-attention-reason" in ui
+    assert "lite-app-library-actions" in ui
+    assert "lite-app-library-actions" in catalog_css
+    assert "lite-app-library-attention" in ui
     assert "Open is not ready yet. Pocket Lab is still checking the app route." in ui
-    assert "No apps installed yet" in ui
+    assert "Your app library is empty" in ui
     assert "lite-catalog-empty-state" in ui
     assert "lite-catalog-actions" in css
     assert "has-phone-install" not in ui
@@ -2451,7 +2453,7 @@ def test_lite_unified_lifecycle_ui_source_is_present():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
     assert "apps/lifecycle" in Path("src/lib/liteApi.js").read_text()
-    assert "lite-catalog-premium-app-status" in ui
+    assert "lite-app-library-identity" in ui
     assert "lite-catalog-manage-layer" in ui
     assert "lite-catalog-manage-backdrop" in ui
     assert "lite-catalog-manage-sheet" in ui
@@ -2463,7 +2465,7 @@ def test_lite_unified_lifecycle_ui_source_is_present():
     assert "Media not connected" in ui
     assert "Protected app" in ui
     assert "Backup ready" in ui
-    assert "Runs on Server Phone" in ui
+    assert "hostLabel" in ui
     assert "Needs attention" in ui
     assert "Unified App Lifecycle" not in ui
     assert "lite-catalog-search-wrap" not in ui
@@ -2956,7 +2958,7 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "setManageAppId" not in ui
     assert "updateLiteCatalogVisualViewportVar" in ui
     assert "visualViewport" in ui
-    assert "lite-catalog-premium-app-status" in ui
+    assert "lite-app-library-identity" in ui
     assert "lite-app-action-row" in ui
     assert "@use-gesture/react" in ui
     assert "@react-spring/web" in ui
@@ -2994,11 +2996,11 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "lite-catalog-gesture-layer" in ui
     assert "useSpring" in ui
     assert "useDrag" in ui
-    assert "lite-catalog-quick-actions" in ui
+    assert "lite-catalog-manage-quick-actions" in ui
     assert "lite-catalog-manage-section-tabs" in ui
     assert "lite-catalog-manage-section-viewport" in ui
     assert "lite-catalog-pull-refresh" in css
-    assert "lite-catalog-quick-actions" in css
+    assert "lite-catalog-manage-quick-actions" in css
     assert "lite-catalog-manage-section-tabs" in css
     assert "lite-catalog-manage-section-viewport" in css
     assert "child_process" not in ui
@@ -4106,7 +4108,8 @@ def test_lite_app_catalog_phase5_unified_action_ui_source():
         "LiteActionProgress",
         "lite-catalog-action-groups",
         "lite-catalog-manage-sheet",
-        "lite-catalog-premium-app-status",
+        "lite-app-library-identity",
+        "lite-app-library-actions",
         "Details",
         "No update was applied",
     ):
@@ -5502,7 +5505,7 @@ def test_lite_app_catalog_phase_s1_preserves_click_ownership_source():
     assert "APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY" in catalog
     assert "onClick={onClick}" in action_row
     assert "openApp(app, event)" in catalog
-    assert "onClick={(event) => { stopGestureEvent(event); openManageSheet(app); }}" in catalog
+    assert "onClick={(event) => { stopGestureEvent(event); openManageSheet(app, 'overview'); }}" in catalog
     assert "onPointerDownCapture" not in action_row
     assert "onClickCapture" not in action_row
 
@@ -5902,7 +5905,7 @@ def test_lite_app_catalog_s3_no_manual_polling_regression():
     assert "manual refresh intervals" in catalog
     assert "refreshAppActions('photoprism');\n    }, 120)" not in catalog
     assert "refetchInterval" not in catalog or "useLiteQuery" in catalog
-    assert "onClick={(event) => { stopGestureEvent(event); openManageSheet(app); }}" in catalog
+    assert "onClick={(event) => { stopGestureEvent(event); openManageSheet(app, 'overview'); }}" in catalog
     assert "onClickCapture" not in catalog
     assert "onPointerDownCapture" not in catalog
 
@@ -8120,7 +8123,7 @@ def test_lite_n2_render_containment_is_targeted_and_overlay_safe():
     assert "contain: layout style" in css
     assert ".lite-render-containment:focus-within" in css
     assert "lite-devices-grid lite-devices-linked-grid lite-render-containment" in devices
-    assert "lite-catalog-grid lite-render-containment" in catalog
+    assert "lite-catalog-grid lite-app-library-grid lite-render-containment" in catalog
     assert "lite-security-s7-profile-cards lite-render-containment" in security
     assert "lite-recovery-premium-screen lite-render-containment lite-render-containment--recovery" in recovery
     for unsafe_class in [

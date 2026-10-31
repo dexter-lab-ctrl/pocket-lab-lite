@@ -13,11 +13,12 @@ for (const width of [390,1280]) {
       await page.goto('/?screen=catalog');
       await waitForLiteScreenToSettle(page,'catalog');
       const firstPaint=Date.now()-started;
-      const search=page.getByRole('searchbox',{name:'Search apps'});
-      const filterStarted=Date.now();
-      await search.fill('Photo');
-      await expect(page.locator('.lite-catalog-app-card').first()).toBeVisible();
-      const filterDuration=Date.now()-filterStarted;
+      // Native library hides search until it is useful (8+ installed apps).
+      // Sample first-card readiness instead; PR #588 remains the hard performance gate.
+      const libraryAt=Date.now();
+      const card=page.locator('[data-app-library-card]').first();
+      await expect(card).toBeVisible();
+      const libraryDuration=Date.now()-libraryAt;
       const managedAt=Date.now();
       await page.locator('.lite-catalog-app-card').getByRole('button',{name:'Manage'}).first().click();
       const dialog=page.getByRole('dialog',{name:/Manage PhotoPrism/i});
@@ -28,7 +29,7 @@ for (const width of [390,1280]) {
         await control.focus();
         await page.keyboard.press('ArrowLeft');
       }
-      const result={firstPaint,filterDuration,manageDuration};
+      const result={firstPaint,libraryDuration,manageDuration};
       expect(Object.values(result).every(n=>Number.isFinite(n)&&n>=0)).toBe(true);
       test.info().annotations.push({type:'azure-apps-performance-sample',description:JSON.stringify(result)});
     });

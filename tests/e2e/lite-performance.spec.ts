@@ -184,15 +184,22 @@ test('[interaction] Apps Manage section and action details stay inside the rende
   await page.getByRole('button', { name: /^Manage$/i }).first().click();
   const sheet = page.getByRole('dialog', { name: /Manage PhotoPrism/i });
   await expect(sheet).toBeVisible();
+  await sheet.getByRole('tab', { name: 'Photos', exact: true }).click();
   await expect(sheet.getByRole('region', { name: 'Photo workflow' })).toBeVisible();
+  // Mobile presents one category at a time. Return to the category chooser
+  // before measuring the Recovery switch; desktop keeps the tablist visible.
+  const allSettings = sheet.getByRole('button', { name: /All settings/ });
+  if (await allSettings.count()) await allSettings.click();
 
   const sectionReport = await measureLiteInteraction(
     page,
     testInfo,
     interactionId('section-switch', 'catalog-manage-recovery'),
     async () => {
-      await sheet.getByRole('tab', { name: 'Recovery', exact: true }).click();
-      await expect(sheet.getByRole('tab', { name: 'Recovery', exact: true })).toHaveAttribute('aria-selected', 'true');
+      const recoveryTab = sheet.getByRole('tab', { name: 'Recovery', exact: true });
+      await recoveryTab.click();
+      if (await recoveryTab.count()) await expect(recoveryTab).toHaveAttribute('aria-selected', 'true');
+      await expect(sheet.locator('[data-app-manage-section="recovery"]')).toBeVisible();
     },
     {
       settleMs: 480,

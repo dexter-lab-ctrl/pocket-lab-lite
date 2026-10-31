@@ -24,8 +24,8 @@ for (const width of [320,360,375,390,430,768,1024,1440]) {
       await page.emulateMedia({reducedMotion:'reduce'});
       await openApps(page,appearance);
       await expect(page.locator('html')).toHaveAttribute('data-lite-theme',appearance);
-      await expect(page.getByRole('heading',{name:'Your Apps'})).toBeVisible();
-      await expect(page.getByRole('searchbox',{name:'Search apps'})).toBeVisible();
+      await expect(page.getByRole('heading',{name:'Your library', exact:true})).toBeVisible();
+      await expect(page.getByText(/installed$/).first()).toBeVisible();
       const {dialog} = await manageApp(page);
       await expect(dialog).toHaveAttribute('data-lite-apps-manage-layout',width>=701?'desktop-movable':'mobile-sheet');
       if (width<701) await expect(dialog.getByRole('button',{name:'Resize app management panel'})).toHaveCount(0);
@@ -39,19 +39,15 @@ for (const width of [320,360,375,390,430,768,1024,1440]) {
     });
   }
 }
-test('search and real projection-backed status counts remain keyboard-operable',async({page})=>{
-  await openApps(page,'light','catalog-multi-app');
-  const search=page.getByRole('searchbox',{name:'Search apps'});
-  await search.fill('Example');
-  await expect(page.locator('.lite-catalog-app-card')).toHaveCount(1);
-  await page.getByRole('button',{name:'Clear app search'}).click();
-  await expect(search).toHaveValue('');
-  await page.getByRole('button',{name:/All \d+/}).click();
-  await expect(page.locator('.lite-catalog-app-card').first()).toBeVisible();
-  await search.fill('missing-test-app');
-  await expect(page.getByText('No matching apps')).toBeVisible();
-  await page.getByRole('button',{name:'Show all apps'}).click();
-  await expect(search).toHaveValue('');
+test('small libraries keep discovery and backend status counts keyboard-operable',async({page})=>{
+  await openApps(page,'light','catalog-install-available');
+  await expect(page.getByRole('heading',{name:'Your library', exact:true})).toBeVisible();
+  await expect(page.getByText('0 installed',{exact:true})).toBeVisible();
+  const discovery=page.getByRole('button',{name:/Discover apps/});
+  await expect(discovery).toBeEnabled();
+  await discovery.click();
+  await expect(page.getByRole('button',{name:'Install',exact:true})).toBeVisible();
+  await expect(page.getByRole('searchbox',{name:'Find an installed app'})).toHaveCount(0);
 });
 test('System appearance follows OS changes while Apps Manage remains open',async({page})=>{
   await page.setViewportSize({width:1280,height:800});

@@ -15267,6 +15267,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-native-library.spec.ts",
+      "name": "tests/e2e/lite-apps-native-library.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-native-library.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
       "name": "tests/e2e/lite-apps-premium-refinement.spec.ts",
       "source_refs": [
@@ -26721,6 +26732,20 @@
       "source": "domain:identity",
       "target": "reason:passkey_already_registered",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-apps-native-library.spec.ts"
+      ],
+      "id": "rel:28b153157a80c6be",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-apps-native-library.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -62002,6 +62027,20 @@
       "source": "domain:control_plane",
       "target": "table:owner_operation_client_pairings",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-apps-native-library.spec.ts"
+      ],
+      "id": "rel:c7d2316d3acb867a",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-apps-native-library.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {

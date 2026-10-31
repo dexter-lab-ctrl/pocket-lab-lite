@@ -770,6 +770,9 @@ export function selectCatalogSummaryView(payload = {}) {
     access: isObject(payload?.access) ? copySafeKeys(payload.access, ['https_ready', 'route_ready', 'open', 'message', 'updated_at']) : {},
     updated_at: payload?.updated_at || payload?.checked_at || null,
     checked_at: payload?.checked_at || payload?.updated_at || null,
+    ...(payload?.read_degraded === true ? { read_degraded: true } : {}),
+    ...(payload?.degraded_reason ? { degraded_reason: safeString(payload.degraded_reason) } : {}),
+    ...(payload?.data_source ? { data_source: safeString(payload.data_source) } : {}),
   };
   return withSnapshotMeta(payload, output);
 }
