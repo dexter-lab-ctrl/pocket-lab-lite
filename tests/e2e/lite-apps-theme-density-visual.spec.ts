@@ -59,7 +59,7 @@ for (const theme of ['light', 'dark'] as const) {
     );
     await panel.getByRole('region', { name: 'Photo workflow' })
       .getByRole('button', { name: 'View details' }).click();
-    const nested = page.locator('.lite-details-overlay-layer .lite-app-premium-details');
+    const nested = page.locator('.lite-details-overlay-layer .lite-details-panel');
     await expect(nested).toBeVisible();
     await expect(nested).toHaveScreenshot(
       'apps-density-' + theme + '-nested-details.png', { animations: 'disabled' },

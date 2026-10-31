@@ -10,6 +10,7 @@ async function setup(page:Page, theme:'light'|'dark', width:number, scenario='ca
   await installScenario(page,scenario);
   await page.goto('/?screen=catalog');
   await waitForLiteScreenToSettle(page,'catalog');
+  await page.evaluate(() => document.fonts.ready);
 }
 async function manage(page:Page) {
   await page.locator('.lite-catalog-app-card').getByRole('button',{name:'Manage',exact:true}).first().click();
