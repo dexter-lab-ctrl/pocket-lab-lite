@@ -2340,11 +2340,12 @@ function CatalogManagePortal({
                   ].filter(Boolean).join(' ')}
                 />
               ) : null}
+              <div className="lite-app-manage-workspace">
               {availableManageSections.length ? <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections" onKeyDown={(event) => {
                 const order = MANAGE_SECTION_ORDER.filter((id) => availableManageSections.includes(id));
                 const current = order.indexOf(activeManageSection);
-                const target = event.key === 'ArrowRight' ? (current + 1) % order.length
-                  : event.key === 'ArrowLeft' ? (current - 1 + order.length) % order.length
+                const target = ['ArrowRight', 'ArrowDown'].includes(event.key) ? (current + 1) % order.length
+                  : ['ArrowLeft', 'ArrowUp'].includes(event.key) ? (current - 1 + order.length) % order.length
                     : event.key === 'Home' ? 0 : event.key === 'End' ? order.length - 1 : -1;
                 if (target < 0) return;
                 event.preventDefault();
@@ -2366,11 +2367,30 @@ function CatalogManagePortal({
                 ))}
               </div> : null}
               {availableManageSections.length ? <div className="lite-catalog-manage-section-viewport" role="tabpanel" id="lite-catalog-manage-active-panel" aria-labelledby={`lite-catalog-manage-tab-${activeManageSection}`} tabIndex={0}>
-                <div className="lite-catalog-manage-section-hint" aria-live="polite">
+                {activeManageSection !== "overview" && activeManageSection !== "activity" ? <div className="lite-catalog-manage-section-hint" aria-live="polite">
                   <strong>{MANAGE_SECTION_LABELS[activeManageSection] || 'Manage'}</strong>
-                  <span>{MANAGE_SECTION_SUMMARY[activeManageSection] || 'Swipe left or right to switch sections.'}</span>
-                </div>
-                <div className="lite-catalog-action-groups">
+                  <span>{MANAGE_SECTION_SUMMARY[activeManageSection] || 'Review the available actions.'}</span>
+                </div> : null}
+                {activeManageSection === 'overview' ? (
+                  <section className="lite-app-manage-overview" aria-label="App overview">
+                    <div className="lite-app-manage-overview-identity"><div className="lite-catalog-icon"><AppIcon app={app} /></div><div><h2>{app.name || app.id}</h2><p>{savedStateOnly || !backendReachable ? 'Saved app status' : canonical?.statusLabel || 'Status not reported'}</p></div></div>
+                    <dl className="lite-app-manage-overview-facts">
+                      <div><dt>App status</dt><dd>{savedStateOnly || !backendReachable ? 'Saved information' : canonical?.statusLabel || 'Not reported'}</dd></div>
+                      {hostLabel && hostLabel !== 'Host not reported' ? <div><dt>Host</dt><dd>{hostLabel}</dd></div> : null}
+                      {appSupports(app, 'media_sources') && lifecycle?.storage?.mapping_count !== undefined ? <div><dt>Photos</dt><dd>{Number(lifecycle.storage.mapping_count) > 0 ? 'Connected' : 'Not connected'}</dd></div> : null}
+                      {lifecycle?.security?.status ? <div><dt>Safety</dt><dd>{savedStateOnly ? 'Saved information' : lifecycle.security.summary || lifecycle.security.status}</dd></div> : null}
+                      {lifecycle?.backup?.status ? <div><dt>Backup readiness</dt><dd>{lifecycle.backup.summary || lifecycle.backup.status}</dd></div> : null}
+                    </dl>
+                    <p className="lite-app-manage-overview-note">Choose a category to see available actions. Pocket Lab confirms changes through the backend.</p>
+                  </section>
+                ) : null}
+                {activeManageSection === 'activity' ? (
+                  <section className="lite-app-manage-activity" aria-label="Recent app activity">
+                    <h2>Recent activity</h2>
+                    {activityEntries.length ? <ul>{activityEntries.map((entry) => <li key={entry.actionId}><strong>{actionCopy(entry.actionId, entry.action).label}</strong><span>{entry.result?.summary || entry.action?.result?.summary || entry.action?.last_result || entry.action?.status || 'Latest result recorded'}</span><button type="button" onClick={actionDetailHandlers.get(entry.actionId)}>Details</button></li>)}</ul> : <p>No completed app actions are reported yet.</p>}
+                  </section>
+                ) : null}
+                {activeManageSection !== "overview" && activeManageSection !== "activity" ? <div className="lite-catalog-action-groups">
                   {activeAppActionGroups.map((group) => (
                     <AppActionGroup key={group.id} group={group} actionIds={group.actions.map((entry) => entry.actionId)}>
                         {group.actions.map((entry) => (
@@ -2378,7 +2398,7 @@ function CatalogManagePortal({
                             <PhotoPrismActionTile
                               app={app}
                               actionId={entry.actionId}
-                              action={entry.action}
+                              action={savedStateOnly || !backendReachable ? { ...entry.action, enabled: false, disabled_reason: 'Saved information — reconnect to manage this app.' } : entry.action}
                               busyKey={entry.busyKey || actionBusyKey}
                               progress={entry.progress}
                               result={entry.result}
@@ -2386,8 +2406,8 @@ function CatalogManagePortal({
                               onClick={entry.onClick}
                               onViewDetails={actionDetailHandlers.get(entry.actionId)}
                               detailsExpanded={detailsActionId === entry.actionId}
-                              disabled={entry.disabled}
-                              title={entry.title}
+                              disabled={entry.disabled || savedStateOnly || !backendReachable}
+                              title={savedStateOnly || !backendReachable ? 'Reconnect to make changes.' : entry.title}
                             />
                             {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? <PhoneStorageConnectedFolders app={app} preview={storagePreviewApp?.id === app.id ? storagePreview : null} /> : null}
                             {entry.actionId === 'connect_photos' && !isPhoneStorageConnected && storagePreviewApp?.id === app.id ? (
@@ -2410,8 +2430,9 @@ function CatalogManagePortal({
                         ))}
                     </AppActionGroup>
                   ))}
-                </div>
+                </div> : null}
               </div> : null}
+              </div>
               {manageExtrasReady && isPhotoPrismApp(app) ? (
                 <>
                   {selectSupplementalActionNotices(appActionEntries, activeAppActionGroups.flatMap((group) => group.actions.map((entry) => entry.actionId))).length ? (
