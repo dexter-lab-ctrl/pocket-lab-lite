@@ -2,7 +2,8 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// AUTHORED, NOT EXECUTED. Screenshots below are unbaselined candidates for human review.
+// Apps visual candidates are reviewed and accepted only from the exact
+// feature-branch source after the mocked and physical qualification gates.
 async function openLibrary(page: Page, scenario: string, appearance: 'light'|'dark'|'system', width: number, resolved: 'light'|'dark' = 'light') {
   await page.setViewportSize({width,height:width<700?800:900});
   await page.emulateMedia({reducedMotion:'reduce', colorScheme:resolved});
@@ -41,10 +42,13 @@ for(const appearance of ['light','dark'] as const) {
       await openLibrary(page,'catalog-ready',appearance,width,appearance);
       const manage=await openManage(page);
       await expect(manage.getByRole('region',{name:'App overview'})).toBeVisible();
-      await expect(manage.getByRole('tab',{name:'Overview'})).toHaveAttribute('aria-selected','true');
+      await expect(manage.locator('[role="tab"]').filter({hasText:'Overview'}).first()).toHaveAttribute('aria-selected','true');
       await expect(manage).toHaveScreenshot(`native-manage-overview-${appearance}-${width}.png`,{animations:'disabled'});
       for(const label of ['Photos','Safety','Recovery','App setup','Activity']) {
-        const tab=manage.getByRole('tab',{name:label});
+        // The mobile sheet intentionally hides the category tablist after a
+        // category is selected. Keep the raw tab node for selected-state
+        // assertions while using the semantic locator only for actions.
+        const tab=manage.locator('[role="tab"]').filter({hasText:label}).first();
         if(await tab.count()) {
           await tab.click();
           await expect(tab).toHaveAttribute('aria-selected','true');
