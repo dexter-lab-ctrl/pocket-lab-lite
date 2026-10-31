@@ -57,10 +57,12 @@ export function trustedCatalogIconPath(app = {}) {
 
 /** Claims reflect current projection. Saved snapshots never assert live availability. */
 export function catalogLibraryIdentity(app = {}, canonical = {}, saved = false) {
+  const phase = catalogStateBucket(app);
   const status = saved ? 'Saved status'
-    : canonical.degraded || canonical.stopped ? 'Needs attention'
-      : canonical.running ? 'Running'
-        : canonical.installed ? 'Installed' : 'Not installed';
+    : canonical.degraded || canonical.stopped || phase === 'attention' ? 'Needs attention'
+      : phase === 'working' ? 'Installing / working'
+        : canonical.running ? 'Running'
+          : canonical.installed ? 'Installed' : 'Not installed';
   const host = app.lifecycle?.host_device?.label || app.host_device_name || app.target?.host_label || '';
   const safety = !saved && app.lifecycle?.security?.status === 'protected' ? 'Protected' : '';
   return {
