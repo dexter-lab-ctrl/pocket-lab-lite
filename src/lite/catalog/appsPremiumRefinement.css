@@ -1003,6 +1003,18 @@ html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer 
   }
 }
 
+/* The physical Apps qualifier enables the source-owned performance mode
+   without changing the normal product motion contract. Keep CSS transitions
+   out of measured sheet and details interactions just as the runtime motion
+   primitives are already disabled in that mode. */
+.lite-catalog-manage-layer[data-lite-perf-mode="true"] .lite-catalog-manage-sheet,
+.lite-catalog-manage-layer[data-lite-perf-mode="true"] .lite-catalog-manage-sheet *,
+.lite-details-overlay-layer[data-lite-perf-mode="true"] .lite-details-panel,
+.lite-details-overlay-layer[data-lite-perf-mode="true"] .lite-details-panel * {
+  transition: none !important;
+  animation: none !important;
+}
+
 /* Post-release visual and geometry hardening.
    Keep this contract scoped to Apps Manage and the nested Action Details
    portal. It normalizes the structure shared by Black, Daylight and System
