@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 515,
+  "page_count": 516,
   "page_types": [
     "overview",
     "guide",
@@ -4890,6 +4890,29 @@
       "source_or_generator": "development/lite-azure-horizon-apps-refinement.md",
       "title": "Azure Horizon Apps — implementation and deferred qualification",
       "url": "/development/lite-azure-horizon-apps-refinement/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-apps-theme-layout-parity.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "apps",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-apps-theme-layout-parity",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-apps-theme-layout-parity.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-apps-theme-layout-parity.md",
+      "title": "Azure Horizon Apps — Light / Dark Layout and Density Parity",
+      "url": "/development/lite-azure-horizon-apps-theme-layout-parity/"
     },
     {
       "additional_audiences": [],
@@ -18206,7 +18229,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "74065eafad8bd9869c5c4d5e0db3d6a71eff408126772a532350266fcf1f994f",
+  "source_fingerprint": "141905bb468df76af4a3ad6c01482e7e1683b71d68d5e7782e2760c47b1b57ea",
   "top_level": [
     "start-here",
     "use",

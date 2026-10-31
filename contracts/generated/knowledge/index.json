@@ -31142,6 +31142,26 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-theme-density-parity.spec.ts",
+      "name": "tests/e2e/lite-apps-theme-density-parity.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-theme-density-parity.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-theme-density-visual.spec.ts",
+      "name": "tests/e2e/lite-apps-theme-density-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-theme-density-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
       "name": "tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
       "source_refs": [
@@ -35102,6 +35122,8 @@
         "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
         "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
         "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
+        "test:tests/e2e/lite-apps-theme-density-parity.spec.ts",
+        "test:tests/e2e/lite-apps-theme-density-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps.spec.ts",
@@ -36642,6 +36664,8 @@
         "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
         "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
         "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
+        "test:tests/e2e/lite-apps-theme-density-parity.spec.ts",
+        "test:tests/e2e/lite-apps-theme-density-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-apps.spec.ts",
@@ -53557,6 +53581,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-apps-theme-density-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts": [
         {
           "source": "component:photoprism",
@@ -69124,6 +69154,10 @@
         },
         {
           "target": "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-apps-theme-density-visual.spec.ts",
           "type": "verified_by"
         },
         {
@@ -84969,6 +85003,15 @@
       "source": "api:get:/api/lite/fleet",
       "target": "table:device_health_transitions",
       "type": "reads"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-apps-theme-density-visual.spec.ts"
+      ],
+      "id": "rel:4b51cb7c7ef5b192",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-apps-theme-density-visual.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -110633,9 +110676,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "9a0e72e87c3d8974bcc0f5582b8e3844dc8d4276f62b3cef5b87f3ac97228713",
+  "source_fingerprint": "513f206e41df27cd18401304463255a346b5cd19cb17920f88d8248e731d76f1",
   "statistics": {
-    "entity_count": 1458,
+    "entity_count": 1460,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -110652,14 +110695,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 310,
+      "test": 312,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4104,
-    "source_count": 347
+    "relation_count": 4105,
+    "source_count": 349
   }
 }
