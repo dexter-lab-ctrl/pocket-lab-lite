@@ -81,7 +81,9 @@ test.describe('Apps Azure Horizon final polish — authored, not executed',()=>{
       expect(status.filter(text=>text.trim()===description)).toHaveLength(0);
     });
     test(theme+': tablist and disclosures retain semantics',async({page})=>{
-      await showApps(page,'catalog-ready',theme,390);
+      // Desktop keeps the full category tablist visible while mobile uses the
+      // explicit "All settings" back control inside a selected category.
+      await showApps(page,'catalog-ready',theme,1280);
       const dialog=await openManage(page);
       const tabs=dialog.getByRole('tab');
       await expect(tabs.first()).toHaveAttribute('aria-selected','true');
@@ -117,6 +119,11 @@ test.describe('Apps Azure Horizon final polish — authored, not executed',()=>{
     test(theme+': Axe evaluates Manage and nested Action Details',async({page})=>{
       await showApps(page,'catalog-ready',theme,390);
       const dialog=await openManage(page);
+      const photosTab=dialog.getByRole('tab',{name:'Photos'});
+      if(await photosTab.count()) {
+        await photosTab.click();
+        await expect(dialog.getByRole('region',{name:'Photo workflow'})).toBeVisible();
+      }
       const initial=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
       expect(initial.violations).toEqual([]);
       const detailsButton=dialog.getByRole('region',{name:'Photo workflow'}).getByRole('button',{name:'View details'});
@@ -183,6 +190,7 @@ test.describe('Apps Azure Horizon final polish — authored, not executed',()=>{
     await dialog.getByRole('button',{name:'Resize app management panel'}).focus();
     await page.keyboard.press('ArrowDown');
     await dialog.getByRole('button',{name:'Reset app panel position and size'}).click();
+    await dialog.getByRole('tab',{name:'Photos'}).click();
     await dialog.getByRole('region',{name:'Photo workflow'}).getByRole('button',{name:'View details'}).click();
     const nested=page.locator('.lite-details-overlay-layer .lite-details-panel');
     await expect(nested).toBeVisible();
@@ -199,6 +207,7 @@ test.describe('Apps Azure Horizon final polish — authored, not executed',()=>{
       if(scenario==='catalog-multi-app') await expect(page.getByRole('heading',{name:'Example App'})).toBeVisible();
       if(scenario.startsWith('photo-backup')){
         const panel=await openManage(page);
+        await panel.getByRole('tab',{name:'Photos'}).click();
         const backup=panel.getByRole('region',{name:'Photo backup'});
         await expect(backup).toContainText(/app-record backups are separate/i);
       }

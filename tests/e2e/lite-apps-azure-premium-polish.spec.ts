@@ -42,7 +42,7 @@ test.describe('Azure Apps premium theme and responsive contracts — validated m
       test(`${theme} ${width}px: catalog and Manage stay within bounds`,async({page})=>{
         await catalog(page,'catalog-ready',theme,width);
         await expect(page.locator('html')).toHaveAttribute('data-lite-theme',theme);
-        await expect(page.getByRole('searchbox',{name:'Search apps'})).toBeVisible();
+        await expect(page.getByRole('heading',{name:'Your library',exact:true})).toBeVisible();
         const panel=await manage(page);
         const box=await panel.boundingBox();
         expect(box).toBeTruthy();
@@ -287,8 +287,6 @@ test.describe('Azure Apps premium theme and responsive contracts — validated m
   test('generic non-PhotoPrism app does not inherit photo-only controls',async({page})=>{
     await catalog(page,'catalog-multi-app','light');
     await expect(page.getByRole('heading',{name:'Example App',exact:true})).toBeVisible();
-    await page.getByRole('searchbox',{name:'Search apps'}).fill('Example');
-    await expect(page.locator('.lite-catalog-app-card')).toHaveCount(1);
     const panel=page.getByRole('button',{name:'Manage',exact:true}).first();
     await panel.click();
     const dialog=page.getByRole('dialog',{name:/Manage Example App/i});
@@ -404,13 +402,13 @@ test.describe('touch pull P2 boundary — validated where supported',()=>{
     await send('touchEnd',y+185);
     await expect.poll(async()=>page.evaluate(()=>(window as any).__appsCatalogReadCount)).toBeGreaterThan(before);
     await expect(page.locator('.lite-catalog-pull-refresh')).not.toHaveClass(/is-pulling/);
-    await expect(page.getByRole('searchbox',{name:'Search apps'})).toBeEnabled();
+    await expect(page.getByRole('heading',{name:'Your library',exact:true})).toBeVisible();
   });
   test('vertical scroll outside touch zone stays owned by the document',async({page},testInfo)=>{
     test.skip(!testInfo.project.name.includes('mobile'),'Touch-only scenario');
     await catalog(page,'catalog-multi-app','light',390);
     await expect(page.locator('.lite-catalog-touch-pull-zone')).toBeVisible();
-    const touchAction=await page.locator('.lite-catalog-screen .lite-catalog-toolbar').evaluate(el=>getComputedStyle(el).touchAction);
+    const touchAction=await page.locator('.lite-catalog-screen').evaluate(el=>getComputedStyle(el).touchAction);
     expect(touchAction).not.toBe('none');
   });
   test('reduced motion removes pull-indicator transitions',async({page},testInfo)=>{

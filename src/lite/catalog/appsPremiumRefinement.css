@@ -2118,8 +2118,14 @@ html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer 
   color:var(--azure-text);
 }
 html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-nav-hint {
-  display:block;color:var(--azure-muted);font-size:.75rem;line-height:1.35;
+  display:block;color:var(--azure-neutral) !important;font-size:.75rem;line-height:1.35;
   font-weight:400;letter-spacing:normal;text-transform:none;
+}
+/* The body portal can render during the theme class/data-attribute handoff.
+   Keep this scoped fallback token-backed so the small hint never inherits a
+   legacy low-contrast daylight color during that transition. */
+.lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-nav-hint {
+  color:var(--azure-neutral) !important;
 }
 html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-viewport {
   min-width:0;overflow-wrap:anywhere;border:0;

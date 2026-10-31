@@ -3,7 +3,7 @@ import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers'
 
 const SCREENS = [
   ['home', 'Home'],
-  ['catalog', 'Your Apps'],
+  ['catalog', 'Your library'],
   ['devices', 'Devices'],
   ['security', 'Safety Center'],
   ['identity', 'Identity & Access'],

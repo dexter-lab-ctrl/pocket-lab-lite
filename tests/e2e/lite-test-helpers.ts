@@ -133,9 +133,10 @@ export async function waitForLiteScreenToSettle(
   if (screenId === 'catalog') {
     // The catalog's opening shell can be visually stable before its prepared
     // app projection arrives and does not expose aria-busy. Require the
-    // authoritative heading and card before sampling layout stability.
-    await page.getByRole('heading', { name: 'Your Apps', exact: true }).waitFor({ state: 'visible', timeout: timeoutMs });
-    await screen.locator('.lite-catalog-app-card').first().waitFor({ state: 'visible', timeout: timeoutMs });
+    // authoritative library heading and either a card or the explicit empty
+    // state before sampling layout stability.
+    await page.getByRole('heading', { name: 'Your library', exact: true }).waitFor({ state: 'visible', timeout: timeoutMs });
+    await screen.locator('.lite-catalog-app-card, .lite-catalog-empty-state').first().waitFor({ state: 'visible', timeout: timeoutMs });
   }
   if (screenId === 'rules') {
     // The Rules route can expose its loading shell before the policy and

@@ -4,8 +4,8 @@ export function catalogStateBucket(app = {}) {
   const state = String(app?.status || app?.lifecycle?.status || app?.runtime?.status || '').toLowerCase().replace(/[\s-]+/g, '_');
   const health = String(app?.health || app?.runtime?.health || '').toLowerCase();
   const route = app?.access || {};
-  if (app?.installed === false || ['not_installed', 'available', 'install_available', 'uninstalled'].includes(state)) return 'not_installed';
   if (['installing', 'queued', 'starting', 'updating', 'removing', 'preparing', 'waiting'].includes(state)) return 'working';
+  if (app?.installed === false || ['not_installed', 'available', 'install_available', 'uninstalled'].includes(state)) return 'not_installed';
   if (['failed', 'error', 'blocked', 'needs_attention', 'installed_stopped', 'installed_degraded', 'unavailable', 'stopped', 'unhealthy', 'state_conflict'].includes(state)
     || ['unhealthy', 'failed', 'error'].includes(health) || route.route_ready === false || route.https_ready === false || app?.runtime?.state_conflict === true) return 'attention';
   if (route.route_ready === true && route.open !== false
