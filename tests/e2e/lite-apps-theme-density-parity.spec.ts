@@ -84,6 +84,20 @@ async function expectContained(page: Page, width: number) {
   }
 }
 
+async function expectNestedHeaderContained(page: Page, width: number) {
+  const header = page.locator('.lite-details-overlay-layer .lite-details-panel .lite-overlay-head').first();
+  await expect(header).toBeVisible();
+  const boxes = await header.locator(':scope > *').evaluateAll((nodes) => nodes.map((node) => {
+    const box = node.getBoundingClientRect();
+    return { left: box.left, right: box.right, width: box.width };
+  }));
+  for (const box of boxes) {
+    expect(box.left, 'nested details header child left').toBeGreaterThanOrEqual(-2);
+    expect(box.right, 'nested details header child right').toBeLessThanOrEqual(width + 2);
+    expect(box.width, 'nested details header child width').toBeGreaterThan(0);
+  }
+}
+
 test.describe('Apps Azure Horizon balanced density — IMPLEMENTED, QUALIFICATION NOT RUN', () => {
   for (const width of VIEWPORTS) {
     test('Light, Dark and System computed layout parity at ' + width + 'px', async ({ browser }) => {
@@ -132,7 +146,10 @@ test.describe('Apps Azure Horizon balanced density — IMPLEMENTED, QUALIFICATIO
           '.lite-app-premium-details', '.lite-progressive-details',
           '.lite-progressive-details-summary', '.lite-progressive-detail-section',
         ]);
-        for (const page of pages) await expectContained(page, width);
+        for (const page of pages) {
+          await expectContained(page, width);
+          await expectNestedHeaderContained(page, width);
+        }
       } finally {
         await Promise.all(pages.map((page) => page.context().close()));
       }

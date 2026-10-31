@@ -1911,12 +1911,27 @@ html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details :is(
     width: 6.4rem !important;
   }
   html[data-lite-theme] .lite-details-overlay-layer .lite-overlay-head {
-    display: flex !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'title close'
+      'snap snap';
+    align-items: start;
     gap: .55rem !important;
     margin: 0 -.15rem .85rem !important;
     padding: .25rem .15rem .85rem !important;
     position: sticky !important;
     top: 3.15rem !important;
+  }
+  html[data-lite-theme] .lite-details-overlay-layer .lite-overlay-head > div:first-child {
+    grid-area: title;
+  }
+  html[data-lite-theme] .lite-details-overlay-layer .lite-overlay-head .lite-sheet-mobile-snap-actions {
+    grid-area: snap;
+    justify-self: end;
+  }
+  html[data-lite-theme] .lite-details-overlay-layer .lite-overlay-head .lite-overlay-close {
+    grid-area: close;
   }
   html[data-lite-theme] .lite-details-overlay-layer .lite-overlay-head > div:first-child > strong {
     margin-top: .2rem !important;
