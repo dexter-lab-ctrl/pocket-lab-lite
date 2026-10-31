@@ -1420,10 +1420,10 @@ html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer 
     padding-inline: .2rem;
   }
   html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow-step strong {
-    font-size: .78rem;
+    font-size: .84rem;
   }
   html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow-step small {
-    font-size: .68rem;
+    font-size: .78rem;
   }
 }
 @media (max-width: 360px) {
@@ -1463,5 +1463,506 @@ html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer 
     left: 1.375rem;
     width: 2px;
     height: calc(100% + .65rem);
+  }
+}
+
+/*
+ * Apps balanced-density contract (Light, Dark, and resolved System).
+ * Scoped to the catalog, its body-level Manage portal, and its nested details.
+ * Azure Horizon owns colors, radius and typography family; PR #623 geometry
+ * controllers own panel placement, dimensions, drag, resize and sheet snaps.
+ */
+html[data-lite-theme] .lite-catalog-screen,
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer,
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details {
+  --apps-space-xs: .375rem;
+  --apps-space-sm: .625rem;
+  --apps-space-md: .875rem;
+  --apps-space-lg: 1rem;
+  --apps-space-xl: 1.25rem;
+  --apps-card-inset: var(--azure-spacing-card);
+  --apps-body-leading: 1.5;
+}
+
+/* Catalog: keep existing grid and featured card width, improve inner rhythm. */
+html[data-lite-theme] .lite-catalog-screen {
+  min-width: 0;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--apps-space-sm);
+  min-width: 0;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .42rem;
+  margin-bottom: 0;
+  border-width: 1px;
+  border-style: solid;
+  border-color: transparent;
+  padding: .45rem .75rem;
+  min-height: 2.65rem;
+  box-sizing: border-box;
+  font-size: .78rem;
+  font-weight: 900;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-hero-pill svg {
+  flex: 0 0 auto;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-refresh-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-refresh-button {
+  width: 10rem;
+  min-width: 7.75rem;
+  min-height: 2.75rem;
+  justify-content: center;
+  white-space: nowrap;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-toolbar {
+  gap: var(--apps-space-md);
+  margin-bottom: var(--apps-space-lg);
+  padding: var(--apps-card-inset);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-toolbar > p {
+  margin: 0;
+  padding: 0;
+  font-size: .875rem;
+  line-height: var(--apps-body-leading);
+  white-space: normal;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-search-field {
+  gap: var(--apps-space-sm);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-search-control {
+  min-height: 48px;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-search-control button {
+  min-width: 44px;
+  min-height: 44px;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-status-filters {
+  gap: var(--apps-space-sm);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-grid {
+  gap: var(--apps-space-lg);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-app-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--apps-space-md);
+  padding: var(--apps-card-inset);
+  min-width: 0;
+  max-width: 100%;
+  background: var(--azure-surface);
+  border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-featured {
+  contain: layout paint;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-card-top,
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-card-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-width: 0;
+  gap: var(--apps-space-sm);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-card-title-row > div {
+  min-width: 0;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-category {
+  margin: 0 !important; /* supersedes old Daylight-only one-rem category offset */
+  color: var(--azure-accent) !important;
+  font-size: .76rem !important;
+  font-weight: 950 !important;
+  line-height: 1.4 !important;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-app-icon-img {
+  width: 74%;
+  height: 74%;
+  object-fit: contain;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-app-card h2 {
+  margin: var(--apps-space-xs) 0 0;
+  font-size: clamp(1.1rem, 1.7vw, 1.28rem);
+  line-height: 1.35;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-app-description,
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-premium-app-status {
+  margin: 0;
+  font-size: .875rem;
+  line-height: var(--apps-body-leading);
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-status-badge,
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-status-chips > span {
+  max-width: 100%;
+  min-width: 0;
+  padding: .35rem .65rem;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-status-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--apps-space-sm);
+  min-width: 0;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-actions,
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-card-actions {
+  margin-top: auto;
+  gap: var(--apps-space-sm);
+  padding-top: var(--apps-space-xs);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-actions > .pocket-button,
+html[data-lite-theme] .lite-catalog-screen .lite-catalog-card-actions > .pocket-button {
+  width: auto;
+  min-height: 44px;
+  gap: var(--apps-space-xs);
+  font-size: .875rem;
+  line-height: 1.4;
+}
+html[data-lite-theme] .lite-catalog-screen :is(.lite-catalog-attention-reason,.lite-catalog-progress,.lite-catalog-empty-state) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Manage portal: only internal spacing. Do not touch positioning or snap heights. */
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head {
+  gap: var(--apps-space-md);
+  padding: var(--apps-space-lg);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head > div:first-child {
+  gap: var(--apps-space-xs);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head > div:first-child > span:first-child,
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-copy > span {
+  font-size: .75rem;
+  line-height: 1.4;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head > div:first-child > strong {
+  line-height: 1.35;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-current-state {
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.5;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-scroll {
+  gap: var(--apps-space-lg);
+  padding-inline: var(--apps-space-lg);
+  min-width: 0;
+  overflow-x: hidden;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs {
+  align-items: center;
+  gap: var(--apps-space-xs);
+  min-height: 3.2rem;
+  padding: var(--apps-space-xs);
+  margin-block: var(--apps-space-xs) var(--apps-space-md);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-hint {
+  align-items: flex-start;
+  border: 1px solid var(--azure-border);
+  gap: var(--apps-space-sm);
+  margin: 0 0 .65rem;
+  padding: var(--apps-space-xs) .82rem;
+  line-height: 1.5;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-hint strong {
+  font-size: .86rem;
+  font-weight: 950;
+  line-height: 1.5;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-hint span {
+  font-size: .78rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-action-groups,
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-group {
+  display: grid;
+  gap: var(--apps-space-md);
+  min-width: 0;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-action-groups {
+  margin-top: var(--apps-space-lg);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-group-head {
+  align-items: center;
+  display: flex;
+  gap: var(--apps-space-lg);
+  justify-content: space-between;
+  margin-bottom: .55rem;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-group-head span {
+  color: var(--azure-muted);
+  display: block;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-group-head p {
+  color: var(--azure-muted);
+  font-size: .8rem;
+  line-height: 1.5;
+  margin: .2rem 0 0;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-group {
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-card);
+  padding: .75rem;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row {
+  display: grid;
+  align-items: center;
+  gap: var(--apps-space-md);
+  padding: var(--apps-space-lg);
+  min-width: 0;
+  border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-copy {
+  gap: var(--apps-space-xs);
+  padding-top: 0;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-copy > strong {
+  font-size: .95rem;
+  line-height: 1.4;
+  margin-top: .1rem;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-copy > p {
+  margin: 0;
+  font-size: .86rem;
+  line-height: var(--apps-body-leading);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-result {
+  justify-content: space-between;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-result > span {
+  font-size: .78rem;
+  font-weight: 800;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side {
+  gap: var(--apps-space-sm);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side > .pocket-button {
+  width: auto;
+  padding-inline: 1rem;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-premium-flow,.lite-catalog-premium-backup) {
+  gap: var(--apps-space-md);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow {
+  align-items: center;
+  margin-top: .1rem;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow-heading,
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-backup-header > div {
+  gap: var(--apps-space-xs);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow-step {
+  gap: var(--apps-space-xs);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow-step strong {
+  line-height: 1.4;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow-step small {
+  font-size: .78rem;
+  line-height: 1.4;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-premium-backup-path,.lite-catalog-premium-backup-metrics,.lite-catalog-premium-fact-list,.lite-catalog-connected-folder-list) {
+  gap: var(--apps-space-sm);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-premium-backup-path > span,.lite-catalog-premium-backup-metrics > div,.lite-catalog-premium-fact-list > div) {
+  padding: var(--apps-space-md);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-premium-backup-guidance,.lite-catalog-premium-backup-destination,.lite-catalog-premium-backup-header p,.lite-catalog-premium-muted,.lite-catalog-storage-hint) {
+  font-size: .84rem;
+  line-height: var(--apps-body-leading);
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-catalog-connected-folders,.lite-catalog-storage-panel--sheet,.lite-catalog-premium-storage-details,.lite-catalog-premium-action-notices) {
+  padding: var(--apps-space-md);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(button,summary):focus-visible,
+html[data-lite-theme] .lite-catalog-screen :is(button,input):focus-visible,
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details :is(button,summary):focus-visible {
+  outline: 2px solid var(--azure-focus);
+  outline-offset: 2px;
+}
+
+/* Nested Action Details is a separate body portal, not a child of Manage. */
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details,
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details {
+  gap: var(--apps-space-lg);
+  min-height: 0 !important;
+}
+html[data-lite-theme] .lite-details-overlay-layer .lite-details-panel-scroll {
+  display: block !important;
+  scrollbar-gutter: auto !important;
+  width: 100% !important;
+}
+html[data-lite-theme] .lite-details-overlay-layer .lite-details-panel {
+  gap: normal !important;
+  padding: 0 !important;
+}
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details :is(.lite-progressive-details-summary,.lite-progressive-detail-section,.lite-app-action-detail-section,.lite-technical-details,.lite-history-section) {
+  gap: var(--apps-space-sm);
+  padding: var(--apps-space-lg);
+  margin-bottom: var(--apps-space-sm);
+}
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details .lite-progressive-details-grid > .lite-progressive-detail-section {
+  contain: none !important;
+  content-visibility: visible !important;
+}
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details .lite-progressive-detail-section > strong {
+  font-size: .78rem;
+  font-weight: 900;
+  letter-spacing: -.012em;
+  line-height: 1.5;
+  margin-bottom: .35rem;
+}
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details :is(.lite-technical-details-row,.lite-history-section-list li) {
+  grid-template-columns: minmax(0, .42fr) minmax(0, 1fr);
+  gap: var(--apps-space-sm);
+  padding: var(--apps-space-md);
+}
+html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details :is(.lite-progressive-details-summary p,.lite-progressive-detail-section p,.lite-history-section-list small) {
+  line-height: var(--apps-body-leading);
+}
+@media (max-width:700px) {
+  html[data-lite-theme] .lite-catalog-screen .lite-catalog-hero-actions {
+    justify-content: flex-start;
+  }
+  html[data-lite-theme] .lite-catalog-screen .lite-refresh-control {
+    flex: 1 1 100%;
+  }
+  html[data-lite-theme] .lite-catalog-screen .lite-refresh-button {
+    width: 100%;
+    min-width: 0;
+  }
+  html[data-lite-theme] .lite-catalog-screen .lite-catalog-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  html[data-lite-theme] .lite-catalog-screen .lite-catalog-actions:not(.has-phone-install) > .pocket-button:first-child {
+    grid-column: auto;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side .pocket-button {
+    flex: 1 1 8rem;
+    width: auto;
+    padding-inline: .75rem;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-head {
+    /* Keep the mobile sheet geometry identical to the established Light layout. */
+    border-bottom: 1px solid var(--azure-border) !important;
+    margin: 0 -.15rem .85rem !important;
+    padding: .25rem .15rem .85rem !important;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-sheet {
+    inset: 0 !important;
+    padding: 0 .95rem .95rem !important;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-grip {
+    min-height: 3.15rem !important;
+    margin: 0 auto .15rem !important;
+    padding: .75rem 0 .55rem !important;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-scroll {
+    padding-inline: var(--apps-space-md);
+  }
+  html[data-lite-theme] .lite-details-overlay-layer .lite-details-panel:not(.is-movable) {
+    gap: .85rem !important;
+    inset: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  html[data-lite-theme] .lite-details-overlay-layer .lite-details-panel-grip {
+    align-items: center !important;
+    display: flex !important;
+    flex: 0 0 auto !important;
+    justify-content: center !important;
+    margin: 0 auto .15rem !important;
+    min-height: 3.15rem !important;
+    padding: .75rem 0 .55rem !important;
+    position: sticky !important;
+    top: 0 !important;
+    width: 6.4rem !important;
+  }
+  html[data-lite-theme] .lite-details-overlay-layer .lite-overlay-head {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'title close'
+      'snap snap';
+    align-items: start;
+    gap: .55rem !important;
+    margin: 0 -.15rem .85rem !important;
+    padding: .25rem .15rem .85rem !important;
+    position: sticky !important;
+    top: 3.15rem !important;
+  }
+  html[data-lite-theme] .lite-details-overlay-layer .lite-overlay-head > div:first-child {
+    grid-area: title;
+  }
+  html[data-lite-theme] .lite-details-overlay-layer .lite-overlay-head .lite-sheet-mobile-snap-actions {
+    grid-area: snap;
+    justify-self: end;
+  }
+  html[data-lite-theme] .lite-details-overlay-layer .lite-overlay-head .lite-overlay-close {
+    grid-area: close;
+  }
+  html[data-lite-theme] .lite-details-overlay-layer .lite-overlay-head > div:first-child > strong {
+    margin-top: .2rem !important;
+  }
+  html[data-lite-theme] .lite-details-overlay-layer .lite-details-panel-scroll {
+    display: block !important;
+    scrollbar-gutter: auto !important;
+    width: 100% !important;
+  }
+  html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details {
+    min-height: 0;
+    width: 100%;
+  }
+}
+@media (max-width:360px) {
+  html[data-lite-theme] .lite-catalog-screen .lite-catalog-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-premium-flow-step {
+    gap: var(--apps-space-xs) var(--apps-space-sm);
+  }
+  html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details :is(.lite-technical-details-row,.lite-history-section-list li) {
+    grid-template-columns: minmax(0,1fr);
+  }
+}
+@media (max-width:400px) {
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-action-row-side > .pocket-button {
+    width: 100%;
   }
 }

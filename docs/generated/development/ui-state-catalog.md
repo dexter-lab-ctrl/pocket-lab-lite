@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 1a75e299ffa63fc24e69a88dc3f675fa33b0234d7f6b6e16369288f14a9a31fc
+source_fingerprint: c45458007ee819af5235fcf39cf16173826748b5c837f83f6d3e6dd85f56b716
 schema_revision: 1
 validation_status: generated
 ---
@@ -58,6 +58,13 @@ validation_status: generated
 | `pocket-lab-lite-apps-azurefinalgenericsecondapp` | catalog | `catalog-multi-app` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-azurefinalgenericsecondapp-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-apps-azurefinalofflinestate` | catalog | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-azurefinalofflinestate-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-apps-azurefinallongtext` | catalog | `catalog-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-azurefinallongtext-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-apps-balanceddensitylightdesktop` | catalog | `catalog-multi-app` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-balanceddensitylightdesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-apps-balanceddensitydarkdesktop` | catalog | `catalog-multi-app` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-balanceddensitydarkdesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-apps-balanceddensitylightmobile` | catalog | `catalog-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-balanceddensitylightmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-apps-balanceddensitydarkmobile` | catalog | `catalog-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-balanceddensitydarkmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-apps-balanceddensitysystemmobile` | catalog | `catalog-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-balanceddensitysystemmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-apps-balanceddensitylongtextmobile` | catalog | `catalog-multi-app` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-balanceddensitylongtextmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-apps-balanceddensitywrappedstatus` | catalog | `app-media-not-ready` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-apps-balanceddensitywrappedstatus-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-devices-serverhostonline` | devices | `devices-server-online` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-devices-serverhostonline-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-devices-capabilityverified` | devices | `devices-capability-verified` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-devices-capabilityverified-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-devices-capabilitypending` | devices | `devices-capability-pending` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-devices-capabilitypending-{viewport}.png` | fixture-dependent |

@@ -16735,6 +16735,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-apps-theme-density-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-azure-horizon-apps-performance.spec.ts": [
         {
           "source": "component:photoprism",
@@ -32305,6 +32311,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-apps-theme-density-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-azure-horizon-apps-visual.spec.ts",
           "type": "verified_by"
         },
@@ -36601,6 +36611,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "9a0e72e87c3d8974bcc0f5582b8e3844dc8d4276f62b3cef5b87f3ac97228713"
+    "source_fingerprint": "513f206e41df27cd18401304463255a346b5cd19cb17920f88d8248e731d76f1"
   }
 }

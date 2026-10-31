@@ -427,3 +427,47 @@ export const AzureFinalNestedActionDetails = {
     await expect(await body.findByRole('dialog',{name:/Import photos|Photo/})).toBeInTheDocument();
   },
 };
+
+/* Balanced-density contract: paired scenarios, same DOM and geometry,
+   theme resolved by the existing Azure Horizon provider. NOT RENDERED. */
+export const BalancedDensityLightDesktop = createLiteStory('catalog','catalog-multi-app',{
+  theme:'daylight',viewport:'desktop',status:'unvalidated',
+  notes:'Balanced Apps geometry: compare directly with BalancedDensityDarkDesktop.',
+});
+export const BalancedDensityDarkDesktop = createLiteStory('catalog','catalog-multi-app',{
+  theme:'dark',viewport:'desktop',status:'unvalidated',
+  notes:'Same app cards, toolbar and controls as the Light variant; only semantic colors differ.',
+});
+export const BalancedDensityLightMobile = createLiteStory('catalog','catalog-ready',{
+  theme:'daylight',viewport:'mobile390',status:'unvalidated',
+});
+export const BalancedDensityDarkMobile = createLiteStory('catalog','catalog-ready',{
+  theme:'dark',viewport:'mobile390',status:'unvalidated',
+});
+export const BalancedDensitySystemMobile = createLiteStory('catalog','catalog-ready',{
+  theme:'system',viewport:'mobile390',status:'unvalidated',
+});
+export const BalancedDensityManageLight = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'daylight',viewport:'desktop',status:'unvalidated'}),
+  play: AzureFinalDesktopManageControls.play,
+};
+export const BalancedDensityManageDark = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'desktop',status:'unvalidated'}),
+  play: AzureFinalDesktopManageControls.play,
+};
+export const BalancedDensityDetailsLight = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'daylight',viewport:'desktop',status:'unvalidated'}),
+  play: AzureFinalNestedActionDetails.play,
+};
+export const BalancedDensityDetailsDark = {
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'desktop',status:'unvalidated'}),
+  play: AzureFinalNestedActionDetails.play,
+};
+export const BalancedDensityLongTextMobile = createLiteStory('catalog','catalog-multi-app',{
+  theme:'dark',viewport:'mobile360',textScale:2,status:'unvalidated',
+  notes:'Review reflow and wrapped labels at 200% text scale; automated geometry uses exact 320px.',
+});
+export const BalancedDensityWrappedStatus = createLiteStory('catalog','app-media-not-ready',{
+  theme:'daylight',viewport:'mobile390',status:'unvalidated',
+  notes:'Review multi-line readiness, badges, and disabled-action guidance.',
+});
