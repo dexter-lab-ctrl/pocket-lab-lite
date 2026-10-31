@@ -2340,7 +2340,7 @@ function CatalogManagePortal({
                   ].filter(Boolean).join(' ')}
                 />
               ) : null}
-              <div className="lite-app-manage-workspace">
+              <div className="lite-app-manage-workspace" data-app-manage-section={activeManageSection}>
               {availableManageSections.length ? <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections" onKeyDown={(event) => {
                 const order = MANAGE_SECTION_ORDER.filter((id) => availableManageSections.includes(id));
                 const current = order.indexOf(activeManageSection);
@@ -2367,6 +2367,7 @@ function CatalogManagePortal({
                 ))}
               </div> : null}
               {availableManageSections.length ? <div className="lite-catalog-manage-section-viewport" role="tabpanel" id="lite-catalog-manage-active-panel" aria-labelledby={`lite-catalog-manage-tab-${activeManageSection}`} tabIndex={0}>
+                {activeManageSection !== "overview" ? <button type="button" className="lite-app-manage-back" onClick={() => setManageSection("overview")}>← All settings</button> : null}
                 {activeManageSection !== "overview" && activeManageSection !== "activity" ? <div className="lite-catalog-manage-section-hint" aria-live="polite">
                   <strong>{MANAGE_SECTION_LABELS[activeManageSection] || 'Manage'}</strong>
                   <span>{MANAGE_SECTION_SUMMARY[activeManageSection] || 'Review the available actions.'}</span>
