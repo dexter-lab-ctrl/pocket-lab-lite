@@ -15,7 +15,7 @@ Apps (Your library: installed applications)
 Discover apps (backend-catalogued, not installed; install only when eligible)
 ```
 
-The first screen contains a restrained `PageHeader`, safe-state freshness, installed count, one or more identity-first cards, and a disclosure-based Discover entry point. The previous search/filter UI is shown only for eight or more installed apps; it is not necessary for a small local workspace. An empty installed library remains honest when backend discovery still contains uninstalled applications. PhotoPrism is not hardcoded into the generic library layout.
+Backend-reported installing apps remain visible in the library during setup but are not counted as already installed.\n\nThe first screen contains a restrained `PageHeader`, safe-state freshness, installed count, one or more identity-first cards, and a disclosure-based Discover entry point. The previous search/filter UI is shown only for eight or more installed apps; it is not necessary for a small local workspace. An empty installed library remains honest when backend discovery still contains uninstalled applications. PhotoPrism is not hardcoded into the generic library layout.
 
 Card status comes from `selectCanonicalAppState`; categorization, host and description come from registered metadata; protection appears only for a fresh backend-projected protected state. The icon resolver permits only packaged `/assets/apps/*` SVG/PNG/WebP paths, with PhotoPrism's existing asset as an approved fallback and a generic icon when no trusted local icon exists. Unknown hosts and missing capabilities do not become made-up labels. When the backend is unavailable, saved state is identified and mutating actions are disabled.
 
@@ -59,13 +59,14 @@ The following must be executed in a **separate qualification session**, after in
 ```bash
 npx vitest run src/lite/catalog/catalogLibraryPresentation.test.js src/lite/catalog/AppBalancedDensity.test.jsx
 npx playwright test tests/e2e/lite-apps-native-library.spec.ts --project=mocked-desktop --project=mocked-mobile
+npx playwright test tests/e2e/lite-azure-horizon-apps-performance.spec.ts --project=mocked-desktop --project=mocked-mobile
 npm run test:a11y:states
 npm run build
 ```
 
 Additional manual/review gates: Storybook native-library stories and snapshots; 320/360/390/430/768/1280px responsive layout; Daylight, Dark and System (both resolved appearances); Open routing, Manage focus trapping/restoration and mobile snap states; PhotoPrism import/backup success and failure; nested Action Details collision checks; keyboard navigation, 200% zoom and reduced-motion; PR #636 pixel/computed-style parity; PR #588 unchanged performance gates on Dev-PC and controlled Android hardware.
 
-The new Playwright screenshots are **unbaselined candidates**. Never accept them automatically. Separately verify actual contrast, keyboard behavior, app-count states, browser-specific back handling and 60 FPS requirements. If documentation generators need updating, do so only in the qualification session.
+The existing Azure Apps supplemental performance sample was updated to measure library card visibility instead of assuming a visible search field in one-app scenarios. The PR #588 performance budget and instrumentation are unchanged.\n\nThe new Playwright screenshots are **unbaselined candidates**. Never accept them automatically. Separately verify actual contrast, keyboard behavior, app-count states, browser-specific back handling and 60 FPS requirements. If documentation generators need updating, do so only in the qualification session.
 
 ### Known limitations and follow-up qualification risks
 
