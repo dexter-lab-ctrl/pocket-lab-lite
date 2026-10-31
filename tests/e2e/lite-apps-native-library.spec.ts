@@ -113,3 +113,46 @@ test('light and dark use identical library/Manage spacing and geometry',async({p
   const light=await sample('light'),dark=await sample('dark');
   expect(dark).toEqual(light);
 });
+
+
+// Unbaselined P0–P2 visual states for separate qualification and human approval.
+for (const theme of ['light','dark'] as const) {
+  for(const [scenario,name] of [
+    ['catalog-ready','single-library'],
+    ['catalog-empty','empty-library'],
+    ['catalog-installing','install-in-progress'],
+    ['app-route-not-ready','route-attention'],
+  ] as const) {
+    test(`native ${name} ${theme} mobile visual`,async({page})=>{
+      await openLibrary(page,scenario,theme,390,theme);
+      await expect(page.locator('.lite-catalog-screen')).toHaveScreenshot(`native-${name}-${theme}-390.png`,{animations:'disabled'});
+    });
+  }
+  test(`native photo backup result ${theme} mobile`,async({page})=>{
+    await openLibrary(page,'photo-backup-completed',theme,390,theme);
+    const manage=await openManage(page);
+    await manage.getByRole('tab',{name:'Photos'}).click();
+    await expect(manage.getByRole('region',{name:'Photo backup'})).toBeVisible();
+    await expect(manage).toHaveScreenshot(`native-photo-backup-${theme}-390.png`,{animations:'disabled'});
+  });
+  test(`native nested Action Details ${theme} visual`,async({page})=>{
+    await openLibrary(page,'catalog-ready',theme,390,theme);
+    const manage=await openManage(page);
+    await manage.getByRole('tab',{name:'Photos'}).click();
+    await manage.getByRole('region',{name:'Photo workflow'}).getByRole('button',{name:/details/i}).click();
+    const nested=page.locator('.lite-details-overlay-layer .lite-details-panel');
+    await expect(nested).toBeVisible();
+    await expect(nested).toHaveScreenshot(`native-details-${theme}-390.png`,{animations:'disabled'});
+  });
+}
+
+test('System appearance resolves a dark-color-scheme library without alternate geometry',async({page})=>{
+  await openLibrary(page,'catalog-multi-app','system',390,'dark');
+  await expect(page.locator('.lite-catalog-screen')).toHaveScreenshot('native-library-system-dark-390.png',{animations:'disabled'});
+});
+test('native library supports 200%-scale long-text reflow',async({page})=>{
+  await openLibrary(page,'catalog-multi-app','dark',390,'dark');
+  await page.evaluate(()=>{ document.documentElement.style.fontSize='200%'; });
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+  await expect(page.locator('.lite-catalog-screen')).toHaveScreenshot('native-library-zoom200-390.png',{animations:'disabled'});
+});
