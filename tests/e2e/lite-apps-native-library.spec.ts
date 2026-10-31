@@ -67,8 +67,8 @@ test('saved-state library is read-only and Manage cannot submit writes',async({p
     await expect(manage.locator('.lite-app-action-row button').first()).toBeDisabled();
   }
 });
-test('failed state offers details without inventing success',async({page})=>{
-  await openLibrary(page,'app-action-failed','dark',390,'dark');
+test('attention state keeps activity truthful without inventing success',async({page})=>{
+  await openLibrary(page,'app-route-not-ready','dark',390,'dark');
   const manage=await openManage(page);
   await manage.getByRole('tab',{name:'Activity'}).click();
   await expect(manage.getByRole('region',{name:'Recent app activity'})).toBeVisible();
