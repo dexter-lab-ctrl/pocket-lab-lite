@@ -1,6 +1,6 @@
 import { LiteProtectedConfirmation } from '../components/LiteSafeForms.jsx';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { distinctCatalogStatusSummary, filterCatalogApps, sortCatalogApps, partitionCatalogApps, trustedCatalogIconPath, catalogLibraryIdentity } from './catalogPresentation.js';
+import { catalogStateBucket, filterCatalogApps, sortCatalogApps, partitionCatalogApps, trustedCatalogIconPath, catalogLibraryIdentity } from './catalogPresentation.js';
 import { LiteDetailsPanel, useFocusTrap, useFocusReturn } from '../LiteOverlay.jsx';
 import { useDesktopManageGeometry } from '../components/useDesktopManageGeometry.js';
 import { useMobileSheetSnap } from '../components/useMobileSheetSnap.js';
@@ -2569,7 +2569,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   const apps = data?.apps || data?.items || [];
   const [catalogSearch, setCatalogSearch] = useState('');
-  const [catalogFilter, setCatalogFilter] = useState('all');
   const [discoveryOpen, setDiscoveryOpen] = useState(false);
   const access = data?.access || {};
   const featuredApp = sortCatalogApps(apps)[0];
@@ -2650,13 +2649,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     || hasLivePhotoPrismAppActionsPayload(appActionsData)
   ));
 
-  const { installed: libraryApps, discoverable: discoverableApps } = partitionCatalogApps(apps, isAppInstalled);
-  const displayedApps = filterCatalogApps(libraryApps, catalogSearch, catalogFilter);
-  const catalogFilters = [
-    { id: 'all', label: 'All' }, { id: 'ready', label: 'Ready' },
-    { id: 'working', label: 'Installing / working' },
-    { id: 'attention', label: 'Needs attention' }, { id: 'not_installed', label: 'Not installed' },
-  ].map((item) => ({ ...item, count: filterCatalogApps(apps, '', item.id).length }));
+  // Installed apps and backend-confirmed in-progress installations belong in the
+  // visible library; only not-installed entries are offered by Discover.
+  const { installed: libraryApps, discoverable: discoverableApps } = partitionCatalogApps(
+    apps, (app) => isAppInstalled(app) || catalogStateBucket(app) === 'working',
+  );
+  const displayedApps = filterCatalogApps(libraryApps, libraryApps.length >= 8 ? catalogSearch : '');
   // A single grid is the only library composition; the featured-card layout is retired.
   useEffect(() => {
     return () => {
@@ -3094,9 +3092,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const appDescription = app?.description || app?.summary || 'Manage this self-hosted app from your private workspace.';
     const libraryIdentity = catalogLibraryIdentity(app, canonical, savedStateOnly || !backendReachable);
     const openLive = canOpen && !savedStateOnly && backendReachable;
-    const statusSummary = distinctCatalogStatusSummary(appDescription, installed && lifecycle
-      ? lifecycle.summary || canonical.statusSummary || 'App status is not available.'
-      : app?.status_summary || app?.summary || 'Install to set up this app.');
     const buildManageViewModel = () => {
       const actionState = (actionId) => {
         const action = actionFromSnapshot(actionSnapshot, actionId, lifecycleAction(lifecycle, actionId));
@@ -3291,7 +3286,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         ].filter((entry) => supportedActionIds.has(entry.actionId)),
       };
     };
-    const quickActionsOpen = quickActionsAppId === app.id;
 
     return (
       <AppSummaryCard key={app.id} className={cardClassName} data-app-library-card={app.id}>
@@ -3361,25 +3355,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }
 
   const installedApps = apps.filter(isAppInstalled);
-  const setupNeededCount = apps.length - installedApps.length;
-  const insecureAppCount = installedApps.filter((app) => {
-    const accessState = app?.access || {};
-    const appStatus = String(app?.status || app?.health || '').toLowerCase();
-    return (
-      accessState.https_ready === false ||
-      accessState.route_ready === false ||
-      accessState.open === false ||
-      ['unhealthy', 'error', 'blocked', 'installed_degraded'].includes(appStatus) ||
-      app?.runtime?.state_conflict === true
-    );
-  }).length;
-
-  const isCatalogSecure = Boolean(access?.https_ready) && insecureAppCount === 0;
-  const catalogBanner = insecureAppCount > 0
-    ? { secure: false, label: 'Access needs attention' }
-    : setupNeededCount > 0
-      ? { secure: false, label: 'Setup needed' }
-      : { secure: isCatalogSecure, label: isCatalogSecure ? 'Protected access' : 'Remote access not ready' };
   const catalogSaved = savedStateOnly || data?.read_degraded === true || data?.degraded_reason === 'projection_too_old';
   const catalogRefreshing = refreshing || data?.refresh_pending === true;
 
@@ -3409,8 +3384,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         backendReachable={backendReachable}
       />
       <header className="lite-app-library-heading">
-        <div><h2>Your library</h2><p>Applications installed in your workspace</p></div>
-        <span aria-label={`${libraryApps.length} installed applications`}>{libraryApps.length} installed</span>
+        <div><h2>Your library</h2><p>Installed applications and active setups</p></div>
+        <span aria-label={`${installedApps.length} installed applications`}>{installedApps.length} installed</span>
       </header>
       {libraryApps.length >= 8 ? (
         <div className="lite-catalog-toolbar lite-app-library-search">
@@ -3430,7 +3405,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         <LiteEmptyState className="lite-catalog-empty-state" title="Your app library is empty" description="Install an available application to get started." />
       ) : null}
       {!loading && libraryApps.length > 0 && displayedApps.length === 0 ? (
-        <LiteEmptyState className="lite-catalog-empty-state" title="No matching apps" description="Try another app name." action={{label:'Clear search',onClick:()=>{setCatalogSearch('');setCatalogFilter('all');}}} />
+        <LiteEmptyState className="lite-catalog-empty-state" title="No matching apps" description="Try another app name." action={{label:'Clear search',onClick:()=>setCatalogSearch('')}} />
       ) : null}
       <section className="lite-app-library-discovery" aria-label="Discover apps">
         <button type="button" className="lite-app-library-discover-trigger" onClick={() => setDiscoveryOpen((open) => !open)} disabled={!discoverableApps.length} aria-expanded={discoveryOpen} aria-controls="lite-app-library-discover-results">
