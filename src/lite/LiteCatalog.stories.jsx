@@ -493,7 +493,7 @@ export const NativeManageOverview = {
   }
 };
 export const NativeManageActivity = {
-  ...createLiteStory('catalog','app-action-failed',{theme:'dark',viewport:'desktop',status:'unvalidated'}),
+  ...createLiteStory('catalog','catalog-ready',{theme:'dark',viewport:'desktop',status:'unvalidated'}),
   play: async({canvasElement}) => {
     await openManage(canvasElement);
     const dialog=await within(canvasElement.ownerDocument.body).findByRole('dialog',{name:/Manage PhotoPrism/i});
@@ -502,7 +502,7 @@ export const NativeManageActivity = {
   }
 };
 export const NativeManagePhotosWorkflow = {
-  ...createLiteStory('catalog','app-action-in-progress',{theme:'daylight',viewport:'mobile390',status:'unvalidated'}),
+  ...createLiteStory('catalog','catalog-ready',{theme:'daylight',viewport:'mobile390',status:'unvalidated'}),
   play: async({canvasElement}) => {
     await openManage(canvasElement);
     const dialog=await within(canvasElement.ownerDocument.body).findByRole('dialog',{name:/Manage PhotoPrism/i});
