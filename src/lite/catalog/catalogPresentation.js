@@ -32,3 +32,42 @@ export function distinctCatalogStatusSummary(description, statusSummary) {
   const normalize = (value) => String(value || '').trim().replace(/\s+/g, ' ').replace(/[.!?]+$/, '').toLocaleLowerCase();
   return normalize(description) === normalize(summary) ? '' : summary;
 }
+
+
+/** Library and discovery use backend-projected installation facts, never a UI guess. */
+export function partitionCatalogApps(items, isInstalled) {
+  const installed = [];
+  const discoverable = [];
+  for (const app of sortCatalogApps(items)) {
+    if (isInstalled(app)) installed.push(app);
+    else discoverable.push(app);
+  }
+  return { installed, discoverable };
+}
+
+/** Only local, packaged app icons may be rendered from registry metadata. */
+export function trustedCatalogIconPath(app = {}) {
+  const raw = app.icon_path || app.icon_url || app.icon?.path || app.icon?.url || '';
+  const path = String(raw).trim();
+  if (/^\/assets\/apps\/[a-z0-9_/-]+\.(svg|png|webp)$/i.test(path) && !path.includes('..') && !path.includes('//')) {
+    return path;
+  }
+  return String(app.id || '').toLowerCase() === 'photoprism' ? '/assets/apps/photoprism.svg' : '';
+}
+
+/** Claims reflect current projection. Saved snapshots never assert live availability. */
+export function catalogLibraryIdentity(app = {}, canonical = {}, saved = false) {
+  const status = saved ? 'Saved status'
+    : canonical.degraded || canonical.stopped ? 'Needs attention'
+      : canonical.running ? 'Running'
+        : canonical.installed ? 'Installed' : 'Not installed';
+  const host = app.lifecycle?.host_device?.label || app.host_device_name || app.target?.host_label || '';
+  const safety = !saved && app.lifecycle?.security?.status === 'protected' ? 'Protected' : '';
+  return {
+    category: String(app.category || 'Self-hosted app'),
+    description: String(app.description || app.summary || 'A self-hosted application in your workspace.'),
+    status,
+    host: String(host),
+    safety,
+  };
+}
