@@ -1014,6 +1014,11 @@ html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer 
   transition: none !important;
   animation: none !important;
 }
+.lite-catalog-manage-layer[data-lite-perf-mode="true"] .lite-catalog-manage-sheet,
+.lite-details-overlay-layer[data-lite-perf-mode="true"] .lite-details-panel {
+  contain: layout paint;
+  box-shadow: none !important;
+}
 
 /* Post-release visual and geometry hardening.
    Keep this contract scoped to Apps Manage and the nested Action Details
