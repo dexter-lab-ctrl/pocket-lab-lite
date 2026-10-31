@@ -1966,3 +1966,249 @@ html[data-lite-theme] .lite-details-overlay-layer .lite-app-premium-details :is(
     width: 100%;
   }
 }
+
+
+/* Azure Horizon Native App Library — presentation-only, theme-independent geometry.
+   PR #636 density variables remain authoritative in both Daylight and Dark. */
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-heading {
+  display:flex;align-items:flex-end;justify-content:space-between;gap:var(--apps-space-md);
+  margin:0 0 var(--apps-space-lg);min-width:0;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-heading h2 {
+  margin:0;color:var(--azure-text);font-size:1.125rem;line-height:1.35;font-weight:700;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-heading p {
+  margin:.25rem 0 0;color:var(--azure-muted);font-size:.875rem;line-height:1.5;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-heading > span {
+  flex-shrink:0;color:var(--azure-muted);font-size:.8rem;white-space:nowrap;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-grid {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));
+  align-items:stretch;gap:var(--apps-space-lg);max-width:75rem;margin:0;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-grid[data-app-library-count="1"] {
+  grid-template-columns:minmax(0,min(100%,26rem));
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-grid .lite-catalog-app-card {
+  display:flex;flex-direction:column;align-items:stretch;gap:var(--apps-space-md);
+  min-width:0;min-height:16.25rem;max-width:none;padding:var(--apps-card-inset);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);
+  background:var(--azure-surface);box-shadow:var(--azure-shadow);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-identity {
+  display:flex;align-items:flex-start;gap:var(--apps-space-md);min-width:0;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-identity-copy {min-width:0;flex:1;}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-identity-copy h2 {
+  margin:0;font-size:1.13rem;font-weight:700;line-height:1.35;color:var(--azure-text);
+  overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-identity-copy .lite-catalog-category {
+  margin:.2rem 0 .35rem!important;font-size:.82rem;font-weight:500;color:var(--azure-muted);
+  letter-spacing:normal;text-transform:none;line-height:1.4!important;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-identity-copy .lite-catalog-status-badge {
+  display:inline-flex;max-width:100%;white-space:normal;line-height:1.3;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-identity .lite-catalog-icon,
+html[data-lite-theme] .lite-app-manage-overview .lite-catalog-icon {
+  flex:0 0 3.75rem;width:3.75rem;height:3.75rem;display:grid;place-items:center;
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  padding:.4rem;background:var(--azure-raised);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-identity .lite-catalog-app-icon-img,
+html[data-lite-theme] .lite-app-manage-overview .lite-catalog-app-icon-img {
+  width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-grid .lite-catalog-app-description {
+  display:block;margin:0;line-height:1.5;min-height:0;color:var(--azure-muted);
+  overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-facts {
+  display:flex;align-items:center;flex-wrap:wrap;gap:.35rem var(--apps-space-md);
+  color:var(--azure-muted);font-size:.8rem;min-width:0;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-facts > span {
+  display:inline-flex;align-items:center;gap:.35rem;min-width:0;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-attention {
+  display:flex;align-items:flex-start;gap:.5rem;padding:.65rem .75rem;
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  color:var(--azure-warning);background:var(--azure-warning-subtle);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-attention p {
+  margin:0;color:inherit;line-height:1.45;font-size:.82rem;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-actions {
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:var(--apps-space-sm);margin-top:auto;padding-top:var(--apps-space-sm);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-actions > .pocket-button {
+  min-width:0;min-height:44px;width:100%;justify-content:center;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-search {
+  display:grid;gap:.4rem;max-width:26rem;margin-bottom:var(--apps-space-lg);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-search input {
+  width:100%;min-height:44px;border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-control);background:var(--azure-input);
+  color:var(--azure-text);padding:.65rem .85rem;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-discovery {
+  max-width:75rem;margin-top:var(--apps-space-lg);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);
+  background:var(--azure-surface);overflow:hidden;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-trigger {
+  display:flex;align-items:center;justify-content:space-between;gap:var(--apps-space-lg);
+  width:100%;min-height:64px;padding:var(--apps-space-lg);border:0;
+  color:var(--azure-text);background:transparent;text-align:left;cursor:pointer;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-trigger:disabled {cursor:default;}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-trigger strong,
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-trigger small {display:block;}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-trigger small {
+  margin-top:.25rem;color:var(--azure-muted);font-size:.82rem;line-height:1.45;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-trigger > span:last-child {
+  color:var(--azure-accent);font-size:1.35rem;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-results {
+  display:grid;gap:var(--apps-space-sm);padding:var(--apps-space-md);
+  border-top:1px solid var(--azure-border);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-item {
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;gap:var(--apps-space-md);min-width:0;
+  padding:var(--apps-space-md);border-radius:var(--azure-radius-control);
+  background:var(--azure-raised);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-item .lite-catalog-icon {
+  width:3rem;height:3rem;display:grid;place-items:center;overflow:hidden;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-item .lite-catalog-icon img {
+  max-width:100%;max-height:100%;object-fit:contain;
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-item p {
+  margin:.1rem 0 0;font-size:.8rem;color:var(--azure-muted);
+}
+html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-reason {
+  grid-column:2/-1;font-size:.78rem;line-height:1.4;
+}
+
+/* The existing Manage portal, geometry hooks, snap controls, and Details stay in place. */
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-workspace {
+  display:grid;grid-template-columns:minmax(0,1fr);gap:var(--apps-space-md);
+  width:100%;min-width:0;align-items:start;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs {
+  display:grid;grid-template-columns:minmax(0,1fr);gap:var(--apps-space-xs);
+  min-width:0;max-width:100%;overflow:visible;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs button[role="tab"] {
+  display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:.15rem;
+  min-width:0;width:100%;min-height:44px;white-space:normal;
+  background:var(--azure-surface);color:var(--azure-text);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  padding:.7rem .8rem;transform:none;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-tabs button[aria-selected="true"] {
+  border-color:var(--azure-strong-border);background:var(--azure-selected);
+  color:var(--azure-text);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-nav-hint {
+  display:block;color:var(--azure-muted);font-size:.75rem;line-height:1.35;
+  font-weight:400;letter-spacing:normal;text-transform:none;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-catalog-manage-section-viewport {
+  min-width:0;overflow-wrap:anywhere;border:0;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-overview,
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-activity {
+  display:grid;gap:var(--apps-space-lg);padding:var(--apps-space-lg);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);
+  background:var(--azure-surface);color:var(--azure-text);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-overview-identity {
+  display:flex;gap:var(--apps-space-md);align-items:center;min-width:0;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer :is(.lite-app-manage-overview-identity,.lite-app-manage-activity) h2 {
+  margin:0;font-size:1.05rem;font-weight:700;line-height:1.35;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-overview-identity p {
+  margin:.2rem 0 0;color:var(--azure-muted);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-overview-facts {
+  margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:0;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-overview-facts > div {
+  display:flex;justify-content:space-between;align-items:start;gap:1rem;
+  padding:.75rem 0;border-bottom:1px solid var(--azure-border);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-overview-facts dt {
+  color:var(--azure-muted);font-size:.84rem;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-overview-facts dd {
+  margin:0;max-width:60%;text-align:right;font-size:.85rem;font-weight:600;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-overview-note {
+  margin:0;color:var(--azure-muted);font-size:.82rem;line-height:1.5;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-activity ul {
+  list-style:none;margin:0;padding:0;display:grid;gap:var(--apps-space-md);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-activity li {
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.4rem .7rem;
+  border-bottom:1px solid var(--azure-border);padding-bottom:var(--apps-space-md);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-activity li > span {
+  color:var(--azure-muted);font-size:.82rem;grid-column:1;line-height:1.5;
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-activity li button {
+  grid-column:2;grid-row:1/3;min-height:44px;padding:.4rem .7rem;
+  color:var(--azure-accent);border:1px solid var(--azure-border);
+  background:var(--azure-raised);border-radius:var(--azure-radius-control);
+}
+html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-back {
+  display:none;
+}
+@media(min-width:820px) {
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-workspace {
+    grid-template-columns:minmax(9rem,11.5rem) minmax(0,1fr);
+  }
+}
+@media(max-width:819px) {
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-workspace:not([data-app-manage-section="overview"]) .lite-catalog-manage-section-tabs {
+    display:none;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-back {
+    display:block;min-height:44px;margin-bottom:var(--apps-space-sm);
+    color:var(--azure-accent);border:0;background:transparent;
+    font-weight:650;text-align:left;
+  }
+  html[data-lite-theme] .lite-catalog-screen .lite-app-library-heading {align-items:flex-start;}
+  html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-item {
+    grid-template-columns:auto minmax(0,1fr);
+  }
+  html[data-lite-theme] .lite-catalog-screen .lite-app-library-discover-item > .pocket-button {
+    grid-column:1/-1;width:100%;
+  }
+}
+@media(max-width:360px) {
+  html[data-lite-theme] .lite-catalog-screen .lite-app-library-actions {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-overview-facts > div {
+    flex-wrap:wrap;gap:.25rem;
+  }
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-overview-facts dd {
+    max-width:100%;text-align:left;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-catalog-screen .lite-app-library-grid .lite-catalog-app-card,
+  html[data-lite-theme] .lite-catalog-manage-layer.lite-catalog-app-premium-layer .lite-app-manage-workspace * {
+    transition:none!important;animation:none!important;
+  }
+}
