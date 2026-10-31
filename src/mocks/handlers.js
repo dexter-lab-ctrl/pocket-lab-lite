@@ -1360,7 +1360,7 @@ export const handlers = [
         },
       },
     };
-    const apps = multiApp ? [synthetic, app] : [app];
+    const apps = currentScenario === 'catalog-empty' ? [] : multiApp ? [synthetic, app] : [app];
     return HttpResponse.json({ status: 'healthy', access: { https_ready: true, secure_origin: 'https://pocket-lab-lite.example.ts.net', route_mode: 'tailscale_caddy', pwa_ready: true, message: 'Secure access is ready.' }, apps, items: apps, count: apps.length, updated_at: mockIso() }, { headers: liteSafeReadHeaders(request) });
   }),
   http.get('/api/lite/apps/lifecycle', ({ request }) => HttpResponse.json({ status: 'healthy', summary: 'Unified App Lifecycle profiles are available.', apps: mockAppLifecycleProfiles(), items: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length, ready_count: 1, attention_count: 0, updated_at: mockIso() }, { headers: liteSafeReadHeaders(request) })),
