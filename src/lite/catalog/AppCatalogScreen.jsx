@@ -2379,8 +2379,8 @@ function CatalogManagePortal({
                       <div><dt>App status</dt><dd>{savedStateOnly || !backendReachable ? 'Saved information' : canonical?.statusLabel || 'Not reported'}</dd></div>
                       {hostLabel && hostLabel !== 'Host not reported' ? <div><dt>Host</dt><dd>{hostLabel}</dd></div> : null}
                       {appSupports(app, 'media_sources') && lifecycle?.storage?.mapping_count !== undefined ? <div><dt>Photos</dt><dd>{Number(lifecycle.storage.mapping_count) > 0 ? 'Connected' : 'Not connected'}</dd></div> : null}
-                      {lifecycle?.security?.status ? <div><dt>Safety</dt><dd>{savedStateOnly ? 'Saved information' : lifecycle.security.summary || lifecycle.security.status}</dd></div> : null}
-                      {lifecycle?.backup?.status ? <div><dt>Backup readiness</dt><dd>{lifecycle.backup.summary || lifecycle.backup.status}</dd></div> : null}
+                      {lifecycle?.security?.status ? <div><dt>Safety</dt><dd>{savedStateOnly || !backendReachable ? 'Saved information' : lifecycle.security.summary || lifecycle.security.status}</dd></div> : null}
+                      {lifecycle?.backup?.status ? <div><dt>Backup readiness</dt><dd>{savedStateOnly || !backendReachable ? 'Saved information' : lifecycle.backup.summary || lifecycle.backup.status}</dd></div> : null}
                     </dl>
                     <p className="lite-app-manage-overview-note">Choose a category to see available actions. Pocket Lab confirms changes through the backend.</p>
                   </section>
@@ -3391,7 +3391,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         backendReachable={backendReachable}
       />
       <header className="lite-app-library-heading">
-        <div><h2>Your library</h2><p>Installed applications and active setups</p></div>
+        <div><h2>Your library</h2><p>Applications installed in your workspace</p></div>
         <span aria-label={`${installedApps.length} installed applications`}>{installedApps.length} installed</span>
       </header>
       {libraryApps.length >= 8 ? (
@@ -3409,7 +3409,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       </div>
 
       {!loading && libraryApps.length === 0 ? (
-        <LiteEmptyState className="lite-catalog-empty-state" title="Your app library is empty" description="Install an available application to get started." />
+        <LiteEmptyState className="lite-catalog-empty-state" title="Your app library is empty" description="Install an available application to get started." action={discoverableApps.length ? { label: "Explore apps", onClick: () => setDiscoveryOpen(true) } : undefined} />
       ) : null}
       {!loading && libraryApps.length > 0 && displayedApps.length === 0 ? (
         <LiteEmptyState className="lite-catalog-empty-state" title="No matching apps" description="Try another app name." action={{label:'Clear search',onClick:()=>setCatalogSearch('')}} />
