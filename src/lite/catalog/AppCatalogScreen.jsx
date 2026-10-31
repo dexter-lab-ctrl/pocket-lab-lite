@@ -288,9 +288,11 @@ const APP_ACTION_CATEGORY_COPY = {
   danger: { label: 'Remove', summary: 'Advanced actions require explicit confirmation.' },
 };
 
-const MANAGE_SECTION_ORDER = ['media', 'safety', 'recovery', 'setup', 'danger'];
+const MANAGE_SECTION_ORDER = ['overview', 'media', 'safety', 'recovery', 'setup', 'activity', 'danger'];
 
 const MANAGE_SECTION_LABELS = {
+  overview: 'Overview',
+  activity: 'Activity',
   media: 'Photos',
   safety: 'Safety',
   recovery: 'Recovery',
@@ -304,6 +306,7 @@ function LiteManageSectionTabStatic({ sectionId, active, label, onSelect }) {
     <button
       type="button"
       role="tab"
+      aria-label={label}
       aria-selected={active}
       aria-controls="lite-catalog-manage-active-panel"
       id={`lite-catalog-manage-tab-${sectionId}`}
@@ -311,7 +314,7 @@ function LiteManageSectionTabStatic({ sectionId, active, label, onSelect }) {
       className={active ? 'is-active' : ''}
       onClick={(event) => { triggerLiteTactileFeedback('selection'); onSelect?.(event); }}
     >
-      <span className="lite-catalog-manage-tab-label">{label}</span>
+      <span className="lite-catalog-manage-tab-label">{label}</span><small aria-hidden="true" className="lite-app-manage-nav-hint">{MANAGE_SECTION_SUMMARY[sectionId]}</small>
       <span
         className="lite-catalog-manage-tab-indicator"
         aria-hidden="true"
@@ -351,6 +354,7 @@ function LiteManageSectionTabAnimated({ sectionId, active, label, onSelect }) {
     <animated.button
       type="button"
       role="tab"
+      aria-label={label}
       aria-selected={active}
       aria-controls="lite-catalog-manage-active-panel"
       id={`lite-catalog-manage-tab-${sectionId}`}
@@ -363,13 +367,15 @@ function LiteManageSectionTabAnimated({ sectionId, active, label, onSelect }) {
       onPointerLeave={() => setPressed(false)}
       onClick={(event) => { triggerLiteTactileFeedback('selection'); onSelect?.(event); }}
     >
-      <span className="lite-catalog-manage-tab-label">{label}</span>
+      <span className="lite-catalog-manage-tab-label">{label}</span><small aria-hidden="true" className="lite-app-manage-nav-hint">{MANAGE_SECTION_SUMMARY[sectionId]}</small>
       <span className="lite-catalog-manage-tab-indicator" aria-hidden="true" />
     </animated.button>
   );
 }
 
 const MANAGE_SECTION_SUMMARY = {
+  overview: 'App status and availability.',
+  activity: 'Recent app operations and results.',
   media: 'Connect and import photos.',
   safety: 'Check whether the app is safe.',
   recovery: 'Back up, preview restore, and repair.',
@@ -2064,6 +2070,7 @@ function CatalogManagePortal({
   photoBackupDevices,
   photoBackupSummary,
   savedStateOnly = false,
+  backendReachable = true,
   appResource,
 }) {
   const appKey = catalogAppKey(app);
@@ -2180,14 +2187,15 @@ function CatalogManagePortal({
     () => (manageViewModel ? groupAppActions(appActionEntries) : []),
     [appActionEntries, manageViewModel],
   );
-  const availableManageSections = appActionGroups.map((group) => group.id);
+  const availableManageSections = ['overview', ...appActionGroups.map((group) => group.id), 'activity'];
   const activeManageSection = availableManageSections.includes(manageSection)
     ? manageSection
-    : availableManageSections[0] || '';
+    : 'overview';
   const activeAppActionGroups = useMemo(
     () => (manageViewModel ? groupAppActions(appActionEntries, activeManageSection) : []),
     [activeManageSection, appActionEntries, manageViewModel],
   );
+  const activityEntries = appActionEntries.filter((entry) => actionHasRunEvidence(entry.action, entry.result, entry.progress)).slice(0, 6);
   const actionDetailHandlers = useMemo(
     () => new Map(appActionEntries.map((entry) => [
       entry.actionId,
@@ -2319,7 +2327,7 @@ function CatalogManagePortal({
                 <PhotoBackupTruthCard devices={photoBackupDevices} summary={photoBackupSummary} saved={savedStateOnly} onGoToDevices={() => { closeManageSheet(); useLiteUiStore.getState().setActiveTab('devices'); }} />
               ) : null}
               <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
-                <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
+                <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen || savedStateOnly || !backendReachable} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
               </div>
               {showAccessSafety ? (
                 <StateSurface
@@ -2824,6 +2832,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   async function install(app, event) {
     event?.stopPropagation?.();
     if (!app) return;
+    if (savedStateOnly || !backendReachable) { setActionError('Reconnect to Pocket Lab before installing an app.'); return; }
     triggerLiteTactileFeedback('accepted');
     setBusyId(app.id);
     setResult({ status: 'queued', message: `Sending ${app.name || 'app'} install request to Pocket Lab...` });
@@ -2993,6 +3002,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   async function runLifecycleAction(app, actionId, event, extraPayload = {}) {
     event?.stopPropagation?.();
     if (!app?.id || !actionId) return;
+    if (savedStateOnly || !backendReachable) { setActionError('Reconnect to Pocket Lab before changing this app.'); return; }
     if (['connect_photos', 'import_photos'].includes(actionId) && !isPhotoPrismApp(app)) return;
     const flowAction = actionFromSnapshot(actionSnapshots[appSnapshotKey(app)] || null, actionId, lifecycleAction(lifecycleProfile(app), actionId));
     appActionFlow.review({ appId: app.id, actionId, actionLabel: flowAction?.label, risk: flowAction?.risk, destructive: flowAction?.destructive, confirmationRequired: flowAction?.confirmation_required || actionId === 'remove_app', disabledReason: flowAction?.disabled_reason || flowAction?.reason });
@@ -3320,6 +3330,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             photoBackupDevices={photoBackupDevices}
             photoBackupSummary={photoBackupSummary}
             savedStateOnly={savedStateOnly}
+            backendReachable={backendReachable}
             appResource={manageAppId === catalogAppKey(app) ? managedAppResource : null}
           />
         ) : null}
