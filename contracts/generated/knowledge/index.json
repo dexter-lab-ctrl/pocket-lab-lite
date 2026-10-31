@@ -31132,6 +31132,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-apps-native-library.spec.ts",
+      "name": "tests/e2e/lite-apps-native-library.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-apps-native-library.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
       "name": "tests/e2e/lite-apps-premium-refinement.spec.ts",
       "source_refs": [
@@ -35121,6 +35131,7 @@
         "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
         "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
         "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
+        "test:tests/e2e/lite-apps-native-library.spec.ts",
         "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
         "test:tests/e2e/lite-apps-theme-density-parity.spec.ts",
         "test:tests/e2e/lite-apps-theme-density-visual.spec.ts",
@@ -36663,6 +36674,7 @@
         "test:tests/e2e/lite-apps-azure-premium-polish-performance.spec.ts",
         "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
         "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
+        "test:tests/e2e/lite-apps-native-library.spec.ts",
         "test:tests/e2e/lite-apps-premium-refinement.spec.ts",
         "test:tests/e2e/lite-apps-theme-density-parity.spec.ts",
         "test:tests/e2e/lite-apps-theme-density-visual.spec.ts",
@@ -53575,6 +53587,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-apps-native-library.spec.ts": [
+        {
+          "source": "component:photoprism",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-apps-premium-refinement.spec.ts": [
         {
           "source": "component:photoprism",
@@ -61026,6 +61048,10 @@
         },
         {
           "target": "test:tests/e2e/lite-apps-azure-premium-polish.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-apps-native-library.spec.ts",
           "type": "verified_by"
         },
         {
@@ -69154,6 +69180,10 @@
         },
         {
           "target": "test:tests/e2e/lite-apps-azure-premium-polish-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-apps-native-library.spec.ts",
           "type": "verified_by"
         },
         {
@@ -79678,6 +79708,15 @@
       "source": "domain:identity",
       "target": "reason:passkey_already_registered",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-apps-native-library.spec.ts"
+      ],
+      "id": "rel:28b153157a80c6be",
+      "source": "component:photoprism",
+      "target": "test:tests/e2e/lite-apps-native-library.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -102417,6 +102456,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-apps-native-library.spec.ts"
+      ],
+      "id": "rel:c7d2316d3acb867a",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-apps-native-library.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:c7d7bd238c4c18fa",
@@ -110676,9 +110724,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "513f206e41df27cd18401304463255a346b5cd19cb17920f88d8248e731d76f1",
+  "source_fingerprint": "278d582e1502f953854769d35411b6a0da00720f3750d26f0dc00d07da84a805",
   "statistics": {
-    "entity_count": 1460,
+    "entity_count": 1461,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -110695,14 +110743,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 312,
+      "test": 313,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4105,
-    "source_count": 349
+    "relation_count": 4107,
+    "source_count": 350
   }
 }
