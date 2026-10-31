@@ -16,7 +16,8 @@ const STYLES = [
 type Theme = 'light' | 'dark' | 'system';
 
 async function appsPage(browser: Browser, width: number, theme: Theme, scenario = 'catalog-ready') {
-  const page = await browser.newPage({ viewport: { width, height: width <= 430 ? 780 : 900 } });
+  const context = await browser.newContext({ viewport: { width, height: width <= 430 ? 780 : 900 } });
+  const page = await context.newPage();
   await page.emulateMedia({ colorScheme: theme === 'system' ? 'dark' : 'light', reducedMotion: 'reduce' });
   await page.addInitScript((value) => localStorage.setItem('pocketlab:appearance', value), theme);
   await installScenario(page, scenario);
@@ -133,7 +134,7 @@ test.describe('Apps Azure Horizon balanced density — IMPLEMENTED, QUALIFICATIO
         ]);
         for (const page of pages) await expectContained(page, width);
       } finally {
-        await Promise.all(pages.map((page) => page.close()));
+        await Promise.all(pages.map((page) => page.context().close()));
       }
     });
   }
@@ -154,7 +155,7 @@ test.describe('Apps Azure Horizon balanced density — IMPLEMENTED, QUALIFICATIO
         const box = await button.boundingBox();
         expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
       }
-    } finally { await page.close(); }
+    } finally { await page.context().close(); }
   });
 
   for (const scenario of ['catalog-ready', 'catalog-install-available', 'app-action-failed', 'offline-saved', 'app-media-not-ready', 'photo-backup-completed', 'photo-backup-remote-unavailable']) {
@@ -169,7 +170,7 @@ test.describe('Apps Azure Horizon balanced density — IMPLEMENTED, QUALIFICATIO
             await expectContained(page, 390);
             await expect(manage.getByRole('button', { name: 'Close app actions' })).toBeVisible();
           }
-        } finally { await page.close(); }
+        } finally { await page.context().close(); }
       }
     });
   }
@@ -179,18 +180,22 @@ test.describe('Apps Azure Horizon balanced density — IMPLEMENTED, QUALIFICATIO
       const page = await appsPage(browser, 390, theme);
       try {
         const manage = await openManage(page);
-        for (const [label, snap] of [['Compact', 'compact'], ['Expand', 'expanded']] as const) {
-          await manage.getByRole('button', { name: label, exact: true }).click();
-          await expect(manage).toHaveAttribute('data-lite-sheet-snap', snap);
-          await expectContained(page, 390);
-        }
+        await manage.getByRole('button', { name: 'Compact', exact: true }).click();
+        await expect(manage).toHaveAttribute('data-lite-sheet-snap', 'compact');
+        await expectContained(page, 390);
+        await manage.getByRole('button', { name: 'Expand', exact: true }).click();
+        await expect(manage).toHaveAttribute('data-lite-sheet-snap', 'medium');
+        await expectContained(page, 390);
+        await manage.getByRole('button', { name: 'Expand', exact: true }).click();
+        await expect(manage).toHaveAttribute('data-lite-sheet-snap', 'expanded');
+        await expectContained(page, 390);
         await manage.getByRole('button', { name: 'Compact', exact: true }).click();
         await expect(manage).toHaveAttribute('data-lite-sheet-snap', 'medium');
         await manage.getByRole('button', { name: 'Compact', exact: true }).click();
         await expect(manage).toHaveAttribute('data-lite-sheet-snap', 'compact');
         await manage.getByRole('button', { name: 'Close app actions' }).click();
         await expect(manage).toHaveCount(0);
-      } finally { await page.close(); }
+      } finally { await page.context().close(); }
     });
   }
 
@@ -210,6 +215,6 @@ test.describe('Apps Azure Horizon balanced density — IMPLEMENTED, QUALIFICATIO
       expect(analysis.violations).toEqual([]);
       await page.keyboard.press('Escape');
       await expect(manage).toBeVisible();
-    } finally { await page.close(); }
+    } finally { await page.context().close(); }
   });
 });
