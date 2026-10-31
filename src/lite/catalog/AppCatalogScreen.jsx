@@ -2196,6 +2196,10 @@ function CatalogManagePortal({
     [activeManageSection, appActionEntries, manageViewModel],
   );
   const activityEntries = appActionEntries.filter((entry) => actionHasRunEvidence(entry.action, entry.result, entry.progress)).slice(0, 6);
+  const activitySummary = (entry) => [
+    entry?.result?.summary, entry?.action?.result?.summary,
+    entry?.action?.last_result?.summary, entry?.action?.status,
+  ].find((value) => typeof value === 'string' && value.trim()) || 'Recent result recorded';
   const actionDetailHandlers = useMemo(
     () => new Map(appActionEntries.map((entry) => [
       entry.actionId,
@@ -2322,10 +2326,6 @@ function CatalogManagePortal({
         <div className="lite-catalog-manage-scroll" ref={manageScrollRef}>
           {manageBodyReady ? (
             <>
-              {isPhotoPrismApp(app) && activeManageSection === 'media' ? <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} phoneSource={isPhoneStorageConnected} onViewDetails={actionDetailHandlers.get('import_photos')} /> : null}
-              {isPhotoPrismApp(app) && activeManageSection === 'media' ? (
-                <PhotoBackupTruthCard devices={photoBackupDevices} summary={photoBackupSummary} saved={savedStateOnly} onGoToDevices={() => { closeManageSheet(); useLiteUiStore.getState().setActiveTab('devices'); }} />
-              ) : null}
               <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
                 <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen || savedStateOnly || !backendReachable} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
               </div>
@@ -2388,8 +2388,14 @@ function CatalogManagePortal({
                 {activeManageSection === 'activity' ? (
                   <section className="lite-app-manage-activity" aria-label="Recent app activity">
                     <h2>Recent activity</h2>
-                    {activityEntries.length ? <ul>{activityEntries.map((entry) => <li key={entry.actionId}><strong>{actionCopy(entry.actionId, entry.action).label}</strong><span>{entry.result?.summary || entry.action?.result?.summary || entry.action?.last_result || entry.action?.status || 'Latest result recorded'}</span><button type="button" onClick={actionDetailHandlers.get(entry.actionId)}>Details</button></li>)}</ul> : <p>No completed app actions are reported yet.</p>}
+                    {activityEntries.length ? <ul>{activityEntries.map((entry) => <li key={entry.actionId}><strong>{actionCopy(entry.actionId, entry.action).label}</strong><span>{activitySummary(entry)}</span><button type="button" onClick={actionDetailHandlers.get(entry.actionId)}>Details</button></li>)}</ul> : <p>No recent action outcomes are reported yet.</p>}
                   </section>
+                ) : null}
+                {isPhotoPrismApp(app) && activeManageSection === 'media' ? (
+                  <div className="lite-app-manage-photos-context">
+                    <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} phoneSource={isPhoneStorageConnected} onViewDetails={actionDetailHandlers.get('import_photos')} />
+                    <PhotoBackupTruthCard devices={photoBackupDevices} summary={photoBackupSummary} saved={savedStateOnly} onGoToDevices={() => { closeManageSheet(); useLiteUiStore.getState().setActiveTab('devices'); }} />
+                  </div>
                 ) : null}
                 {activeManageSection !== "overview" && activeManageSection !== "activity" ? <div className="lite-catalog-action-groups">
                   {activeAppActionGroups.map((group) => (
@@ -2938,6 +2944,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   async function connectPhoneStorageFromPreview() {
     const app = storagePreviewApp;
     if (!isPhotoPrismApp(app) || !storagePreview?.connect_payload) return;
+    if (savedStateOnly || !backendReachable) { setActionError('Reconnect to Pocket Lab before connecting storage.'); return; }
     setStorageBusy(`${app.id}:phone_storage`);
     setActionError(null);
     setStoragePreviewNotice(null);
@@ -3408,7 +3415,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         <LiteEmptyState className="lite-catalog-empty-state" title="No matching apps" description="Try another app name." action={{label:'Clear search',onClick:()=>setCatalogSearch('')}} />
       ) : null}
       <section className="lite-app-library-discovery" aria-label="Discover apps">
-        <button type="button" className="lite-app-library-discover-trigger" onClick={() => setDiscoveryOpen((open) => !open)} disabled={!discoverableApps.length} aria-expanded={discoveryOpen} aria-controls="lite-app-library-discover-results">
+        <button type="button" className="lite-app-library-discover-trigger" onClick={() => setDiscoveryOpen((open) => !open)} disabled={!discoverableApps.length} aria-expanded={discoveryOpen} aria-controls={discoveryOpen ? "lite-app-library-discover-results" : undefined}>
           <span><strong>Discover apps</strong><small>{discoverableApps.length ? 'Explore applications available to install' : 'No additional applications are listed yet'}</small></span>
           <span aria-hidden="true">{discoverableApps.length ? (discoveryOpen ? '−' : '›') : ''}</span>
         </button>
