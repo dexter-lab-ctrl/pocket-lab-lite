@@ -1,7 +1,6 @@
 import { LiteProtectedConfirmation } from '../components/LiteSafeForms.jsx';
-import LiteNextSteps from '../components/LiteNextSteps.jsx';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { distinctCatalogStatusSummary, filterCatalogApps, sortCatalogApps } from './catalogPresentation.js';
+import { distinctCatalogStatusSummary, filterCatalogApps, sortCatalogApps, partitionCatalogApps, trustedCatalogIconPath, catalogLibraryIdentity } from './catalogPresentation.js';
 import { LiteDetailsPanel, useFocusTrap, useFocusReturn } from '../LiteOverlay.jsx';
 import { useDesktopManageGeometry } from '../components/useDesktopManageGeometry.js';
 import { useMobileSheetSnap } from '../components/useMobileSheetSnap.js';
@@ -149,7 +148,7 @@ function appHostLabel(app, lifecycle, fallbackName = 'Server Host') {
   if (lifecycle?.host_device?.label) return lifecycle.host_device.label;
   if (app?.host_device_name) return `Runs on ${app.host_device_name}`;
   if (fallbackName && fallbackName !== 'Server Host') return `Runs on ${fallbackName}`;
-  return 'Runs on Server Phone';
+  return 'Host not reported';
 }
 
 function verifiedStorageBackupLabel(action = {}) {
@@ -1938,20 +1937,11 @@ function attentionReason(app, canOpen) {
 
 function AppIcon({ app }) {
   const [failed, setFailed] = useState(false);
-
-  if (isPhotoPrismApp(app) && !failed) {
-    return (
-      <img
-        src="/assets/apps/photoprism.svg"
-        className="lite-catalog-app-icon-img"
-        alt=""
-        aria-hidden="true"
-        onError={() => setFailed(true)}
-      />
-    );
+  const iconPath = trustedCatalogIconPath(app);
+  if (!failed && iconPath) {
+    return <img src={iconPath} className="lite-catalog-app-icon-img" alt="" aria-hidden="true" onError={() => setFailed(true)} />;
   }
-
-  return <ImageIcon className="h-6 w-6" />;
+  return <ImageIcon className="h-6 w-6" aria-hidden="true" />;
 }
 
 function CatalogSkeletons() {
@@ -2550,6 +2540,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const apps = data?.apps || data?.items || [];
   const [catalogSearch, setCatalogSearch] = useState('');
   const [catalogFilter, setCatalogFilter] = useState('all');
+  const [discoveryOpen, setDiscoveryOpen] = useState(false);
   const access = data?.access || {};
   const featuredApp = sortCatalogApps(apps)[0];
   const featuredAppId = String(featuredApp?.id || '').trim().toLowerCase();
@@ -2629,13 +2620,14 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     || hasLivePhotoPrismAppActionsPayload(appActionsData)
   ));
 
-  const displayedApps = filterCatalogApps(apps, catalogSearch, catalogFilter);
+  const { installed: libraryApps, discoverable: discoverableApps } = partitionCatalogApps(apps, isAppInstalled);
+  const displayedApps = filterCatalogApps(libraryApps, catalogSearch, catalogFilter);
   const catalogFilters = [
     { id: 'all', label: 'All' }, { id: 'ready', label: 'Ready' },
     { id: 'working', label: 'Installing / working' },
     { id: 'attention', label: 'Needs attention' }, { id: 'not_installed', label: 'Not installed' },
   ].map((item) => ({ ...item, count: filterCatalogApps(apps, '', item.id).length }));
-  const visibleFeaturedApp = displayedApps.find((app) => String(app.id) === String(featuredApp?.id)) || null;
+  // A single grid is the only library composition; the featured-card layout is retired.
   useEffect(() => {
     return () => {
       clearLongPress();
@@ -3065,9 +3057,11 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const percent = measuredProgress ? Math.min(100, Math.max(0, Number(progress.current) / Number(progress.total) * 100)) : null;
     const cardClassName = `lite-catalog-card lite-catalog-app-card ${featured ? 'is-featured' : ''} ${installing ? 'is-installing' : ''}`;
     const actionsClassName = 'lite-catalog-actions';
-    const lifecycle = lifecycleProfile(app);
+    const lifecycle = lifecycleProfile(app) || (installed ? { actions: app?.platform_contract?.actions || {} } : null);
     const lifecycleAttention = lifecycleAttentionItems(lifecycle);
     const appDescription = app?.description || app?.summary || 'Manage this self-hosted app from your private workspace.';
+    const libraryIdentity = catalogLibraryIdentity(app, canonical, savedStateOnly || !backendReachable);
+    const openLive = canOpen && !savedStateOnly && backendReachable;
     const statusSummary = distinctCatalogStatusSummary(appDescription, installed && lifecycle
       ? lifecycle.summary || canonical.statusSummary || 'App status is not available.'
       : app?.status_summary || app?.summary || 'Install to set up this app.');
@@ -3268,35 +3262,44 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const quickActionsOpen = quickActionsAppId === app.id;
 
     return (
-      <AppSummaryCard
-        key={app.id}
-        className={`${cardClassName} ${quickActionsOpen ? 'has-quick-actions' : ''}`}
-      >
-        <div className="lite-catalog-card-top">
+      <AppSummaryCard key={app.id} className={cardClassName} data-app-library-card={app.id}>
+        <div className="lite-app-library-identity">
           <div className="lite-catalog-icon"><AppIcon app={app} /></div>
-          <StatusBadge status={appTone(status)} className="lite-catalog-status-badge">{appLabel(app, actionSnapshot)}</StatusBadge>
-        </div>
-        <div className="lite-catalog-card-title-row">
-          <div>
-            <p className="lite-catalog-category">{featured ? 'Featured local app' : app.category || 'Local app'}</p>
+          <div className="lite-app-library-identity-copy">
             <h2 title={app.name}>{app.name || app.id || 'Unnamed app'}</h2>
+            <p className="lite-catalog-category">{libraryIdentity.category}</p>
+            <StatusBadge status={savedStateOnly || !backendReachable ? 'neutral' : appTone(status)} className="lite-catalog-status-badge">
+              {libraryIdentity.status}
+            </StatusBadge>
           </div>
         </div>
-        <p className="lite-catalog-app-description" title={appDescription}>{appDescription}</p>
-        {quickActionsOpen ? (
-          <div className="lite-catalog-quick-actions" role="menu" aria-label={`${app.name} quick actions`}>
-            <button type="button" onClick={(event) => { event.stopPropagation(); openApp(app, event); setQuickActionsAppId(null); }} disabled={!canOpen}>Open</button>
-            {installed && lifecycle ? <button type="button" onClick={(event) => { event.stopPropagation(); openManageSheet(app, 'safety'); }}>Manage</button> : null}
-            <button type="button" onClick={(event) => { event.stopPropagation(); setQuickActionsAppId(null); refresh(); refreshAppActions(app.id); }}>Refresh</button>
+        <p className="lite-catalog-app-description" title={appDescription}>{libraryIdentity.description}</p>
+        {(libraryIdentity.host || libraryIdentity.safety) ? (
+          <div className="lite-app-library-facts" aria-label="App details">
+            {libraryIdentity.host ? <span><Server size={15} aria-hidden="true" />{libraryIdentity.host}</span> : null}
+            {libraryIdentity.safety ? <span><ShieldCheck size={15} aria-hidden="true" />{libraryIdentity.safety}</span> : null}
           </div>
         ) : null}
-        {statusSummary ? <p className="lite-catalog-premium-app-status" role="status">{statusSummary}</p> : null}
+        {installed && !openLive && reason ? (
+          <div className="lite-app-library-attention" role="status"><ShieldAlert size={17} aria-hidden="true" /><p>{reason}</p></div>
+        ) : null}
+        {progress?.running || installing ? (
+          <div className="lite-catalog-progress" role="status" aria-label="App installation progress">
+            <strong>{progress?.step || 'Working'}</strong>
+            <p>{progress?.message || 'Waiting for the latest app state.'}</p>
+            {percent !== null ? <div className="lite-catalog-progress-bar" role="progressbar" aria-label="App installation progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(percent)}><span style={{ width: `${percent}%` }} /></div> : null}
+          </div>
+        ) : null}
+        <div className="lite-catalog-actions lite-app-library-actions">
+          <LiteButton onClick={(event) => { stopGestureEvent(event); openApp(app, event); }} disabled={!openLive} tone={openLive ? 'primary' : 'secondary'} title={!openLive ? reason || 'App access is not confirmed.' : undefined}><ExternalLink className="h-4 w-4" />{opening ? 'Opening...' : 'Open'}</LiteButton>
+          {installed ? <LiteButton onClick={(event) => { stopGestureEvent(event); openManageSheet(app, 'overview'); }} tone="secondary">Manage</LiteButton> : null}
+        </div>
         {installed && lifecycle ? (
           <CatalogManagePortal
             app={app}
             lifecycle={lifecycle}
             canonical={canonical}
-            canOpen={canOpen}
+            canOpen={openLive}
             buildManageViewModel={buildManageViewModel}
             actionBusyKey={actionBusyKey}
             result={result}
@@ -3320,28 +3323,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             appResource={manageAppId === catalogAppKey(app) ? managedAppResource : null}
           />
         ) : null}
-        {reason ? (
-          <div className="lite-catalog-attention-reason">
-            <strong>{installed ? (canOpen ? 'Status note' : 'Attention') : 'Setup'}</strong>
-            <p>{reason}</p>
-          </div>
-        ) : null}
-        {progress ? (
-          <div className="lite-catalog-progress" aria-label="Install progress">
-            <div><strong>{progress.step || 'Working'}</strong><span>{measuredProgress ? `${progress.current}/${progress.total}` : 'Progress not reported'}</span></div>
-            <p>{progress.message || 'Preparing the app.'}</p>
-            {percent !== null ? <div className="lite-catalog-progress-bar" role="progressbar" aria-label="App installation progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(percent)}><span style={{ width: `${percent}%` }} /></div> : null}
-          </div>
-        ) : null}
-        <div className={actionsClassName}>
-          {!installed ? (
-            <LiteButton onClick={(event) => { stopGestureEvent(event); install(app, event); }} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : 'Install'}</LiteButton>
-          ) : null}
-          <LiteButton onClick={(event) => { stopGestureEvent(event); openApp(app, event); }} disabled={!canOpen} tone={canOpen ? 'primary' : 'ghost'}><ExternalLink className="h-4 w-4" />{opening ? 'Opening...' : 'Open'}</LiteButton>
-          {installed && lifecycle ? (
-            <LiteButton onClick={(event) => { stopGestureEvent(event); openManageSheet(app); }} tone="secondary">Manage</LiteButton>
-          ) : null}
-        </div>
       </AppSummaryCard>
     );
   }
@@ -3381,18 +3362,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       </div>
       <div className="lite-catalog-touch-pull-zone" {...bindCatalogPull()} aria-hidden="true" />
       <PageHeader
-        eyebrow="Apps"
-        title="Your Apps"
-        description="Your private application library. Open ready apps and manage supported actions."
-        actions={(
-          <div className="lite-catalog-hero-actions">
-            <div className={catalogBanner.secure ? 'lite-home-pill lite-catalog-hero-pill is-secure' : 'lite-home-pill lite-catalog-hero-pill is-not-secure'}>
-              {catalogBanner.secure ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
-              {catalogBanner.label}
-            </div>
-            <LiteRefreshButton scope="apps" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
-          </div>
-        )}
+        eyebrow="Self-hosted workspace"
+        title="Apps"
+        description="Your self-hosted applications"
+        actions={<LiteRefreshButton scope="apps" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <LiteFreshness
@@ -3402,61 +3375,49 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         lastUpdatedLabel={lastUpdatedLabel || ''}
         backendReachable={backendReachable}
       />
-      <LiteNextSteps
-        title="App readiness"
-        saved={catalogSaved}
-        description="Open and Manage remain available on each app card. These checks reflect the current catalog projection."
-        items={[
-          ...(insecureAppCount > 0 ? [{ id: "access", label: "App access needs attention", description: "Review the affected app’s access and health before opening it." }] : []),
-          ...(setupNeededCount > 0 ? [{ id: "setup", label: "App setup needs attention", description: "Use Manage on the relevant app to review available setup actions." }] : []),
-          ...(!isCatalogSecure && insecureAppCount === 0 ? [{ id: "remote", label: "Protected access is not confirmed", description: "Review local and Tailnet HTTPS readiness before relying on remote access." }] : []),
-        ]}
-      />
-      <div className="lite-catalog-toolbar lite-catalog-toolbar--simple" aria-label="Find and filter apps">
-        <div className="lite-catalog-search-field">
-          <label htmlFor="lite-catalog-app-search">Search apps</label>
-          <div className="lite-catalog-search-control">
-            <Search size={18} aria-hidden="true" />
-            <input id="lite-catalog-app-search" type="search" value={catalogSearch} onChange={(event) => setCatalogSearch(event.target.value)} placeholder="Search by app name or description" autoComplete="off" />
-            {catalogSearch ? <button type="button" onClick={() => setCatalogSearch('')} aria-label="Clear app search"><X size={16} aria-hidden="true" /></button> : null}
-          </div>
+      <header className="lite-app-library-heading">
+        <div><h2>Your library</h2><p>Applications installed in your workspace</p></div>
+        <span aria-label={`${libraryApps.length} installed applications`}>{libraryApps.length} installed</span>
+      </header>
+      {libraryApps.length >= 8 ? (
+        <div className="lite-catalog-toolbar lite-app-library-search">
+          <label htmlFor="lite-catalog-app-search">Find an installed app</label>
+          <input id="lite-catalog-app-search" type="search" value={catalogSearch} onChange={(event) => setCatalogSearch(event.target.value)} placeholder="Search your library" autoComplete="off" />
         </div>
-        <p role="status">{displayedApps.length} of {apps.length} apps shown</p>
-        <div className="lite-catalog-status-filters" role="group" aria-label="App status filters">
-          {catalogFilters.filter((item) => item.id === 'all' || item.count > 0 || item.id === catalogFilter).map((item) => (
-            <button type="button" key={item.id} aria-pressed={catalogFilter === item.id} className={catalogFilter === item.id ? 'is-active' : ''} onClick={() => setCatalogFilter(item.id)}>
-              {item.label} <span aria-label={`${item.count} apps`}>{item.count}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {visibleFeaturedApp ? (
-        <section className="lite-catalog-featured" aria-label="Featured app">
-          {renderAppCard(visibleFeaturedApp, true)}
-        </section>
       ) : null}
-
-
-
-
 
       {error ? <StateSurface tone="degraded" title="Apps are temporarily unavailable" description="Pocket Lab could not confirm the latest app information. Saved app information remains visible when available." className="mb-5" /> : null}
       {loading ? <CatalogSkeletons /> : null}
-      {loading ? <LoadingCard label="Checking your apps…" /> : null}
 
-      <div className="lite-catalog-grid lite-render-containment lite-render-containment--catalog">
-        {displayedApps.filter((app) => app.id !== visibleFeaturedApp?.id).map((app) => renderAppCard(app))}
+      <div className="lite-catalog-grid lite-app-library-grid lite-render-containment lite-render-containment--catalog" data-app-library-count={displayedApps.length}>
+        {displayedApps.map((app) => renderAppCard(app))}
       </div>
 
-      {!loading && displayedApps.length === 0 ? (
-        <LiteEmptyState
-          className="lite-catalog-empty-state"
-          title={catalogSearch || catalogFilter !== 'all' ? 'No matching apps' : apps.length ? 'No apps available' : 'No apps installed yet'}
-          description={catalogSearch || catalogFilter !== 'all' ? 'Try another search or choose All to see the full library.' : apps.length ? 'Pocket Lab did not find an app it can show right now.' : 'Install your first self-hosted app when you are ready.'}
-          action={{ label: catalogSearch || catalogFilter !== 'all' ? 'Show all apps' : apps.length ? 'Check again' : 'Refresh Apps', onClick: catalogSearch || catalogFilter !== 'all' ? () => { setCatalogSearch(''); setCatalogFilter('all'); } : refresh }}
-        />
+      {!loading && libraryApps.length === 0 ? (
+        <LiteEmptyState className="lite-catalog-empty-state" title="Your app library is empty" description="Install an available application to get started." />
       ) : null}
+      {!loading && libraryApps.length > 0 && displayedApps.length === 0 ? (
+        <LiteEmptyState className="lite-catalog-empty-state" title="No matching apps" description="Try another app name." action={{label:'Clear search',onClick:()=>{setCatalogSearch('');setCatalogFilter('all');}}} />
+      ) : null}
+      <section className="lite-app-library-discovery" aria-label="Discover apps">
+        <button type="button" className="lite-app-library-discover-trigger" onClick={() => setDiscoveryOpen((open) => !open)} disabled={!discoverableApps.length} aria-expanded={discoveryOpen} aria-controls="lite-app-library-discover-results">
+          <span><strong>Discover apps</strong><small>{discoverableApps.length ? 'Explore applications available to install' : 'No additional applications are listed yet'}</small></span>
+          <span aria-hidden="true">{discoverableApps.length ? (discoveryOpen ? '−' : '›') : ''}</span>
+        </button>
+        {discoveryOpen && discoverableApps.length ? (
+          <div id="lite-app-library-discover-results" className="lite-app-library-discover-results">
+            {discoverableApps.map((app) => {
+              const canInstall = Boolean(app?.actions?.install) && backendReachable && !savedStateOnly && busyId !== app.id;
+              return <article key={app.id} className="lite-app-library-discover-item">
+                <div className="lite-catalog-icon"><AppIcon app={app} /></div>
+                <div><strong>{app.name || app.id}</strong><p>{app.category || 'Self-hosted app'}</p></div>
+                <LiteButton tone="secondary" disabled={!canInstall} title={!canInstall ? 'Installation is not available from the current backend state.' : undefined} onClick={(event) => install(app,event)}>{busyId === app.id ? 'Working…' : 'Install'}</LiteButton>
+                {!canInstall ? <p className="lite-app-library-discover-reason">Install not available on this device right now.</p> : null}
+              </article>;
+            })}
+          </div>
+        ) : null}
+      </section>
       {removeConfirmApp ? (
         <GlassCard className="lite-catalog-remove-confirm" role="dialog" aria-label="Confirm remove">
           <div>
