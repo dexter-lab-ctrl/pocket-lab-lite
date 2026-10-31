@@ -22,6 +22,18 @@ describe('Azure Horizon native library presentation', () => {
     expect(identity.safety).toBe('');
     expect(identity.host).toBe('Server Phone');
   });
+  it('keeps backend-reported installations visible without counting them as installed', () => {
+    const inProgress = { id: 'pending', name: 'Pending App', status: 'installing', installed: false };
+    const visible = partitionCatalogApps([...apps, inProgress], app =>
+      app.installed === true || app.status === 'installing');
+    expect(visible.installed.map(app => app.id)).toContain('pending');
+    expect(catalogLibraryIdentity(inProgress, { installed: false }).status).toBe('Installing / working');
+    expect(apps.filter(app => app.installed === true)).toHaveLength(2);
+  });
+  it('does not report Running when a backend route is known unavailable', () => {
+    const app = { ...apps[1], access: { route_ready: false } };
+    expect(catalogLibraryIdentity(app, { installed: true, running: true }).status).toBe('Needs attention');
+  });
   it('keeps installed-but-stopped and unknown runtime facts distinct', () => {
     expect(catalogLibraryIdentity(apps[1], { installed: true, stopped: true }).status).toBe('Needs attention');
     expect(catalogLibraryIdentity(apps[2], { installed: true }).status).toBe('Installed');
