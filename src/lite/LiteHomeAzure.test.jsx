@@ -41,8 +41,10 @@ describe('Azure Horizon Home preserves existing authority and actions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open Backups' }));
     expect(onNavigate).toHaveBeenCalledWith('recovery');
     fireEvent.click(screen.getByRole('button', { name: /View all activity/i }));
-    expect(screen.getByRole('dialog', { name: 'Recent activity' })).toBeTruthy();
-    expect(screen.getByText('Latest workspace activity')).toBeTruthy();
+    const activityDialog = screen.getByRole('dialog', { name: 'Recent activity' });
+    expect(activityDialog).toBeTruthy();
+    fireEvent.click(within(activityDialog).getByRole('button', { name: 'Recent' }));
+    expect(within(activityDialog).getByText('Device restart')).toBeTruthy();
   });
 
   it('retains Overview, Service health, Updates and Diagnostics in one details panel', () => {
