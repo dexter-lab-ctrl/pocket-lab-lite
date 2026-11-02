@@ -249,6 +249,7 @@ const LITE_SHEET_VARIANTS = {
 export function LiteSheet({
   open,
   onClose,
+  onEscape,
   title,
   eyebrow,
   description = '',
@@ -299,7 +300,7 @@ export function LiteSheet({
   // synchronous style change can force a full-page layout on mobile. Normal
   // product overlays retain the existing body scroll lock.
   useBodyScrollLock(open && !isLitePerformanceMode());
-  useEscapeToClose(open, onClose);
+  useEscapeToClose(open, onEscape || onClose);
   useFocusReturn(open, closeRef);
   useFocusTrap(open, internalSurfaceRef);
 
