@@ -29,7 +29,7 @@ for (const variant of variants) {
 for (const theme of ['light','dark'] as const) {
   for (const [area, buttonName, dialogName] of [
     ['workspace', 'Workspace details', 'Workspace details'],
-    ['activity', 'View activity', 'Recent activity'],
+    ['activity', 'View all activity', 'Recent activity'],
   ]) {
     test(`Azure visual: ${theme} ${area} details [CANONICAL BASELINE]`, async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
