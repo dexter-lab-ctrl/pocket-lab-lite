@@ -9,7 +9,7 @@
 - Feature branch: `feat/azure-horizon-home-native-revamp`; draft PR targets `main`.
 - Initial PR head observed: `c0a1aabc7f905d37216254e2dae9074e61dd0211`.
 - Prior PR #638 runtime-qualified candidate: `a1bb1dc84eb17b5a2b792efd00759147c8f07359`.
-- Exact candidate for this PR #634 mobile snap integration: `a1827836a63f45884398f32bb002af2017d2445f`.
+- Exact candidate for this PR #634 mobile snap integration: `160fbd1c0c6057c95fb49516bd870ed7b2fe5746`.
 - Target: responsive desktop browsers, mobile browsers and installed Android PWA.
 - Scope: Home screen composition, Home-only grouped navigation, direct reuse of the PR #634 mobile snap controller on Home detail sheets, source tests, Storybook, mocked browser and narrowly scoped physical qualification infrastructure.
 - Exclusions: backend schema, authorization, NATS/JetStream, Devices/Apps/Rules/Security/Recovery screens, production Server Phone, release and deployment.
@@ -62,7 +62,7 @@ The attention list is conditional and keeps the existing risk priority model, bo
 
 ## DEV-PC qualification evidence
 
-The focused checks ran on Node `24.16.0` against the application source now committed at `a1827836a63f45884398f32bb002af2017d2445f`; the Android qualifier-only assertions were added in that same commit.
+The focused checks ran on Node `24.16.0` against the application source now committed at `160fbd1c0c6057c95fb49516bd870ed7b2fe5746`; the Android qualifier-only assertions remain unchanged from the snap-integration implementation commit.
 
 | Command | Result |
 |---|---|
@@ -95,9 +95,9 @@ bash scripts/dev/lite/run-ui-performance-android-candidate.sh --home-only
 bash scripts/dev/lite/run-ui-performance-android-candidate.sh --baseline --home-only
 ```
 
-The current snap candidate `a1827836a63f45884398f32bb002af2017d2445f` built successfully on DEV-PC with the repository candidate identity set to that exact SHA. The local candidate manifest was ready on loopback port `18765`, the repository-owned ADB reverse was created, and the runner began the Home-only path. The established Windows CDP bridge then reset the connection at its recorded bridge port before CDP preflight could attach to Android Chrome. The preflight correctly stopped and required an elevated PowerShell bridge setup; no UAC bypass or repeated consent loop was attempted. No Android page manifest/header/meta proof, browser target proof, Home snap measurement or physical screenshot was recorded for `a1827836`.
+The fresh snap candidate `160fbd1c0c6057c95fb49516bd870ed7b2fe5746` built successfully on DEV-PC with the repository candidate identity set to that exact SHA. The local candidate manifest was ready on loopback port `18765`, the repository-owned ADB reverse was created, and the runner began the Home-only path. The cleaned Windows CDP bridge was not reachable at its established bridge port, so CDP preflight stopped before attaching to Android Chrome and again required the normal elevated PowerShell bridge setup. No UAC bypass or repeated consent loop was attempted. No Android page manifest/header/meta proof, browser target proof, Home snap measurement or physical screenshot was recorded for `160fbd1c`.
 
-The runner cleanup completed: the candidate process and candidate reverse were removed, ADB forward/reverse mappings were zero, and the local CDP listener was unreachable. A pre-existing elevated bridge state/portproxy record remains outside the non-elevated cleanup boundary and was not force-removed. This current PR #634 snap qualification is **BLOCKED** by the external Windows CDP/UAC prerequisite, not reported as Android PASS.
+The runner cleanup completed: the candidate process and candidate reverse were removed, ADB forward/reverse mappings were zero, and the local CDP listener was unreachable. The repository-owned elevated cleanup helper then removed the recorded Pocket Lab CDP state, owned `19222` port-proxy entry and owned firewall rule; unrelated mappings were preserved. This current PR #634 snap qualification is **BLOCKED** by the external Windows CDP/UAC prerequisite, not reported as Android PASS.
 
 For historical attribution only, the prior PR #638 Home-only run at `a1bb1dc84eb17b5a2b792efd00759147c8f07359` completed 18 safe interaction reports: cold/steady Home, four destination cards, Workspace Details open/sections/technical details/Back/Close, Recent Activity open/sections/Back/Close, and refresh feedback. All 18 missed the unchanged PR #588/#589 absolute target and hard render gate. Its three-repetition normalized result was `MIXED=18`, `APP_INCREMENTAL_COST=0`, `PLATFORM_DOMINATED=0`, `WITHIN_BASELINE=0`, `INCONCLUSIVE=0`, with all 18 absolute target misses. That evidence remains **PARTIAL / MIXED** and is not reused as proof of the new Home snap interactions. The recorded current-main control SHA was `821ad56f83b2af9cf1fd59001364daf3545cc408`; no clean current-main application A/B entry point exists in the established runner.
 
@@ -127,8 +127,8 @@ For historical attribution only, the prior PR #638 Home-only run at `a1bb1dc84eb
 | Light / Dark geometry parity | **VALIDATED** | Reviewed Daylight/Dark geometry across desktop/mobile references |
 | Performance / PR #588 hard gates | **PARTIAL** | Physical Home reports missed the absolute target; 3-run attribution is MIXED=18. Mocked panel performance also has intermittent host-side hard-gate samples; thresholds remain unchanged. |
 | DEV-PC build / lint / git checks | **VALIDATED** | Build, Storybook, focused checks and `git diff --check` passed; no repo ESLint gate was claimed |
-| Physical Android / Server Phone | **BLOCKED / PARTIAL** | Current `a1827836` Home snap run stopped before CDP attachment at the Windows bridge/UAC prerequisite; historical `a1bb1dc8` physical Home evidence remains PARTIAL/MIXED; Server Phone read-only integrity preserved |
-| GitHub Actions | **VALIDATED** | PR #638 checks `isolated-devpc-qualification`, `ui-performance-qualification` and `quick-and-docs` are successful at `a1827836`; no merge or deployment action was taken |
+| Physical Android / Server Phone | **BLOCKED / PARTIAL** | Current `160fbd1c` Home snap rerun stopped before CDP attachment at the Windows bridge/UAC prerequisite; historical `a1bb1dc8` physical Home evidence remains PARTIAL/MIXED; Server Phone read-only integrity preserved |
+| GitHub Actions | **VALIDATED** | PR #638 checks `isolated-devpc-qualification`, `ui-performance-qualification` and `quick-and-docs` are successful at `160fbd1c`; no merge or deployment action was taken |
 | Release / deploy / merge | **PROHIBITED** | No merge or production changes |
 
 ## Final canonical documentation and repository gates
@@ -137,19 +137,19 @@ These late-phase gates are run only after the Home source and reviewed visual re
 
 | Command | Result | Evidence / limitation |
 |---|---|---|
-| `task lite:docs:generate` | **PASS** | Completed at `a1827836`; canonical contracts, platform/runtime projections, architecture, enterprise/intelligence, development/production docs and Codebase Map projections were regenerated. |
+| `task lite:docs:generate` | **PASS** | Completed at `160fbd1c`; canonical contracts, platform/runtime projections, architecture, enterprise/intelligence, development/production docs and Codebase Map projections were regenerated. |
 | `task lite:docs:check` | **PASS** | Completed at the generated final head; contract/docs/platform/runtime/parity/knowledge/intelligence/enterprise/architecture/SchemaSpy/backend-doc/MkDocs checks passed. Redocly reported 90 existing warnings and no validation errors. |
-| `task lite:check` | **PASS** | Completed at `a1827836`; all 20/20 recorded full-gate commands passed, including backend, frontend unit, build, Storybook, mocked E2E, accessibility, docs browser, redaction and strict docs. |
+| `task lite:check` | **PASS** | Completed at `160fbd1c`; all 20/20 recorded full-gate commands passed, including backend, frontend unit, build, Storybook, mocked E2E, accessibility, docs browser, redaction and strict docs. |
 | `npm run check:render-budgets` | **PARTIAL** | The repository evidence checker preserves the physical Android absolute frame-budget miss: 18 reports, 17 hard-gate failures and 18 target misses in the retained Home-only baseline evidence. No threshold or evidence was weakened. |
 
-The prior PR #638 broad gate at `a1bb1dc8` completed 20/20 recorded gates with zero failures after grouped-settings contract corrections. The current snap-integration head `a1827836` independently completed the same 20/20 full gate after final documentation regeneration.
+The prior PR #638 broad gate at `a1bb1dc8` completed 20/20 recorded gates with zero failures after grouped-settings contract corrections. The current snap-integration head `160fbd1c` independently completed the same 20/20 full gate after final documentation regeneration.
 
 ## Risks, reviewer work and rollback
 
 1. The current Android snap qualification is **BLOCKED** by the Windows CDP/UAC bridge prerequisite; no physical Android snap result is claimed.
 2. Historical Android evidence at `a1bb1dc8` remains **PARTIAL / MIXED** because its physical control and Home interactions missed the absolute PR #588/#589 frame budget; no clean main application A/B result is available.
 3. The reviewed PNG references are deterministic mocked showcase/reference images. They are not physical-device screenshot evidence.
-4. The pre-existing elevated bridge state was not force-removed after the non-elevated attempt; the precise cleanup boundary is recorded in the session report.
+4. The repository-owned elevated bridge cleanup completed after the non-elevated attempt; unrelated Windows mappings and devices were preserved.
 5. The generated-doc and broad repository gates passed at the final documented head; their evidence does not override the separately blocked physical Android snap run.
 6. The design has no new browser authority; panel navigation and animation do not alter the FastAPI/NATS/worker trust boundary.
 
