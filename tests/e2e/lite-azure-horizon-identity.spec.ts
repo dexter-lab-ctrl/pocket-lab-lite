@@ -22,12 +22,11 @@ test.describe('Azure Horizon Identity source and access contracts', () => {
       await openIdentity(page, 'identity-summary', theme);
       await expect(page.locator('[data-identity-horizon="account"]')).toBeVisible();
       await expect(page.getByRole('region', { name: 'Access profile' })).toContainText('Personal Mode');
-      await expect(page.getByRole('heading', { name: 'Sign-in methods' })).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'Active sessions' })).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'Recent access activity' })).toBeVisible();
-      await expect(page.locator('.lite-id-journey-steps li')).toHaveCount(4);
-      const cards = page.locator('.lite-id-account-layout > *').filter({ has: page.getByRole('heading', { name: 'Sign-in methods' }) });
-      await expect(cards.first()).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Sign-in & protection' })).toBeVisible();
+      await expect(page.getByRole('button', { name: /Sessions, .*active/i })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Recent activity' })).toBeVisible();
+      await expect(page.locator('.lite-id-journey-steps li')).toHaveCount(0);
+      await expect(page.locator('.lite-access-settings-row')).toHaveCount(3);
     });
     test(`manage and protected dialogs inherit theme — ${theme}`, async ({ page }) => {
       const dialog = await manage(page, 'identity-summary', theme);
