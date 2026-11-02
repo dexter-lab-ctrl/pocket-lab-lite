@@ -29,7 +29,7 @@ export const DetailsBlackMobile = {
 export const ActivityDetails = {
   ...createLiteStory('home','healthy',{theme:'dark',viewport:'desktop'}),
   play: async ({ canvasElement }) => {
-    await userEvent.click(await within(canvasElement).findByRole('button',{name:/View activity/i}));
+    await userEvent.click(await within(canvasElement).findByRole('button',{name:/View all activity/i}));
     await expect(await within(canvasElement.ownerDocument.body).findByRole('dialog',{name:/Recent activity/i})).toBeInTheDocument();
   },
 };
