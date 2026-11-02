@@ -9,9 +9,12 @@ for (const [label, width] of [['mobile',390],['desktop',1280]] as const) {
   test('Access native first paint, Manage, nested details and return — ' + label, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 850 });
     await installScenario(page, 'identity-premium-multiple');
+    // A navigation replaces the init-script sampler in the new document. Land
+    // on the Access route first, then sample the settled first-paint surface
+    // so the frame and React evidence belong to the candidate document.
+    await page.goto('/?screen=identity');
+    await waitForLiteScreenToSettle(page, 'identity');
     const first = await measureLiteInteraction(page, info, 'access-first-paint-'+label, async () => {
-      await page.goto('/?screen=identity');
-      await waitForLiteScreenToSettle(page, 'identity');
       await expect(page.locator('[data-identity-horizon="account"]')).toBeVisible();
     }, { settleMs: 900, mode: 'mocked' });
     expectLitePerformanceBudget(first);

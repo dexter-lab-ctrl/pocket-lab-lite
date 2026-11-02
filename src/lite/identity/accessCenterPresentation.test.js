@@ -3,7 +3,7 @@ import { accessCenterReadiness, accessCenterProtectionRows, accessCenterLatestAc
 import { identityPremiumProjection } from './identityPremiumView.js';
 
 const ready = identityPremiumProjection({ authenticated: true,
-  owner: { display_name: 'Fixture Owner' }, enterprise: { enabled: false },
+  owner: { human_id: 'fixture-owner', display_name: 'Fixture Owner' }, enterprise: { enabled: false },
   passkeys: [{ active: true }], sessions: [{ active: true, current: true, auth_method: 'passkey' }],
   recovery: { configured: true, remaining: 4 } });
 

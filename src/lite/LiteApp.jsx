@@ -1,7 +1,7 @@
 import './liteDesignSystemP0.css';
 import { LiteThemeProvider, LiteThemeControl } from './theme/LiteThemeProvider.jsx';
 import React, { Suspense, startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
+import { createPortal, flushSync } from 'react-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import {
   ArrowLeft,
@@ -485,6 +485,24 @@ function LiteAppShell() {
   }, [activeScreenId]);
 
   useEffect(() => {
+    const nav = mobileNavRef.current;
+    if (!nav || typeof document === 'undefined') return undefined;
+    const syncDockHeight = () => {
+      const height = nav.getBoundingClientRect().height;
+      if (height > 0) document.documentElement.style.setProperty('--pocket-nav-dock-height', `${Math.ceil(height)}px`);
+    };
+    syncDockHeight();
+    const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(syncDockHeight) : null;
+    resizeObserver?.observe(nav);
+    window.addEventListener('resize', syncDockHeight);
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', syncDockHeight);
+      document.documentElement.style.removeProperty('--pocket-nav-dock-height');
+    };
+  }, [workspaceApp]);
+
+  useEffect(() => {
     const syncWorkspaceFromHistory = () => {
       setWorkspaceApp(currentWorkspaceFromLocation());
     };
@@ -732,8 +750,25 @@ function LiteAppShell() {
 
   const shellClassName = `pocket-app-shell lite-motion-system ${workspaceApp ? 'is-app-workspace' : ''}`;
 
+  const mobileNavigation = (
+    <nav ref={mobileNavRef} className="pocket-nav-dock scrollbar-none" aria-label="Pocket Lab sections" data-lite-perf-primitive="navigation" data-lite-workspace={workspaceApp ? 'true' : undefined}>
+      {NAV_ITEMS.map((item) => {
+        const Icon = item.icon;
+        const isActive = activeScreenId === item.id;
+        return (
+          <button key={item.id} type="button" onPointerEnter={() => warmScreenOnNavIntent(item.id)} onFocus={() => warmScreenOnNavIntent(item.id)} onTouchStart={() => warmScreenOnNavIntent(item.id)} onClick={(event) => commitScreenNavigation(item.id, event)} aria-current={isActive ? 'page' : undefined} className={`pocket-nav-button nav-active-rail-item ${isActive ? 'pocket-nav-button-active' : ''}`}>
+            <Icon className="nav-active-rail-icon relative z-10 h-5 w-5" />
+            <span className="relative z-10 mt-1 text-[0.68rem] font-bold tracking-wide">{item.label.split(' ')[0]}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+
   return (
-    <div className={shellClassName} data-lite-perf-primitive="app-shell">
+    <>
+      {typeof document !== 'undefined' ? createPortal(mobileNavigation, document.body) : null}
+      <div className={shellClassName} data-lite-perf-primitive="app-shell">
       <a href="#pocket-lite-main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:rounded-xl focus:bg-indigo-500 focus:px-4 focus:py-2 focus:text-sm focus:font-black focus:text-white">Skip to Pocket Lab Lite content</a>
       <div className="pocket-app-backdrop" aria-hidden="true" />
       <LiteToastHost />
@@ -770,19 +805,6 @@ function LiteAppShell() {
       </header>
 
       <LiteQuickNavigate open={quickNavigateOpen && !workspaceApp} onClose={() => setQuickNavigateOpen(false)} onNavigate={(id) => commitScreenNavigation(id)} items={NAV_ITEMS} activeId={activeScreenId} />
-
-      <nav ref={mobileNavRef} className="pocket-nav-dock scrollbar-none" aria-label="Pocket Lab sections" data-lite-perf-primitive="navigation">
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeScreenId === item.id;
-          return (
-            <button key={item.id} type="button" onPointerEnter={() => warmScreenOnNavIntent(item.id)} onFocus={() => warmScreenOnNavIntent(item.id)} onTouchStart={() => warmScreenOnNavIntent(item.id)} onClick={(event) => commitScreenNavigation(item.id, event)} aria-current={isActive ? 'page' : undefined} className={`pocket-nav-button nav-active-rail-item ${isActive ? 'pocket-nav-button-active' : ''}`}>
-              <Icon className="nav-active-rail-icon relative z-10 h-5 w-5" />
-              <span className="relative z-10 mt-1 text-[0.68rem] font-bold tracking-wide">{item.label.split(' ')[0]}</span>
-            </button>
-          );
-        })}
-      </nav>
 
       <nav className="pocket-side-rail" aria-label="Pocket Lab Lite primary sections" data-lite-perf-primitive="navigation">
         {NAV_ITEMS.map((item) => {
@@ -823,7 +845,8 @@ function LiteAppShell() {
       <main id="pocket-lite-main" className="pocket-main nav-page-fade lg:pl-24 xl:pl-28">
         {content}
       </main>
-    </div>
+      </div>
+    </>
   );
 }
 

@@ -38,7 +38,12 @@ test.describe('Azure Horizon Identity source and access contracts', () => {
       await page.keyboard.press('Escape');
       await expect(confirmation).toHaveCount(0);
       await expect(dialog).toBeVisible();
+      const manageLayout = await dialog.getAttribute('data-lite-identity-manage-layout');
       await page.keyboard.press('Escape');
+      if (manageLayout === 'mobile-sheet') {
+        await expect(dialog.locator('[data-access-manage-view="index"]')).toBeVisible();
+        await page.keyboard.press('Escape');
+      }
       await expect(dialog).toHaveCount(0);
     });
     test(`WCAG AA automated screen and Manage scan — ${theme}`, async ({ page }) => {
@@ -126,7 +131,7 @@ test.describe('Azure Horizon Identity source and access contracts', () => {
   });
   test('Enterprise Admin cannot gain Owner-only person actions through Details', async ({ page }) => {
     const dialog = await manage(page,'identity-enterprise-admin');
-    await dialog.getByRole('button',{name:'People',exact:true}).click();
+    await dialog.getByRole('button',{name:'People & roles',exact:true}).click();
     await dialog.getByRole('button',{name:/Open Details/i}).first().click();
     await expect(page.getByRole('dialog',{name:/Access Details/i})).not.toContainText('Remove person');
   });

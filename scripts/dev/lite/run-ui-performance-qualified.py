@@ -168,7 +168,7 @@ def _redact_output(value: object, secrets: tuple[str, ...]) -> str:
     return text
 
 
-def _runner_command(mode: str) -> list[str]:
+def _runner_command(mode: str, *, access_only: bool = False, baseline: bool = False) -> list[str]:
     shell = shutil.which("bash")
     if not shell:
         raise RuntimeError("bash is required for the fixed UI-performance runner")
@@ -179,7 +179,16 @@ def _runner_command(mode: str) -> list[str]:
     script = scripts.get(mode)
     if script is None or not script.is_file():
         raise RuntimeError("the selected checked-in UI-performance runner is unavailable")
-    return [shell, str(script)]
+    command = [shell, str(script)]
+    if baseline:
+        if mode != "android-cdp":
+            raise ValueError("baseline qualification is available only for android-cdp mode")
+        command.append("--baseline")
+    if access_only:
+        if mode != "android-cdp":
+            raise ValueError("Access-only qualification is available only for android-cdp mode")
+        command.append("--access-only")
+    return command
 
 
 def _child_environment(
@@ -188,6 +197,7 @@ def _child_environment(
     mode: str,
     base_url: str,
     interaction: str | None,
+    access_only: bool = False,
 ) -> dict[str, str]:
     child = dict(os.environ)
     for key in SECRET_ENV_KEYS:
@@ -197,6 +207,8 @@ def _child_environment(
     child["LITE_BASE_URL"] = base_url
     child["LITE_QUALIFICATION_BROWSER_BRIDGE"] = "1"
     child["POCKETLAB_HARNESS_BROWSER_BRIDGE"] = bridge_token
+    if access_only:
+        child["LITE_ANDROID_QUALIFICATION_SCOPE"] = "access"
     child["LITE_PERF_PRESERVE_EVIDENCE"] = "1"
     # Live matrix collection must be able to retain later interaction evidence
     # after a target/gate miss.  The evidence checker still records every miss;
@@ -296,6 +308,61 @@ def _prepared_candidate_server(enabled: bool, *, source_commit: str):
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait(timeout=2)
+
+
+@contextlib.contextmanager
+def _prepared_android_candidate(enabled: bool):
+    """Own the checked-in Android reverse mapping for the candidate server."""
+    if not enabled:
+        yield
+        return
+
+    powershell = shutil.which("powershell.exe")
+    script = REPO_ROOT / "scripts/dev/lite/prepare-ui-performance-android-candidate.ps1"
+    if not powershell or not script.is_file():
+        raise RuntimeError("the checked-in Android candidate preparation helper is unavailable")
+
+    def invoke(*arguments: str) -> subprocess.CompletedProcess[str]:
+        result = subprocess.run(
+            [powershell, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", str(script), *arguments],
+            cwd=str(REPO_ROOT),
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            raise RuntimeError("the checked-in Android candidate preparation helper failed")
+        return result
+
+    try:
+        invoke("-OpenCandidate")
+    except Exception:
+        # The helper records its ownership state before the wake request. If
+        # preparation fails after that point, immediately ask the same checked-
+        # in helper to release only its recorded reverse/wake resources.
+        subprocess.run(
+            [powershell, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", str(script), "-Cleanup"],
+            cwd=str(REPO_ROOT),
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        raise
+    try:
+        yield
+    finally:
+        cleanup = subprocess.run(
+            [powershell, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", str(script), "-Cleanup"],
+            cwd=str(REPO_ROOT),
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if cleanup.returncode != 0:
+            raise RuntimeError("the checked-in Android candidate cleanup helper failed")
 
 
 def _session_authority(response: dict) -> tuple[str, str, datetime]:
@@ -408,6 +475,10 @@ def _interactions(args: argparse.Namespace) -> tuple[str | None, ...]:
         return requested
     if args.mode == "live":
         return DEFAULT_LIVE_INTERACTIONS
+    if args.access_only:
+        # The Access qualifier owns one bounded physical-browser matrix so the
+        # short-lived synthetic bridge is never rotated during a sample.
+        return (None,)
     # The physical Android runner owns its complete matrix internally today.
     # It remains one bounded interaction group until it exposes a per-measurement
     # selector; renewal therefore happens before that group, never mid-run.
@@ -542,13 +613,14 @@ def _run_interaction(
                     file=sys.stderr,
                 )
         child = subprocess.run(
-            _runner_command(args.mode),
+            _runner_command(args.mode, access_only=args.access_only, baseline=args.baseline),
             cwd=str(REPO_ROOT),
             env=_child_environment(
                 authority.bridge_token,
                 mode=args.mode,
                 base_url=base_url,
                 interaction=interaction,
+                access_only=args.access_only,
             ),
             stdin=subprocess.DEVNULL,
             capture_output=True,
@@ -577,6 +649,10 @@ def _run_interaction(
 
 
 def run(args: argparse.Namespace) -> int:
+    if args.access_only and args.mode != "android-cdp":
+        raise ValueError("--access-only is available only with --mode android-cdp")
+    if args.baseline and args.mode != "android-cdp":
+        raise ValueError("--baseline is available only with --mode android-cdp")
     base_url = _validate_operator_environment(args.mode, candidate_ui=args.candidate_ui)
     principal_id = str(args.principal_id or "").strip().casefold()
     if not PRINCIPAL_ID_RE.fullmatch(principal_id):
@@ -606,7 +682,7 @@ def run(args: argparse.Namespace) -> int:
         with ui_performance_runtime_tunnel(), _prepared_candidate_server(
             args.candidate_ui,
             source_commit=source_commit,
-        ):
+        ), _prepared_android_candidate(args.candidate_ui and args.mode == "android-cdp"):
             try:
                 os.environ["POCKETLAB_HARNESS_API_URL"] = "http://127.0.0.1:18080"
                 authority = _bootstrap_authority(
@@ -776,6 +852,16 @@ def main(argv: list[str] | None = None) -> int:
         "--candidate-ui",
         action="store_true",
         help="Serve the exact current dist build through the checked-in candidate proxy for live or android-cdp mode.",
+    )
+    parser.add_argument(
+        "--access-only",
+        action="store_true",
+        help="Use the bounded physical Android Access-only qualifier; the broad seven-screen matrix is not run.",
+    )
+    parser.add_argument(
+        "--baseline",
+        action="store_true",
+        help="Run the existing repeated baseline-normalized runner for the selected Android scope.",
     )
     return run(parser.parse_args(argv))
 

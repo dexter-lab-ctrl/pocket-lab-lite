@@ -1,9 +1,12 @@
 // @vitest-environment jsdom
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import '@testing-library/jest-dom/vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import AccessCenterSummary from './AccessCenterSummary.jsx';
 import AccessManageNavigation from './AccessManageNavigation.jsx';
+
+afterEach(cleanup);
 
 const view = { name: 'Fixture Owner', role: 'Owner', mode: 'Personal Mode', signedIn: true,
   fresh: true, authentication: 'Passkey', passkeys: 1, sessions: 1,

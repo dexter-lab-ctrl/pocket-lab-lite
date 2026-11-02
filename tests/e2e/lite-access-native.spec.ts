@@ -118,10 +118,13 @@ test.describe('Azure Horizon native Access P1–P6 — authored, NOT RUN', () =>
     await expect(dialog.getByRole('button', { name: 'People & roles' })).toHaveCount(0);
   });
 
-  test('saved Access information cannot register a passkey', async ({ page }) => {
+  test('saved Owner approval information cannot authorize a passkey-protected operation', async ({ page }) => {
     const dialog = await manage(page, 'identity-owner-operation-offline');
-    await dialog.getByRole('button', { name: 'Passkeys' }).click();
-    await expect(dialog.getByRole('button', { name: /Add Passkey/i })).toBeDisabled();
+    await dialog.getByRole('button', { name: 'Pending approvals' }).click();
+    const approvals = dialog.getByRole('region', { name: 'Pending approvals' }).first();
+    await expect(approvals).toContainText('Live approval data unavailable');
+    await expect(approvals.getByRole('button', { name: 'Approve' })).toBeDisabled();
+    await expect(approvals.getByRole('button', { name: 'Reject' })).toBeDisabled();
   });
 
   test('accessibility, 200% text zoom, reduced motion and sheet scroll containment', async ({ page }) => {

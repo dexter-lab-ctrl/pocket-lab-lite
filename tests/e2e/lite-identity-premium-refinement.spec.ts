@@ -38,6 +38,9 @@ test.describe('Premium Identity & Access — source-backed interactions', () => 
     await dialog.getByRole('button', { name: /^Passkeys$/ }).click();
     await expect(dialog.locator('[data-identity-manage-section]')).toHaveAttribute('data-identity-manage-section', 'passkeys');
     await expect(dialog.getByRole('button', { name: /Second passkey/i })).toBeVisible();
+    if (await dialog.getAttribute('data-lite-identity-manage-layout') === 'mobile-sheet') {
+      await dialog.getByRole('button', { name: /All access settings/i }).click();
+    }
     await dialog.getByRole('button', { name: /^Sessions$/ }).click();
     await expect(dialog.locator('[data-identity-manage-section]')).toHaveAttribute('data-identity-manage-section', 'sessions');
     await expect(dialog.getByRole('button', { name: /^Other session/i })).toBeVisible();
@@ -55,6 +58,10 @@ test.describe('Premium Identity & Access — source-backed interactions', () => 
     await expect(details).toHaveCount(0);
     await expect(dialog).toBeVisible();
     await expect(row).toBeFocused();
+    if (await dialog.getAttribute('data-lite-identity-manage-layout') === 'mobile-sheet') {
+      await page.keyboard.press('Escape');
+      await expect(dialog.locator('[data-access-manage-view="index"]')).toBeVisible();
+    }
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
   });
@@ -79,6 +86,7 @@ test.describe('Premium Identity & Access — source-backed interactions', () => 
   });
   test('shows Explain This with uncertainty and sanitized facts', async ({ page }) => {
     const dialog = await manage(page);
+    await dialog.getByRole('button', { name: /^Overview$/ }).click();
     await dialog.getByRole('button', { name: /Explain This/i }).click();
     const panel = page.getByRole('dialog', { name: /Understand your access/i });
     await expect(panel).toContainText(/What this does not confirm/i);
@@ -89,6 +97,9 @@ test.describe('Premium Identity & Access — source-backed interactions', () => 
     await dialog.getByRole('button', { name: 'People & roles', exact: true }).click();
     await expect(dialog).toContainText('Add person');
     await expect(dialog.locator('.lite-governance-nav')).toHaveCount(0);
+    if (await dialog.getAttribute('data-lite-identity-manage-layout') === 'mobile-sheet') {
+      await dialog.getByRole('button', { name: /All access settings/i }).click();
+    }
     await dialog.getByRole('button', { name: 'Roles & Access' }).click();
     await expect(dialog).toContainText('Effective capability matrix');
     await dialog.getByRole('button', { name: /Role Details/i }).first().click();

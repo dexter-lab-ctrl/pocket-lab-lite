@@ -8783,6 +8783,12 @@ textarea {
   visibility: hidden;
 }
 
+html[data-lite-theme] .pocket-nav-dock[data-lite-workspace="true"] {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
 .theme-pocket-lite-daylight .lite-workspace-shell {
   display: flex;
   min-height: calc(100dvh - 7rem);

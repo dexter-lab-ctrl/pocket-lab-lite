@@ -94,20 +94,33 @@ html[data-lite-theme] .lite-id-native-workspace { min-width:0; }
 html[data-lite-theme] .lite-id-native-index { display:grid; gap:1.2rem; min-width:0; }
 html[data-lite-theme] .lite-id-native-group { min-width:0; }
 html[data-lite-theme] .lite-id-native-group > h2 { margin:0 0 .55rem; color:var(--azure-muted); text-transform:uppercase; letter-spacing:.07em; font-weight:700; font-size:.77rem; }
-html[data-lite-theme] .lite-id-native-rows { overflow:hidden; background:var(--azure-surface); border:1px solid var(--azure-border); border-radius:var(--azure-radius-control); }
+/* Access keeps its grouped index model, while reusing Recovery's premium
+   Manage treatment: raised group shell, compact gaps, token borders and the
+   selected-state accent. */
+html[data-lite-theme] .lite-id-native-rows {
+  display:grid; gap:.35rem; overflow:hidden; padding:.35rem;
+  background:var(--azure-raised); border:1px solid var(--azure-border); border-radius:.9rem;
+  box-shadow:none; backdrop-filter:none;
+}
 html[data-lite-theme] .lite-id-native-row {
   display:flex; align-items:center; gap:.7rem; width:100%; min-height:56px;
-  padding:.65rem .8rem; text-align:left; border:0; background:transparent;
+  padding:.65rem .8rem; text-align:left; border:1px solid transparent; border-radius:var(--azure-radius-control); background:transparent;
   color:var(--azure-text); font:inherit; cursor:pointer;
 }
-html[data-lite-theme] .lite-id-native-row + .lite-id-native-row { border-top:1px solid var(--azure-border); }
+html[data-lite-theme] .lite-id-native-row + .lite-id-native-row { border-top-color:transparent; }
 html[data-lite-theme] .lite-id-native-row:hover { background:var(--azure-hover); }
-html[data-lite-theme] .lite-id-native-row[aria-current="page"] { background:var(--azure-selected); }
+html[data-lite-theme] .lite-id-native-row[aria-current="page"] {
+  background:var(--azure-selected); border-color:var(--azure-strong-border);
+  box-shadow:inset 0 -3px var(--azure-accent);
+}
+html[data-lite-theme] .lite-id-native-row:hover small,
+html[data-lite-theme] .lite-id-native-row[aria-current="page"] small { color:var(--azure-text); }
 html[data-lite-theme] .lite-id-native-row > svg { flex:0 0 auto; color:var(--azure-accent); }
 html[data-lite-theme] .lite-id-native-row > svg:last-child { margin-left:auto; color:var(--azure-muted); }
 html[data-lite-theme] .lite-id-native-row > span { flex:1; min-width:0; display:grid; gap:.2rem; }
-html[data-lite-theme] .lite-id-native-row strong { font-size:.92rem; }
+html[data-lite-theme] .lite-id-native-row strong { font-size:.92rem; font-weight:650; }
 html[data-lite-theme] .lite-id-native-row small { font-size:.78rem; color:var(--azure-muted); line-height:1.4; overflow-wrap:anywhere; }
+html[data-lite-theme] .lite-id-native-row:disabled { cursor:not-allowed; opacity:.58; }
 html[data-lite-theme] .lite-id-native-detail { min-width:0; }
 html[data-lite-theme] .lite-id-native-workspace[data-access-manage-view="index"] .lite-id-native-detail { display:none; }
 html[data-lite-theme] .lite-id-native-workspace[data-access-manage-view="section"] .lite-id-native-index { display:none; }
@@ -132,6 +145,8 @@ html[data-lite-theme] .lite-id-details-back:focus-visible { outline:3px solid va
   html[data-lite-theme] .lite-id-native-workspace { display:grid; grid-template-columns:minmax(12.25rem, .34fr) minmax(0,1fr); gap:1.5rem; align-items:start; }
   html[data-lite-theme] .lite-id-native-workspace .lite-id-native-index,
   html[data-lite-theme] .lite-id-native-workspace .lite-id-native-detail { display:block; }
+  html[data-lite-theme] .lite-id-native-workspace[data-access-manage-view="index"] .lite-id-native-detail,
+  html[data-lite-theme] .lite-id-native-workspace[data-access-manage-view="section"] .lite-id-native-index { display:block; }
   html[data-lite-theme] .lite-id-native-workspace .lite-id-native-index { display:grid; border-right:1px solid var(--azure-border); padding-right:.9rem; }
   html[data-lite-theme] .lite-id-native-row { padding:.65rem .55rem; }
   html[data-lite-theme] .lite-id-native-back { display:none; }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BookOpenText, LockKeyhole } from 'lucide-react';
+import { ArrowLeft, BookOpenText, LockKeyhole } from 'lucide-react';
 import { LiteButton, StateSurface } from '../LiteUi.jsx';
 import { LiteTechnicalFacts } from '../LiteUx.jsx';
 import { getLiteReasonPresentation } from '../../lib/identityRulesPresentation.js';
@@ -35,6 +35,7 @@ export default function IdentityDetailsContent({ selection, view, onRename, onRe
     explain: 'The access summary reflects reported facts. Historical or unavailable data cannot grant authority.',
   })[kind];
   return <div className="lite-id-details" data-identity-details-kind={kind}>
+    {typeof onOpenManage === 'function' ? <button type="button" className="lite-id-details-back" onClick={onOpenManage}><ArrowLeft size={18} aria-hidden="true" /> Back to Manage Access</button> : null}
     <div className="lite-id-detail-heading"><h2>{title}</h2><span>{status}</span><p>{summary}</p></div>
     <DetailGroup title={explanation ? 'What this means' : 'Reported facts'}>
       <dl className="lite-id-detail-facts">

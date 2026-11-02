@@ -115,7 +115,7 @@ export async function analyzeBaselineRuns(runsRoot, outputDir = '') {
     ];
     const evidenceDir = resolve(runRoot, 'evidence');
     const evidenceNames = (await readdir(evidenceDir))
-      .filter((name) => /^ui-performance-android-cdp-.*\.json$/.test(name))
+      .filter((name) => /^ui-performance-android-(?:cdp|access)-.*\.json$/.test(name))
       .sort();
     if (!evidenceNames.length) throw new Error(`missing_android_evidence:${runName}`);
     for (const evidenceName of evidenceNames) {
