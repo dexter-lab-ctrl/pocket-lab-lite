@@ -57,6 +57,12 @@ export default function IdentityManageContent({
         <button type="button" className="lite-id-item-row" onClick={() => onOpenDetails('recovery', {})}><span><strong>Recovery Details</strong><small>Understand readiness and regeneration consequences.</small></span><span>Details</span></button>
         <LiteButton variant="secondary" onClick={onRegenerate} disabled={Boolean(busy) || readOnly}><LifeBuoy size={16} aria-hidden="true" /> Generate New Codes</LiteButton>
         {recoveryCodes.length ? <div className="lite-identity-recovery-codes" data-private-ephemeral-result="true"><strong>Private recovery codes — shown only once. Store securely and close this panel when finished.</strong><code>{recoveryCodes.join('\n')}</code><LiteButton variant="secondary" onClick={onCopyCodes}>Copy Codes</LiteButton></div> : null}
+        {(data?.person?.password_configured || data?.owner?.password_configured) ? <form className="lite-identity-form" onSubmit={onChangePassword}>
+          <label className="lite-identity-form-field"><span>Current password</span><input className="pocket-input" type="password" autoComplete="current-password" value={passwordForm.current_password} onChange={(event) => onPasswordForm({ ...passwordForm, current_password: event.target.value })} required /></label>
+          <label className="lite-identity-form-field"><span>New password</span><input className="pocket-input" type="password" autoComplete="new-password" value={passwordForm.new_password} onChange={(event) => onPasswordForm({ ...passwordForm, new_password: event.target.value })} required /></label>
+          <p>Changing your password signs out other sessions.</p><LiteButton type="submit" disabled={readOnly || Boolean(busy)}>Change Password</LiteButton>
+        </form> : null}
+
       </div> : null}
       {effectiveSection === 'activity' ? <IdentityActivityTimeline items={data?.recent_activity} onDetails={(item) => onOpenDetails('activity', item)} /> : null}
       {effectiveSection === 'approvals' ? <OwnerOperationApprovals operations={ownerOperations} fresh={ownerOperationsFresh} busy={busy} onApprove={onApproveOwnerOperation} onReject={onRejectOwnerOperation} /> : null}
@@ -64,11 +70,6 @@ export default function IdentityManageContent({
       {effectiveSection === 'settings' ? <div className="lite-id-manage-list">
         <button type="button" className="lite-id-item-row" onClick={() => onOpenDetails('mode', {})}><span><strong>Workspace mode</strong><small>{view.mode}. Review consequences before changing mode.</small></span><span>Details</span></button>
         {!enterpriseEnabled ? <><p>Personal Mode keeps local Owner access simple. Enterprise Mode enables separate people and server-managed roles.</p><LiteButton variant="secondary" onClick={onReviewEnterprise}>{showEnterpriseOptIn ? 'Hide Enterprise option' : 'Review Enterprise Mode'}</LiteButton>{showEnterpriseOptIn ? <div><StateSurface tone="neutral" title="Switching modes signs out sessions" description="Owner passkey confirmation may be required. Role authority will be resolved again after sign-in." /><LiteButton onClick={onEnableEnterprise} disabled={readOnly || Boolean(busy)}>Enable Enterprise Mode</LiteButton></div> : null}</> : enterpriseContent}
-        {(data?.person?.password_configured || data?.owner?.password_configured) ? <form className="lite-identity-form" onSubmit={onChangePassword}>
-          <label className="lite-identity-form-field"><span>Current password</span><input className="pocket-input" type="password" autoComplete="current-password" value={passwordForm.current_password} onChange={(event) => onPasswordForm({ ...passwordForm, current_password: event.target.value })} required /></label>
-          <label className="lite-identity-form-field"><span>New password</span><input className="pocket-input" type="password" autoComplete="new-password" value={passwordForm.new_password} onChange={(event) => onPasswordForm({ ...passwordForm, new_password: event.target.value })} required /></label>
-          <p>Changing your password signs out other sessions.</p><LiteButton type="submit" disabled={readOnly || Boolean(busy)}>Change Password</LiteButton>
-        </form> : null}
         <LiteButton variant="secondary" onClick={onSignOut} disabled={readOnly || Boolean(busy)}><LogOut aria-hidden="true" size={16} /> Sign Out</LiteButton>
       </div> : null}
       {(effectiveSection === 'people' || effectiveSection === 'roles') && enterpriseEnabled ? enterpriseContent : null}
