@@ -248,6 +248,82 @@ function Wake-PocketLabAndroidDevice {
       throw 'android_device_not_awake: Android remained in ambient/doze state after the bounded wake request.'
     }
   }
+
+  Clear-PocketLabAndroidNotificationShade -AdbPath $AdbPath -DeviceSerial $DeviceSerial
+}
+
+function Clear-PocketLabAndroidNotificationShade {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$AdbPath,
+    [Parameter(Mandatory = $true)]
+    [string]$DeviceSerial
+  )
+
+  # A device can report an awake, focused Chrome document while the Android
+  # notification shade remains the foreground window. Chrome then exposes the
+  # target over CDP but throttles requestAnimationFrame to zero. Collapse only
+  # that explicitly identified system overlay; never send a blind swipe to a
+  # normal application surface.
+  $windows = Invoke-PocketLabWindowsAdb -AdbPath $AdbPath -Arguments @(
+    '-s',
+    $DeviceSerial,
+    'shell',
+    'dumpsys',
+    'window',
+    'displays'
+  )
+  if ($windows.ExitCode -ne 0) {
+    throw 'adb_transport_failed: could not inspect the Android foreground window.'
+  }
+  if (-not [regex]::IsMatch([string]$windows.Stdout, '(?m)^\s*mCurrentFocus=.*NotificationShade')) {
+    return
+  }
+
+  $size = Invoke-PocketLabWindowsAdb -AdbPath $AdbPath -Arguments @(
+    '-s',
+    $DeviceSerial,
+    'shell',
+    'wm',
+    'size'
+  )
+  if ($size.ExitCode -ne 0) {
+    throw 'adb_transport_failed: could not inspect the Android display size.'
+  }
+  $sizeMatch = [regex]::Match([string]$size.Stdout, '(?m)^\s*(?:Physical|Override) size:\s*(\d+)x(\d+)')
+  if (-not $sizeMatch.Success) {
+    throw 'android_notification_shade_open: Android display size was unavailable for the bounded shade collapse.'
+  }
+  $width = [int]$sizeMatch.Groups[1].Value
+  $height = [int]$sizeMatch.Groups[2].Value
+  $collapse = Invoke-PocketLabWindowsAdb -AdbPath $AdbPath -Arguments @(
+    '-s',
+    $DeviceSerial,
+    'shell',
+    'input',
+    'swipe',
+    [string][int]($width / 2),
+    [string][int]($height * 0.82),
+    [string][int]($width / 2),
+    [string][int]($height * 0.18),
+    '300'
+  )
+  if ($collapse.ExitCode -ne 0) {
+    throw 'android_notification_shade_open: bounded notification-shade collapse failed.'
+  }
+  Start-Sleep -Milliseconds 250
+  $verification = Invoke-PocketLabWindowsAdb -AdbPath $AdbPath -Arguments @(
+    '-s',
+    $DeviceSerial,
+    'shell',
+    'dumpsys',
+    'window',
+    'displays'
+  )
+  if ($verification.ExitCode -ne 0 -or [regex]::IsMatch([string]$verification.Stdout, '(?m)^\s*mCurrentFocus=.*NotificationShade')) {
+    throw 'android_notification_shade_open: Android notification shade remained foreground after the bounded collapse.'
+  }
 }
 
 function Open-PocketLabAndroidCandidate {

@@ -44,6 +44,10 @@ def test_candidate_helper_uses_shared_adb_and_reports_specific_device_states():
     assert "mWakefulness" in SHARED.read_text(encoding="utf-8")
     assert "KEYCODE_POWER" in SHARED.read_text(encoding="utf-8")
     assert "android_device_not_awake" in SHARED.read_text(encoding="utf-8")
+    assert "function Clear-PocketLabAndroidNotificationShade" in SHARED.read_text(encoding="utf-8")
+    assert "mCurrentFocus=.*NotificationShade" in SHARED.read_text(encoding="utf-8")
+    assert "shell',\n    'input',\n    'swipe'" in SHARED.read_text(encoding="utf-8")
+    assert "android_notification_shade_open" in SHARED.read_text(encoding="utf-8")
     assert "function Open-PocketLabAndroidCandidate" in SHARED.read_text(encoding="utf-8")
     assert "$OpenCandidate" in source
     assert "$Wake" in source
