@@ -551,9 +551,9 @@ if (mobile) {
       await grip.focus();
       await page.keyboard.press('Home');
       if (await dialog.getAttribute('data-lite-sheet-snap') !== 'compact') fail('Access mobile snap did not reach compact.');
-      await page.keyboard.press('PageDown');
+      await page.keyboard.press('PageUp');
       if (await dialog.getAttribute('data-lite-sheet-snap') !== 'medium') fail('Access mobile snap did not reach medium.');
-      await page.keyboard.press('End');
+      await page.keyboard.press('PageUp');
       if (await dialog.getAttribute('data-lite-sheet-snap') !== 'expanded') fail('Access mobile snap did not reach expanded.');
       await page.keyboard.press('Home');
     },
