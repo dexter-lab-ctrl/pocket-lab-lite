@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 517,
+  "page_count": 518,
   "page_types": [
     "overview",
     "guide",
@@ -17297,6 +17297,29 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "validation/home-command-native-qualification.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "release",
+      "generated": false,
+      "id": "page:validation/home-command-native-qualification",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "validation/home-command-native-qualification.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "validation/home-command-native-qualification.md",
+      "title": "Azure Horizon Command Home — implementation provenance and qualification",
+      "url": "/validation/home-command-native-qualification/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "validation/isolated-runtime-qualification-lane.md"
       ],
       "confidence": "source-derived",
@@ -18252,7 +18275,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "3c2c60c44a15100497416a9e18718e71a9b9055603c5a88686fa5fef0b5cba3e",
+  "source_fingerprint": "fd96382065643978305b7e4df46bea6b5e424bcc3fd7122b8f45601f35fed380",
   "top_level": [
     "start-here",
     "use",

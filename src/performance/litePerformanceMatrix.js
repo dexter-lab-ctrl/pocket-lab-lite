@@ -6,6 +6,14 @@
 export const LITE_UI_PERFORMANCE_MATRIX = Object.freeze([
   {
     screen: 'home',
+    nestedSurface: 'Workspace details / grouped sections',
+    authorityRequired: 'read-only workspace projection',
+    interaction: 'section-switch',
+    safeExecutionMode: 'mocked-safe-read; live/physical read-only',
+    evidenceId: 'home.workspace-details.section-switch',
+  },
+  {
+    screen: 'home',
     nestedSurface: 'Workspace details / Technical details',
     authorityRequired: 'read-only workspace projection',
     interaction: 'nested-detail-open',
@@ -19,6 +27,30 @@ export const LITE_UI_PERFORMANCE_MATRIX = Object.freeze([
     interaction: 'nested-detail-close',
     safeExecutionMode: 'mocked-safe-read; live/physical read-only',
     evidenceId: 'home.workspace-details.technical-details.close',
+  },
+  {
+    screen: 'home',
+    nestedSurface: 'Workspace details / grouped sections',
+    authorityRequired: 'read-only workspace projection',
+    interaction: 'nested-detail-close',
+    safeExecutionMode: 'mocked-safe-read; live/physical read-only',
+    evidenceId: 'home.workspace-details.section-back',
+  },
+  {
+    screen: 'home',
+    nestedSurface: 'Recent activity / grouped sections',
+    authorityRequired: 'read-only activity projection',
+    interaction: 'section-switch',
+    safeExecutionMode: 'mocked-safe-read; live/physical read-only',
+    evidenceId: 'home.recent-activity.section-switch',
+  },
+  {
+    screen: 'home',
+    nestedSurface: 'Recent activity / grouped sections',
+    authorityRequired: 'read-only activity projection',
+    interaction: 'nested-detail-close',
+    safeExecutionMode: 'mocked-safe-read; live/physical read-only',
+    evidenceId: 'home.recent-activity.section-back',
   },
   {
     screen: 'catalog',

@@ -16,6 +16,16 @@ describe('homeWorkflowPresentation', () => {
     });
   });
 
+  it('fails closed for an unreported flow instead of treating it as confirmed attention or readiness', () => {
+    expect(homeWorkflowPresentation({ overallTone: 'unknown', checking: false })).toMatchObject({
+      state: 'unknown',
+      motion: 'rest',
+      badge: 'Not confirmed',
+      activeNodes: [],
+      doneNodes: [],
+    });
+  });
+
   it('uses an explicit checking or attention state instead of implying a live flow', () => {
     expect(homeWorkflowPresentation({ overallTone: 'ready', attentionCount: 0, savedStateOnly: false, checking: true })).toMatchObject({
       state: 'checking',

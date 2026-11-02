@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
-import { AlertCircle, Clock3, Info, History, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, Clock3, Info, History, CheckCircle2, Activity } from 'lucide-react';
 import { StateSurface } from '../../components/ui.jsx';
 import { formatActivityCount } from '../homeActivityEvidence.js';
+import HomeGroupedSections from './HomeGroupedSections.jsx';
 
 const sections = [
   ['attention', 'Attention'], ['running', 'Running'], ['recent', 'Recent'], ['history', 'History'],
 ];
+const ACTIVITY_GROUPS = [{ label: 'Activity', items: [
+  { id: 'attention', label: 'Attention', description: 'Items reported for review', icon: AlertCircle },
+  { id: 'running', label: 'Running', description: 'Current and waiting operations', icon: Activity },
+  { id: 'recent', label: 'Recent', description: 'Latest reported changes', icon: Clock3 },
+  { id: 'history', label: 'History', description: 'Bounded history and personal review', icon: History },
+] }];
 const running = new Set(['running', 'working', 'in_progress']);
 const destination = { security: 'Safety', apps: 'Apps', devices: 'Devices', recovery: 'Recovery' };
 
@@ -65,7 +72,8 @@ function PersonalActivityReview({ cursor, cursorBusy, cursorError, saved, onMark
 export default function HomeActivityDetails({
   activity, navigation, cursor, cursorBusy, cursorError, saved, onMarkReviewed, onNavigate,
 }) {
-  const [section, setSection] = useState('attention');
+  const [section, setSection] = useState(null);
+  const selectedSection = section || 'attention';
   const events = activity?.events || [];
   const lists = {
     attention: events.filter((event) => event.needsAttention),
@@ -74,19 +82,14 @@ export default function HomeActivityDetails({
     history: events,
   };
   return <div className="lite-home-activity-details">
-    <nav ref={navigation?.navRef} className="lite-home-details-nav lite-home-activity-tabs"
-      aria-label="Activity sections" data-tabs-hidden={navigation?.hidden ? 'true' : 'false'}
-      data-tabs-scrolled={navigation?.scrolled ? 'true' : 'false'}
-      data-tabs-keyboard-focused={navigation?.keyboardFocused ? 'true' : 'false'}>
-      {sections.map(([key, label]) => <button type="button" key={key}
-        aria-current={section === key ? 'page' : undefined}
-        onClick={() => { navigation?.reveal(true); setSection(key); }}>{label}</button>)}
-    </nav>
+    <HomeGroupedSections groups={ACTIVITY_GROUPS} section={section}
+      onSectionChange={setSection} defaultSection="attention"
+      navigation={navigation} title="Activity">
     {!activity ? <>
       <StateSurface tone="unavailable" title="Activity unavailable"
         description="Activity information is not available. No successful or running action is assumed."
         className="lite-home-activity-state" />
-      {section === 'history' ? <PersonalActivityReview cursor={cursor} cursorBusy={cursorBusy}
+      {selectedSection === 'history' ? <PersonalActivityReview cursor={cursor} cursorBusy={cursorBusy}
         cursorError={cursorError} saved={saved} onMarkReviewed={onMarkReviewed} /> : null}
     </> :
       <div className="lite-home-activity-content">
@@ -108,15 +111,15 @@ export default function HomeActivityDetails({
         {activity.stale !== null && activity.stale > 0 ? <ActivityNotice title="Older unfinished operations" tone="warning" icon={AlertCircle}>
           {formatActivityCount(activity.stale)} older unfinished records require lifecycle verification.
         </ActivityNotice> : null}
-        {section === 'attention' ? <ActivityNotice title="How attention is counted">
+        {selectedSection === 'attention' ? <ActivityNotice title="How attention is counted">
           {activity.attentionScope === 'explicit_active_flags_only'
             ? 'Only issues explicitly marked active by the backend are counted as unresolved. Historical failures are shown separately.'
             : 'Unresolved issue classification is not available from this source.'}
         </ActivityNotice> : null}
-        {section === 'history' && activity.historicalFailures !== null ? <ActivityNotice title="Historical failures" tone="warning" icon={History}>
+        {selectedSection === 'history' && activity.historicalFailures !== null ? <ActivityNotice title="Historical failures" tone="warning" icon={History}>
           Historical failures {activity.historyWindowDays ? `in the last ${activity.historyWindowDays} days` : 'in the reported history window'}: {formatActivityCount(activity.historicalFailures)}. A failed record does not prove an issue is still unresolved.
         </ActivityNotice> : null}
-        {section === 'attention' && activity.grouped?.length ? <>
+        {selectedSection === 'attention' && activity.grouped?.length ? <>
           <ActivityNotice title="Historical patterns">
             Historical patterns to review — not automatically unresolved incidents.
           </ActivityNotice>
@@ -128,10 +131,11 @@ export default function HomeActivityDetails({
             </li>)}
           </ol>
         </> : null}
-        <ActivityEvents events={lists[section]} label={sections.find(([key]) => key === section)?.[1] || section}
+        <ActivityEvents events={lists[selectedSection]} label={sections.find(([key]) => key === selectedSection)?.[1] || selectedSection}
           onNavigate={onNavigate} />
-        {section === 'history' ? <PersonalActivityReview cursor={cursor} cursorBusy={cursorBusy}
+        {selectedSection === 'history' ? <PersonalActivityReview cursor={cursor} cursorBusy={cursorBusy}
           cursorError={cursorError} saved={saved} onMarkReviewed={onMarkReviewed} /> : null}
       </div>}
+    </HomeGroupedSections>
   </div>;
 }

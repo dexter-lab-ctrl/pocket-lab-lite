@@ -1,0 +1,208 @@
+/*
+ * Azure Horizon Command Home.
+ * Layout is identical across Daylight, Dark and System: only central semantic
+ * Azure token values can change across appearances (PR #636 density contract).
+ * Scoped to Home and its existing LiteDetailsPanel portal, never global Apps.
+ */
+html[data-lite-theme] .lite-home-refined.lite-home-premium-shell {
+  display:grid;gap:clamp(1rem,2vw,1.4rem);
+  max-width:1260px;min-width:0;margin-inline:auto;
+}
+html[data-lite-theme] .lite-home-command-hero.pocket-card {
+  display:grid;gap:.75rem;min-width:0;
+  padding:clamp(1.2rem,2.6vw,2rem);
+  border:1px solid var(--azure-border);border-inline-start:3px solid var(--azure-success);
+  background:var(--azure-surface);color:var(--azure-text);
+  border-radius:var(--azure-radius-card);box-shadow:var(--azure-shadow);
+}
+html[data-lite-theme] .lite-home-command-hero.is-attention,
+html[data-lite-theme] .lite-home-command-hero.is-checking,
+html[data-lite-theme] .lite-home-command-hero.is-partial {border-inline-start-color:var(--azure-warning)}
+html[data-lite-theme] .lite-home-command-hero.is-critical {border-inline-start-color:var(--azure-danger)}
+html[data-lite-theme] .lite-home-command-hero:is(.is-offline,.is-saved,.is-unknown,.is-loading) {border-inline-start-color:var(--azure-neutral)}
+html[data-lite-theme] .lite-home-command-hero.is-running {border-inline-start-color:var(--azure-accent)}
+html[data-lite-theme] .lite-home-command-status {
+  display:flex;align-items:center;gap:.55rem;min-width:0;
+  font-weight:650;font-size:.82rem;line-height:1.35;color:var(--azure-muted);
+}
+html[data-lite-theme] .lite-home-command-status svg {color:var(--azure-success);flex:none}
+html[data-lite-theme] .lite-home-command-hero:is(.is-attention,.is-checking,.is-partial) .lite-home-command-status svg {color:var(--azure-warning)}
+html[data-lite-theme] .lite-home-command-hero.is-critical .lite-home-command-status svg {color:var(--azure-danger)}
+html[data-lite-theme] .lite-home-command-hero:is(.is-saved,.is-unknown,.is-offline,.is-loading) .lite-home-command-status svg {color:var(--azure-neutral)}
+html[data-lite-theme] .lite-home-command-hero.is-running .lite-home-command-status svg {color:var(--azure-accent)}
+html[data-lite-theme] .lite-home-command-hero h2 {
+  margin:0;max-width:34ch;color:var(--azure-text);
+  font-weight:700;line-height:1.22;letter-spacing:-.023em;
+  font-size:clamp(1.35rem,2.3vw,1.85rem);overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-command-hero > p {
+  margin:0;max-width:68ch;color:var(--azure-muted);
+  font-size:.94rem;line-height:1.55;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-command-hero-footer {
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:.7rem;margin-top:.3rem;min-width:0;
+}
+html[data-lite-theme] .lite-home-command-freshness {
+  align-items:center;gap:.4rem;min-width:0;max-width:min(100%,42rem);
+  margin:0;padding:0;border:0;border-radius:0;background:transparent;
+  color:var(--azure-muted);font-size:.78rem;line-height:1.35;
+  box-shadow:none;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-command-freshness svg {width:15px;height:15px;flex:none;color:var(--azure-accent)}
+html[data-lite-theme] .lite-home-command-freshness span {display:block;min-width:0}
+html[data-lite-theme] .lite-home-command-freshness strong {font-size:inherit;color:inherit;font-weight:650}
+html[data-lite-theme] .lite-home-command-freshness small {display:none}
+html[data-lite-theme] .lite-home-command-freshness.is-saved,
+html[data-lite-theme] .lite-home-command-freshness.is-stale,
+html[data-lite-theme] .lite-home-command-freshness.is-refreshing {border:0;background:transparent}
+html[data-lite-theme] .lite-home-command-details {
+  display:inline-flex;align-items:center;justify-content:center;gap:.3rem;
+  min-height:44px;padding:.45rem .7rem;font-weight:650;
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  background:var(--azure-raised);color:var(--azure-accent);
+  transition:background 160ms ease,border-color 160ms ease;
+}
+html[data-lite-theme] .lite-home-command-details:hover {background:var(--azure-hover);border-color:var(--azure-strong-border)}
+html[data-lite-theme] .lite-home-command-details:active {background:var(--azure-pressed)}
+html[data-lite-theme] .lite-home-overview-grid {grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card {
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  grid-template-rows:auto 1fr;gap:.65rem;
+  align-content:start;align-items:start;min-width:0;
+  min-height:134px;padding:clamp(.85rem,1.2vw,1.15rem);
+  transition:background 160ms ease,border-color 160ms ease;
+  transform:none;
+}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card>svg:first-child {
+  grid-column:1;width:38px;height:38px;padding:9px;
+}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card>span {
+  grid-column:1 / -1;grid-row:2;display:grid;gap:.3rem;min-width:0;
+}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card>svg:last-child {
+  grid-column:2;grid-row:1;justify-self:end;margin:0;color:var(--azure-muted);
+}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card:hover {transform:none}
+@media(hover:hover) {
+  html[data-lite-theme] .lite-home-overview-tile.pocket-card:hover {background:var(--azure-hover)}
+}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card:active {background:var(--azure-pressed)}
+html[data-lite-theme] .lite-home-refined :is(.lite-home-command-details,.lite-home-overview-tile,.lite-home-text-action):focus-visible {
+  outline:3px solid var(--azure-focus);outline-offset:2px;
+}
+html[data-lite-theme] .lite-home-activity-preview {
+  background:var(--azure-surface);border-color:var(--azure-border);border-radius:var(--azure-radius-card);
+}
+html[data-lite-theme] .lite-home-activity-latest time {
+  display:block;color:var(--azure-muted);font-size:.79rem;line-height:1.5;
+}
+html[data-lite-theme] .lite-home-section-title h2 {font-size:1.12rem;line-height:1.35}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-workspace {
+  display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;min-width:0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-index,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-detail {min-width:0}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-navigation {display:grid;align-content:start;gap:1.1rem;min-width:0}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-group {display:grid;gap:.45rem;min-width:0}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-group h2 {
+  margin:0;padding:0 .55rem;min-width:0;box-sizing:border-box;
+  color:var(--azure-muted);overflow-wrap:anywhere;
+  font-size:.73rem;font-weight:750;letter-spacing:.075em;text-transform:uppercase;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-rows {
+  display:grid;gap:0;min-width:0;border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-control);overflow:hidden;background:var(--azure-surface);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row {
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;
+  gap:.75rem;min-width:0;min-height:58px;padding:.65rem .85rem;
+  text-align:left;background:var(--azure-surface);color:var(--azure-text);
+  border:0;border-bottom:1px solid var(--azure-border);touch-action:manipulation;
+  transition:background 160ms ease;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row:last-child {border-bottom:0}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row>svg:first-child {flex:none;color:var(--azure-accent)}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row>span {display:grid;gap:.2rem;min-width:0}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row strong {font-size:.87rem;font-weight:650;overflow-wrap:anywhere}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row small {
+  color:var(--azure-muted);font-size:.77rem;line-height:1.4;overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-chevron {color:var(--azure-muted)}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row[aria-current=page] {
+  background:var(--azure-selected);color:var(--azure-accent);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row[aria-current=page] small {
+  color:var(--azure-focus);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row:hover small,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row:focus-visible small {
+  color:var(--azure-text);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row:hover {background:var(--azure-hover)}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row:active {background:var(--azure-pressed)}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-back {
+  display:inline-flex;align-items:center;gap:.4rem;min-height:44px;
+  background:var(--azure-raised);color:var(--azure-text);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  padding:.5rem .8rem;justify-self:start;font-size:.83rem;font-weight:650;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-detail-heading {display:grid;gap:.3rem}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-detail-heading h2 {
+  margin:0;font-size:1.12rem;font-weight:700;line-height:1.35;color:var(--azure-text);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-detail-heading p {
+  margin:0;font-size:.81rem;line-height:1.5;color:var(--azure-muted);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-section-content {
+  display:grid;gap:1rem;min-width:0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-detail {
+  display:none;align-content:start;gap:.9rem;
+}
+html[data-lite-theme] .lite-home-panel-layer [data-home-settings-view=section] .lite-home-settings-index {display:none}
+html[data-lite-theme] .lite-home-panel-layer [data-home-settings-view=section] .lite-home-settings-detail {display:grid}
+html[data-lite-theme] .lite-home-panel-layer :is(.lite-home-settings-back,.lite-home-settings-row):focus-visible {
+  outline:3px solid var(--azure-focus);outline-offset:-3px;
+}
+@container home-panel (min-width:600px) {
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-workspace {
+    grid-template-columns:minmax(170px,210px) minmax(0,1fr);gap:1.15rem;align-items:start;
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-workspace .lite-home-settings-index {display:block}
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-workspace .lite-home-settings-detail {
+    display:grid;border-inline-start:1px solid var(--azure-border);
+    padding-inline-start:clamp(.8rem,2cqi,1.3rem);
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-back {display:none}
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-rows {background:transparent}
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row {min-height:56px;padding:.65rem .6rem}
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row small {font-size:.72rem}
+}
+@media(max-width:850px) {
+  html[data-lite-theme] .lite-home-overview-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px) {
+  html[data-lite-theme] .lite-home-overview-tile.pocket-card {min-height:118px}
+  html[data-lite-theme] .lite-home-lower-grid {grid-template-columns:minmax(0,1fr)}
+  html[data-lite-theme] .lite-home-command-hero-footer {align-items:flex-start}
+}
+@media(max-width:767px) {
+  html[data-lite-theme] .lite-home-refined.lite-home-premium-shell {gap:.7rem}
+  html[data-lite-theme] .lite-home-refined.lite-home-premium-shell > .lite-page-header {margin-bottom:0}
+  html[data-lite-theme] .lite-home-command-hero.pocket-card {padding:.8rem;gap:.45rem}
+  html[data-lite-theme] .lite-home-command-hero-footer {margin-top:.1rem}
+  html[data-lite-theme] .lite-home-overview {gap:.55rem}
+  html[data-lite-theme] .lite-home-overview-tile.pocket-card {
+    min-height:104px;padding:.65rem;gap:.5rem;
+  }
+  html[data-lite-theme] .lite-home-overview-tile.pocket-card > svg:first-child {width:34px;height:34px;padding:8px}
+}
+@media(max-width:355px) {
+  html[data-lite-theme] .lite-home-overview-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+  html[data-lite-theme] .lite-home-overview-tile.pocket-card {padding:.65rem}
+  html[data-lite-theme] .lite-home-overview-tile strong {font-size:.9rem}
+}
+@media(prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-home-refined :is(.lite-home-command-details,.lite-home-overview-tile,.lite-home-settings-row) {transition:none}
+}

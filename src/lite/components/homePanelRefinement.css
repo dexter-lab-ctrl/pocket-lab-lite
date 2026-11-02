@@ -36,6 +36,17 @@ html[data-lite-theme] .lite-home-panel-layer .lite-overlay-head strong {
 html[data-lite-theme] .lite-home-panel-layer .lite-overlay-head p {
   color:var(--azure-muted);font-size:.82rem;
 }
+/* The shared Apps refinement uses a negative sticky header margin for its
+   snap-action layout. Home's grouped settings header is a sibling of the
+   scroll owner, so keep it in normal sheet flow at small widths. */
+@media (max-width:700px) {
+  html[data-lite-theme] .lite-details-overlay-layer.lite-home-panel-layer .lite-overlay-head {
+    margin:0 !important;
+    padding:clamp(.85rem,2cqi,1.2rem) !important;
+    position:relative !important;
+    top:auto !important;
+  }
+}
 html[data-lite-theme] .lite-home-panel-layer .lite-overlay-close {
   display:grid;place-items:center;flex:none;border-radius:var(--azure-radius-control);
   border:1px solid var(--azure-border);color:var(--azure-text);background:var(--azure-raised);

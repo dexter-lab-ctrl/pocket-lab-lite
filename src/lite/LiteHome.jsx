@@ -6,16 +6,15 @@ import {
   Smartphone,
   HardDrive,
   ArrowUpRight,
-  Activity,
+  Activity, CheckCircle2, AlertTriangle, AlertCircle, CloudOff, Clock3,
+  Info, Wrench, ChevronRight,
 } from 'lucide-react';
 import { buildLiteHomeOverview } from '../lib/liteHomePresentation.js';
 import {
   PageHeader,
   GlassCard,
   LiteRefreshButton,
-  LoadingCard,
   LiteActionRow,
-  LiteOperationalStory,
 } from './LiteUi.jsx';
 import { LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
 import { LiteDetailsPanel } from './LiteOverlay.jsx';
@@ -28,10 +27,12 @@ import { useLiteQuery } from '../hooks/useLiteQuery.js';
 import { liteApi } from '../lib/liteApi.js';
 import { selectHomeActivityEvidence } from './homeActivityEvidence.js';
 import HomeActivityDetails from './components/HomeActivityDetails.jsx';
+import HomeGroupedSections from './components/HomeGroupedSections.jsx';
 import './components/homePremium.css';
 import './components/azureHome.css';
 import './components/homeActivityEvidence.css';
 import './components/homePanelRefinement.css';
+import './components/homeCommand.css';
 
 const HOME_WORKFLOW_STEPS = Object.freeze([
   { id: 'device', label: 'Device', icon: Smartphone },
@@ -61,6 +62,18 @@ export function homeWorkflowPresentation({ overallTone, attentionCount, savedSta
       title: 'Showing saved workspace state',
       summary: 'Reconnect to resume live workspace signals.',
       badge: 'Saved',
+      activeNodes: [],
+      doneNodes: [],
+    };
+  }
+  if (!['ready', 'review', 'danger'].includes(overallTone)) {
+    return {
+      state: 'unknown',
+      motion: 'rest',
+      eyebrow: 'Workspace status',
+      title: 'Service status is not confirmed',
+      summary: 'Pocket Lab has not reported enough current service information to confirm a healthy flow.',
+      badge: 'Not confirmed',
       activeNodes: [],
       doneNodes: [],
     };
@@ -128,47 +141,125 @@ const HOME_TILES = [
   { id: 'security', label: 'Safety', screen: 'security', icon: ShieldCheck },
   { id: 'recovery', label: 'Backups', screen: 'recovery', icon: HardDrive },
 ];
-const SERVICE_LABELS = { ready: 'Ready', review: 'Review', danger: 'Needs attention', neutral: 'Not available' };
 const ACTIVITY_SCREENS = { devices: 'devices', apps: 'catalog', security: 'security', recovery: 'recovery' };
+const HOME_WORKSPACE_GROUPS = [
+  { label: 'Workspace', items: [
+    { id: 'overview', label: 'Overview', description: 'Workspace facts and readiness', icon: LayoutGrid },
+    { id: 'service-health', label: 'Service health', description: 'How your services connect', icon: Activity },
+  ] },
+  { label: 'Maintenance', items: [
+    { id: 'updates', label: 'Updates', description: 'Check available updates', icon: ArrowUpRight },
+    { id: 'diagnostics', label: 'Diagnostics', description: 'Technical details on demand', icon: Wrench },
+  ] },
+];
 
-function HomeOverviewGrid({ services, onNavigate, saved }) {
-  const [expanded, setExpanded] = useState(false);
+export function homeCommandHeroPresentation({
+  overview, loading = false, refreshing = false, saved = false,
+  reachable = true, partial = false, running = false, error = false,
+}) {
+  const services = overview?.services || [];
+  if (!reachable) return { state: 'offline', eyebrow: 'Workspace unavailable',
+    title: 'Current status is unavailable', summary: saved
+      ? 'Showing saved information. Reconnect to confirm current workspace health.'
+      : 'Pocket Lab cannot confirm your workspace status right now.', icon: CloudOff };
+  if (partial) return { state: 'partial', eyebrow: 'Information needs refresh',
+    title: 'Workspace status needs confirmation',
+    summary: 'The latest prepared information is incomplete or too old. Review saved details while Pocket Lab reconnects.', icon: AlertTriangle };
+  if (saved) return { state: 'saved', eyebrow: 'Saved workspace state',
+    title: 'Showing saved information',
+    summary: 'Current workspace health is not confirmed. Actions need a live connection.', icon: Clock3 };
+  if (loading && !services.length) return { state: 'loading', eyebrow: 'Checking workspace',
+    title: 'Checking your workspace', summary: 'Current status has not been reported yet.', icon: Clock3 };
+  if (error || !services.length || !['ready','review','danger'].includes(overview?.overallTone))
+    return { state: 'unknown', eyebrow: 'Workspace status unknown', title: 'Workspace status is not confirmed',
+      summary: 'Pocket Lab has not confirmed enough information to report a healthy workspace.', icon: Info };
+  if (overview.overallTone === 'danger' || services.some((item) => item.tone === 'danger'))
+    return { state: 'critical', eyebrow: 'Needs attention', title: 'Some services need your attention',
+      summary: 'Review the reported problem before making important changes.', icon: AlertCircle };
+  if (overview.overallTone === 'review' || services.some((item) => item.tone !== 'ready'))
+    return { state: 'attention', eyebrow: 'Review recommended', title: 'Your workspace needs a review',
+      summary: 'Some reported services are not ready yet. Review the affected areas below.', icon: AlertTriangle };
+  if (overview?.nextAction?.screen && overview.nextAction.screen !== 'home'
+      && overview.nextAction.tone === 'review') {
+    return { state: 'attention', eyebrow: 'Review recommended', title: 'Your workspace needs a review',
+      summary: 'A reported workspace item needs attention. Review the recommended next action below.',
+      icon: AlertTriangle };
+  }
+  if (running) return { state: 'running', eyebrow: 'Work in progress',
+    title: 'Workspace operations are running',
+    summary: 'The latest prepared activity reports work in progress. Open Recent activity for details.', icon: Activity };
+  if (refreshing) return { state: 'checking', eyebrow: 'Checking latest information',
+    title: 'Refreshing workspace status',
+    summary: 'The previous confirmed status remains visible while fresh information is requested.', icon: Clock3 };
+  return { state: 'ready', eyebrow: 'Workspace ready', title: 'Everything is running smoothly',
+    summary: 'Your reported workspace services are available. No immediate action is needed.', icon: CheckCircle2 };
+}
+
+export function HomeHealthHero({ overview, loading, refreshing, saved, reachable, partial, running, error, lastUpdatedLabel, onDetails }) {
+  const hero = homeCommandHeroPresentation({ overview, loading, refreshing, saved, reachable, partial, running, error });
+  const Icon = hero.icon;
+  return <GlassCard as="section" className={'lite-home-command-hero is-' + hero.state}
+    data-home-hero-state={hero.state} aria-label="Workspace health">
+    <div className="lite-home-command-status"><Icon size={19} aria-hidden="true" /><span>{hero.eyebrow}</span></div>
+    <h2>{hero.title}</h2>
+    <p>{hero.summary}</p>
+    <div className="lite-home-command-hero-footer">
+      <LiteFreshness
+        className="lite-home-command-freshness"
+        saved={saved}
+        stale={partial}
+        refreshing={refreshing}
+        lastUpdatedLabel={lastUpdatedLabel}
+        backendReachable={reachable}
+      />
+      <button type="button" className="lite-home-command-details" onClick={onDetails}>
+        Workspace details <ChevronRight size={17} aria-hidden="true" />
+      </button>
+    </div>
+  </GlassCard>;
+}
+
+function HomeOverviewGrid({ services, status, onNavigate, saved }) {
   const rows = Array.isArray(services) ? services : [];
-  const extra = rows.filter((item) => !HOME_TILES.some((tile) => tile.id === item.key) && item.screen && item.screen !== 'home');
+  const summary = status?.summary || {};
   return <section className="lite-home-overview" aria-labelledby="lite-home-overview-title">
-    <div className="lite-home-section-title"><h2 id="lite-home-overview-title">Workspace overview</h2><p>Open an area for its current status.</p></div>
+    <div className="lite-home-section-title"><h2 id="lite-home-overview-title">Your workspace</h2></div>
     <div className="lite-home-overview-grid">
       {HOME_TILES.map(({ id, label, screen, icon: Icon }) => {
         const item = rows.find((entry) => entry.key === id);
         const tone = saved ? 'neutral' : item?.tone || 'neutral';
+        let description = saved ? 'Saved information' : item?.statusLabel || 'Status not reported';
+        if (!saved && tone === 'ready') {
+          if (id === 'app_catalog' && Number.isSafeInteger(summary.apps_available) && summary.apps_available >= 0)
+            description = summary.apps_available + ' available';
+          if (id === 'device_fleet' && Number.isSafeInteger(summary.devices_known) && summary.devices_known >= 0)
+            description = summary.devices_known + ' known';
+          if (id === 'security' && summary.security_findings === 0) description = 'No urgent issues reported';
+        }
         return <GlassCard as="button" interactive key={id} type="button" className={'lite-home-overview-tile is-' + tone}
           onClick={() => onNavigate(screen)} aria-label={'Open ' + label}>
           <Icon size={20} aria-hidden="true" />
-          <span><strong>{label}</strong><small>{saved ? 'Saved information' : item?.statusLabel || SERVICE_LABELS.neutral}</small></span>
+          <span><strong>{label}</strong><small>{description}</small></span>
           <ArrowUpRight size={17} aria-hidden="true" />
         </GlassCard>;
       })}
     </div>
-    {extra.length ? <div className="lite-home-more-areas">
-      <button type="button" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? 'Show fewer areas' : 'More areas'}</button>
-      {expanded ? <div className="lite-home-more-grid">{extra.map((item) =>
-        <LiteActionRow key={item.key} label={item.label} value={saved ? 'Saved' : item.statusLabel}
-          action={{ label: 'Open', onClick: () => onNavigate(item.screen) }} />)}</div> : null}
-    </div> : null}
   </section>;
 }
 
-function HomeActivityPreview({ activity, onOpen }) {
-  const latest = activity?.grouped?.[0] || activity?.latestEvent;
+function HomeActivityPreview({ activity, saved, onOpen }) {
+  const latest = activity?.latestEvent;
+  const at = latest && Number.isFinite(latest.at) ? new Date(latest.at) : null;
   return <GlassCard as="section" className="lite-home-activity-preview" aria-labelledby="lite-home-activity-preview-heading">
-    <div className="lite-home-section-title"><h2 id="lite-home-activity-preview-heading">Recent activity</h2>
-      <p>{activity?.summary || 'Activity information is not available yet.'}</p></div>
+    <div className="lite-home-section-title"><h2 id="lite-home-activity-preview-heading">Recent activity</h2></div>
     {latest ? <div className="lite-home-activity-latest">
       <Activity size={19} aria-hidden="true" />
-      <span><strong>{latest.label}</strong>
-        <small>{latest.summary || latest.statusLabel}{latest.at ? ' · ' + new Date(latest.at).toLocaleString() : ''}</small></span>
-    </div> : <p className="lite-home-muted">No recent activity to display.</p>}
-    <button type="button" className="lite-home-text-action" onClick={onOpen}>View activity <ArrowUpRight size={16} aria-hidden="true" /></button>
+      <span><strong>{latest.label}</strong><small>{latest.statusLabel}</small>
+        {at && Number.isFinite(at.getTime()) ? <time dateTime={at.toISOString()}>{at.toLocaleString()}</time> : null}</span>
+    </div> : <p className="lite-home-muted">{saved ? 'Live activity is unavailable. Reconnect to review current changes.' :
+      activity ? 'No recent activity was reported.' : 'Recent activity is not available yet.'}</p>}
+    <button type="button" className="lite-home-text-action" onClick={onOpen}>View all activity
+      <ChevronRight size={16} aria-hidden="true" /></button>
   </GlassCard>;
 }
 
@@ -183,7 +274,7 @@ export default function HomeScreen({
     [backendReachable, effectiveSavedStateOnly, lastUpdatedLabel, status],
   );
   const [workspaceDetailsOpen, setWorkspaceDetailsOpen] = useState(false);
-  const [workspaceSection, setWorkspaceSection] = useState('overview');
+  const [workspaceSection, setWorkspaceSection] = useState(null);
   const [activityOpen, setActivityOpen] = useState(false);
   const workspaceNav = useLitePanelSectionNavigation(workspaceDetailsOpen);
   const activityNav = useLitePanelSectionNavigation(activityOpen);
@@ -210,7 +301,19 @@ export default function HomeScreen({
         counts_available: activityData?.counts_available !== false && historyData.counts_available !== false }) || activity
     : activity, [historyData, activityData, activity]);
 
-  const attentionItems = useMemo(() => prioritizeWorkspaceAttention(overview.services), [overview.services]);
+  const attentionItems = useMemo(() => {
+    const items = prioritizeWorkspaceAttention(overview.services);
+    const next = overview.nextAction;
+    if (!next || next.tone !== 'review' || !next.screen || next.screen === 'home'
+        || items.some((item) => item.screen === next.screen)) return items;
+    return [...items, {
+      key: 'next-action-' + next.screen,
+      label: next.title || next.label,
+      summary: next.detail || 'Open this area to review the latest reported state.',
+      screen: next.screen,
+      tone: 'review',
+    }];
+  }, [overview.services, overview.nextAction]);
 
   useEffect(() => {
     if (!activityOpen || effectiveSavedStateOnly || !backendReachable) return;
@@ -239,65 +342,43 @@ export default function HomeScreen({
 
 
   const details = overview.workspaceDetails;
-  const sectionNames = { overview: 'Overview', 'service-health': 'Service health', updates: 'Updates', diagnostics: 'Diagnostics' };
-  const primaryAction = overview.nextAction
-    && overview.nextAction.screen !== 'home'
-    && !effectiveSavedStateOnly
-    && !attentionItems.some((item) => item.screen === overview.nextAction.screen)
-    ? {
-        label: overview.nextAction.label,
-        tone: overview.nextAction.tone === 'primary' ? 'primary' : 'secondary',
-        onClick: () => goTo(overview.nextAction.screen),
-      }
-    : null;
+  const selectedWorkspaceSection = workspaceSection || 'overview';
   return <div className="lite-home-premium-shell lite-home-refined" data-lite-home-premium="true" data-azure-horizon-home="true" data-home-state-source="tanstack-dexie-fastapi">
-    <PageHeader eyebrow="Self-hosted workspace" title="Home" description="Your workspace, at a glance."
+    <PageHeader eyebrow="Self-hosted workspace" title="Home" description="Your private workspace, at a glance."
       actions={<LiteRefreshButton scope="home" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />} />
-    <LiteOperationalStory className="lite-home-operational-story" story={overview.workspaceStory}
-      primaryAction={primaryAction}
-      manageAction={{ label: 'Workspace details', onClick: () => { setWorkspaceSection('overview'); setWorkspaceDetailsOpen(true); } }} />
-    <LiteFreshness
-      saved={effectiveSavedStateOnly}
-      stale={projectionStale}
-      refreshing={refreshing}
-      lastUpdatedLabel={lastUpdatedLabel}
-      backendReachable={backendReachable}
-    />
-    {loading && !overview.services.length ? <LoadingCard label="Checking workspace status…" /> : null}
-    <HomeOverviewGrid services={overview.services} saved={effectiveSavedStateOnly} onNavigate={goTo} />
+    <HomeHealthHero overview={overview} loading={loading} refreshing={refreshing || status.refresh_pending === true}
+      saved={effectiveSavedStateOnly} reachable={backendReachable} partial={projectionStale}
+      running={!effectiveSavedStateOnly && Number.isSafeInteger(activity?.active) && activity.active > 0}
+      error={Boolean(error)} lastUpdatedLabel={lastUpdatedLabel}
+      onDetails={() => { setWorkspaceSection(null); setWorkspaceDetailsOpen(true); }} />
+    <HomeOverviewGrid services={overview.services} status={status} saved={effectiveSavedStateOnly} onNavigate={goTo} />
     <div className="lite-home-lower-grid">
-    <HomeActivityPreview activity={effectiveSavedStateOnly ? null : activity} onOpen={() => setActivityOpen(true)} />
-    {attentionItems.length ? <LiteNextSteps title="Needs your attention"
-      description={effectiveSavedStateOnly ? 'Last saved status — verify before acting.' : 'A few things to check.'}
-      saved={effectiveSavedStateOnly} initialCount={3}
-      items={(effectiveSavedStateOnly ? attentionItems.slice(0, 3) : attentionItems).map((item) => ({
-        id: item.key, label: item.label, description: item.summary,
-        actionLabel: 'Review ' + item.label,
-        onClick: item.screen ? () => goTo(item.screen) : undefined,
-      }))} className="lite-home-attention-list" /> : null}
+      {!effectiveSavedStateOnly && overview.overallTone !== 'unknown' && attentionItems.some((item) => item.screen && item.screen !== 'home') ?
+        <LiteNextSteps title="Needs your attention"
+          description="Reported areas to review, in priority order."
+          saved={false} initialCount={3}
+          items={attentionItems.filter((item) => item.screen && item.screen !== 'home').map((item) => ({
+            id: item.key, label: item.label, description: item.summary,
+            actionLabel: 'Review ' + item.label, onClick: () => goTo(item.screen),
+          }))} className="lite-home-attention-list" /> : null}
+      <HomeActivityPreview activity={effectiveSavedStateOnly ? null : activity} saved={effectiveSavedStateOnly} onOpen={() => setActivityOpen(true)} />
     </div>
     <LiteDetailsPanel open={workspaceDetailsOpen} onClose={() => setWorkspaceDetailsOpen(false)}
-      variant="home" className="lite-home-details-panel" desktopGeometry={workspaceGeometry}
+      variant="home" className="lite-home-details-panel" desktopGeometry={workspaceGeometry} mobileSnap
       bodyRef={workspaceNav.bodyRef} bodyClassName="lite-home-workspace-details-scroll lite-home-panel-scroll"
       title="Workspace details" description="Current services and safe workspace information.">
       <div className="lite-home-workspace-details">
-        <nav ref={workspaceNav.navRef} className="lite-home-details-nav lite-home-workspace-tabs"
-          aria-label="Workspace details sections"
-          data-tabs-hidden={workspaceNav.hidden ? 'true' : 'false'}
-          data-tabs-scrolled={workspaceNav.scrolled ? 'true' : 'false'}
-          data-tabs-keyboard-focused={workspaceNav.keyboardFocused ? 'true' : 'false'}>
-          {Object.entries(sectionNames).map(([id, label]) =>
-            <button key={id} type="button" aria-current={workspaceSection === id ? 'page' : undefined}
-              onClick={() => { workspaceNav.reveal(true); setWorkspaceSection(id); }}>{label}</button>)}
-        </nav>
-        {workspaceSection === 'overview' ? <section className="lite-home-workspace-section" aria-label="Workspace overview details">
+        <HomeGroupedSections groups={HOME_WORKSPACE_GROUPS} section={workspaceSection}
+          onSectionChange={setWorkspaceSection} defaultSection="overview"
+          navigation={workspaceNav} title="Workspace details">
+        {selectedWorkspaceSection === 'overview' ? <section className="lite-home-workspace-section" aria-label="Workspace overview details">
           {details.resources.filter((item) => item.key !== 'activity').map((item) =>
             <LiteActionRow key={item.key} label={item.key === 'database' ? 'System data' : item.label}
               value={item.value} summary={item.note} attention={item.tone === 'danger' || item.tone === 'review'} />)}
           <LiteActionRow label="Information freshness" value={effectiveSavedStateOnly ? 'Saved' : 'Current'}
             summary={details.freshness || 'Not checked yet'} />
         </section> : null}
-        {workspaceSection === 'service-health' ? <section className="lite-home-workspace-section" aria-label="Service health">
+        {selectedWorkspaceSection === 'service-health' ? <section className="lite-home-workspace-section" aria-label="Service health">
           <HomeWorkspaceFlow overallTone={overview.overallTone} attentionCount={overview.attentionCount}
             savedStateOnly={effectiveSavedStateOnly} checking={loading || refreshing || status.refresh_pending === true} />
           {overview.services.map((item) => <LiteActionRow key={item.key} label={item.label}
@@ -305,8 +386,8 @@ export default function HomeScreen({
             attention={item.tone === 'danger' || item.tone === 'review'}
             action={item.screen !== 'home' ? { label: 'Open', onClick: () => goTo(item.screen) } : null} />)}
         </section> : null}
-        {workspaceSection === 'updates' ? <section className="lite-home-workspace-section" aria-label="Updates"><LiteReleaseUpdateCard /></section> : null}
-        {workspaceSection === 'diagnostics' ? <section className="lite-home-workspace-section" aria-label="Diagnostics">
+        {selectedWorkspaceSection === 'updates' ? <section className="lite-home-workspace-section" aria-label="Updates"><LiteReleaseUpdateCard /></section> : null}
+        {selectedWorkspaceSection === 'diagnostics' ? <section className="lite-home-workspace-section" aria-label="Diagnostics">
           <LiteTechnicalFacts title="Technical details" description="Sanitized status and projection information."
             facts={[
               ...details.resources.filter((item) => item.key !== 'activity').map((item) => ({
@@ -317,10 +398,11 @@ export default function HomeScreen({
               { id: 'information', label: 'Projection freshness', value: effectiveSavedStateOnly ? 'Saved information' : 'Current information', note: details.freshness },
             ]} />
         </section> : null}
+        </HomeGroupedSections>
       </div>
     </LiteDetailsPanel>
     <LiteDetailsPanel open={activityOpen} onClose={() => setActivityOpen(false)}
-      variant="home" className="lite-home-details-panel" desktopGeometry={activityGeometry}
+      variant="home" className="lite-home-details-panel" desktopGeometry={activityGeometry} mobileSnap
       bodyRef={activityNav.bodyRef} bodyClassName="lite-home-panel-scroll lite-home-activity-scroll"
       title="Recent activity" description="Workspace history and personal review.">
       <HomeActivityDetails activity={history} navigation={activityNav} cursor={cursor} cursorBusy={cursorBusy}

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: df4cc6b75d9e9e4710ad199babcec027704ecf8f12cce5a7c13f3c488f41227f
+source_fingerprint: 8dda75914d52ba55526cd0d8209d24ee0f653a80f804a8d17624e1036c627976
 schema_revision: 1
 validation_status: generated
 ---
@@ -113,6 +113,19 @@ validation_status: generated
 | `pocket-lab-lite-home-narrow320` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-narrow320-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-home-mobile` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-mobile-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-home-desktop` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-desktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-commanddaylighthealthydesktop` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commanddaylighthealthydesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-commanddarkhealthydesktop` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commanddarkhealthydesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-commanddaylighthealthymobile` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commanddaylighthealthymobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-commanddarkhealthymobile` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commanddarkhealthymobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-commandattentiondesktop` | home | `lifecycle-attention` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commandattentiondesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-commandattentionmobile` | home | `lifecycle-attention` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commandattentionmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-commandsavedoffline` | home | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commandsavedoffline-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-commandapiunavailable` | home | `api-unavailable` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commandapiunavailable-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-commandlongtext` | home | `lifecycle-attention` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commandlongtext-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-commandenlargedtext` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commandenlargedtext-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-commandnarrow` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commandnarrow-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-commandreducedmotion` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commandreducedmotion-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-commandsystem` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commandsystem-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-ownerready` | identity | `identity-summary` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-ownerready-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-passwordconfigured` | identity | `identity-password-configured` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-passwordconfigured-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-identityloading` | identity | `slow-response` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-identityloading-{viewport}.png` | fixture-dependent |

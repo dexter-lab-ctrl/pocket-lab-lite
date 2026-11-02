@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: d740dfce1c4eea16047dffeef79956e22e7fd63ce82658cb2adee12c6d7518b4
+source_fingerprint: 41193f9e40a636e72c0c7478bdc9d45dc61448c444479a8ed4e25f7e82816366
 schema_revision: 1
 validation_status: generated
 ---
@@ -263,6 +263,38 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `FlowActivityLongHistory`
 - `FlowActivityMobile320`
 - `FlowActivitySystem`
+- `CommandDaylightHealthyDesktop`
+- `CommandDarkHealthyDesktop`
+- `CommandDaylightHealthyMobile`
+- `CommandDarkHealthyMobile`
+- `CommandAttentionDesktop`
+- `CommandAttentionMobile`
+- `CommandSavedOffline`
+- `CommandApiUnavailable`
+- `CommandLongText`
+- `CommandEnlargedText`
+- `CommandNarrow`
+- `CommandReducedMotion`
+- `CommandSystem`
+- `CommandWorkspaceMobileIndex`
+- `CommandWorkspaceMobileNested`
+- `CommandWorkspaceDesktopColumn`
+- `CommandActivityMobileIndex`
+- `CommandActivityMobileNested`
+- `CommandActivityDesktopColumn`
+- `CommandWorkspaceNarrowPanel`
+- `CommandActivityResizedPanel`
+- `CommandWorkspaceMobileCompact`
+- `CommandWorkspaceMobileMedium`
+- `CommandWorkspaceMobileExpanded`
+- `CommandActivityMobileCompact`
+- `CommandActivityMobileMedium`
+- `CommandActivityMobileExpanded`
+- `CommandRunningOperation`
+- `CommandChecking`
+- `CommandInitialLoading`
+- `CommandPartialProjection`
+- `CommandUnknown`
 
 ## LiteIdentity
 

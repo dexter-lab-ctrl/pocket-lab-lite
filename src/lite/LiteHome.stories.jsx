@@ -1,7 +1,7 @@
 import React from 'react';
 import { expect, userEvent, within } from '@storybook/test';
 import LiteStoryFrame, { createLiteStory } from './stories/LiteStoryFrame.jsx';
-import { HomeWorkspaceFlow } from './LiteHome.jsx';
+import { HomeWorkspaceFlow, HomeHealthHero } from './LiteHome.jsx';
 import { LiteThemeProvider } from './theme/LiteThemeProvider.jsx';
 
 export default { title: 'Pocket Lab Lite/Home', component: LiteStoryFrame, tags: ['autodocs'] };
@@ -41,8 +41,10 @@ export const ReleaseUpToDate = createLiteStory('home', 'release-current');
 export const ReleaseAvailable = {
   ...createLiteStory('home', 'release-available'),
   play: async ({ canvasElement }) => {
-    const canvas = await expectHome(canvasElement);
-    await expect(await canvas.findByText(/release|update/i)).toBeInTheDocument();
+    await openWorkspaceDetails(canvasElement);
+    const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'Workspace details' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Updates' }));
+    await expect(within(dialog).getByRole('heading', { name: 'Updates' })).toBeInTheDocument();
   },
 };
 export const ReleaseCheckFailed = createLiteStory('home', 'release-failed');
@@ -89,7 +91,7 @@ export const Desktop = createLiteStory('home', 'healthy', { viewport: 'desktop' 
  */
 async function openRecentActivity(canvasElement, section = 'Attention') {
   const canvas = await expectHome(canvasElement);
-  await userEvent.click(await canvas.findByRole('button', { name: /View activity/i }));
+  await userEvent.click(await canvas.findByRole('button', { name: /View all activity/i }));
   const documentBody = within(canvasElement.ownerDocument.body);
   const dialog = await documentBody.findByRole('dialog', { name: 'Recent activity' });
   await userEvent.click(within(dialog).getByRole('button', { name: section, exact: true }));
@@ -192,3 +194,91 @@ export const FlowActivityLongHistory = homePanelStory({ panel:'activity', theme:
 export const FlowActivityMobile320 = homePanelStory({ panel:'activity', theme:'dark', viewport:'mobile360',
   notes:'Storybook 360px reference; exact 320px is covered by mocked browser tests.' });
 export const FlowActivitySystem = homePanelStory({ panel:'activity', theme:'system', section:'Recent' });
+
+
+/* Azure Horizon Command Home P0–P3 source fixtures. AUTHORED — NOT RUN; no visual approval. */
+const commandOpts = { status: 'unvalidated', notes: 'Implementation fixture only. Browser, a11y and visual review deferred.' };
+export const CommandDaylightHealthyDesktop = createLiteStory('home','healthy',{ theme:'daylight',viewport:'desktop',...commandOpts });
+export const CommandDarkHealthyDesktop = createLiteStory('home','healthy',{ theme:'dark',viewport:'desktop',...commandOpts });
+export const CommandDaylightHealthyMobile = createLiteStory('home','healthy',{ theme:'daylight',viewport:'mobile390',...commandOpts });
+export const CommandDarkHealthyMobile = createLiteStory('home','healthy',{ theme:'dark',viewport:'mobile390',...commandOpts });
+export const CommandAttentionDesktop = createLiteStory('home','lifecycle-attention',{theme:'daylight',viewport:'desktop',...commandOpts});
+export const CommandAttentionMobile = createLiteStory('home','lifecycle-attention',{theme:'dark',viewport:'mobile390',...commandOpts});
+export const CommandSavedOffline = createLiteStory('home','offline-saved',{theme:'daylight',viewport:'mobile390',...commandOpts});
+export const CommandApiUnavailable = createLiteStory('home','api-unavailable',{theme:'dark',viewport:'mobile360',...commandOpts});
+export const CommandLongText = createLiteStory('home','lifecycle-attention',{theme:'daylight',viewport:'mobile360',textScale:2,...commandOpts});
+export const CommandEnlargedText = createLiteStory('home','healthy',{theme:'dark',viewport:'mobile390',textScale:2,...commandOpts});
+export const CommandNarrow = createLiteStory('home','healthy',{theme:'daylight',viewport:'mobile360',...commandOpts});
+export const CommandReducedMotion = createLiteStory('home','healthy',{theme:'dark',viewport:'mobile390',...commandOpts,
+  notes:'Enable the Storybook reduced-motion toolbar during deferred visual review.'});
+export const CommandSystem = createLiteStory('home','healthy',{theme:'system',viewport:'desktop',...commandOpts});
+
+function commandIndexStory(panel, theme, viewport) {
+  return { ...createLiteStory('home','healthy',{theme,viewport,...commandOpts}),
+    play: async ({canvasElement}) => {
+      const canvas = await expectHome(canvasElement);
+      const name = panel === 'workspace' ? 'Workspace details' : 'Recent activity';
+      await userEvent.click(await canvas.findByRole('button',{name: panel === 'workspace' ? name : /View all activity/i}));
+      const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog',{name});
+      await expect(dialog).toBeInTheDocument();
+      await expect(within(dialog).getByRole('navigation', {name: (panel === 'workspace' ? 'Workspace details' : 'Activity') + ' sections'})).toBeInTheDocument();
+    },
+  };
+}
+export const CommandWorkspaceMobileIndex = commandIndexStory('workspace','daylight','mobile390');
+export const CommandWorkspaceMobileNested = homePanelStory({panel:'workspace',theme:'dark',viewport:'mobile390',section:'Service health'});
+export const CommandWorkspaceDesktopColumn = commandIndexStory('workspace','dark','desktop');
+export const CommandActivityMobileIndex = commandIndexStory('activity','daylight','mobile390');
+export const CommandActivityMobileNested = homePanelStory({panel:'activity',theme:'dark',viewport:'mobile390',section:'History'});
+export const CommandActivityDesktopColumn = commandIndexStory('activity','dark','desktop');
+export const CommandWorkspaceNarrowPanel = homePanelStory({panel:'workspace',theme:'dark',viewport:'desktop',
+  notes:'Manually resize panel to 380px; actual container-query fallback qualification deferred.'});
+export const CommandActivityResizedPanel = homePanelStory({panel:'activity',theme:'daylight',viewport:'desktop',
+  notes:'Manually resize to 380px and verify grouped navigation. Deferred.'});
+
+async function openActivityRoot(canvasElement) {
+  const canvas = await expectHome(canvasElement);
+  await userEvent.click(await canvas.findByRole('button', { name: /View all activity/i }));
+  return within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'Recent activity' });
+}
+
+async function openSnapState(canvasElement, panel, snap) {
+  const dialog = panel === 'workspace'
+    ? await (async () => { await openWorkspaceDetails(canvasElement); return within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'Workspace details' }); })()
+    : await openActivityRoot(canvasElement);
+  if (snap === 'compact') await userEvent.click(within(dialog).getByRole('button', { name: 'Compact', exact: true }));
+  if (snap === 'expanded') {
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Expand', exact: true }));
+  }
+  await expect(dialog).toHaveAttribute('data-lite-sheet-snap', snap);
+}
+
+function commandSnapStory(panel, snap) {
+  return {
+    ...createLiteStory('home', 'healthy', {
+      theme: 'dark', viewport: 'mobile390', status: 'validated',
+      notes: `PR #634 shared mobile snap reference: ${panel} ${snap}.`,
+    }),
+    play: async ({ canvasElement }) => openSnapState(canvasElement, panel, snap),
+  };
+}
+
+export const CommandWorkspaceMobileCompact = commandSnapStory('workspace', 'compact');
+export const CommandWorkspaceMobileMedium = commandSnapStory('workspace', 'medium');
+export const CommandWorkspaceMobileExpanded = commandSnapStory('workspace', 'expanded');
+export const CommandActivityMobileCompact = commandSnapStory('activity', 'compact');
+export const CommandActivityMobileMedium = commandSnapStory('activity', 'medium');
+export const CommandActivityMobileExpanded = commandSnapStory('activity', 'expanded');
+
+function isolatedHeroStory(props, theme='daylight') {
+  return { ...createLiteStory('home','healthy',{theme,viewport:'mobile390',...commandOpts}),
+    render: () => <LiteThemeProvider><div data-lite-theme-preview="command" className="lite-home-refined"
+      style={{padding:'1rem'}}><HomeHealthHero overview={{overallTone:'ready',services:[{key:'security',tone:'ready'}]}}
+      lastUpdatedLabel="" onDetails={() => {}} {...props}/></div></LiteThemeProvider>,
+  };
+}
+export const CommandRunningOperation = isolatedHeroStory({running:true},'dark');
+export const CommandChecking = isolatedHeroStory({refreshing:true},'daylight');
+export const CommandInitialLoading = isolatedHeroStory({loading:true,overview:{overallTone:'unknown',services:[]}},'dark');
+export const CommandPartialProjection = isolatedHeroStory({partial:true},'daylight');
+export const CommandUnknown = isolatedHeroStory({error:true},'dark');

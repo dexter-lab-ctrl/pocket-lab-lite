@@ -100,7 +100,7 @@ test('Azure Black Recovery Manage portal keeps the shared sheet themed and usabl
 
 test('Azure recent activity keeps backend review action on demand', async ({ page }) => {
   await openHome(page, 'light');
-  await page.getByRole('button', { name: /View activity/i }).click();
+  await page.getByRole('button', { name: /View all activity/i }).click();
   const details = page.getByRole('dialog', { name: 'Recent activity' });
   await expect(details).toBeVisible();
   await details.getByRole('button', { name: 'History', exact: true }).click();

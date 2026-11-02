@@ -2448,6 +2448,30 @@
         "affects_release": false,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "LITE_ANDROID_QUALIFICATION_SCOPE",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/run-ui-performance-android-baseline.sh",
+          "scripts/dev/lite/run-ui-performance-android-cdp.sh"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "LITE_API",
         "owner": "repository tooling",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -40906,7 +40930,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 517,
+      "page_count": 518,
       "top_level": [
         "start-here",
         "use",
@@ -48790,7 +48814,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "cd5e0974b51fbb3d18295e9e6b4c6149582848008d3ccd530eeaf2ea57f93faf",
-        "documentation": "c1c0d2775dd1ca2abc044f5614544b1350473b7d5a5811f3211290a8f1a188dd",
+        "documentation": "09c7b02af34203111b5aa8189b24d72a91105f811d020e9e4e3354839f3e93bb",
         "openapi": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
         "operational_health": "c758d7d653b42f1860a89c2ab10d285eea8d8f477df13804b883c3b2e3255f8e"
       },
@@ -124168,5 +124192,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "e75f159dc4f5cb5e601bc676ef742ba78ecbcb802dcbfef077b3384048563895"
+  "source_fingerprint": "cc5323ec890347887276a1f368b62d70c97e173c408caa5a26e4c062adcc6d2d"
 }

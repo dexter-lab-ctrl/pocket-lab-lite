@@ -15,11 +15,15 @@ command -v npm >/dev/null 2>&1 || fail 'npm is required; activate the checked-in
 command -v node >/dev/null 2>&1 || fail 'node is required; activate the checked-in Node toolchain first.'
 
 baseline_mode=0
-if [[ "${1:-}" == "--baseline" ]]; then
-  baseline_mode=1
-elif [[ -n "${1:-}" ]]; then
-  fail "unknown argument: $1"
-fi
+home_only=0
+for argument in "$@"; do
+  case "$argument" in
+    --baseline) baseline_mode=1 ;;
+    --home-only) home_only=1 ;;
+    '') ;;
+    *) fail "unknown argument: $argument" ;;
+  esac
+done
 
 source_commit="$(git rev-parse HEAD)"
 [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || fail 'the candidate source SHA is not an exact commit.'
@@ -69,9 +73,10 @@ powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
   -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -OpenCandidate
 
 printf '[ui-performance-android-candidate] running physical Android qualification for %s\n' "$source_commit"
-cdp_arg=""
-if (( baseline_mode == 1 )); then cdp_arg="--baseline"; fi
+cdp_args=()
+if (( baseline_mode == 1 )); then cdp_args+=(--baseline); fi
+if (( home_only == 1 )); then cdp_args+=(--home-only); fi
 POCKETLAB_ANDROID_WAKE_BEFORE_QUALIFICATION=1 \
 LITE_BASE_URL='http://127.0.0.1:18765' \
 LITE_PERF_SOURCE_COMMIT="$source_commit" \
-  bash scripts/dev/lite/run-ui-performance-android-cdp.sh $cdp_arg
+  bash scripts/dev/lite/run-ui-performance-android-cdp.sh "${cdp_args[@]}"

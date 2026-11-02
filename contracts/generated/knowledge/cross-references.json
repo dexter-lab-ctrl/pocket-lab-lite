@@ -16891,6 +16891,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-home-command-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-home-panel-flow-visual-candidates.spec.ts": [
         {
           "source": "reason:disabled",
@@ -16898,6 +16904,12 @@
         }
       ],
       "test:tests/e2e/lite-home-panel-premium-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-home-panel-premium.spec.ts": [
         {
           "source": "reason:disabled",
           "type": "verified_by"
@@ -32361,11 +32373,19 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-home-command-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-home-panel-flow-visual-candidates.spec.ts",
           "type": "verified_by"
         },
         {
           "target": "test:tests/e2e/lite-home-panel-premium-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-home-panel-premium.spec.ts",
           "type": "verified_by"
         },
         {
@@ -36629,6 +36649,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "278d582e1502f953854769d35411b6a0da00720f3750d26f0dc00d07da84a805"
+    "source_fingerprint": "fadf31ecdf856734b5f1c2645402cb2f9813b8a6b18fac8263e8c1d06c417aa1"
   }
 }
