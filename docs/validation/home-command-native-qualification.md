@@ -1,6 +1,6 @@
 # Azure Horizon Command Home — implementation provenance and qualification
 
-> **Status: VALIDATED / PARTIAL.** This addendum records the exact-head DEV-PC, mocked browser, accessibility, visual-reference and physical Android Home-only qualification performed on `feat/azure-horizon-home-native-revamp`. The absolute Android frame budget remains a truthful gate miss with mixed baseline attribution. The PR remains **OPEN — DRAFT — NOT MERGED**.
+> **Status: VALIDATED / PARTIAL / BLOCKED.** This addendum records the exact-head DEV-PC, mocked browser, accessibility and reviewed visual-reference qualification for the PR #634 mobile snap integration on `feat/azure-horizon-home-native-revamp`. The current physical Android snap run is blocked at the established Windows CDP/UAC bridge prerequisite; the prior PR #638 Android evidence remains separately classified as an absolute frame-budget miss with mixed baseline attribution. The PR remains **OPEN — DRAFT — NOT MERGED**.
 
 ## Objective and exact baseline
 
@@ -8,9 +8,10 @@
 - Resolved authoritative `main`: `821ad56f83b2af9cf1fd59001364daf3545cc408`, after merged PR #637.
 - Feature branch: `feat/azure-horizon-home-native-revamp`; draft PR targets `main`.
 - Initial PR head observed: `c0a1aabc7f905d37216254e2dae9074e61dd0211`.
-- Exact qualified candidate before this documentation update: `a1bb1dc84eb17b5a2b792efd00759147c8f07359`.
+- Prior PR #638 runtime-qualified candidate: `a1bb1dc84eb17b5a2b792efd00759147c8f07359`.
+- Exact candidate for this PR #634 mobile snap integration: `a1827836a63f45884398f32bb002af2017d2445f`.
 - Target: responsive desktop browsers, mobile browsers and installed Android PWA.
-- Scope: Home screen composition, Home-only grouped navigation, shared `LiteFreshness` reuse, source tests, Storybook, mocked browser and visual/performance candidates.
+- Scope: Home screen composition, Home-only grouped navigation, direct reuse of the PR #634 mobile snap controller on Home detail sheets, source tests, Storybook, mocked browser and narrowly scoped physical qualification infrastructure.
 - Exclusions: backend schema, authorization, NATS/JetStream, Devices/Apps/Rules/Security/Recovery screens, production Server Phone, release and deployment.
 
 ## P0–P3 authored source map
@@ -21,7 +22,7 @@
 | P0: Status truthfulness | Prepared `buildLiteHomeOverview` unchanged; saved/reachability, stale projection, unknown and running signals drive explicit states; the hero now uses the shared `LiteFreshness` primitive | **VERIFIED** — state matrix, shared UX contract and mocked browser coverage |
 | P0: Attention and recent activity | Existing `prioritizeWorkspaceAttention`, `selectHomeActivityEvidence` and FastAPI-backed activity query | **VERIFIED** — activity/attention browser and unit coverage |
 | P1: Native grouped settings | `src/lite/components/HomeGroupedSections.jsx` reused by both Home panels | **VALIDATED** — desktop/mobile flow, Back, Escape, focus return and physical Home interaction sequence |
-| P1: Mobile and desktop | `src/lite/components/homeCommand.css` two-column cards on narrow mobile, four on desktop; `@container home-panel` changes details from mobile index/nested to two-column desktop | **VALIDATED** — 320/360/375/390/430/768/1024/1280/1440 mocked geometry and reviewed references |
+| P1: Mobile and desktop | `src/lite/components/homeCommand.css` two-column cards on narrow mobile, four on desktop; `@container home-panel` changes details from mobile index/nested to two-column desktop; Home details opt into shared `mobileSnap` | **VALIDATED** — 320/360/375/390/430/768/1024/1280/1440 mocked geometry and reviewed references |
 | P1: Focus, Back, Escape, panel geometry | Grouped navigation focus handoff; existing `LiteDetailsPanel`, `useDesktopManageGeometry`, `useLitePanelSectionNavigation` and portal lifecycle preserved | **VALIDATED** — focused flow, accessibility and geometry suites |
 | P2: Workspace flow | Existing `HomeWorkspaceFlow` retained inside Workspace details → Service health; no new graphing library or dashboard visual | **VERIFIED** — unit, browser and physical Home-only interaction evidence |
 | P3: Restrained polish | Semantic status icons, tone border, Azure-surface cards, touch/focus states and reduced-motion guard; no continuous animation, illustration, or new package | **VERIFIED** — build, Storybook, accessibility and visual inspection |
@@ -44,22 +45,24 @@ The attention list is conditional and keeps the existing risk priority model, bo
 | [#635](https://github.com/dexter-lab-ctrl/pocket-lab-lite/pull/635) | Existing `LiteDetailsPanel` Move/Resize/Reset controls and `useDesktopManageGeometry` | **Components reused.** Desktop panel controls and geometry stay authoritative. | No duplicate Home-specific geometry engine. |
 | [#636](https://github.com/dexter-lab-ctrl/pocket-lab-lite/pull/636) | `src/lite/catalog/appsPremiumRefinement.css` density contract; central `src/lite/theme/azureHorizonTokens.css` | **Theme-independent geometry pattern adopted.** All Command Home dimensions/layout are shared across light/dark/system while existing semantic tokens vary surface colors. | Home-only CSS; no semantic token override or parallel theme engine. |
 | [#637](https://github.com/dexter-lab-ctrl/pocket-lab-lite/pull/637) | `src/lite/catalog/AppCatalogScreen.jsx`: `lite-app-manage-workspace`, `lite-catalog-manage-section-viewport`, `lite-app-manage-back`, sections; corresponding CSS | **Native grouped-settings pattern adopted**, **not** literal Apps component reuse. Home uses one local `HomeGroupedSections` for both panels so Apps UX is unaffected. | Single Home-only component, no general Apps/Manage refactor. |
+| [#634](https://github.com/dexter-lab-ctrl/pocket-lab-lite/pull/634) | `src/lite/components/useMobileSheetSnap.js`, `src/lite/components/mobileSheetSnap.css`, `LiteSheet` and `LiteDetailsPanel` in `src/lite/LiteOverlay.jsx` | **Direct shared-component reuse.** Home Workspace Details and Recent Activity pass `mobileSnap`; the existing Compact/Medium/Expanded controller, grip pointer handling, keyboard equivalents, visual-viewport safeguards and internal scrolling remain authoritative. This is not a new Home snap engine. | Home-only opt-in in `src/lite/LiteHome.jsx`; focused Home tests, stories, visual references and Android qualifier assertions added. Shared controller/CSS/overlay implementation unchanged. |
 
-> Shared component changes: **None** outside Home-specific `HomeActivityDetails.jsx`. Existing token, API, query, geometry, portal and common screen code has not been rewritten. A wider shared-settings extraction could be considered only after targeted qualification demonstrates identical needs.
+> Shared component changes: **None** to `useMobileSheetSnap.js`, `mobileSheetSnap.css`, `LiteSheet`, `LiteDetailsPanel`, tokens, API, query, geometry or portal code. Home-specific `LiteHome.jsx` now opts both applicable details panels into the PR #634 shared controller; `scripts/dev/lite/qualify-ui-performance-android-cdp.mjs` adds narrow Home snap assertions to the existing Home-only runner. A wider shared-settings extraction was not introduced.
 
 ## Qualification inventory — executed
 
 - Unit/component: `src/lite/LiteHomeScreen.test.jsx` (hero/four destinations, conditional attention, grouped section/Back, saved/offline/unknown/partial/running). Existing `LiteHomeAzure.test.jsx` and `HomeActivityDetails*.test.jsx` remain part of the candidate suite.
-- Storybook: `src/lite/LiteHome.stories.jsx`, with Command variants for healthy/attention/offline/unavailable/loading/partial/running/refresh, both themes/System, large text, grouped index and nested sections, desktop panels, mobile widths and reduced motion.
+- Storybook: `src/lite/LiteHome.stories.jsx`, with Command variants for healthy/attention/offline/unavailable/loading/partial/running/refresh, both themes/System, large text, grouped index and nested sections, desktop panels, mobile widths, reduced motion, and Workspace Details/Recent Activity Compact, Medium and Expanded snap states.
 - Mocked Playwright: `tests/e2e/lite-home-command.spec.ts`, responsive 320–1600, destination navigation, grouped nested/back/close/focus, activity review, 200% type, semantic Axe, stale/offline state handling.
-- Visual references: `tests/e2e/lite-home-command-visual.spec.ts` and `tests/e2e/lite-home-panel-premium-visual.spec.ts`. The reviewed PNG references are committed under their existing snapshot directories: 54 Home command PNGs plus 40 canonical grouped-panel PNGs cover approved desktop/mobile, Daylight/Dark, healthy/attention/saved/unavailable states and nested-panel references. They are deterministic mocked references, not physical-device proof.
+- Snap behavior: `tests/e2e/lite-home-panel-snap.spec.ts` covers both Home detail panels, Medium initial state, Compact/Medium/Expanded transitions, grip drag, keyboard Home/End/PageDown, nested navigation, internal scroll, Back, close/reopen reset and desktop non-activation.
+- Visual references: `tests/e2e/lite-home-command-visual.spec.ts` and `tests/e2e/lite-home-panel-premium-visual.spec.ts`. The reviewed PNG references are committed under their existing snapshot directories: 78 Home command PNGs plus 40 canonical grouped-panel PNGs cover approved desktop/mobile, Daylight/Dark, healthy/attention/saved/unavailable states, nested-panel references and the 24 new Home snap-state references. They are deterministic mocked references, not physical-device proof.
 - Geometry parity: Light/Dark bounding boxes for hero, header, four cards, recent-activity region and panel navigation; maximum intended difference 1.5 CSS px in the authored mock assertion; resized desktop container fallback.
 - Performance: `tests/e2e/lite-home-command-performance.spec.ts` plus the adapted `tests/e2e/lite-home-panel-premium-performance.spec.ts`; existing `expectLitePerformanceBudget` from PR #588 is unchanged. The focused mocked panel suite remains **PARTIAL** because host-side frame/LoAF/React-profiler samples were intermittent; no threshold or assertion was weakened.
 - Existing Home E2E candidates: `lite-home-panel-flow-scroll.spec.ts`, `lite-home-panel-premium.spec.ts`, and `lite-azure-horizon*.spec.ts` adapted where relevant to grouped navigation and the new explicit activity action. The adapted flow suite completed 40/40.
 
 ## DEV-PC qualification evidence
 
-The focused checks ran on Node `24.16.0` at the exact committed application source `a1bb1dc84eb17b5a2b792efd00759147c8f07359`.
+The focused checks ran on Node `24.16.0` against the application source now committed at `a1827836a63f45884398f32bb002af2017d2445f`; the Android qualifier-only assertions were added in that same commit.
 
 | Command | Result |
 |---|---|
@@ -69,8 +72,11 @@ The focused checks ran on Node `24.16.0` at the exact committed application sour
 | `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest -q tests/backend/test_lite_ux_maturity_contract.py` | **PASS — 9 tests** |
 | `npm run build` | **PASS** — existing large-chunk warnings only |
 | `npm run build-storybook` | **PASS** — existing bundle/eval warnings only |
+| `npx vitest run src/lite/LiteHomeAzure.test.jsx src/lite/LiteHomeScreen.test.jsx src/lite/components/useMobileSheetSnap.test.jsx` | **PASS — 16 tests**; shared PR #634 controller regression remains covered by 7 existing tests |
 | `VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-home-command.spec.ts --project=mocked-desktop --project=mocked-mobile` | **PASS — 36 tests** |
-| `VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-home-command-visual.spec.ts --project=mocked-desktop --project=mocked-mobile` | **PASS — 38 tests**, canonical comparison without update flags after reviewed promotion |
+| `VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-home-panel-snap.spec.ts --project=mocked-desktop --project=mocked-mobile` | **PASS — 8 tests**; all Home snap and desktop opt-out cases passed |
+| `VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-home-command-visual.spec.ts --grep 'mobile .*snap reference' --project=mocked-desktop --project=mocked-mobile` | **PASS — 24 tests**, canonical comparison without update flags after visual inspection |
+| `VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-home-command-visual.spec.ts --project=mocked-desktop --project=mocked-mobile` | **PARTIAL — 60/62 in the final full run**; two 1%-pixel light mocked-mobile anti-aliasing diffs were isolated and passed three repetitions each; no geometry/content defect found |
 | `npm run test:azure:home:premium:mocked` | **PASS — 56 tests** |
 | `npm run test:azure:home:flow:mocked` | **PASS — 40 tests** |
 | combined Home WCAG/Axe/grouped-panel accessibility command | **PASS — 16 tests**, no serious/critical violations |
@@ -89,64 +95,64 @@ bash scripts/dev/lite/run-ui-performance-android-candidate.sh --home-only
 bash scripts/dev/lite/run-ui-performance-android-candidate.sh --baseline --home-only
 ```
 
-The repository-owned bridge selected Windows `C:\Android\platform-tools\adb.exe` version `37.0.1-15733141`, attached Android Chrome `156.0.8078.75` via CDP `1.3`, served the exact candidate on DEV-PC loopback port `18765`, and verified candidate manifest, response header and page metadata against `a1bb1dc84eb17b5a2b792efd00759147c8f07359`. The physical Home smoke and foreground animation-frame preflight passed. The sanitized Android state samples reported Android 16, screen on, battery saver off, thermal status 0 and battery 94–95%; the focus parser did not expose a foreground package, so this is retained as sanitized runtime context rather than foreground identity proof.
+The current snap candidate `a1827836a63f45884398f32bb002af2017d2445f` built successfully on DEV-PC with the repository candidate identity set to that exact SHA. The local candidate manifest was ready on loopback port `18765`, the repository-owned ADB reverse was created, and the runner began the Home-only path. The established Windows CDP bridge then reset the connection at its recorded bridge port before CDP preflight could attach to Android Chrome. The preflight correctly stopped and required an elevated PowerShell bridge setup; no UAC bypass or repeated consent loop was attempted. No Android page manifest/header/meta proof, browser target proof, Home snap measurement or physical screenshot was recorded for `a1827836`.
 
-The Home-only qualifier completed all 18 safe interaction reports: cold/steady Home, four destination cards, Workspace Details open/sections/technical details/Back/Close, Recent Activity open/sections/Back/Close, and refresh feedback. All 18 missed the unchanged PR #588/#589 absolute target and hard render gate. The exact report set is under `.pocketlab-dev/performance/` locally and is not a tracked secret-bearing artifact.
+The runner cleanup completed: the candidate process and candidate reverse were removed, ADB forward/reverse mappings were zero, and the local CDP listener was unreachable. A pre-existing elevated bridge state/portproxy record remains outside the non-elevated cleanup boundary and was not force-removed. This current PR #634 snap qualification is **BLOCKED** by the external Windows CDP/UAC prerequisite, not reported as Android PASS.
 
-The three-repetition baseline-normalized run completed all 18 reports per repetition on the same device, browser and transport. The static control itself missed the absolute target (`p50` about 41.7 ms, `p95` about 41.8 ms, smooth ratio 0.14, severe ratio 0.86). Normalized results were `MIXED=18`, `APP_INCREMENTAL_COST=0`, `PLATFORM_DOMINATED=0`, `WITHIN_BASELINE=0`, `INCONCLUSIVE=0`; all 18 missed the production target, with one normalized report meeting the hard gate. This is **PARTIAL / MIXED**, not a performance PASS and not proof of a clean Home-only no-regression result. No threshold, stop condition or baseline policy was changed, and no unrelated screen was optimized.
+For historical attribution only, the prior PR #638 Home-only run at `a1bb1dc84eb17b5a2b792efd00759147c8f07359` completed 18 safe interaction reports: cold/steady Home, four destination cards, Workspace Details open/sections/technical details/Back/Close, Recent Activity open/sections/Back/Close, and refresh feedback. All 18 missed the unchanged PR #588/#589 absolute target and hard render gate. Its three-repetition normalized result was `MIXED=18`, `APP_INCREMENTAL_COST=0`, `PLATFORM_DOMINATED=0`, `WITHIN_BASELINE=0`, `INCONCLUSIVE=0`, with all 18 absolute target misses. That evidence remains **PARTIAL / MIXED** and is not reused as proof of the new Home snap interactions. The recorded current-main control SHA was `821ad56f83b2af9cf1fd59001364daf3545cc408`; no clean current-main application A/B entry point exists in the established runner.
 
-The corresponding current-main source control recorded for this qualification is `821ad56f83b2af9cf1fd59001364daf3545cc408`. The repository-supported PR #588/#589 runner uses the contemporaneous exact-SHA static control page for normalized attribution; no separate main application A/B build was introduced because that entry point is not part of the established Home-only runner. A clean current-main application A/B comparison is therefore **UNVALIDATED**, while the approved platform-control comparison above remains the executed attribution evidence.
-
-**Physical Android:** candidate qualification was performed without installing a production PWA, changing production Caddy, restarting the Server Phone or mutating the protected runtime. The absolute misses and mixed attribution remain visible.
+**Physical Android and protected consumer:** no production PWA was installed, no Caddy/API/NATS/PM2 service was restarted, and the Server Phone checkout remained read-only on `main` at `821ad56f83b2af9cf1fd59001364daf3545cc408`. Android snap behavior is **BLOCKED**, while DEV-PC snap behavior is **VALIDATED** below.
 
 ### Acceptance criteria
 
 - Every intended responsive size works without horizontal overflow or clipped controls, including 320px, 200% text and a 380px resized desktop panel.
 - Daylight/Dark/System retain identical geometry with expected semantic color differences.
 - State facts are backend-truthful; no live ready or running claims from stale/unknown source.
-- Keyboard/Touch/Escape/Backdrop/Back/focus restores work in both panels, including nested history and server-confirmed mark-reviewed action.
+- Compact/Medium/Expanded, grip drag, keyboard resize, Escape/Backdrop/Back and focus restores work in both panels in the mocked mobile browser; current physical Android snap behavior remains **BLOCKED** by the external CDP/UAC bridge prerequisite.
+- Grouped-settings navigation, nested history, internal scrolling and server-confirmed mark-reviewed action remain intact.
 - Accessibility has zero serious/critical violations in Home and both panels.
 - Existing PR #588 performance thresholds remain unchanged; report actual measured results and relative attribution.
-- Current source and generated docs/contracts gates are evaluated only after authorization.
+- Current source and generated docs/contracts gates were evaluated after the Home source, visual references and Android bridge attempt were evidence-classified.
 - No unauthorized runtime, API, backend, app, security, device or release change.
 
 ## Gate register
 
 | Gate | Status | Explanation |
 |---|---|---|
-| Unit / component tests | **VERIFIED** | 11 focused Home tests and 45 premium unit tests passed |
+| Unit / component tests | **VERIFIED** | 16 focused Home/snap tests and 45 premium unit tests passed |
 | Storybook build, interactions | **VALIDATED** | Production Storybook build passed; source stories cover Home states and panels |
 | Playwright mocked | **VALIDATED** | Command, flow and premium mocked suites passed |
-| Visual regression / screenshot comparison | **VALIDATED** | 38 Home command and 40 premium panel canonical visual tests passed; 94 PNG references reviewed and committed |
+| Visual regression / screenshot comparison | **PARTIAL** | 24 new snap-state comparisons passed and 78 Home command PNGs plus 40 premium PNGs were reviewed/committed; one full 62-case run had two isolated 1%-pixel anti-aliasing residuals that passed three repetitions each |
 | Accessibility / 200% text | **VALIDATED** | Focused Home premium mocked suite passed serious/critical Axe, focus, 200% and reduced-motion checks |
 | Light / Dark geometry parity | **VALIDATED** | Reviewed Daylight/Dark geometry across desktop/mobile references |
 | Performance / PR #588 hard gates | **PARTIAL** | Physical Home reports missed the absolute target; 3-run attribution is MIXED=18. Mocked panel performance also has intermittent host-side hard-gate samples; thresholds remain unchanged. |
 | DEV-PC build / lint / git checks | **VALIDATED** | Build, Storybook, focused checks and `git diff --check` passed; no repo ESLint gate was claimed |
-| Physical Android / Server Phone | **PARTIAL** | Exact candidate and Home interactions reached; physical absolute performance remains a gate miss; Server Phone read-only integrity preserved |
-| GitHub Actions | **UNVALIDATED** | Fresh checks are recorded after the feature branch is pushed; old remote-head checks are not reused as final proof |
+| Physical Android / Server Phone | **BLOCKED / PARTIAL** | Current `a1827836` Home snap run stopped before CDP attachment at the Windows bridge/UAC prerequisite; historical `a1bb1dc8` physical Home evidence remains PARTIAL/MIXED; Server Phone read-only integrity preserved |
+| GitHub Actions | **VALIDATED** | PR #638 checks `isolated-devpc-qualification`, `ui-performance-qualification` and `quick-and-docs` are successful at `a1827836`; no merge or deployment action was taken |
 | Release / deploy / merge | **PROHIBITED** | No merge or production changes |
 
 ## Final canonical documentation and repository gates
 
-These late-phase gates were run only after the Home source, reviewed visual references and physical Home-only Android qualification were stable. Generated outputs were regenerated from their canonical sources; no generated file was manually edited.
+These late-phase gates are run only after the Home source and reviewed visual references are stable, and after the physical Android attempt is either complete or evidence-classified. The current Android attempt is explicitly **BLOCKED** at the external bridge prerequisite. Generated outputs are regenerated from their canonical sources; no generated file is manually edited.
 
 | Command | Result | Evidence / limitation |
 |---|---|---|
-| `task lite:docs:generate` | **PASS** | Deterministic generation completed: Lite contracts/fixtures, platform/runtime projections, architecture, enterprise, intelligence, development/production docs, diagrams and final Codebase Map projections were regenerated. |
-| `task lite:docs:check` | **PASS** | OpenAPI/Redocly validation and all documentation, contract, architecture, knowledge, diagram, backend-doc and runtime-network checks passed. Redocly reported 90 pre-existing warnings; no validation errors. |
-| `task lite:check` | **PASS** | Final broad gate completed with 20/20 recorded gates passed and zero failures after the Home mocked-contract selectors were updated for the grouped-settings implementation and safe-read nonce. |
+| `task lite:docs:generate` | **PASS** | Completed at `a1827836`; canonical contracts, platform/runtime projections, architecture, enterprise/intelligence, development/production docs and Codebase Map projections were regenerated. |
+| `task lite:docs:check` | **PASS** | Completed at the generated final head; contract/docs/platform/runtime/parity/knowledge/intelligence/enterprise/architecture/SchemaSpy/backend-doc/MkDocs checks passed. Redocly reported 90 existing warnings and no validation errors. |
+| `task lite:check` | **PASS** | Completed at `a1827836`; all 20/20 recorded full-gate commands passed, including backend, frontend unit, build, Storybook, mocked E2E, accessibility, docs browser, redaction and strict docs. |
 | `npm run check:render-budgets` | **PARTIAL** | The repository evidence checker preserves the physical Android absolute frame-budget miss: 18 reports, 17 hard-gate failures and 18 target misses in the retained Home-only baseline evidence. No threshold or evidence was weakened. |
 
-The broad gate's first post-generation pass exposed stale tests that still expected the pre-revamp floating tab strip, the old `View activity` label and the removed operational-story wrapper. Those expectations were corrected to the current grouped-settings/navigation and guidance contracts; the affected desktop/mobile scenarios then passed 6/6 and the complete mocked contract path passed 52 tests with 10 intentional skips.
+The prior PR #638 broad gate at `a1bb1dc8` completed 20/20 recorded gates with zero failures after grouped-settings contract corrections. The current snap-integration head `a1827836` independently completed the same 20/20 full gate after final documentation regeneration.
 
 ## Risks, reviewer work and rollback
 
-1. The Android absolute render budget remains **PARTIAL / FAIL**: the physical control was already below budget and Home interactions added variable deltas. No clean main application A/B result is available from the established Home-only runner.
-2. The reviewed PNG references are deterministic mocked showcase/reference images. They are not physical-device screenshot evidence.
-3. The physical Android state parser did not expose a foreground package even though Chrome activity was foreground during bounded diagnostics; this is retained as a provenance limitation rather than silently promoted.
-4. The generated-doc and broad repository gates are intentionally late-phase tasks and are recorded at the final documentation head below.
-5. The design has no new browser authority; panel navigation and animation do not alter the FastAPI/NATS/worker trust boundary.
+1. The current Android snap qualification is **BLOCKED** by the Windows CDP/UAC bridge prerequisite; no physical Android snap result is claimed.
+2. Historical Android evidence at `a1bb1dc8` remains **PARTIAL / MIXED** because its physical control and Home interactions missed the absolute PR #588/#589 frame budget; no clean main application A/B result is available.
+3. The reviewed PNG references are deterministic mocked showcase/reference images. They are not physical-device screenshot evidence.
+4. The pre-existing elevated bridge state was not force-removed after the non-elevated attempt; the precise cleanup boundary is recorded in the session report.
+5. The generated-doc and broad repository gates passed at the final documented head; their evidence does not override the separately blocked physical Android snap run.
+6. The design has no new browser authority; panel navigation and animation do not alter the FastAPI/NATS/worker trust boundary.
 
 **Rollback:** As this is an unmerged draft branch, close the PR or revert only the feature commits after review. Do not reset `main`, force-push shared branches, change production services, or remove existing server state as a UI rollback.
 
-**Merge restriction:** **DRAFT PR — DEV-PC and visual evidence validated; physical Android performance remains PARTIAL / MIXED. NOT APPROVED FOR MERGE, SQUASH, RELEASE, OR DEPLOYMENT.**
+**Merge restriction:** **DRAFT PR — DEV-PC snap behavior and reviewed mocked visual references validated; physical Android snap qualification is BLOCKED at the external bridge prerequisite; historical Android performance remains PARTIAL / MIXED. NOT APPROVED FOR MERGE, SQUASH, RELEASE, OR DEPLOYMENT.**

@@ -15663,6 +15663,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-home-panel-snap.spec.ts",
+      "name": "tests/e2e/lite-home-panel-snap.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-home-panel-snap.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
       "name": "tests/e2e/lite-identity-premium-refinement.spec.ts",
       "source_refs": [

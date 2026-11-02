@@ -2723,6 +2723,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-home-panel-snap.spec.ts",
+      "name": "tests/e2e/lite-home-panel-snap.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-home-panel-snap.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
       "name": "tests/e2e/lite-identity-premium-refinement.spec.ts",
       "source_refs": [
@@ -3167,6 +3177,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "b6542ed6b189b05991cab63c05f5d497fe968903fbd2015bbce9eedcad10606f"
+    "source_fingerprint": "fadf31ecdf856734b5f1c2645402cb2f9813b8a6b18fac8263e8c1d06c417aa1"
   }
 }
