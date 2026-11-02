@@ -255,7 +255,7 @@ export const NativeEnterpriseAdmin = native('identity-enterprise-admin');
 export const NativeEnterpriseOperator = native('identity-enterprise-operator');
 export const NativeEnterpriseAuditor = native('identity-enterprise-auditor');
 export const NativeEnterpriseViewer = native('identity-enterprise-viewer');
-export const NativeManageRoot = { ...native('identity-summary', { viewport: 'mobile390' }), play: openManageAccess };
+export const NativeManageRoot = { ...native('identity-summary', { viewport: 'mobile390' }), play: async ({ canvasElement }) => openManageAccess(canvasElement) };
 export const NativePasskeyDetails = {
   ...native('identity-premium-multiple', { viewport: 'mobile390' }),
   play: async ({ canvasElement }) => {
@@ -263,7 +263,7 @@ export const NativePasskeyDetails = {
     const dialogs = within(canvasElement.ownerDocument.body);
     const manage = dialogs.getByRole('dialog', { name: /Manage access/i });
     await userEvent.click(within(manage).getByRole('button', { name: 'Passkeys', exact: true }));
-    await userEvent.click(within(manage).getAllByRole('button', { name: /Passkey/i })[1]);
+    await userEvent.click(within(manage).getByRole('button', { name: /Second passkey/i }));
     await expect(await dialogs.findByRole('dialog', { name: /Access Details/i })).toBeInTheDocument();
   },
 };
