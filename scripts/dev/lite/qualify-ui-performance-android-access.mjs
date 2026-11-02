@@ -187,6 +187,17 @@ for (const candidatePage of [page, ...candidatePages.filter((candidatePage) => c
   await activateCandidatePage(candidatePage);
   await proveForegroundCandidate(candidatePage);
   foregroundReady = await receivesAnimationFrames(candidatePage);
+  for (let attempt = 0; !foregroundReady && attempt < 2; attempt += 1) {
+    // Android Chrome can report the CDP target as active before its renderer
+    // has resumed foreground animation delivery. Re-activate and reload only
+    // this candidate target, then repeat the exact-SHA proof and wake-lock
+    // acquisition before accepting a physical frame gate.
+    await activateCandidatePage(candidatePage);
+    await candidatePage.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+    await proveForegroundCandidate(candidatePage);
+    await activateCandidatePage(candidatePage);
+    foregroundReady = await receivesAnimationFrames(candidatePage);
+  }
   if (foregroundReady) break;
 }
 if (!foregroundReady) fail('Android Access candidate did not deliver foreground animation frames.');
