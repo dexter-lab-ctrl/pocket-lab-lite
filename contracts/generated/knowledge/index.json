@@ -31412,6 +31412,36 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-home-command-performance.spec.ts",
+      "name": "tests/e2e/lite-home-command-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-home-command-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-home-command-visual.spec.ts",
+      "name": "tests/e2e/lite-home-command-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-home-command-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-home-command.spec.ts",
+      "name": "tests/e2e/lite-home-command.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-home-command.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-home-panel-flow-scroll.spec.ts",
       "name": "tests/e2e/lite-home-panel-flow-scroll.spec.ts",
       "source_refs": [
@@ -35159,6 +35189,9 @@
         "test:tests/e2e/lite-azure-horizon.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-device-facts.spec.ts",
+        "test:tests/e2e/lite-home-command-performance.spec.ts",
+        "test:tests/e2e/lite-home-command-visual.spec.ts",
+        "test:tests/e2e/lite-home-command.spec.ts",
         "test:tests/e2e/lite-home-panel-flow-scroll.spec.ts",
         "test:tests/e2e/lite-home-panel-flow-visual-candidates.spec.ts",
         "test:tests/e2e/lite-home-panel-premium-performance.spec.ts",
@@ -36702,6 +36735,9 @@
         "test:tests/e2e/lite-azure-horizon.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-device-facts.spec.ts",
+        "test:tests/e2e/lite-home-command-performance.spec.ts",
+        "test:tests/e2e/lite-home-command-visual.spec.ts",
+        "test:tests/e2e/lite-home-command.spec.ts",
         "test:tests/e2e/lite-home-panel-flow-scroll.spec.ts",
         "test:tests/e2e/lite-home-panel-flow-visual-candidates.spec.ts",
         "test:tests/e2e/lite-home-panel-premium-performance.spec.ts",
@@ -53749,6 +53785,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-home-command-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-home-panel-flow-visual-candidates.spec.ts": [
         {
           "source": "reason:disabled",
@@ -53756,6 +53798,12 @@
         }
       ],
       "test:tests/e2e/lite-home-panel-premium-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/e2e/lite-home-panel-premium.spec.ts": [
         {
           "source": "reason:disabled",
           "type": "verified_by"
@@ -69219,11 +69267,19 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-home-command-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-home-panel-flow-visual-candidates.spec.ts",
           "type": "verified_by"
         },
         {
           "target": "test:tests/e2e/lite-home-panel-premium-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-home-panel-premium.spec.ts",
           "type": "verified_by"
         },
         {
@@ -100525,6 +100581,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-home-command-visual.spec.ts"
+      ],
+      "id": "rel:b9373ce00a4ba649",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-home-command-visual.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:b96395d6de776b65",
@@ -107040,6 +107105,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-home-panel-premium.spec.ts"
+      ],
+      "id": "rel:e5f67d4ad16da86f",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-home-panel-premium.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_workload_admission.py"
       ],
       "id": "rel:e5f7e960e80dff06",
@@ -110724,9 +110798,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "278d582e1502f953854769d35411b6a0da00720f3750d26f0dc00d07da84a805",
+  "source_fingerprint": "b6542ed6b189b05991cab63c05f5d497fe968903fbd2015bbce9eedcad10606f",
   "statistics": {
-    "entity_count": 1461,
+    "entity_count": 1464,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -110743,14 +110817,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 313,
+      "test": 316,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4107,
-    "source_count": 350
+    "relation_count": 4109,
+    "source_count": 353
   }
 }

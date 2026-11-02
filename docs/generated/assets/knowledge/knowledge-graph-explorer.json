@@ -15575,6 +15575,39 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-home-command-performance.spec.ts",
+      "name": "tests/e2e/lite-home-command-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-home-command-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-home-command-visual.spec.ts",
+      "name": "tests/e2e/lite-home-command-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-home-command-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-home-command.spec.ts",
+      "name": "tests/e2e/lite-home-command.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-home-command.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-home-panel-flow-scroll.spec.ts",
       "name": "tests/e2e/lite-home-panel-flow-scroll.spec.ts",
       "source_refs": [
@@ -59039,6 +59072,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-home-command-visual.spec.ts"
+      ],
+      "id": "rel:b9373ce00a4ba649",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-home-command-visual.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:b96395d6de776b65",
@@ -69141,6 +69188,20 @@
       "source": "api:get:/api/lite/apps/{app_id}/actions",
       "target": "table:app_current_state",
       "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-home-panel-premium.spec.ts"
+      ],
+      "id": "rel:e5f67d4ad16da86f",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-home-panel-premium.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {
