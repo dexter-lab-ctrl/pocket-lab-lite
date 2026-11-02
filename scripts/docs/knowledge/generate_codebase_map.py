@@ -82,7 +82,8 @@ MAX_SYMBOLS_PER_FILE = 200
 # Keep the static browser projection under its existing 10 MB contract as the
 # tracked repository grows. The path and high-value labels are emitted first;
 # the bounded tail is only a compact search aid, not canonical source evidence.
-MAX_BROWSER_SEARCH_CHARS = 590
+MAX_BROWSER_SEARCH_CHARS = 550
+MAX_BROWSER_SYMBOLS_PER_FILE = 80
 
 
 def stable_json(value: Any) -> str:
@@ -765,7 +766,7 @@ def build_browser_projection(model: dict[str, Any]) -> dict[str, Any]:
     for node in model["nodes"]:
         facts = node["facts"]
         symbols = []
-        for sid in model["indexes"]["symbols_by_file"].get(node["id"], []):
+        for sid in model["indexes"]["symbols_by_file"].get(node["id"], [])[:MAX_BROWSER_SYMBOLS_PER_FILE]:
             item = external.get(sid, {})
             symbols.append({"id": sid, "name": item.get("name"), "kind": item.get("symbol_kind"), "line": (item.get("definition") or {}).get("line")})
         nodes.append({

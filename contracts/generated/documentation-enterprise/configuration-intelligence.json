@@ -254,8 +254,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "scripts/dev/lite/run-ui-performance-android-baseline.sh",
-        "tests/backend/test_lite_android_performance_baseline.py"
+        "scripts/dev/lite/run-ui-performance-android-baseline.sh"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -303,7 +302,8 @@
       "secret": false,
       "source": [
         "scripts/dev/lite/run-ui-performance-android-baseline.sh",
-        "scripts/dev/lite/run-ui-performance-android-cdp.sh"
+        "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+        "scripts/dev/lite/run-ui-performance-qualified.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

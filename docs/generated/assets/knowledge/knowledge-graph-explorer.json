@@ -15190,6 +15190,39 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-access-native-performance.spec.ts",
+      "name": "tests/e2e/lite-access-native-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-access-native-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-access-native-visual.spec.ts",
+      "name": "tests/e2e/lite-access-native-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-access-native-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-access-native.spec.ts",
+      "name": "tests/e2e/lite-access-native.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-access-native.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-accessibility-states.spec.ts",
       "name": "tests/e2e/lite-accessibility-states.spec.ts",
       "source_refs": [
@@ -38850,6 +38883,20 @@
       "source": "journey:add-device",
       "target": "component:node-agent",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-access-native-visual.spec.ts"
+      ],
+      "id": "rel:5c4357631d8027a3",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-access-native-visual.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {
