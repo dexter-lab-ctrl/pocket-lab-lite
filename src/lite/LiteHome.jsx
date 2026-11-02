@@ -364,7 +364,7 @@ export default function HomeScreen({
       <HomeActivityPreview activity={effectiveSavedStateOnly ? null : activity} saved={effectiveSavedStateOnly} onOpen={() => setActivityOpen(true)} />
     </div>
     <LiteDetailsPanel open={workspaceDetailsOpen} onClose={() => setWorkspaceDetailsOpen(false)}
-      variant="home" className="lite-home-details-panel" desktopGeometry={workspaceGeometry}
+      variant="home" className="lite-home-details-panel" desktopGeometry={workspaceGeometry} mobileSnap
       bodyRef={workspaceNav.bodyRef} bodyClassName="lite-home-workspace-details-scroll lite-home-panel-scroll"
       title="Workspace details" description="Current services and safe workspace information.">
       <div className="lite-home-workspace-details">
@@ -402,7 +402,7 @@ export default function HomeScreen({
       </div>
     </LiteDetailsPanel>
     <LiteDetailsPanel open={activityOpen} onClose={() => setActivityOpen(false)}
-      variant="home" className="lite-home-details-panel" desktopGeometry={activityGeometry}
+      variant="home" className="lite-home-details-panel" desktopGeometry={activityGeometry} mobileSnap
       bodyRef={activityNav.bodyRef} bodyClassName="lite-home-panel-scroll lite-home-activity-scroll"
       title="Recent activity" description="Workspace history and personal review.">
       <HomeActivityDetails activity={history} navigation={activityNav} cursor={cursor} cursorBusy={cursorBusy}

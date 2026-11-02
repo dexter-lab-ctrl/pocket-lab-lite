@@ -478,6 +478,47 @@ async function exerciseScroll(duration = 900) {
   }, duration);
 }
 
+const HOME_MOBILE_SNAP_RATIOS = Object.freeze({ compact: 0.35, medium: 0.72, expanded: 0.94 });
+
+async function assertHomeMobileSnap(dialog, panel, state) {
+  const actualState = await dialog.getAttribute('data-lite-sheet-snap');
+  if (actualState !== state) {
+    fail(`Android Home ${panel} snap state was ${actualState || 'missing'}, expected ${state}.`);
+  }
+  const geometry = await dialog.evaluate((node, ratio) => {
+    const viewport = Math.max(128, window.visualViewport?.height || window.innerHeight);
+    const expected = Math.min(Math.max(128, viewport * ratio), Math.max(128, viewport - 20));
+    return { actual: node.getBoundingClientRect().height, expected, viewport };
+  }, HOME_MOBILE_SNAP_RATIOS[state]);
+  if (Math.abs(geometry.actual - geometry.expected) > 4) {
+    fail(`Android Home ${panel} ${state} snap height was ${Math.round(geometry.actual)}px; expected about ${Math.round(geometry.expected)}px at ${Math.round(geometry.viewport)}px viewport.`);
+  }
+}
+
+async function exerciseHomeMobileSnap(dialog, panel) {
+  const mobileViewport = await page.evaluate(() => window.matchMedia('(max-width: 700px)').matches);
+  if (!mobileViewport) {
+    fail(`Android Home ${panel} snap qualification requires the physical browser in a portrait mobile viewport.`);
+  }
+  await assertHomeMobileSnap(dialog, panel, 'medium');
+  await dialog.getByRole('button', { name: 'Compact', exact: true }).click();
+  await assertHomeMobileSnap(dialog, panel, 'compact');
+  await dialog.getByRole('button', { name: 'Expand', exact: true }).click();
+  await assertHomeMobileSnap(dialog, panel, 'medium');
+  await dialog.getByRole('button', { name: 'Expand', exact: true }).click();
+  await assertHomeMobileSnap(dialog, panel, 'expanded');
+
+  const grip = dialog.getByRole('button', { name: /Resize sheet, currently/ });
+  await grip.focus();
+  await page.keyboard.press('Home');
+  await assertHomeMobileSnap(dialog, panel, 'compact');
+  await page.keyboard.press('End');
+  await assertHomeMobileSnap(dialog, panel, 'expanded');
+  await page.keyboard.press('PageDown');
+  await assertHomeMobileSnap(dialog, panel, 'medium');
+  console.log(`[ui-performance-android] Home ${panel} three-point snap states and keyboard resizing verified`);
+}
+
 async function measurePhase4Interaction({
   interaction,
   scope,
@@ -662,6 +703,7 @@ await measurePhase4Interaction({
 });
 const workspaceDialog = await firstVisible(page.getByRole('dialog', { name: /Workspace details/i }), 'Home Workspace details dialog');
 if (homeOnly) {
+  await exerciseHomeMobileSnap(workspaceDialog, 'Workspace details');
   await measureNestedInteraction({
     screen: 'home',
     nestedSurface: 'Workspace details / grouped sections',
@@ -749,6 +791,7 @@ if (homeOnly) {
     settleMs: 420,
   });
   const activityDialog = await firstVisible(page.getByRole('dialog', { name: 'Recent activity' }), 'Home Recent activity dialog');
+  await exerciseHomeMobileSnap(activityDialog, 'Recent activity');
   await measureNestedInteraction({
     screen: 'home',
     nestedSurface: 'Recent activity / grouped sections',

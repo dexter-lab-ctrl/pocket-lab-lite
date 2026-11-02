@@ -236,6 +236,40 @@ export const CommandWorkspaceNarrowPanel = homePanelStory({panel:'workspace',the
 export const CommandActivityResizedPanel = homePanelStory({panel:'activity',theme:'daylight',viewport:'desktop',
   notes:'Manually resize to 380px and verify grouped navigation. Deferred.'});
 
+async function openActivityRoot(canvasElement) {
+  const canvas = await expectHome(canvasElement);
+  await userEvent.click(await canvas.findByRole('button', { name: /View all activity/i }));
+  return within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'Recent activity' });
+}
+
+async function openSnapState(canvasElement, panel, snap) {
+  const dialog = panel === 'workspace'
+    ? await (async () => { await openWorkspaceDetails(canvasElement); return within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'Workspace details' }); })()
+    : await openActivityRoot(canvasElement);
+  if (snap === 'compact') await userEvent.click(within(dialog).getByRole('button', { name: 'Compact', exact: true }));
+  if (snap === 'expanded') {
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Expand', exact: true }));
+  }
+  await expect(dialog).toHaveAttribute('data-lite-sheet-snap', snap);
+}
+
+function commandSnapStory(panel, snap) {
+  return {
+    ...createLiteStory('home', 'healthy', {
+      theme: 'dark', viewport: 'mobile390', status: 'validated',
+      notes: `PR #634 shared mobile snap reference: ${panel} ${snap}.`,
+    }),
+    play: async ({ canvasElement }) => openSnapState(canvasElement, panel, snap),
+  };
+}
+
+export const CommandWorkspaceMobileCompact = commandSnapStory('workspace', 'compact');
+export const CommandWorkspaceMobileMedium = commandSnapStory('workspace', 'medium');
+export const CommandWorkspaceMobileExpanded = commandSnapStory('workspace', 'expanded');
+export const CommandActivityMobileCompact = commandSnapStory('activity', 'compact');
+export const CommandActivityMobileMedium = commandSnapStory('activity', 'medium');
+export const CommandActivityMobileExpanded = commandSnapStory('activity', 'expanded');
+
 function isolatedHeroStory(props, theme='daylight') {
   return { ...createLiteStory('home','healthy',{theme,viewport:'mobile390',...commandOpts}),
     render: () => <LiteThemeProvider><div data-lite-theme-preview="command" className="lite-home-refined"

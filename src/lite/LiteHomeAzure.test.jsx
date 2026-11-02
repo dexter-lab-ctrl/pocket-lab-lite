@@ -58,6 +58,43 @@ describe('Azure Horizon Home preserves existing authority and actions', () => {
     }
   });
 
+  it('reuses the shared three-point mobile snap sheet for both Home detail panels', () => {
+    const originalWidth = window.innerWidth;
+    const originalMatchMedia = window.matchMedia;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+    window.matchMedia = vi.fn((query) => ({
+      matches: query === '(min-width: 701px)' ? false : false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+
+    try {
+      render(<HomeScreen status={status} refresh={vi.fn()} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Workspace details' }));
+      let dialog = screen.getByRole('dialog', { name: 'Workspace details' });
+      expect(dialog.getAttribute('data-home-panel-layout')).toBe('mobile-sheet');
+      expect(dialog.getAttribute('data-lite-sheet-snap')).toBe('medium');
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Compact', exact: true }));
+      expect(dialog.getAttribute('data-lite-sheet-snap')).toBe('compact');
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Expand', exact: true }));
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Expand', exact: true }));
+      expect(dialog.getAttribute('data-lite-sheet-snap')).toBe('expanded');
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Close Home details' }));
+      fireEvent.click(screen.getByRole('button', { name: /View all activity/i }));
+      dialog = screen.getByRole('dialog', { name: 'Recent activity' });
+      expect(dialog.getAttribute('data-home-panel-layout')).toBe('mobile-sheet');
+      expect(dialog.getAttribute('data-lite-sheet-snap')).toBe('medium');
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Compact', exact: true }));
+      expect(dialog.getAttribute('data-lite-sheet-snap')).toBe('compact');
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Close Home details' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Workspace details' }));
+      expect(screen.getByRole('dialog', { name: 'Workspace details' }).getAttribute('data-lite-sheet-snap')).toBe('medium');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.matchMedia = originalMatchMedia;
+    }
+  });
+
   it('never converts saved or unreachable information into a live operational claim', () => {
     render(<HomeScreen status={status} savedStateOnly backendReachable={false} refresh={vi.fn()} />);
     expect(screen.getAllByText(/Saved information|Saved/i).length).toBeGreaterThan(0);
