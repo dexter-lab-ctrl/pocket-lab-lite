@@ -46,7 +46,7 @@ export default function IdentityManageContent({
       {effectiveSection === 'sessions' ? <div className="lite-id-manage-list">
         <p>Review sessions reported by Pocket Lab. Revoking a session may interrupt work on that device.</p>
         {!Array.isArray(data?.sessions) ? <StateSurface tone="neutral" title="Sessions unavailable" description="No current session list was reported." /> : data.sessions.map((item) =>
-          <button key={item.session_id} type="button" className="lite-id-item-row" onClick={() => onOpenDetails('session', item)}>
+          <button key={item.session_id} type="button" className="lite-id-item-row" data-current-session={item.active && item.current ? 'true' : undefined} onClick={() => onOpenDetails('session', item)}>
             <span><strong>{item.active ? (item.current ? 'Current session' : 'Other session') : 'Inactive session'}</strong><small>{item.auth_method || 'Method not reported'} · Expires {item.absolute_expires_at || 'not reported'}</small></span><span>Details</span>
           </button>)}
         {view.sessions === 0 ? <StateSurface tone="neutral" title="No active sessions reported" description="Refresh to confirm the latest sign-in state." /> : null}
