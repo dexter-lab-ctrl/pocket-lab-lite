@@ -41,8 +41,10 @@ export const ReleaseUpToDate = createLiteStory('home', 'release-current');
 export const ReleaseAvailable = {
   ...createLiteStory('home', 'release-available'),
   play: async ({ canvasElement }) => {
-    const canvas = await expectHome(canvasElement);
-    await expect(await canvas.findByText(/release|update/i)).toBeInTheDocument();
+    await openWorkspaceDetails(canvasElement);
+    const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'Workspace details' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Updates' }));
+    await expect(within(dialog).getByRole('heading', { name: 'Updates' })).toBeInTheDocument();
   },
 };
 export const ReleaseCheckFailed = createLiteStory('home', 'release-failed');
