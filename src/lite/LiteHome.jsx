@@ -16,7 +16,7 @@ import {
   LiteRefreshButton,
   LiteActionRow,
 } from './LiteUi.jsx';
-import { LiteTechnicalFacts } from './LiteUx.jsx';
+import { LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
 import { LiteDetailsPanel } from './LiteOverlay.jsx';
 import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
 import { useLitePanelSectionNavigation } from './hooks/useLitePanelSectionNavigation.js';
@@ -204,8 +204,14 @@ export function HomeHealthHero({ overview, loading, refreshing, saved, reachable
     <h2>{hero.title}</h2>
     <p>{hero.summary}</p>
     <div className="lite-home-command-hero-footer">
-      <span className="lite-home-command-freshness">{saved || !reachable || partial ? 'Current status not confirmed' :
-        refreshing ? 'Checking for updates' : lastUpdatedLabel || 'Latest reported status'}</span>
+      <LiteFreshness
+        className="lite-home-command-freshness"
+        saved={saved}
+        stale={partial}
+        refreshing={refreshing}
+        lastUpdatedLabel={lastUpdatedLabel}
+        backendReachable={reachable}
+      />
       <button type="button" className="lite-home-command-details" onClick={onDetails}>
         Workspace details <ChevronRight size={17} aria-hidden="true" />
       </button>

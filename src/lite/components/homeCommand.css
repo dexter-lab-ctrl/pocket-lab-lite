@@ -44,8 +44,18 @@ html[data-lite-theme] .lite-home-command-hero-footer {
   flex-wrap:wrap;gap:.7rem;margin-top:.3rem;min-width:0;
 }
 html[data-lite-theme] .lite-home-command-freshness {
-  color:var(--azure-muted);font-size:.78rem;overflow-wrap:anywhere;
+  align-items:center;gap:.4rem;min-width:0;max-width:min(100%,42rem);
+  margin:0;padding:0;border:0;border-radius:0;background:transparent;
+  color:var(--azure-muted);font-size:.78rem;line-height:1.35;
+  box-shadow:none;overflow-wrap:anywhere;
 }
+html[data-lite-theme] .lite-home-command-freshness svg {width:15px;height:15px;flex:none;color:var(--azure-accent)}
+html[data-lite-theme] .lite-home-command-freshness span {display:block;min-width:0}
+html[data-lite-theme] .lite-home-command-freshness strong {font-size:inherit;color:inherit;font-weight:650}
+html[data-lite-theme] .lite-home-command-freshness small {display:none}
+html[data-lite-theme] .lite-home-command-freshness.is-saved,
+html[data-lite-theme] .lite-home-command-freshness.is-stale,
+html[data-lite-theme] .lite-home-command-freshness.is-refreshing {border:0;background:transparent}
 html[data-lite-theme] .lite-home-command-details {
   display:inline-flex;align-items:center;justify-content:center;gap:.3rem;
   min-height:44px;padding:.45rem .7rem;font-weight:650;

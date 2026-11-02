@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
 /**
- * AUTHORED — NOT RUN. New reference PNGs do not exist yet; generation,
- * review and approval must occur in a later, explicitly authorized session.
- * Do not use --update-snapshots in this implementation-only session.
+ * CANONICAL HOME VISUAL REFERENCES — reviewed and promoted after candidate
+ * capture. Keep this suite in the normal qualification lane; snapshot update
+ * is reserved for an explicitly reviewed visual change.
  */
 async function setup(page: Page, theme: 'light' | 'dark', scenario: string, width: number) {
   await page.setViewportSize({width,height:width<500?800:900});
