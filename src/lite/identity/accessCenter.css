@@ -157,3 +157,20 @@ html[data-lite-theme] .lite-id-details-back:focus-visible { outline:3px solid va
   html[data-lite-theme] .lite-access-center *,
   html[data-lite-theme] .lite-id-native-workspace * { transition:none !important; animation:none !important; scroll-behavior:auto !important; }
 }
+
+/* Scope Enterprise density refinement to Access Manage; keep the old governance engine. */
+html[data-lite-theme] .lite-id-native-detail .lite-governance-person {
+  padding: var(--azure-spacing-card);
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-surface);
+}
+html[data-lite-theme] .lite-id-native-detail .lite-governance-people { display:grid; gap:.7rem; }
+html[data-lite-theme] .lite-id-native-detail .lite-governance-card { padding:var(--azure-spacing-card); border-radius:var(--azure-radius-card); }
+html[data-lite-theme] .lite-id-native-detail .lite-governance-matrix { max-width:100%; overflow-x:auto; }
+html[data-lite-theme] .lite-id-manage-list [data-current-session="true"] { background:var(--azure-accent-subtle); border-color:var(--azure-strong-border); }
+html[data-lite-theme] .lite-access-nested-details.is-movable { position:fixed; max-width:none; max-height:none; transform:none; display:flex; flex-direction:column; }
+html[data-lite-theme] .lite-access-nested-details.is-movable .lite-overlay-scroll { flex:1; min-height:0; overflow:auto; }
+html[data-lite-theme] .lite-access-nested-details .lite-overlay-head { display:flex; gap:.55rem; align-items:center; flex-wrap:wrap; }
+html[data-lite-theme] .lite-access-nested-details .lite-overlay-head > div:first-child { flex:1 1 12rem; min-width:0; }
+html[data-lite-theme] .lite-access-nested-details .lite-overlay-scroll { overscroll-behavior:contain; }
