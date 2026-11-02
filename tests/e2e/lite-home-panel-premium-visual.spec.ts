@@ -20,7 +20,7 @@ for (const state of states) for (const width of [390, 1440]) {
       await installScenario(page, state.scenario);
       await page.goto('/?screen=home');
       await waitForLiteScreenToSettle(page, 'home');
-      await page.getByRole('button', { name: kind === 'workspace' ? 'Workspace details' : 'View activity' }).click();
+      await page.getByRole('button', { name: kind === 'workspace' ? 'Workspace details' : 'View all activity' }).click();
       const dialog = page.getByRole('dialog', { name: kind === 'workspace' ? 'Workspace details' : 'Recent activity' });
       await expect(dialog).toHaveScreenshot(`home-premium-${state.name}-${kind}-${width}.png`, {
         animations: 'disabled', caret: 'hide', maxDiffPixelRatio: .02,
