@@ -16,12 +16,12 @@ async function manage(page: Page, scenario = 'identity-summary') {
 }
 
 test.describe('Premium Identity & Access — source-backed interactions', () => {
-  test('keeps one access story, a compact profile and four conceptual stages', async ({ page }) => {
+  test('keeps a compact identity hero and three grouped protection rows', async ({ page }) => {
     await identity(page);
     await expect(page.getByRole('region', { name: 'Access profile' })).toBeVisible();
-    await expect(page.locator('.lite-id-journey-steps > li')).toHaveCount(4);
-    await expect(page.getByRole('heading', { name: 'How your access fits together' })).toBeVisible();
-    await expect(page.getByRole('region', { name: 'Recent access activity' })).toBeVisible();
+    await expect(page.locator('.lite-access-settings-row')).toHaveCount(3);
+    await expect(page.getByRole('heading', { name: 'Sign-in & protection' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Recent activity' })).toBeVisible();
   });
   test('does not query setup claims for an already authenticated Access Center', async ({ page }) => {
     const unnecessaryReads: string[] = [];
@@ -71,22 +71,22 @@ test.describe('Premium Identity & Access — source-backed interactions', () => 
   });
   test('activity filters use explicit event type and outcome with Details', async ({ page }) => {
     const dialog = await manage(page, 'identity-premium-multiple');
-    await dialog.getByRole('button', { name: /^Activity$/ }).click();
+    await dialog.getByRole('button', { name: 'Access activity' }).click();
     await dialog.getByRole('button', { name: /^Access changes$/ }).click();
     await expect(dialog).toContainText('Passkey registered');
     await dialog.getByRole('button', { name: /View activity details: Passkey registered/i }).click();
     await expect(page.getByRole('dialog', { name: /Access Details/i })).toContainText('Passkey registered');
   });
   test('shows Explain This with uncertainty and sanitized facts', async ({ page }) => {
-    await identity(page);
-    await page.getByRole('button', { name: /Explain This/i }).click();
+    const dialog = await manage(page);
+    await dialog.getByRole('button', { name: /Explain This/i }).click();
     const panel = page.getByRole('dialog', { name: /Understand your access/i });
     await expect(panel).toContainText(/What this does not confirm/i);
     await expect(panel).toContainText(/Only the server|live permission/i);
   });
   test('keeps Enterprise People and Roles in one Manage navigation', async ({ page }) => {
     const dialog = await manage(page, 'identity-enterprise-owner');
-    await dialog.getByRole('button', { name: 'People', exact: true }).click();
+    await dialog.getByRole('button', { name: 'People & roles', exact: true }).click();
     await expect(dialog).toContainText('Add person');
     await expect(dialog.locator('.lite-governance-nav')).toHaveCount(0);
     await dialog.getByRole('button', { name: 'Roles & Access' }).click();
@@ -96,14 +96,14 @@ test.describe('Premium Identity & Access — source-backed interactions', () => 
   });
   test('keeps Admin unable to manage Owner and Personal Mode free of Enterprise controls', async ({ page }) => {
     const dialog = await manage(page, 'identity-enterprise-admin');
-    await dialog.getByRole('button', { name: 'People', exact: true }).click();
+    await dialog.getByRole('button', { name: 'People & roles', exact: true }).click();
     await dialog.getByRole('button', { name: /Open Details/i }).first().click();
     const details = page.getByRole('dialog', { name: /Access Details/i });
     await expect(details).not.toContainText('Remove person');
     await page.keyboard.press('Escape');
     await page.keyboard.press('Escape');
     const personal = await manage(page, 'identity-summary');
-    await expect(personal.getByRole('button', { name: 'People', exact: true })).toHaveCount(0);
+    await expect(personal.getByRole('button', { name: 'People & roles', exact: true })).toHaveCount(0);
   });
   test('retains signed-out and first-owner enrollment paths outside Access Center', async ({ page }) => {
     await identity(page, 'identity-premium-first-owner');
@@ -132,7 +132,9 @@ test.describe('Premium Identity & Access — source-backed interactions', () => 
     await expect(page.getByRole('region', { name: 'Pending approvals' }).first().locator('.lite-owner-operation-card')).toHaveCount(2);
     for (const scenario of ['identity-owner-operation-expired', 'identity-owner-operation-completed', 'identity-owner-operation-failed']) {
       await identity(page, scenario);
-      const approvals = page.getByRole('region', { name: 'Pending approvals' }).first();
+      const dialog = await manage(page, scenario);
+      await dialog.getByRole('button', { name: 'Pending approvals' }).click();
+      const approvals = dialog.getByRole('region', { name: 'Pending approvals' }).first();
       await expect(approvals).toBeVisible();
       await expect(approvals.getByRole('button', { name: 'Approve' })).toHaveCount(0);
       await expect(approvals.getByRole('button', { name: 'Reject' })).toHaveCount(0);
@@ -140,17 +142,21 @@ test.describe('Premium Identity & Access — source-backed interactions', () => 
   });
   test('keeps approved execution read-only and disables saved approval state', async ({ page }) => {
     await identity(page, 'identity-owner-operation-executing');
-    const executing = page.getByRole('region', { name: 'Pending approvals' }).first();
+    const executingDialog = await manage(page, 'identity-owner-operation-executing');
+    await executingDialog.getByRole('button', { name: 'Pending approvals' }).click();
+    const executing = executingDialog.getByRole('region', { name: 'Pending approvals' }).first();
     await expect(executing).toContainText('Executing');
     await expect(executing.getByRole('button', { name: 'Approve' })).toHaveCount(0);
     await identity(page, 'identity-owner-operation-offline');
-    const saved = page.getByRole('region', { name: 'Pending approvals' }).first();
+    const savedDialog = await manage(page, 'identity-owner-operation-offline');
+    await savedDialog.getByRole('button', { name: 'Pending approvals' }).click();
+    const saved = savedDialog.getByRole('region', { name: 'Pending approvals' }).first();
     await expect(saved).toContainText('Live approval data unavailable');
     await expect(saved.getByRole('button', { name: 'Approve' })).toBeDisabled();
     await expect(saved.getByRole('button', { name: 'Reject' })).toBeDisabled();
   });
   for (const width of [320, 360, 375, 390, 768, 1024, 1440]) {
-    test('keeps Journey and Manage readable at ' + width + 'px', async ({ page }) => {
+    test('keeps native Access and Manage readable at ' + width + 'px', async ({ page }) => {
       await page.setViewportSize({ width, height: 860 });
       await page.emulateMedia({ reducedMotion: 'reduce' });
       const dialog = await manage(page, 'identity-premium-long-text');
