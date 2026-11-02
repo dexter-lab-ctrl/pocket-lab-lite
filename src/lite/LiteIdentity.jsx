@@ -22,6 +22,7 @@ import IdentityDetailsContent from './identity/IdentityDetailsContent.jsx';
 import OwnerOperationApprovals from './identity/OwnerOperationApprovals.jsx';
 import { identityPremiumProjection } from './identity/identityPremiumView.js';
 import './identity/identityPremium.css';
+import './identity/accessCenter.css';
 import { LiteField } from './components/LiteSafeForms.jsx';
 import {
   GlassCard,
@@ -414,6 +415,7 @@ export default function IdentityScreen() {
   const ownerOperationClients = Array.isArray(data?.owner_operations?.clients) ? data.owner_operations.clients : [];
   const ownerOperationPairings = Array.isArray(data?.owner_operations?.pairings) ? data.owner_operations.pairings : [];
   const ownerOperationsFresh = premiumView.fresh && data?.owner_operations?.status === 'ok';
+  const attentionOperations = ownerOperations.filter((operation) => ['pending_approval', 'failed', 'blocked'].includes(operation?.status));
 
   return (
     <>
@@ -489,7 +491,7 @@ export default function IdentityScreen() {
           <AccessCenterSummary view={premiumView} data={data} onManage={openManage}
             onActivity={() => openManage('activity')}
             onActivityDetails={(event) => openDetails('activity', event)}>
-            <OwnerOperationApprovals operations={ownerOperations} fresh={ownerOperationsFresh} busy={busy} compact
+            <OwnerOperationApprovals operations={attentionOperations} fresh={ownerOperationsFresh} busy={busy} compact
               onApprove={approveOwnerOperation} onReject={rejectOwnerOperation} />
           </AccessCenterSummary>
           <LiteSheet open={manageOpen} onClose={closeManage} onEscape={escapeManage} mobileSnap={!desktopPanel} title="Manage access" eyebrow="Access" description="Account settings and permissions." variant="identity" className={`lite-identity-manage-sheet ${desktopPanel ? 'is-movable' : ''}`}
