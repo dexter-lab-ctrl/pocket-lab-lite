@@ -674,6 +674,11 @@ if (homeOnly) {
     },
     settleMs: 480,
   });
+  // The mobile grouped-settings presentation replaces the section index with
+  // the selected detail. Return to the index before selecting Diagnostics so
+  // the same Home-only sequence works on both mobile sheets and desktop rails.
+  await workspaceDialog.getByRole('button', { name: /All workspace details sections/i }).click();
+  await workspaceDialog.locator('[data-home-settings-view="index"]').waitFor({ state: 'visible' });
 }
 await workspaceDialog.getByRole('button', { name: 'Diagnostics', exact: true }).click();
 const workspaceTechnicalDetails = workspaceDialog.locator('details').filter({ hasText: 'Technical details' }).first();
