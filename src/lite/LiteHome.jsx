@@ -177,7 +177,7 @@ export function homeCommandHeroPresentation({
     summary: 'Your reported workspace services are available. No immediate action is needed.', icon: CheckCircle2 };
 }
 
-function HomeHealthHero({ overview, loading, refreshing, saved, reachable, partial, running, error, lastUpdatedLabel, onDetails }) {
+export function HomeHealthHero({ overview, loading, refreshing, saved, reachable, partial, running, error, lastUpdatedLabel, onDetails }) {
   const hero = homeCommandHeroPresentation({ overview, loading, refreshing, saved, reachable, partial, running, error });
   const Icon = hero.icon;
   return <GlassCard as="section" className={'lite-home-command-hero is-' + hero.state}
