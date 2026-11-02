@@ -77,8 +77,14 @@ if (browserBridge) await context.setExtraHTTPHeaders({ 'X-Pocket-Lab-Qualificati
 
 const candidateOrigin = base.origin;
 const existingCandidatePages = context.pages().filter((candidatePage) => candidatePage.url().startsWith(candidateOrigin));
-let page = existingCandidatePages[existingCandidatePages.length - 1] || await context.newPage();
-const candidatePages = [...new Set([...existingCandidatePages, page])];
+// Do not reuse a candidate-origin tab from an earlier interrupted run. A
+// stale service worker or background renderer can expose the right URL while
+// serving an older document and can also fail the authoritative foreground
+// animation gate. The newly-created page is the only initial measurement
+// target; older candidate-origin tabs are closed after the fresh target proves
+// its exact SHA and foreground state.
+let page = await context.newPage();
+const candidatePages = [page, ...existingCandidatePages.filter((candidatePage) => candidatePage !== page)];
 
 async function activateCandidatePage(candidatePage = page) {
   await candidatePage.bringToFront().catch(() => {});
