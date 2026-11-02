@@ -89,7 +89,7 @@ export const Desktop = createLiteStory('home', 'healthy', { viewport: 'desktop' 
  */
 async function openRecentActivity(canvasElement, section = 'Attention') {
   const canvas = await expectHome(canvasElement);
-  await userEvent.click(await canvas.findByRole('button', { name: /View activity/i }));
+  await userEvent.click(await canvas.findByRole('button', { name: /View all activity/i }));
   const documentBody = within(canvasElement.ownerDocument.body);
   const dialog = await documentBody.findByRole('dialog', { name: 'Recent activity' });
   await userEvent.click(within(dialog).getByRole('button', { name: section, exact: true }));
