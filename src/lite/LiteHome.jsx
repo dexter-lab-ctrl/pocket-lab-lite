@@ -7,17 +7,16 @@ import {
   HardDrive,
   ArrowUpRight,
   Activity, CheckCircle2, AlertTriangle, AlertCircle, CloudOff, Clock3,
-  Info, ListChecks, Wrench, History, ChevronRight,
+  Info, Wrench, ChevronRight,
 } from 'lucide-react';
 import { buildLiteHomeOverview } from '../lib/liteHomePresentation.js';
 import {
   PageHeader,
   GlassCard,
   LiteRefreshButton,
-  LoadingCard,
   LiteActionRow,
 } from './LiteUi.jsx';
-import { LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
+import { LiteTechnicalFacts } from './LiteUx.jsx';
 import { LiteDetailsPanel } from './LiteOverlay.jsx';
 import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
 import { useLitePanelSectionNavigation } from './hooks/useLitePanelSectionNavigation.js';
@@ -224,7 +223,7 @@ function HomeOverviewGrid({ services, status, onNavigate, saved }) {
   </section>;
 }
 
-function HomeActivityPreview({ activity, onOpen }) {
+function HomeActivityPreview({ activity, saved, onOpen }) {
   const latest = activity?.latestEvent;
   const at = latest && Number.isFinite(latest.at) ? new Date(latest.at) : null;
   return <GlassCard as="section" className="lite-home-activity-preview" aria-labelledby="lite-home-activity-preview-heading">
@@ -233,7 +232,7 @@ function HomeActivityPreview({ activity, onOpen }) {
       <Activity size={19} aria-hidden="true" />
       <span><strong>{latest.label}</strong><small>{latest.statusLabel}</small>
         {at && Number.isFinite(at.getTime()) ? <time dateTime={at.toISOString()}>{at.toLocaleString()}</time> : null}</span>
-    </div> : <p className="lite-home-muted">{activity?.saved ? 'Showing saved activity information.' :
+    </div> : <p className="lite-home-muted">{saved ? 'Live activity is unavailable. Reconnect to review current changes.' :
       activity ? 'No recent activity was reported.' : 'Recent activity is not available yet.'}</p>}
     <button type="button" className="lite-home-text-action" onClick={onOpen}>View all activity
       <ChevronRight size={16} aria-hidden="true" /></button>
@@ -308,18 +307,8 @@ export default function HomeScreen({
 
   const details = overview.workspaceDetails;
   const selectedWorkspaceSection = workspaceSection || 'overview';
-  const primaryAction = overview.nextAction
-    && overview.nextAction.screen !== 'home'
-    && !effectiveSavedStateOnly
-    && !attentionItems.some((item) => item.screen === overview.nextAction.screen)
-    ? {
-        label: overview.nextAction.label,
-        tone: overview.nextAction.tone === 'primary' ? 'primary' : 'secondary',
-        onClick: () => goTo(overview.nextAction.screen),
-      }
-    : null;
   return <div className="lite-home-premium-shell lite-home-refined" data-lite-home-premium="true" data-azure-horizon-home="true" data-home-state-source="tanstack-dexie-fastapi">
-    <PageHeader eyebrow="Self-hosted workspace" title="Home" description="Your workspace, at a glance."
+    <PageHeader eyebrow="Self-hosted workspace" title="Home" description="Your private workspace, at a glance."
       actions={<LiteRefreshButton scope="home" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />} />
     <HomeHealthHero overview={overview} loading={loading} refreshing={refreshing || status.refresh_pending === true}
       saved={effectiveSavedStateOnly} reachable={backendReachable} partial={projectionStale}
@@ -336,7 +325,7 @@ export default function HomeScreen({
             id: item.key, label: item.label, description: item.summary,
             actionLabel: 'Review ' + item.label, onClick: () => goTo(item.screen),
           }))} className="lite-home-attention-list" /> : null}
-      <HomeActivityPreview activity={effectiveSavedStateOnly ? null : activity} onOpen={() => setActivityOpen(true)} />
+      <HomeActivityPreview activity={effectiveSavedStateOnly ? null : activity} saved={effectiveSavedStateOnly} onOpen={() => setActivityOpen(true)} />
     </div>
     <LiteDetailsPanel open={workspaceDetailsOpen} onClose={() => setWorkspaceDetailsOpen(false)}
       variant="home" className="lite-home-details-panel" desktopGeometry={workspaceGeometry}
