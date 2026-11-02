@@ -96,7 +96,8 @@ html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-detail {min-wid
 html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-navigation {display:grid;align-content:start;gap:1.1rem;min-width:0}
 html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-group {display:grid;gap:.45rem;min-width:0}
 html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-group h2 {
-  margin:0;padding:0 .55rem;color:var(--azure-muted);
+  margin:0;padding:0 .55rem;min-width:0;box-sizing:border-box;
+  color:var(--azure-muted);overflow-wrap:anywhere;
   font-size:.73rem;font-weight:750;letter-spacing:.075em;text-transform:uppercase;
 }
 html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-rows {
@@ -120,6 +121,13 @@ html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row small {
 html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-chevron {color:var(--azure-muted)}
 html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row[aria-current=page] {
   background:var(--azure-selected);color:var(--azure-accent);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row[aria-current=page] small {
+  color:var(--azure-focus);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row:hover small,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row:focus-visible small {
+  color:var(--azure-text);
 }
 html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row:hover {background:var(--azure-hover)}
 html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row:active {background:var(--azure-pressed)}
@@ -168,6 +176,17 @@ html[data-lite-theme] .lite-home-panel-layer :is(.lite-home-settings-back,.lite-
   html[data-lite-theme] .lite-home-overview-tile.pocket-card {min-height:118px}
   html[data-lite-theme] .lite-home-lower-grid {grid-template-columns:minmax(0,1fr)}
   html[data-lite-theme] .lite-home-command-hero-footer {align-items:flex-start}
+}
+@media(max-width:767px) {
+  html[data-lite-theme] .lite-home-refined.lite-home-premium-shell {gap:.7rem}
+  html[data-lite-theme] .lite-home-refined.lite-home-premium-shell > .lite-page-header {margin-bottom:0}
+  html[data-lite-theme] .lite-home-command-hero.pocket-card {padding:.8rem;gap:.45rem}
+  html[data-lite-theme] .lite-home-command-hero-footer {margin-top:.1rem}
+  html[data-lite-theme] .lite-home-overview {gap:.55rem}
+  html[data-lite-theme] .lite-home-overview-tile.pocket-card {
+    min-height:104px;padding:.65rem;gap:.5rem;
+  }
+  html[data-lite-theme] .lite-home-overview-tile.pocket-card > svg:first-child {width:34px;height:34px;padding:8px}
 }
 @media(max-width:355px) {
   html[data-lite-theme] .lite-home-overview-grid {grid-template-columns:repeat(2,minmax(0,1fr))}

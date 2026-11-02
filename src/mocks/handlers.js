@@ -1190,7 +1190,7 @@ export const handlers = [
       overall: savedScenario ? 'degraded' : 'healthy',
       checked_at: mockIso(),
       device: { name: 'pocket-lab-lite', mode: 'lite', resource_profile: 'low-power' },
-      summary: { apps_available: 1, devices_known: 1, security_findings: 0, nats_connected: !savedScenario, jetstream_enabled: !savedScenario, live_sampler_running: !savedScenario },
+      summary: { apps_available: 1, devices_known: 1, security_findings: 0, remote_access_ready: !savedScenario, nats_connected: !savedScenario, jetstream_enabled: !savedScenario, live_sampler_running: !savedScenario },
       telemetry: { status: 'healthy', cpu_temp_c: 42, cpu_usage_percent: 12, free_space_mb: 256000, memory_usage_mb: 512 },
       read_degraded: savedScenario,
       degraded_reason: savedScenario ? 'projection_too_old' : '',

@@ -14,8 +14,10 @@ const cdpUrl = String(process.env.LITE_ANDROID_CDP_URL || '').trim();
 const baseUrl = String(process.env.LITE_BASE_URL || '').trim();
 const browserBridge = String(process.env.POCKETLAB_HARNESS_BROWSER_BRIDGE || '').trim();
 const browserBridgeEnabled = process.env.LITE_QUALIFICATION_BROWSER_BRIDGE === '1';
+const qualificationScope = String(process.env.LITE_ANDROID_QUALIFICATION_SCOPE || 'all').trim().toLowerCase();
 const outputDir = resolve('.pocketlab-dev/performance');
-const screens = ['home', 'catalog', 'devices', 'security', 'identity', 'rules', 'recovery'];
+const homeOnly = qualificationScope === 'home';
+const screens = homeOnly ? ['home'] : ['home', 'catalog', 'devices', 'security', 'identity', 'rules', 'recovery'];
 const MINIMUM_FRAME_COUNT = 20;
 const MINIMUM_SAMPLER_INTERVAL_COUNT = MINIMUM_FRAME_COUNT + 3;
 const MAX_MINIMUM_FRAME_EXTENSION_MS = 2_000;
@@ -28,6 +30,9 @@ function fail(message) {
 
 if (browserBridgeEnabled !== Boolean(browserBridge)) {
   fail('Synthetic Android browser qualification requires an explicit browser bridge and LITE_QUALIFICATION_BROWSER_BRIDGE=1.');
+}
+if (!['all', 'home'].includes(qualificationScope)) {
+  fail('LITE_ANDROID_QUALIFICATION_SCOPE must be either all or home.');
 }
 
 function sourceCommit() {
@@ -531,6 +536,7 @@ async function measurePhase4Interaction({
     qualification_surface: 'android-cdp',
     browser_project: 'android-cdp',
     rendering_surface: 'physical-android-chrome',
+    qualification_scope: qualificationScope,
     android_chrome_version: androidChromeVersion,
     android_package: 'com.android.chrome',
     source_commit: commit,
@@ -597,19 +603,46 @@ for (const screenId of screens) {
   });
 }
 
-// Phase 4: real tab navigation through the rendered Pocket Lab navigation.
+// Phase 4: real destination navigation through the rendered Home cards. The
+// Home-only selector proves all four destination controls without entering the
+// unrelated screen-specific matrices below.
 await gotoScreen('home');
-await measurePhase4Interaction({
-  interaction: 'screen-navigation',
-  scope: 'home-to-devices',
-  surface: 'Pocket Lab Lite navigation',
-  action: async () => {
-    const devicesButton = await firstVisible(page.getByRole('button', { name: /^Devices$/ }), 'Devices navigation button');
-    await devicesButton.click();
-    await page.locator('[data-lite-screen-id="devices"]').waitFor({ state: 'visible', timeout: 20_000 });
-  },
-  settleMs: 700,
-});
+if (homeOnly) {
+  for (const [label, screenId] of [
+    ['Apps', 'catalog'],
+    ['Devices', 'devices'],
+    ['Safety', 'security'],
+    ['Backups', 'recovery'],
+  ]) {
+    await gotoScreen('home');
+    await measurePhase4Interaction({
+      interaction: 'screen-navigation',
+      scope: `home-destination-${sanitizeLitePerformanceName(label)}`,
+      surface: `Home ${label} destination card`,
+      action: async () => {
+        const destinationButton = await firstVisible(
+          page.getByRole('button', { name: `Open ${label}`, exact: true }),
+          `Home ${label} destination card`,
+        );
+        await destinationButton.click();
+        await page.locator(`[data-lite-screen-id="${screenId}"]`).waitFor({ state: 'visible', timeout: 20_000 });
+      },
+      settleMs: 700,
+    });
+  }
+} else {
+  await measurePhase4Interaction({
+    interaction: 'screen-navigation',
+    scope: 'home-to-devices',
+    surface: 'Pocket Lab Lite navigation',
+    action: async () => {
+      const devicesButton = await firstVisible(page.getByRole('button', { name: /^Devices$/ }), 'Devices navigation button');
+      await devicesButton.click();
+      await page.locator('[data-lite-screen-id="devices"]').waitFor({ state: 'visible', timeout: 20_000 });
+    },
+    settleMs: 700,
+  });
+}
 
 // Phase 4: representative Manage open/close using the always-read-only Home workspace details surface.
 await gotoScreen('home');
@@ -628,6 +661,20 @@ await measurePhase4Interaction({
   settleMs: 420,
 });
 const workspaceDialog = await firstVisible(page.getByRole('dialog', { name: /Workspace details/i }), 'Home Workspace details dialog');
+if (homeOnly) {
+  await measureNestedInteraction({
+    screen: 'home',
+    nestedSurface: 'Workspace details / grouped sections',
+    interaction: 'section-switch',
+    scope: 'home-workspace-sections',
+    surface: 'Home Workspace details / grouped sections',
+    action: async () => {
+      await workspaceDialog.getByRole('button', { name: 'Service health', exact: true }).click();
+      await workspaceDialog.locator('[data-home-settings-view="section"]').waitFor({ state: 'visible' });
+    },
+    settleMs: 480,
+  });
+}
 await workspaceDialog.getByRole('button', { name: 'Diagnostics', exact: true }).click();
 const workspaceTechnicalDetails = workspaceDialog.locator('details').filter({ hasText: 'Technical details' }).first();
 await measureNestedInteraction({
@@ -651,6 +698,20 @@ await measureNestedInteraction({
     await workspaceTechnicalDetails.locator('summary').click();
   },
 });
+if (homeOnly) {
+  await measureNestedInteraction({
+    screen: 'home',
+    nestedSurface: 'Workspace details / grouped sections',
+    interaction: 'nested-detail-close',
+    scope: 'home-workspace-back',
+    surface: 'Home Workspace details / grouped section Back',
+    action: async () => {
+      await workspaceDialog.getByRole('button', { name: /All workspace details sections/i }).click();
+      await workspaceDialog.locator('[data-home-settings-view="index"]').waitFor({ state: 'visible' });
+    },
+    settleMs: 360,
+  });
+}
 await measurePhase4Interaction({
   interaction: 'manage-close',
   scope: 'home-workspace',
@@ -666,6 +727,61 @@ await measurePhase4Interaction({
   settleMs: 700,
 });
 
+if (homeOnly) {
+  await gotoScreen('home');
+  const activityButton = await firstVisible(
+    page.getByRole('button', { name: 'View all activity', exact: true }),
+    'Home Recent activity button',
+  );
+  await measurePhase4Interaction({
+    interaction: 'manage-open',
+    scope: 'home-activity',
+    surface: 'Home Recent activity',
+    action: async () => {
+      await activityButton.click();
+      await page.getByRole('dialog', { name: 'Recent activity' }).waitFor({ state: 'visible', timeout: 10_000 });
+    },
+    settleMs: 420,
+  });
+  const activityDialog = await firstVisible(page.getByRole('dialog', { name: 'Recent activity' }), 'Home Recent activity dialog');
+  await measureNestedInteraction({
+    screen: 'home',
+    nestedSurface: 'Recent activity / grouped sections',
+    interaction: 'section-switch',
+    scope: 'home-activity-sections',
+    surface: 'Home Recent activity / grouped sections',
+    action: async () => {
+      await activityDialog.getByRole('button', { name: 'History', exact: true }).click();
+      await activityDialog.locator('[data-home-settings-view="section"]').waitFor({ state: 'visible' });
+    },
+    settleMs: 480,
+  });
+  await measureNestedInteraction({
+    screen: 'home',
+    nestedSurface: 'Recent activity / grouped sections',
+    interaction: 'nested-detail-close',
+    scope: 'home-activity-back',
+    surface: 'Home Recent activity / grouped section Back',
+    action: async () => {
+      await activityDialog.getByRole('button', { name: /All activity sections/i }).click();
+      await activityDialog.locator('[data-home-settings-view="index"]').waitFor({ state: 'visible' });
+    },
+    settleMs: 360,
+  });
+  await measurePhase4Interaction({
+    interaction: 'manage-close',
+    scope: 'home-activity',
+    surface: 'Home Recent activity',
+    action: async () => {
+      await page.keyboard.press('Escape');
+      await activityDialog.waitFor({ state: 'hidden', timeout: 10_000 }).catch(() => null);
+      if (await page.getByRole('dialog', { name: 'Recent activity' }).count()) fail('Home Recent activity did not close after Escape.');
+    },
+    settleMs: 520,
+  });
+}
+
+if (!homeOnly) {
 // Deep Apps coverage stays in the prepared PhotoPrism Manage projection. The
 // section switch and Details panel do not submit an app operation.
 await gotoScreen('catalog');
@@ -961,6 +1077,7 @@ await measureNestedInteraction({
   settleMs: 500,
 });
 await captureRecoveryScreenshot('verify-backup-details', page.getByRole('dialog', { name: 'Verify Backup' }));
+}
 
 // Phase 4: truthful read-only progress/feedback lifecycle.
 //
@@ -1050,7 +1167,10 @@ await measurePhase4Interaction({
   settleMs: 420,
 });
 
-const missingInteractions = LITE_PERFORMANCE_INTERACTIONS.filter((interaction) => !exercisedInteractions.has(interaction));
+const requiredInteractions = homeOnly
+  ? ['screen-steady', 'screen-navigation', 'manage-open', 'manage-close', 'nested-detail-open', 'nested-detail-close', 'section-switch', 'progress-update', 'toast-settle', 'refresh-feedback']
+  : LITE_PERFORMANCE_INTERACTIONS;
+const missingInteractions = requiredInteractions.filter((interaction) => !exercisedInteractions.has(interaction));
 const qualificationGaps = [
   ...(missingInteractions.length ? [`interaction ids: ${missingInteractions.join(', ')}`] : []),
   ...(unavailableSurfaces.length ? [`surfaces: ${unavailableSurfaces.join('; ')}`] : []),
@@ -1068,6 +1188,6 @@ if (failures || targetMisses) {
 }
 
 console.log(
-  `[ui-performance-android] ${evidenceCount} physical-browser evidence samples covered all Phase 4 interaction ids and met the 60 FPS production target`,
+  `[ui-performance-android] ${evidenceCount} physical-browser ${qualificationScope} evidence samples covered the required Phase 4 interaction ids and met the 60 FPS production target`,
 );
 process.exit(0);

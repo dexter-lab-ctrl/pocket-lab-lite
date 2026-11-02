@@ -65,7 +65,14 @@ for(const kind of ['workspace','activity'] as const) {
       await expect(nav).toBeVisible();
       const target=kind==='workspace'?'Service health':'Running';
       await nav.getByRole('button',{name:target}).click();
-      await expect(nav.getByRole('button',{name:target})).toHaveAttribute('aria-current','page');
+      if (width <= 600) {
+        // The native mobile contract replaces the persistent desktop rail
+        // with a grouped-settings root and an explicit Back control.
+        await expect(dialog.locator('[data-home-settings-view="section"]')).toBeVisible();
+        await expect(dialog.getByRole('button',{name:kind==='workspace'?/All workspace details sections/:/All activity sections/})).toBeVisible();
+      } else {
+        await expect(nav.getByRole('button',{name:target})).toHaveAttribute('aria-current','page');
+      }
       await expect(dialog.locator('.lite-home-settings-detail-heading')).toBeVisible();
       const scroll=await scrollFixture(dialog);
       await scroll.evaluate((node)=>node.scrollTo({top:160,behavior:'instant'}));
@@ -81,7 +88,8 @@ for(const kind of ['workspace','activity'] as const) {
     await dialog.getByRole('button',{name:selected}).click();
     await page.emulateMedia({colorScheme:'light'});
     await expect(page.locator('html')).toHaveAttribute('data-lite-theme','light');
-    await expect(dialog.getByRole('button',{name:selected})).toHaveAttribute('aria-current','page');
+    await expect(dialog.locator('[data-home-settings-view="section"]')).toBeVisible();
+    await expect(dialog.getByRole('button',{name:kind==='workspace'?/All workspace details sections/:/All activity sections/})).toBeVisible();
   });
   test(kind+' accessible Black panel preserves grouped focusable controls',async ({page})=>{
     await page.setViewportSize({width:360,height:760});
