@@ -66,6 +66,18 @@ export function homeWorkflowPresentation({ overallTone, attentionCount, savedSta
       doneNodes: [],
     };
   }
+  if (!['ready', 'review', 'danger'].includes(overallTone)) {
+    return {
+      state: 'unknown',
+      motion: 'rest',
+      eyebrow: 'Workspace status',
+      title: 'Service status is not confirmed',
+      summary: 'Pocket Lab has not reported enough current service information to confirm a healthy flow.',
+      badge: 'Not confirmed',
+      activeNodes: [],
+      doneNodes: [],
+    };
+  }
   if (overallTone !== 'ready') {
     return {
       state: 'attention',
@@ -167,6 +179,12 @@ export function homeCommandHeroPresentation({
   if (overview.overallTone === 'review' || services.some((item) => item.tone !== 'ready'))
     return { state: 'attention', eyebrow: 'Review recommended', title: 'Your workspace needs a review',
       summary: 'Some reported services are not ready yet. Review the affected areas below.', icon: AlertTriangle };
+  if (overview?.nextAction?.screen && overview.nextAction.screen !== 'home'
+      && overview.nextAction.tone === 'review') {
+    return { state: 'attention', eyebrow: 'Review recommended', title: 'Your workspace needs a review',
+      summary: 'A reported workspace item needs attention. Review the recommended next action below.',
+      icon: AlertTriangle };
+  }
   if (running) return { state: 'running', eyebrow: 'Work in progress',
     title: 'Workspace operations are running',
     summary: 'The latest prepared activity reports work in progress. Open Recent activity for details.', icon: Activity };
@@ -277,7 +295,19 @@ export default function HomeScreen({
         counts_available: activityData?.counts_available !== false && historyData.counts_available !== false }) || activity
     : activity, [historyData, activityData, activity]);
 
-  const attentionItems = useMemo(() => prioritizeWorkspaceAttention(overview.services), [overview.services]);
+  const attentionItems = useMemo(() => {
+    const items = prioritizeWorkspaceAttention(overview.services);
+    const next = overview.nextAction;
+    if (!next || next.tone !== 'review' || !next.screen || next.screen === 'home'
+        || items.some((item) => item.screen === next.screen)) return items;
+    return [...items, {
+      key: 'next-action-' + next.screen,
+      label: next.title || next.label,
+      summary: next.detail || 'Open this area to review the latest reported state.',
+      screen: next.screen,
+      tone: 'review',
+    }];
+  }, [overview.services, overview.nextAction]);
 
   useEffect(() => {
     if (!activityOpen || effectiveSavedStateOnly || !backendReachable) return;
