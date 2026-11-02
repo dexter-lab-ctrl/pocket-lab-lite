@@ -33,7 +33,7 @@ describe('Azure Horizon Access native composition — authored, not executed', (
       <div>Selected details</div>
     </AccessManageNavigation>);
     const nav = screen.getByRole('navigation', { name: 'Manage Access sections' });
-    fireEvent.click(within(nav).getByRole('button', { name: /Passkeys Trusted sign-in methods/ }));
+    fireEvent.click(within(nav).getByRole('button', { name: 'Passkeys' }));
     expect(setSection).toHaveBeenCalledWith('passkeys');
     rerender(<AccessManageNavigation section="passkeys" setSection={setSection}><div>Selected details</div></AccessManageNavigation>);
     fireEvent.click(screen.getByRole('button', { name: 'All access settings' }));
