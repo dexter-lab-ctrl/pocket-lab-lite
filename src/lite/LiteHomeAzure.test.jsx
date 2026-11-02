@@ -40,7 +40,7 @@ describe('Azure Horizon Home preserves existing authority and actions', () => {
     }
     fireEvent.click(screen.getByRole('button', { name: 'Open Backups' }));
     expect(onNavigate).toHaveBeenCalledWith('recovery');
-    fireEvent.click(screen.getByRole('button', { name: /View activity/i }));
+    fireEvent.click(screen.getByRole('button', { name: /View all activity/i }));
     expect(screen.getByRole('dialog', { name: 'Recent activity' })).toBeTruthy();
     expect(screen.getByText('Latest workspace activity')).toBeTruthy();
   });
