@@ -28,7 +28,7 @@ export default function AccessManageNavigation({ section, setSection, enterprise
           {group.items.map((item) => {
             const Icon = icons[item.icon] || ShieldCheck;
             return <button type="button" key={item.id} ref={item.id === selectedId ? activeButtonRef : null}
-              className="lite-id-native-row" aria-current={item.id === selectedId ? 'page' : undefined}
+              className="lite-id-native-row" aria-label={item.label} aria-current={item.id === selectedId ? 'page' : undefined}
               onClick={() => setSection(item.id)}>
               <Icon size={19} aria-hidden="true" />
               <span><strong>{item.label}</strong><small>{item.description}</small></span>
