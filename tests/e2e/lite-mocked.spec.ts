@@ -147,36 +147,23 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await home.getByRole('button', { name: 'Workspace details' }).click();
 
     const sheet = page.getByRole('dialog', { name: 'Workspace details' });
-    const scrollBody = sheet.locator('.lite-home-workspace-details-scroll');
+    const settings = sheet.locator('.lite-home-settings-workspace');
     await sheet.getByRole('button', { name: 'Service health', exact: true }).click();
-    await expect.poll(() => scrollBody.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+    await expect(settings).toHaveAttribute('data-home-settings-view', 'section');
+    await expect(sheet.getByRole('heading', { name: 'Service health', exact: true })).toBeVisible();
+    await expect(sheet.getByRole('button', { name: /All workspace details sections/i })).toBeVisible();
 
-    // The shared navigation remains in the sticky layout footprint while it
-    // is visually hidden, so query the owned element rather than requiring an
-    // accessible-role match that excludes visibility:hidden nodes.
-    const tabs = sheet.locator('.lite-home-details-nav');
-    await expect(tabs).toHaveAttribute('data-tabs-hidden', 'false');
-
-    await scrollBody.evaluate((element) => {
-      element.scrollTop = Math.min(160, element.scrollHeight - element.clientHeight);
-      element.dispatchEvent(new Event('scroll', { bubbles: true }));
-    });
-    await expect(tabs).toHaveAttribute('data-tabs-hidden', 'true');
-
-    await scrollBody.evaluate((element) => {
-      element.scrollTop = Math.max(32, element.scrollTop - 80);
-      element.dispatchEvent(new Event('scroll', { bubbles: true }));
-    });
-    await expect(tabs).toHaveAttribute('data-tabs-hidden', 'false');
-
-    await tabs.getByRole('button', { name: 'Overview', exact: true }).focus();
-    await expect(tabs).toHaveAttribute('data-tabs-hidden', 'false');
+    // Home uses the native grouped-settings presentation: section navigation
+    // is a bounded panel view, not a desktop tab strip floating over the sheet.
+    await sheet.getByRole('button', { name: /All workspace details sections/i }).click();
+    await expect(settings).toHaveAttribute('data-home-settings-view', 'index');
+    await expect(sheet.getByRole('navigation', { name: 'Workspace details sections' })).toBeVisible();
   });
 
   test('Home opens bounded activity details and restores focus after dismissal', async ({ page }) => {
     await page.goto('/?screen=home');
     const home = page.locator('[data-lite-screen-id="home"]');
-    const opener = home.getByRole('button', { name: 'View activity' });
+    const opener = home.getByRole('button', { name: /View all activity/i });
 
     await expect(opener).toBeVisible();
     await opener.click();
@@ -280,10 +267,14 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.addInitScript((statusPayload) => {
       const originalFetch = window.fetch.bind(window);
       window.fetch = (input, init) => {
-        const url = new URL(typeof input === 'string' ? input : input.url, window.location.origin);
+        const request = new Request(input, init);
+        const url = new URL(request.url, window.location.origin);
         if (url.pathname === '/api/lite/status') {
           return Promise.resolve(new Response(JSON.stringify(statusPayload), {
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'X-PocketLab-Read-Nonce': request.headers.get('X-PocketLab-Read-Nonce') || '',
+            },
           }));
         }
         return originalFetch(input, init);
@@ -303,7 +294,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.goto('/?screen=home');
     const home = page.locator('[data-lite-screen-id="home"]');
 
-    await expect(home.locator('.lite-operational-story')).toContainText(/attention|safety|review/i);
+    await expect(home.locator('[data-lite-p1-guidance="true"]')).toContainText(/attention|safety|review/i);
     await expect(home.getByRole('button', { name: 'Workspace details' })).toBeVisible();
   });
 
