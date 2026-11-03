@@ -97,11 +97,11 @@ for (const theme of ['light', 'dark', 'system'] as const) {
       // Mobile Chromium can rasterize a small set of text glyphs differently
       // between otherwise identical captures. Keep the tall overview strict
       // on layout/content while allowing only this bounded 0.1% glyph delta.
-      await expect(overviewScreenshot).toMatchSnapshot(`safety-azure-${theme}-overview-${width}.png`, {
+      await expect(overviewScreenshot).toMatchSnapshot(`safety-native-${theme}-overview-${width}.png`, {
         maxDiffPixelRatio: 0.001,
       });
-      await expect(page.locator('[data-security-horizon-overview="true"]')).toHaveScreenshot(
-        `safety-azure-${theme}-insights-${width}.png`, {
+      await expect(page.locator('[data-safety-native-destinations="true"]')).toHaveScreenshot(
+        `safety-native-${theme}-insights-${width}.png`, {
           animations: 'disabled',
           // The compact crop has fewer pixels, so the same mobile-only text
           // rasterization variance needs an explicit absolute ceiling too.
@@ -120,7 +120,7 @@ for (const theme of ['light', 'dark', 'system'] as const) {
       await showSafety(page, theme, scenario, 1280);
       await expectSafetyScreenScreenshot(
         page,
-        `safety-azure-${theme}-state-${canonicalSafetyVisualScenario(scenario)}.png`,
+        `safety-native-${theme}-state-${canonicalSafetyVisualScenario(scenario)}.png`,
       );
     });
   }
@@ -133,9 +133,9 @@ for (const theme of ['light', 'dark', 'system'] as const) {
         await showSafety(page, theme, 'security-quick-healthy', width);
         await page.getByRole('button', { name: 'Manage Security details' }).click();
         const dialog = page.getByRole('dialog', { name: 'Manage Safety' });
-        await dialog.getByRole('tab', { name: `Open ${section} in Security Manage` }).click();
+        await dialog.getByRole('button', { name: `Open ${section} in Manage Safety` }).click();
         await expect(dialog).toHaveScreenshot(
-          `safety-azure-${theme}-manage-${width}-${section.toLowerCase().replaceAll(' ', '-')}.png`,
+          `safety-native-${theme}-manage-${width}-${section.toLowerCase().replaceAll(' ', '-')}.png`,
           {
             animations: 'disabled',
             // Keep the Manage surface strict while bounding mobile text
@@ -149,16 +149,20 @@ for (const theme of ['light', 'dark', 'system'] as const) {
 }
 test('Safety protected Full Scan confirmation — synthetic only', async ({ page }) => {
   await showSafety(page, 'dark', 'security-quick-healthy', 1280);
+  await page.getByRole('button', { name: 'Manage Security details' }).click();
+  await page.getByRole('button', { name: 'Open Checks in Manage Safety' }).click();
   await page.getByRole('button', { name: 'Run Full Scan' }).click();
   const dialog = page.getByRole('dialog', { name: 'Full Local Check' });
-  await expect(dialog).toHaveScreenshot('safety-azure-full-confirmation.png', { animations: 'disabled' });
+  await expect(dialog).toHaveScreenshot('safety-native-full-confirmation.png', { animations: 'disabled' });
   await dialog.getByRole('button', { name: 'Cancel' }).click();
 });
 test('Safety protected App Scan confirmation — synthetic only', async ({ page }) => {
   await showSafety(page, 'light', 'security-quick-healthy', 390);
+  await page.getByRole('button', { name: 'Manage Security details' }).click();
+  await page.getByRole('button', { name: 'Open Checks in Manage Safety' }).click();
   await page.getByRole('button', { name: 'Run App Scan' }).click();
   const dialog = page.getByRole('dialog', { name: 'Check PhotoPrism' });
-  await expect(dialog).toHaveScreenshot('safety-azure-app-confirmation.png', { animations: 'disabled' });
+  await expect(dialog).toHaveScreenshot('safety-native-app-confirmation.png', { animations: 'disabled' });
   await dialog.getByRole('button', { name: 'Cancel' }).click();
 });
 test('desktop shared geometry after keyboard move and resize', async ({ page }) => {
@@ -169,11 +173,11 @@ test('desktop shared geometry after keyboard move and resize', async ({ page }) 
   await page.keyboard.press('ArrowLeft');
   await dialog.getByRole('button', { name: 'Resize Safety panel' }).focus();
   await page.keyboard.press('ArrowDown');
-  await expect(dialog).toHaveScreenshot('safety-azure-desktop-moved-resized.png', { animations: 'disabled' });
+  await expect(dialog).toHaveScreenshot('safety-native-desktop-moved-resized.png', { animations: 'disabled' });
 });
 test('320px with 200% text and reduced motion', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await showSafety(page, 'dark', 'security-action-needed', 320);
   await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
-  await expectSafetyScreenScreenshot(page, 'safety-azure-320-zoom200-reduced-motion.png');
+  await expectSafetyScreenScreenshot(page, 'safety-native-320-zoom200-reduced-motion.png');
 });

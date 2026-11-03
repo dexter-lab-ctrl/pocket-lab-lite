@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 79abed17b59a34bd28bdcf9ec458abf0148aa3e738defd4332e5118fb3ed5fa7
+source_fingerprint: f6af2234de206ee7b44c4b3d0fa8b013444b7f660059b351c576787653ad4499
 schema_revision: 1
 validation_status: generated
 ---
@@ -217,5 +217,10 @@ validation_status: generated
 | `pocket-lab-lite-security-azuresavedstate` | security | `security-profile-stale` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-azuresavedstate-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-azureactivefullcheck` | security | `security-full-running` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-azureactivefullcheck-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-azurefirstrunnoscore` | security | `security-first-run` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-azurefirstrunnoscore-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-nativesystemfirstrun` | security | `security-first-run` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-nativesystemfirstrun-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-nativedaylightoffline` | security | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-nativedaylightoffline-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-nativedarkfullrunning` | security | `security-full-running` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-nativedarkfullrunning-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-nativedaylightattention` | security | `security-action-needed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-nativedaylightattention-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-nativeappcheck` | security | `security-app-check-healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-nativeappcheck-{viewport}.png` | fixture-dependent |
 
 Screenshot files are produced by the existing WSL2-aware external Chrome resolver. A missing screenshot is not reported as PASS.

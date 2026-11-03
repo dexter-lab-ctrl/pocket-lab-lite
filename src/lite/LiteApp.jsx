@@ -502,6 +502,37 @@ function LiteAppShell() {
     };
   }, [workspaceApp]);
 
+  // The dock is portalled to body to keep its fixed positioning independent
+  // from screen transitions. Scroll depth is a cosmetic hint, not a status.
+  // Capture document scrolling because some Lite screens use nested scrollers.
+  useEffect(() => {
+    const dock = mobileNavRef.current;
+    if (!dock) return undefined;
+    let frame = 0;
+    let scrollSource = null;
+    const update = () => {
+      frame = 0;
+      const scrollTop = Math.max(0, window.scrollY || 0,
+        document.scrollingElement?.scrollTop || 0,
+        scrollSource?.isConnected ? scrollSource.scrollTop || 0 : 0);
+      const next = scrollTop > 8 ? 'true' : 'false';
+      if (dock.dataset.liteScrollElevated !== next) dock.dataset.liteScrollElevated = next;
+    };
+    const onScroll = (event) => {
+      if (event.target === dock || dock.contains(event.target)) return;
+      scrollSource = event.target instanceof Element ? event.target : null;
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    update();
+    document.addEventListener('scroll', onScroll, true);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      document.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('scroll', onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [workspaceApp]);
+
   useEffect(() => {
     const syncWorkspaceFromHistory = () => {
       setWorkspaceApp(currentWorkspaceFromLocation());

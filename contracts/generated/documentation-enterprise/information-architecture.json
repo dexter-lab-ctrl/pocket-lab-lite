@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 519,
+  "page_count": 520,
   "page_types": [
     "overview",
     "guide",
@@ -5051,6 +5051,29 @@
       "source_or_generator": "development/lite-azure-horizon-rules-refinement.md",
       "title": "Azure Horizon — Safety Rules refinement",
       "url": "/development/lite-azure-horizon-rules-refinement/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-safety-native-revamp.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-safety-native-revamp",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-safety-native-revamp.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-safety-native-revamp.md",
+      "title": "Pocket Lab Lite — Azure Horizon Native Safety Center (P0–P7)",
+      "url": "/development/lite-azure-horizon-safety-native-revamp/"
     },
     {
       "additional_audiences": [],
@@ -18298,7 +18321,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "4f3ff4adbd05e64609d5e3a5ce967dc2a0e28421a680d28990a9f4199c4fa9c9",
+  "source_fingerprint": "1cef3e18bcfb013c344b69178b7f5acf69f274bfd0608d02395cfa49b5b15929",
   "top_level": [
     "start-here",
     "use",

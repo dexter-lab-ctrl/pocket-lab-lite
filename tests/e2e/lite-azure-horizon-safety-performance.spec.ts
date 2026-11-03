@@ -19,10 +19,11 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(panel).toBeVisible();
       const manageOpenMs = performance.now() - startManage;
       const startSwitch = performance.now();
-      await panel.getByRole('tab', { name: 'Open Checks in Security Manage' }).click();
-      await expect(panel.getByRole('tabpanel', { name: 'Checks' })).toBeVisible();
-      await panel.getByRole('tab', { name: 'Open History in Security Manage' }).click();
-      await expect(panel.getByRole('tabpanel', { name: 'History' })).toBeVisible();
+      await panel.getByRole('button', { name: 'Open Checks in Manage Safety' }).click();
+      await expect(panel.getByRole('region', { name: 'Checks' })).toBeVisible();
+      if (width < 701) await panel.getByRole('button', { name: 'Back to Manage Safety' }).click();
+      await panel.getByRole('button', { name: 'Open History in Manage Safety' }).click();
+      await expect(panel.getByRole('region', { name: 'History' })).toBeVisible();
       const profileAndHistorySwitchMs = performance.now() - startSwitch;
       let geometryMs: number | null = null;
       if (width >= 701) {

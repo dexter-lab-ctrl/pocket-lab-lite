@@ -14,6 +14,8 @@ import {
 import './index.css';
 import './lite/theme/azureHorizonTokens.css';
 import './lite/theme/azureHorizon.css';
+import './lite/theme/liteNativeDock.css';
+import { installLiteGlobalHaptics } from './lib/liteGlobalHaptics.js';
 
 if (typeof document !== 'undefined') {
   document.documentElement.dataset.litePerfMode = import.meta.env.VITE_POCKETLAB_PERF_TEST === '1'
@@ -43,6 +45,7 @@ if (typeof window !== 'undefined' && !qualificationCandidateBuild) {
 }
 
 async function bootstrapPocketLabLite() {
+  installLiteGlobalHaptics();
   if (import.meta.env.VITE_POCKETLAB_MOCKS === '1') {
     const { startPocketLabMocks } = await import('./mocks/browser.js');
     await startPocketLabMocks();

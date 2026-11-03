@@ -320,7 +320,7 @@ test('[interaction] Security history details stay inside the render budget', asy
     testInfo,
     interactionId('history-open', 'security-manage-history'),
     async () => {
-      await manage.getByRole('tab', { name: /History/ }).click();
+      await manage.locator('.lite-safety-native-nav-row[aria-label="Open History in Manage Safety"]').click();
       await manage.getByRole('button', { name: 'Open Security history details' }).click();
       await expect(page.locator('[data-security-phase3-responsive-shell="true"]:visible').first()).toBeVisible();
     },
@@ -342,7 +342,7 @@ test('[interaction] Security finding details stay inside the render budget', asy
   const manage = page.locator('[data-lite-sheet-variant="security"]:visible').first();
   await expect(manage).toBeVisible();
 
-  await manage.getByRole('tab', { name: /Issues/ }).click();
+  await manage.locator('.lite-safety-native-nav-row[aria-label="Open Issues in Manage Safety"]').click();
   const findingTrigger = manage.getByRole('button', { name: /View details for/i }).first();
   await expect(findingTrigger).toBeVisible();
   await page.waitForTimeout(240);

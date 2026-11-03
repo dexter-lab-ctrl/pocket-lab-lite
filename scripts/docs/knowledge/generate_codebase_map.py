@@ -82,7 +82,7 @@ MAX_SYMBOLS_PER_FILE = 200
 # Keep the static browser projection under its existing 10 MB contract as the
 # tracked repository grows. The path and high-value labels are emitted first;
 # the bounded tail is only a compact search aid, not canonical source evidence.
-MAX_BROWSER_SEARCH_CHARS = 550
+MAX_BROWSER_SEARCH_CHARS = 500
 MAX_BROWSER_SYMBOLS_PER_FILE = 80
 
 

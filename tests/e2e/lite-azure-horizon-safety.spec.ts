@@ -25,32 +25,34 @@ test.describe('Azure Horizon Safety P0–P3 semantic and interaction contract', 
   for (const theme of ['light', 'dark', 'system'] as const) {
     test(`backend-reported overview keeps score, scope, issues and evidence separate — ${theme}`, async ({ page }) => {
       await openSafety(page, 'security-quick-healthy', theme);
-      await expect(page.getByRole('heading', { name: 'Safety Center', level: 1 })).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'Safety overview' })).toBeVisible();
-      await expect(page.locator('.lite-security-horizon-facts > div')).toHaveCount(3);
-      await expect(page.getByRole('region', { name: 'Needs attention' })).toBeVisible();
-      await expect(page.getByRole('region', { name: 'Coverage and checks' })).toBeVisible();
-      await expect(page.getByRole('region', { name: 'Recent safety checks' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Safety', level: 1 })).toBeVisible();
+      await expect(page.getByRole('region', { name: 'Safety overview' })).toBeVisible();
+      await expect(page.locator('.lite-safety-native-stats > div')).toHaveCount(3);
+      await expect(page.getByRole('button', { name: 'Open Needs Attention' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Open Coverage & Checks' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Open Recent Activity' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Manage Security details' })).toHaveCount(1);
       expect(['light', 'dark']).toContain(await page.locator('html').getAttribute('data-lite-theme'));
     });
     test(`nine Manage sections support keyboard tabs and safe close — ${theme}`, async ({ page }) => {
       const dialog = await openManage(page, 'security-quick-healthy', theme);
-      await expect(dialog.getByRole('tab')).toHaveCount(9);
+      await expect(dialog.getByRole('navigation', { name: 'Manage Safety sections' })).toBeVisible();
+      await expect(dialog.locator('.lite-safety-native-nav-row')).toHaveCount(9);
       for (const label of sections) {
-        const tab = dialog.getByRole('tab', { name: `Open ${label} in Security Manage` });
-        await tab.click();
-        await expect(tab).toHaveAttribute('aria-selected', 'true');
-        await expect(dialog.getByRole('tabpanel', { name: label })).toBeVisible();
+        const back = dialog.getByRole('button', { name: 'Back to Manage Safety' });
+        if (await back.isVisible()) await back.click();
+        const row = dialog.locator(`.lite-safety-native-nav-row[aria-label="Open ${label} in Manage Safety"]`);
+        await row.click();
+        await expect(row).toHaveAttribute('aria-current', 'page');
+        await expect(dialog.getByRole('region', { name: label })).toBeVisible();
+        await expect(dialog.locator('.lite-security-manage-scroll')).toHaveJSProperty('scrollTop', 0);
       }
-      const first = dialog.getByRole('tab', { name: 'Open Overview in Security Manage' });
+      const back = dialog.getByRole('button', { name: 'Back to Manage Safety' });
+      if (await back.isVisible()) await back.click();
+      const first = dialog.locator('.lite-safety-native-nav-row[aria-label="Open Overview in Manage Safety"]');
       await first.focus();
-      await page.keyboard.press('ArrowRight');
-      await expect(dialog.getByRole('tab', { name: 'Open Checks in Security Manage' })).toHaveAttribute('aria-selected', 'true');
-      await page.keyboard.press('End');
-      await expect(dialog.getByRole('tab', { name: 'Open Technical details in Security Manage' })).toHaveAttribute('aria-selected', 'true');
-      await page.keyboard.press('Home');
-      await expect(first).toHaveAttribute('aria-selected', 'true');
+      await page.keyboard.press('Enter');
+      await expect(first).toHaveAttribute('aria-current', 'page');
       await page.keyboard.press('Escape');
       await expect(dialog).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Manage Security details' })).toBeFocused();
@@ -65,7 +67,7 @@ test.describe('Azure Horizon Safety P0–P3 semantic and interaction contract', 
       const dialog = page.getByRole('dialog', { name: 'Manage Safety' });
       await page.getByRole('button', { name: 'Manage Security details' }).click();
       await audit();
-      await dialog.getByRole('tab', { name: 'Open Coverage in Security Manage' }).click();
+      await dialog.getByRole('button', { name: 'Open Coverage in Manage Safety' }).click();
       await audit();
     });
   }
@@ -73,14 +75,15 @@ test.describe('Azure Horizon Safety P0–P3 semantic and interaction contract', 
   test('first run does not render a made-up reported score', async ({ page }) => {
     await openSafety(page, 'security-first-run');
     await expect(page.getByRole('img', { name: 'Safety score not reported' })).toBeVisible();
-    await expect(page.locator('.lite-security-horizon-facts')).toContainText('Not checked');
+    await expect(page.locator('.lite-safety-native-stats')).toContainText('Not checked');
   });
   test('missing/scanner-unavailable result remains scoped and reviewable', async ({ page }) => {
     await openSafety(page, 'security-scanner-unavailable');
-    await expect(page.getByRole('region', { name: 'Coverage and checks' })).toBeVisible();
-    await page.getByRole('button', { name: 'View coverage' }).click();
+    await expect(page.getByRole('button', { name: 'Open Coverage & Checks' })).toBeVisible();
+    await page.getByRole('button', { name: 'Open Coverage & Checks' }).click();
     const dialog = page.getByRole('dialog', { name: 'Manage Safety' });
-    await expect(dialog.getByRole('tab', { name: 'Open Coverage in Security Manage' })).toHaveAttribute('aria-selected', 'true');
+    await expect(dialog.locator('.lite-safety-native-nav-row[aria-label="Open Coverage in Manage Safety"]')).toHaveAttribute('aria-current', 'page');
+    await expect(dialog.getByRole('region', { name: 'Coverage' })).toBeVisible();
   });
   test('Full Scan requires confirmation before any scan request', async ({ page }) => {
     await openSafety(page);
@@ -88,6 +91,8 @@ test.describe('Azure Horizon Safety P0–P3 semantic and interaction contract', 
     page.on('request', (request) => {
       if (request.method() !== 'GET' && /\/api\/lite\/security\/check|\/api\/lite\/security\/scan/.test(request.url())) unsafeRequests.push(request.url());
     });
+    await page.getByRole('button', { name: 'Manage Security details' }).click();
+    await page.getByRole('button', { name: 'Open Checks in Manage Safety' }).click();
     await page.getByRole('button', { name: 'Run Full Scan' }).click();
     const confirm = page.getByRole('dialog', { name: 'Full Local Check' });
     await expect(confirm).toBeVisible();
@@ -97,6 +102,8 @@ test.describe('Azure Horizon Safety P0–P3 semantic and interaction contract', 
   });
   test('App Scan requires PhotoPrism-specific confirmation and skips media', async ({ page }) => {
     await openSafety(page);
+    await page.getByRole('button', { name: 'Manage Security details' }).click();
+    await page.getByRole('button', { name: 'Open Checks in Manage Safety' }).click();
     await page.getByRole('button', { name: 'Run App Scan' }).click();
     const confirm = page.getByRole('dialog', { name: 'Check PhotoPrism' });
     await expect(confirm).toBeVisible();
@@ -107,6 +114,40 @@ test.describe('Azure Horizon Safety P0–P3 semantic and interaction contract', 
     await openSafety(page, 'offline-saved');
     await expect(page.getByText(/Showing saved state|Saved result/i).first()).toBeVisible();
     await expect(page.getByRole('button', { name: /Reconnect to run Quick Scan/i })).toBeDisabled();
+  });
+
+  test('dark Manage Safety keeps Azure surfaces and removes legacy green haze', async ({ page }) => {
+    const dialog = await openManage(page, 'security-quick-healthy', 'dark');
+    await dialog.getByRole('button', { name: 'Open Checks in Manage Safety' }).click();
+    const styles = await dialog.evaluate((element) => {
+      const read = (selector: string) => {
+        const node = element.matches(selector) ? element : element.querySelector(selector);
+        if (!(node instanceof HTMLElement)) throw new Error(`Missing Safety style anchor: ${selector}`);
+        const style = getComputedStyle(node);
+        return {
+          backgroundColor: style.backgroundColor,
+          backgroundImage: style.backgroundImage,
+          boxShadow: style.boxShadow,
+          backdropFilter: style.backdropFilter,
+          width: style.width,
+          height: style.height,
+        };
+      };
+      return {
+        shell: read('.lite-security-manage-shell'),
+        scroll: read('.lite-security-manage-scroll'),
+        scoreRing: read('.lite-security-score-ring'),
+      };
+    });
+    expect(styles.shell.backgroundColor).toBe('rgb(11, 15, 20)');
+    expect(styles.shell.backgroundImage).toBe('none');
+    expect(styles.shell.backdropFilter).toBe('none');
+    expect(styles.scroll.backgroundColor).toBe('rgb(11, 15, 20)');
+    expect(styles.scroll.backgroundImage).toBe('none');
+    expect(styles.scroll.boxShadow).toBe('none');
+    expect(styles.scoreRing.width).toBe('60px');
+    expect(styles.scoreRing.height).toBe('60px');
+    expect(styles.scoreRing.boxShadow).toBe('none');
   });
 
   for (const width of [320, 360, 375, 390, 430, 600, 700, 701, 768, 1024, 1440]) {

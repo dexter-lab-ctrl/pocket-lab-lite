@@ -586,6 +586,8 @@ def _run_interaction(
     interaction: str | None,
     secrets: list[str],
 ) -> tuple[int, Authority]:
+    access_only = bool(getattr(args, "access_only", False))
+    baseline = bool(getattr(args, "baseline", False))
     for attempt in range(PREFLIGHT_RETRY_ATTEMPTS):
         if attempt:
             try:
@@ -612,15 +614,20 @@ def _run_interaction(
                     f"{_redact_output(str(exc)[:160], tuple(secrets))}",
                     file=sys.stderr,
                 )
+        runner_command = (
+            _runner_command(args.mode, access_only=access_only, baseline=baseline)
+            if access_only or baseline
+            else _runner_command(args.mode)
+        )
         child = subprocess.run(
-            _runner_command(args.mode, access_only=args.access_only, baseline=args.baseline),
+            runner_command,
             cwd=str(REPO_ROOT),
             env=_child_environment(
                 authority.bridge_token,
                 mode=args.mode,
                 base_url=base_url,
                 interaction=interaction,
-                access_only=args.access_only,
+                access_only=access_only,
             ),
             stdin=subprocess.DEVNULL,
             capture_output=True,

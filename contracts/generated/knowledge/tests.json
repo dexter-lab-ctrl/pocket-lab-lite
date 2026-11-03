@@ -2803,6 +2803,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-native-dock-and-haptics.spec.ts",
+      "name": "tests/e2e/lite-native-dock-and-haptics.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-native-dock-and-haptics.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-p4-regression.spec.ts",
       "name": "tests/e2e/lite-p4-regression.spec.ts",
       "source_refs": [
@@ -2967,6 +2977,16 @@
       "name": "tests/e2e/lite-rules-premium-visual.spec.ts",
       "source_refs": [
         "tests/e2e/lite-rules-premium-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-safety-native-geometry.spec.ts",
+      "name": "tests/e2e/lite-safety-native-geometry.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-safety-native-geometry.spec.ts"
       ],
       "type": "test"
     },
@@ -3207,6 +3227,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "2f2f5d4de790a1bf402ce29acff58a027b57accf8f2c86077677159c41e72d7c"
+    "source_fingerprint": "19460ef3c300db61eb06d86fd59803335cec5e0e6e9b558e3a34b65a93380cdc"
   }
 }
