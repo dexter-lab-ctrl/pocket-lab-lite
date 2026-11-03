@@ -1438,7 +1438,7 @@ function SecurityFindingDetailModal({ finding, context, onClose }) {
   );
 }
 
-function SecurityRemediationDrawer({ finding, context, onClose }) {
+function SecurityRemediationDrawer({ finding, context, onClose, mobileSnap = false }) {
   const remediation = finding ? buildSecurityRemediation(finding, context) : null;
   const detail = finding?.recommendation || finding?.summary || finding?.title || 'Review this item and keep Pocket Lab protected.';
   return (
@@ -1455,7 +1455,7 @@ function SecurityRemediationDrawer({ finding, context, onClose }) {
       closeClassName="lite-security-phase3-close"
       gripClassName="lite-security-phase3-grip"
       variant="security"
-      mobileSnap
+      mobileSnap={mobileSnap}
       motion="safe-grip"
       surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-remediation-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'remediation' }}
     >
@@ -1491,7 +1491,7 @@ function SecurityRemediationDrawer({ finding, context, onClose }) {
   );
 }
 
-function SecurityFindingDetailsPortal({ findings, context, triggerRef }) {
+function SecurityFindingDetailsPortal({ findings, context, triggerRef, mobileSnap = false }) {
   const expandedSecurityFindingId = useLiteUiStore((state) => state.expandedSecurityFindingId);
   const setExpandedSecurityFindingId = useLiteUiStore((state) => state.setExpandedSecurityFindingId);
   const selectedFinding = useMemo(() => {
@@ -1525,7 +1525,7 @@ function SecurityFindingDetailsPortal({ findings, context, triggerRef }) {
       closeClassName="lite-security-phase3-close"
       gripClassName="lite-security-phase3-grip"
       variant="security"
-      mobileSnap
+      mobileSnap={mobileSnap}
       motion="safe-grip"
       surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'finding-details' }}
     >
@@ -3415,7 +3415,7 @@ export default function SecurityScreen() {
         description="Checks this device more deeply while keeping heavy/private data skipped."
         layerClassName="lite-security-phase3-layer lite-security-detail-layer"
         className="lite-security-phase3-panel lite-security-full-local-confirm"
-        mobileSnap
+        mobileSnap={!safetyManageDesktop}
         bodyClassName="lite-security-phase3-scroll"
         headerClassName="lite-security-phase3-head"
       >
@@ -3444,7 +3444,7 @@ export default function SecurityScreen() {
         description="Checks PhotoPrism app safety while keeping photos and media skipped."
         layerClassName="lite-security-phase3-layer lite-security-detail-layer"
         className="lite-security-phase3-panel lite-security-app-check-confirm"
-        mobileSnap
+        mobileSnap={!safetyManageDesktop}
         bodyClassName="lite-security-phase3-scroll"
         headerClassName="lite-security-phase3-head"
       >
@@ -3478,6 +3478,7 @@ export default function SecurityScreen() {
         closeClassName="lite-security-phase3-close"
         gripClassName="lite-security-phase3-grip"
         variant="security"
+        mobileSnap={!safetyManageDesktop}
         motion="safe-grip"
         surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'focused-details', 'data-security-scan-details-profile-bound': scanProfile }}
       >
@@ -3486,7 +3487,7 @@ export default function SecurityScreen() {
         </Suspense>
       </LiteSheet> : null}
 
-      <SecurityFindingDetailsPortal findings={allReviewFindings} context={remediationContext} triggerRef={findingDetailTriggerRef} />
+      <SecurityFindingDetailsPortal findings={allReviewFindings} context={remediationContext} triggerRef={findingDetailTriggerRef} mobileSnap={!safetyManageDesktop} />
 
       {activeSecurityDetails === 'legacyEvidenceNeverMounts' && (evidence || evidenceError || evidenceLoading) ? (
         <section className="lite-security-evidence-dropdown" aria-label="Sanitized security evidence summary" aria-live="polite">
@@ -3545,7 +3546,7 @@ export default function SecurityScreen() {
         </section>
       ) : null}
 
-      <SecurityRemediationDrawer finding={remediationFinding} context={remediationContext} onClose={closeRemediation} />
+      <SecurityRemediationDrawer finding={remediationFinding} context={remediationContext} onClose={closeRemediation} mobileSnap={!safetyManageDesktop} />
 
       <ResultNotice result={null} error={actionError} />
     </>
