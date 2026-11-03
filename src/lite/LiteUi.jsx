@@ -851,6 +851,7 @@ export function LiteButton({ children, onClick, disabled = false, busy = false, 
       aria-label={ariaLabel}
       title={disabledReason || title || ariaLabel}
       className={`pocket-button ${toneClass} ${className}`.trim()}
+      data-lite-haptic={haptic ? 'manual' : undefined}
       data-lite-perf-primitive="button"
       data-lite-button-state={busy ? 'busy' : disabled ? 'disabled' : 'ready'}
       data-lite-perf-motion="compositor"
