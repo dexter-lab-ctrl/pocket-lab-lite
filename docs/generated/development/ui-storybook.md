@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 909eadcc85bc6e4cd59412b5ad0b2382035fb902fac503da866a869ff80658d0
+source_fingerprint: f39ec359a8cc25a906384033aee023294d5b09028bda6e2234662814b4c25860
 schema_revision: 1
 validation_status: generated
 ---
@@ -593,6 +593,13 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `AzureManageCoverage`
 - `AzureManageEvidenceMobile`
 - `AzureManageTechnicalMobile`
+- `NativeDarkMobileIndex`
+- `NativeDarkMobileCoverage`
+- `NativeSystemFirstRun`
+- `NativeDaylightOffline`
+- `NativeDarkFullRunning`
+- `NativeDaylightAttention`
+- `NativeAppCheck`
 
 ## LiteUx
 

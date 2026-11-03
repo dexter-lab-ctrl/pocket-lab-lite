@@ -15751,6 +15751,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-native-dock-and-haptics.spec.ts",
+      "name": "tests/e2e/lite-native-dock-and-haptics.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-native-dock-and-haptics.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-p4-regression.spec.ts",
       "name": "tests/e2e/lite-p4-regression.spec.ts",
       "source_refs": [
@@ -15931,6 +15942,17 @@
       "name": "tests/e2e/lite-rules-premium-visual.spec.ts",
       "source_refs": [
         "tests/e2e/lite-rules-premium-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-safety-native-geometry.spec.ts",
+      "name": "tests/e2e/lite-safety-native-geometry.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-safety-native-geometry.spec.ts"
       ],
       "type": "test"
     },
@@ -59906,6 +59928,20 @@
       "source": "domain:command",
       "target": "subject:pocketlab.events.command.succeeded",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-safety-native-geometry.spec.ts"
+      ],
+      "id": "rel:bcb01714bb6e4b41",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-safety-native-geometry.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {

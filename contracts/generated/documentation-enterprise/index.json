@@ -2317,7 +2317,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "scripts/dev/lite/run-ui-performance-android-apps.sh"
+          "scripts/dev/lite/run-ui-performance-android-apps.sh",
+          "scripts/dev/lite/run-ui-performance-android-safety.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -2340,7 +2341,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "scripts/dev/lite/run-ui-performance-android-apps.sh"
+          "scripts/dev/lite/run-ui-performance-android-apps.sh",
+          "scripts/dev/lite/run-ui-performance-android-safety.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -2363,7 +2365,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "scripts/dev/lite/run-ui-performance-android-apps.sh"
+          "scripts/dev/lite/run-ui-performance-android-apps.sh",
+          "scripts/dev/lite/run-ui-performance-android-safety.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -2389,6 +2392,7 @@
           "scripts/dev/lite/run-ui-performance-android-apps.sh",
           "scripts/dev/lite/run-ui-performance-android-baseline.sh",
           "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+          "scripts/dev/lite/run-ui-performance-android-safety.sh",
           "scripts/dev/lite/run-ui-performance-qualified.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -2462,6 +2466,75 @@
           "scripts/dev/lite/run-ui-performance-android-baseline.sh",
           "scripts/dev/lite/run-ui-performance-android-cdp.sh",
           "scripts/dev/lite/run-ui-performance-qualified.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_ANDROID_SAFETY_ANONYMOUS_READ_ONLY",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "tests/backend/test_lite_ui_performance_runner.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_ANDROID_SAFETY_BASELINE_REPETITIONS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/run-ui-performance-android-safety.sh"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "LITE_ANDROID_SAFETY_OUTPUT_DIR",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/run-ui-performance-android-safety.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -7953,7 +8026,8 @@
         "secret": false,
         "source": [
           "scripts/dev/lite/run-ui-performance-android-apps.sh",
-          "scripts/dev/lite/run-ui-performance-android-cdp.sh"
+          "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+          "scripts/dev/lite/run-ui-performance-android-safety.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -8000,7 +8074,8 @@
         "secret": false,
         "source": [
           "scripts/dev/lite/run-ui-performance-android-apps.sh",
-          "scripts/dev/lite/run-ui-performance-android-cdp.sh"
+          "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+          "scripts/dev/lite/run-ui-performance-android-safety.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -8475,6 +8550,7 @@
         "source": [
           "scripts/dev/lite/run-ui-performance-android-apps.sh",
           "scripts/dev/lite/run-ui-performance-android-candidate.sh",
+          "scripts/dev/lite/run-ui-performance-android-safety.sh",
           "scripts/dev/lite/run-ui-performance-candidate.sh",
           "vite.config.js"
         ],
@@ -20901,6 +20977,7 @@
         "source": [
           "scripts/dev/lite/run-ui-performance-android-apps.sh",
           "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+          "scripts/dev/lite/run-ui-performance-android-safety.sh",
           "scripts/dev/lite/run-ui-performance-live.sh",
           "tests/backend/test_lite_ui_performance_runner.py"
         ],
@@ -28406,6 +28483,7 @@
         "source": [
           "scripts/dev/lite/run-ui-performance-android-apps.sh",
           "scripts/dev/lite/run-ui-performance-android-candidate.sh",
+          "scripts/dev/lite/run-ui-performance-android-safety.sh",
           "scripts/dev/lite/run-ui-performance-candidate.sh",
           "vite.config.js"
         ],
@@ -40930,7 +41008,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 519,
+      "page_count": 520,
       "top_level": [
         "start-here",
         "use",
@@ -48814,7 +48892,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "cd5e0974b51fbb3d18295e9e6b4c6149582848008d3ccd530eeaf2ea57f93faf",
-        "documentation": "fa213ac41ec6efb29a7348167bf2bc4a998c2fbe3ab51562195613e315482109",
+        "documentation": "c2c622d2b77e87e86f867bb8077747679314c310678ee45f323c03c1fc244bdf",
         "openapi": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
         "operational_health": "c758d7d653b42f1860a89c2ab10d285eea8d8f477df13804b883c3b2e3255f8e"
       },
@@ -50750,7 +50828,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "892c87059c63a2436dc46bc435cd9681ea0b2dee1ac8dc46e02c077a71629255"
+          "sha256": "3bd2ee5b43fbeb40f45858d186273b33fd38957f5938b4bbf5dabd89cb1fa4a4"
         },
         {
           "path": "requirements-dev.txt",
@@ -124192,5 +124270,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "175fadc88c8b2afc8996d8931e3b1c7b398b64089c540d9931e408dff201e7d3"
+  "source_fingerprint": "643eae9119f50695e75dc7bb525e4987d0de7331f3cb907b3ba82d63cf914ed1"
 }
