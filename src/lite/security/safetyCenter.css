@@ -1,0 +1,266 @@
+/*
+ * Azure Horizon Native Safety Center (P1–P5).
+ * Appearance: existing Azure semantic roles. Geometry: identical in Daylight,
+ * Dark and System. These rules are scoped to Safety and Safety-owned portals.
+ */
+html[data-lite-theme] .lite-safety-native-page {
+  --safety-section-gap: 1rem;
+  --safety-row-gap: .75rem;
+  --safety-control-height: 44px;
+  display: grid;
+  gap: var(--safety-section-gap);
+  width: min(100%, 60rem);
+  min-width: 0;
+  margin-inline: auto;
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-safety-native-page > * { min-width: 0; max-width: 100%; }
+html[data-lite-theme] .lite-safety-native-page :is(h1,h2,h3,p,small,strong,button),
+html[data-lite-theme] .lite-security-manage-layer :is(h1,h2,h3,p,small,strong,button) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-safety-native-page .lite-security-phase5-shell {
+  gap: var(--safety-section-gap);
+  min-width: 0;
+}
+html[data-lite-theme] .lite-safety-native-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(10rem, .3fr);
+  gap: clamp(1rem, 3vw, 1.75rem);
+  padding: var(--azure-spacing-card);
+  border-radius: var(--azure-radius-card);
+  border: 1px solid var(--azure-border);
+  background: var(--azure-surface);
+  color: var(--azure-text);
+  box-shadow: var(--azure-shadow);
+  align-items: center;
+  min-width: 0;
+}
+html[data-lite-theme] .lite-safety-native-hero-main { display: grid; gap: .8rem; min-width: 0; }
+html[data-lite-theme] .lite-safety-native-eyebrow {
+  display: flex; gap: .55rem; align-items: center;
+  color: var(--azure-accent); font-size: .84rem; font-weight: 700;
+}
+html[data-lite-theme] .lite-safety-native-eyebrow svg,
+html[data-lite-theme] .lite-safety-native-destination svg,
+html[data-lite-theme] .lite-safety-native-nav-row svg {
+  flex: 0 0 auto; stroke-width: 1.9;
+}
+html[data-lite-theme] .lite-safety-native-hero h2 {
+  margin: 0; font-size: clamp(1.3rem, 2vw, 1.8rem);
+  font-weight: 710; line-height: 1.25; letter-spacing: -.02em;
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-safety-native-profile {
+  margin: 0; font-size: .89rem; line-height: 1.5; color: var(--azure-muted);
+}
+html[data-lite-theme] .lite-safety-native-freshness {
+  display: flex; align-items: flex-start; gap: .45rem; margin: 0;
+  font-size: .86rem; line-height: 1.4; color: var(--azure-warning);
+}
+html[data-lite-theme] .lite-safety-native-freshness svg { flex-shrink: 0; }
+html[data-lite-theme] .lite-safety-native-stats {
+  margin: .2rem 0; display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--safety-row-gap);
+}
+html[data-lite-theme] .lite-safety-native-stats > div {
+  display: grid; gap: .3rem; padding: .7rem .75rem;
+  background: var(--azure-raised); border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control); min-width: 0;
+}
+html[data-lite-theme] .lite-safety-native-stats dt {
+  color: var(--azure-muted); font-size: .78rem; line-height: 1.35;
+}
+html[data-lite-theme] .lite-safety-native-stats dd {
+  margin: 0; color: var(--azure-text);
+  font-size: .96rem; font-weight: 700; line-height: 1.35;
+}
+html[data-lite-theme] .lite-safety-native-hero-actions { display: flex; align-items: flex-start; flex-wrap: wrap; gap: .75rem; }
+html[data-lite-theme] .lite-safety-native-hero-actions > .pocket-button,
+html[data-lite-theme] .lite-safety-native-hero-actions > .lite-button {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: var(--safety-control-height); gap: .45rem;
+}
+html[data-lite-theme] .lite-safety-native-hero-actions > small {
+  color: var(--azure-warning); width: 100%; line-height: 1.45;
+}
+html[data-lite-theme] .lite-safety-native-text-link {
+  display: inline-flex; align-items: center; gap: .25rem;
+  border: 0; min-height: var(--safety-control-height);
+  background: transparent; color: var(--azure-accent); padding: .4rem .5rem;
+  font: inherit; font-size: .86rem; font-weight: 650; text-align: left; cursor: pointer;
+}
+html[data-lite-theme] .lite-safety-native-text-link:hover { background: var(--azure-hover); border-radius: var(--azure-radius-control); }
+html[data-lite-theme] .lite-safety-native-score {
+  display: grid; justify-items: center; align-content: center;
+  text-align: center; gap: .4rem; min-width: 0;
+  padding: 1rem; border: 1px solid var(--azure-strong-border);
+  border-radius: var(--azure-radius-card); background: var(--azure-raised);
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-safety-native-score span { color: var(--azure-muted); font-size: .84rem; font-weight: 650; }
+html[data-lite-theme] .lite-safety-native-score strong { color: var(--azure-text); font-size: clamp(2.4rem, 5vw, 3.5rem); line-height: 1.12; letter-spacing: -.04em; }
+html[data-lite-theme] .lite-safety-native-score small { color: var(--azure-muted); font-size: .78rem; line-height: 1.4; }
+html[data-lite-theme] .lite-safety-native-destinations {
+  display: grid; min-width: 0; overflow: hidden;
+  border: 1px solid var(--azure-border); border-radius: var(--azure-radius-card);
+  background: var(--azure-surface); box-shadow: var(--azure-shadow);
+}
+html[data-lite-theme] .lite-safety-native-destination {
+  display: flex; align-items: center; text-align: left; width: 100%;
+  min-height: 78px; gap: .85rem; padding: .85rem var(--azure-spacing-card);
+  border: 0; background: transparent; color: var(--azure-text);
+  font: inherit; cursor: pointer;
+}
+html[data-lite-theme] .lite-safety-native-destination + .lite-safety-native-destination { border-top: 1px solid var(--azure-border); }
+html[data-lite-theme] .lite-safety-native-destination:hover { background: var(--azure-hover); }
+html[data-lite-theme] .lite-safety-native-destination:active { background: var(--azure-pressed); }
+html[data-lite-theme] .lite-safety-native-destination-icon {
+  flex: 0 0 42px; display: grid; place-items: center; height: 42px;
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-accent-subtle); color: var(--azure-accent);
+}
+html[data-lite-theme] .lite-safety-native-destination-copy { display: grid; flex: 1; min-width: 0; gap: .2rem; }
+html[data-lite-theme] .lite-safety-native-destination-copy strong { font-size: .98rem; font-weight: 700; }
+html[data-lite-theme] .lite-safety-native-destination-copy small { color: var(--azure-muted); font-size: .81rem; line-height: 1.4; }
+html[data-lite-theme] .lite-safety-native-destination > svg:last-child { flex: 0 0 auto; color: var(--azure-muted); }
+
+/* Shared PR #623 desktop geometry remains owned by useDesktopManageGeometry.
+ * Shared PR #634 mobile snap remains owned by LiteSheet. */
+html[data-lite-theme] .lite-security-manage-scroll { container-type: inline-size; }
+html[data-lite-theme] .lite-security-manage-scroll-frame,
+html[data-lite-theme] .lite-safety-native-workspace { min-width: 0; }
+html[data-lite-theme] .lite-security-manage-scroll-frame { display: grid; gap: 1rem; }
+html[data-lite-theme] .lite-safety-native-workspace { display: grid; gap: 1.1rem; }
+html[data-lite-theme] .lite-safety-native-index { display: grid; gap: 1.2rem; min-width: 0; }
+html[data-lite-theme] .lite-safety-native-group { min-width: 0; }
+html[data-lite-theme] .lite-safety-native-group > h2 {
+  margin: 0 0 .5rem; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--azure-muted); font-weight: 700; font-size: .77rem;
+}
+html[data-lite-theme] .lite-safety-native-navigation {
+  display: grid; gap: .35rem; padding: .35rem;
+  background: var(--azure-raised); border: 1px solid var(--azure-border);
+  border-radius: .9rem; min-width: 0;
+}
+html[data-lite-theme] .lite-safety-native-nav-row {
+  display: flex; align-items: center; gap: .7rem; width: 100%;
+  min-height: 56px; padding: .65rem .65rem; text-align: left;
+  border: 1px solid transparent; border-radius: var(--azure-radius-control);
+  color: var(--azure-text); background: transparent; font: inherit; cursor: pointer;
+}
+html[data-lite-theme] .lite-safety-native-nav-row > svg:first-child { color: var(--azure-accent); }
+html[data-lite-theme] .lite-safety-native-nav-row > svg:last-child { margin-left: auto; color: var(--azure-muted); }
+html[data-lite-theme] .lite-safety-native-nav-row > span { display: grid; flex: 1; min-width: 0; gap: .2rem; }
+html[data-lite-theme] .lite-safety-native-nav-row strong { font-size: .92rem; font-weight: 650; }
+html[data-lite-theme] .lite-safety-native-nav-row small { font-size: .78rem; line-height: 1.4; color: var(--azure-muted); }
+html[data-lite-theme] .lite-safety-native-nav-row:hover { background: var(--azure-hover); }
+html[data-lite-theme] .lite-safety-native-nav-row:active { background: var(--azure-pressed); }
+html[data-lite-theme] .lite-safety-native-nav-row[aria-current="page"] {
+  background: var(--azure-selected); border-color: var(--azure-strong-border);
+  box-shadow: inset 0 -3px var(--azure-accent);
+}
+html[data-lite-theme] .lite-safety-native-detail { display: grid; gap: 1rem; min-width: 0; align-content: start; }
+html[data-lite-theme] .lite-safety-native-back {
+  display: inline-flex; gap: .4rem; align-items: center; justify-self: start;
+  padding: .45rem .5rem; min-height: var(--safety-control-height);
+  color: var(--azure-accent); background: transparent; border: 0;
+  font: inherit; cursor: pointer; text-align: left;
+}
+html[data-lite-theme] .lite-safety-native-detail-heading h2 {
+  font-size: 1.2rem; font-weight: 700; line-height: 1.3; margin: 0;
+}
+html[data-lite-theme] .lite-safety-native-detail-heading p {
+  color: var(--azure-muted); font-size: .86rem; line-height: 1.5; margin: .35rem 0 0;
+}
+html[data-lite-theme] .lite-safety-native-detail-content { min-width: 0; display: grid; gap: .85rem; }
+html[data-lite-theme] .lite-safety-native-detail-content > .lite-security-manage-section { min-width: 0; }
+
+/* Mobile: Manage opens on its index; Back returns to index, Close dismisses. */
+html[data-lite-theme] .lite-safety-native-workspace[data-safety-manage-view="index"] .lite-safety-native-detail { display: none; }
+html[data-lite-theme] .lite-safety-native-workspace[data-safety-manage-view="section"] .lite-safety-native-index { display: none; }
+@container (min-width: 620px) {
+  html[data-lite-theme] .lite-safety-native-workspace {
+    display: grid; grid-template-columns: minmax(12rem, .38fr) minmax(0, 1fr);
+    gap: 1.2rem; align-items: start;
+  }
+  html[data-lite-theme] .lite-safety-native-workspace .lite-safety-native-index,
+  html[data-lite-theme] .lite-safety-native-workspace .lite-safety-native-detail { display: grid; }
+  html[data-lite-theme] .lite-safety-native-index {
+    padding-right: .9rem; border-right: 1px solid var(--azure-border);
+  }
+  html[data-lite-theme] .lite-safety-native-back { display: none; }
+}
+html[data-lite-theme] .lite-security-manage-layer .lite-security-manage-shell,
+html[data-lite-theme] .lite-security-phase3-layer .lite-security-phase3-panel {
+  color: var(--azure-text);
+  background: var(--azure-surface);
+  border-color: var(--azure-border);
+  box-shadow: var(--azure-panel-shadow);
+}
+html[data-lite-theme] .lite-security-manage-layer :is(.lite-security-manage-row,.lite-security-manage-stat,.lite-security-safe-panel),
+html[data-lite-theme] .lite-security-phase3-layer :is(.lite-security-manage-row,.lite-security-safe-panel,.lite-security-remediation-summary,.lite-security-remediation-sections section) {
+  background: var(--azure-raised); color: var(--azure-text); border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-security-phase3-layer :is(pre,code) {
+  color: var(--azure-text); background: var(--azure-input); border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-security-phase3-layer :is(input,select,textarea),
+html[data-lite-theme] .lite-security-manage-layer :is(input,select,textarea) {
+  color: var(--azure-text); background: var(--azure-input); border: 1px solid var(--azure-strong-border);
+}
+html[data-lite-theme] .lite-security-manage-layer :is(.lite-security-manage-section-head p,.lite-security-manage-row p,.lite-security-manage-stat span),
+html[data-lite-theme] .lite-security-phase3-layer :is(small,.lite-security-remediation-note) { color: var(--azure-muted); }
+html[data-lite-theme] .lite-security-manage-layer :is(button,a,input,select,textarea):focus-visible,
+html[data-lite-theme] .lite-security-phase3-layer :is(button,a,input,select,textarea):focus-visible,
+html[data-lite-theme] .lite-safety-native-page :is(button,a,input,select,textarea):focus-visible {
+  outline: 3px solid var(--azure-focus); outline-offset: 2px;
+}
+html[data-lite-theme] .lite-security-manage-layer :is(button,a),
+html[data-lite-theme] .lite-security-phase3-layer :is(button,a) { min-height: var(--safety-control-height); }
+html[data-lite-theme] .lite-security-manage-head {
+  display: flex; gap: .6rem; flex-wrap: wrap; align-items: center;
+}
+html[data-lite-theme] .lite-security-manage-head > :first-child { flex: 1 1 12rem; min-width: 0; }
+html[data-lite-theme] .lite-security-manage-desktop-tools { flex: 0 0 auto; }
+html[data-lite-theme] .lite-security-manage-close { flex: 0 0 auto; }
+html[data-lite-theme] .lite-security-manage-layer .lite-security-profile-switcher-button {
+  border-radius: var(--azure-radius-control);
+  border: 1px solid var(--azure-border);
+  background: var(--azure-raised); color: var(--azure-text);
+  min-height: 44px; padding: .6rem .7rem;
+}
+html[data-lite-theme] .lite-security-manage-layer .lite-security-profile-switcher-button[aria-selected="true"] {
+  background: var(--azure-selected); border-color: var(--azure-strong-border);
+  box-shadow: inset 0 -3px var(--azure-accent);
+}
+html[data-lite-theme] .lite-security-manage-layer .lite-security-profile-switcher-button:hover {
+  background: var(--azure-hover);
+}
+html[data-lite-theme] .lite-security-manage-layer .lite-security-profile-switcher-button:disabled {
+  opacity: .6; cursor: not-allowed;
+}
+/* Existing legacy tabs are no longer the live navigation owner. */
+html[data-lite-theme] .lite-security-manage-tabs { display: none; }
+@media (max-width: 700px) {
+  html[data-lite-theme] .lite-safety-native-hero { grid-template-columns: minmax(0, 1fr); }
+  html[data-lite-theme] .lite-safety-native-score { justify-items: start; text-align: left; }
+  html[data-lite-theme] .lite-safety-native-hero-actions { display: grid; grid-template-columns: minmax(0, 1fr); }
+  html[data-lite-theme] .lite-safety-native-hero-actions > .pocket-button,
+  html[data-lite-theme] .lite-safety-native-hero-actions > .lite-button { width: 100%; }
+  html[data-lite-theme] .lite-safety-native-page .lite-page-header { min-width: 0; }
+}
+@media (max-width: 360px) {
+  html[data-lite-theme] .lite-safety-native-stats { grid-template-columns: minmax(0, 1fr); }
+  html[data-lite-theme] .lite-safety-native-hero { gap: .8rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-lite-theme] .lite-safety-native-page *,
+  html[data-lite-theme] .lite-safety-native-page *::before,
+  html[data-lite-theme] .lite-safety-native-page *::after,
+  html[data-lite-theme] .lite-security-manage-layer *,
+  html[data-lite-theme] .lite-security-phase3-layer * { transition: none; animation: none; scroll-behavior: auto; }
+}
