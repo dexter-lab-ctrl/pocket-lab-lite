@@ -297,10 +297,10 @@ async function qualifyRealDeviceHaptics(manageButton) {
       count: Array.isArray(probe?.calls) ? probe.calls.length : 0,
     };
   });
-  await manageButton.tap();
+  await dispatchAndroidTouch(manageButton, 'Manage Safety haptic probe');
   const dialog = await firstVisible(page.getByRole('dialog', { name: 'Manage Safety' }), 'Manage Safety haptic probe dialog');
   const close = await firstVisible(dialog.getByRole('button', { name: 'Close security details' }), 'Close Manage Safety haptic probe');
-  await close.tap();
+  await dispatchAndroidTouch(close, 'Close Manage Safety haptic probe');
   await dialog.waitFor({ state: 'hidden', timeout: 20_000 });
   const after = await page.evaluate(() => {
     const probe = window.__POCKETLAB_ANDROID_SAFETY_HAPTIC_PROBE__;
@@ -326,6 +326,26 @@ async function qualifyRealDeviceHaptics(manageButton) {
     physicalNotes.push('Android Chrome accepted vibration requests from real touch activation of Safety controls.');
   } else {
     physicalNotes.push('Android Chrome exposed navigator.vibrate, but no vibration request was observed for the touch probe.');
+  }
+}
+
+async function dispatchAndroidTouch(locator, label) {
+  const box = await locator.boundingBox().catch(() => null);
+  if (!box || box.width <= 0 || box.height <= 0) fail(label + ' did not expose a touchable bounding box.');
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  const session = await page.context().newCDPSession(page);
+  try {
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x, y, radiusX: 1, radiusY: 1, force: 1 }],
+    });
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+  } finally {
+    await session.detach().catch(() => {});
   }
 }
 
