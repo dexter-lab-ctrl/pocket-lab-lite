@@ -220,7 +220,7 @@ html[data-lite-theme] .lite-safety-native-page :is(button,a,input,select,textare
   outline: 3px solid var(--azure-focus); outline-offset: 2px;
 }
 html[data-lite-theme] .lite-security-manage-layer :is(button,a),
-html[data-lite-theme] .lite-security-phase3-layer :is(button,a) { min-height: var(--safety-control-height); }
+html[data-lite-theme] .lite-security-phase3-layer :is(button,a) { min-height: var(--safety-control-height, 44px); }
 html[data-lite-theme] .lite-security-manage-head {
   display: flex; gap: .6rem; flex-wrap: wrap; align-items: center;
 }
