@@ -32,7 +32,7 @@ export function installLiteGlobalHaptics(doc = typeof document === 'undefined' ?
     if (!liteHapticTarget(event)) return;
     const now = Date.now();
     const pointerType = event.pointerType || (now - lastPointerAt < 1200 ? lastPointerType : '');
-    if (pointerType === 'mouse') return;
+    if (pointerType === 'mouse' && event.detail !== 0) return;
     // Keyboard activation uses detail=0. Touch browsers that expose MouseEvent
     // rather than PointerEvent still qualify when their primary pointer is coarse.
     const coarse = win.matchMedia?.('(pointer: coarse)')?.matches === true;
