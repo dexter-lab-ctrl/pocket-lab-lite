@@ -3014,7 +3014,7 @@ export default function SecurityScreen() {
 
   return (
     <>
-      <main className="lite-safety-native-page" data-safety-native-page="true">
+      <div className="lite-safety-native-page" data-safety-native-page="true">
       <PageHeader
         eyebrow="Safety Center"
         title="Safety"
@@ -3120,7 +3120,7 @@ export default function SecurityScreen() {
         />
       ) : null}
 
-      </main>
+      </div>
 
       {securityManageOpen ? <LiteSheet
         open={securityManageOpen}
