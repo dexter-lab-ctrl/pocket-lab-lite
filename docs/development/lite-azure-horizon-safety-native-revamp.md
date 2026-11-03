@@ -153,3 +153,40 @@ Unvalidated: source integration and build could fail, legacy CSS tokenization ma
 **Rollback:** leave Draft PR unmerged; closing it leaves main unchanged. For a local preview, switch back to main. After a future merge, revert the focused Safety changes by PR without resetting main, deleting runtime state or changing the backend. Never interpret a screenshot or successful button click as backend execution proof.
 
 **Disposition:** Feature branch and Draft PR only. No merge, release, device deployment, generated artifact promotion, snapshot baseline approval, CI review or validation execution authorized. A future qualification owner must capture actual passing outputs, screenshots, Axe evidence, geometry results and physical Android evidence before promotion.
+
+
+## PR #640 follow-up — native mobile dock and global interaction haptics
+
+**Status:** SOURCE PROVIDED / UNVALIDATED. No builds, tests, browser runs, screenshots, CI inspection or physical iOS/Android testing were performed as part of this follow-up.
+
+### Root cause — verified in source, not browser
+
+- The mobile dock had competing layout rules: `bottom-4` in `src/index.css`, and the Azure mobile override `inset-block-end:max(.5rem,env(safe-area-inset-bottom))`. Both leave an external gap.
+- The original dock is partly translucent with earlier light-only active gradients, shadows, icon animation, and theme-divergent overrides. Scrolling content can remain visible behind the raised dock.
+- The original `LiteButton` supports opt-in haptics, but ordinary buttons and nav controls were not centrally covered. The existing `src/lib/liteNativeFeedback.js` already handles vibration capability and reduced-motion gating.
+
+### Targeted source changes
+
+| File | Change |
+|---|---|
+| `src/lite/theme/liteNativeDock.css` (new) | Bottom-0, full-width, opaque dock; safe-area padding inside the dock; Azure semantic colors; same Light/Dark active, pressed and keyboard focus states; subtle scroll-elevated edge; reduced-motion fallback; short labels fit at common widths |
+| `src/lite/LiteApp.jsx` | Add passive, requestAnimationFrame-bounded scroll-depth indicator on the existing body-portalled navigation |
+| `src/main.jsx` | Load the dock override after Azure theme CSS and install the global haptics listener once |
+| `src/lib/liteGlobalHaptics.js` (new) | Delegated click feedback for native buttons, links, tabs, menu items and accessible button roles, including lazy-loaded and portalled controls; supports touch/pen and keyboard, rejects mouse-only interactions and disabled/busy/inert/manual controls |
+| `src/lite/LiteUi.jsx` | Explicit `LiteButton haptic` owners mark themselves manual to prevent double vibration |
+| `src/lib/liteGlobalHaptics.test.js` (new) | Authored component coverage for nested labels, unsupported browsers, once-only installation, busy/disabled/manual/opt-out behavior |
+| `tests/e2e/lite-native-dock-and-haptics.spec.ts` (new) | Authored mobile viewport/safe-area clearance, Light/Dark dock, bottom-edge, scrolled elevation and supported vibration paths |
+
+### Constraints
+
+- CSS does not block document scrolling. The dock is fully opaque, so page content cannot visually bleed through; measured `--pocket-nav-dock-height` reserves bottom clearance so the final Safety content is not stranded underneath it. Browser height/insets still need real iOS and Android evidence.
+- No haptic audio substitute, hidden webview, new native bridge or unsolicited native permission is introduced. `navigator.vibrate` is supported only on eligible devices/browsers; Safari/iOS generally cannot deliver web vibration, so the touch interaction uses a consistent **visual** lift with silent tactile degradation.
+- The haptics event delegation does not execute actions, inspect backend state, collect payloads, persist data or alter FastAPI authorization. It is a best-effort small `tap` pulse, and retains the existing reduced-motion and visibility protections.
+- For performance, the passive scroll callback updates only one dataset property through one animation frame and does not capture snapshots, create extra React renders, dispatch API requests, or animate page content.
+- The change is shared across all Pocket Lab Lite tabs and Simple Mode using the existing dock class, not Safety-specific.
+
+### Deferred acceptance and rollback
+
+Execute only in a later qualification session: `npm run build`, `npx vitest run src/lib/liteGlobalHaptics.test.js`, `npx playwright test tests/e2e/lite-native-dock-and-haptics.spec.ts --project=mocked-mobile`, cross-theme 320/360/375/390/430/768px captures, keyboard and 200% font checks, Android browser and installed PWA safe-area/scroll tests, iOS Safari and standalone PWA checks. Verify that selecting tabs, switching profiles and opening modal buttons causes at most one supported haptic pulse, never when disabled or inactive. Existing explicit operation-completion haptics must remain event-driven.
+
+Rollback before merge: leave Draft PR open/unmerged. If regressed after a future merge, revert the isolated dock/Haptics commits in a targeted PR without changing scanner/backend state.
