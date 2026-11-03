@@ -298,7 +298,8 @@ async function qualifyRealDeviceHaptics(manageButton) {
     };
   });
   await dispatchAndroidTouch(manageButton, 'Manage Safety haptic probe');
-  const dialog = await firstVisible(page.getByRole('dialog', { name: 'Manage Safety' }), 'Manage Safety haptic probe dialog');
+  const dialog = page.getByRole('dialog', { name: 'Manage Safety' });
+  await dialog.waitFor({ state: 'visible', timeout: 20_000 });
   const close = await firstVisible(dialog.getByRole('button', { name: 'Close security details' }), 'Close Manage Safety haptic probe');
   await dispatchAndroidTouch(close, 'Close Manage Safety haptic probe');
   await dialog.waitFor({ state: 'hidden', timeout: 20_000 });
