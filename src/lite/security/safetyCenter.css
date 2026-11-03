@@ -303,3 +303,162 @@ html[data-lite-theme] .lite-security-manage-tabs { display: none; }
   html[data-lite-theme] .lite-security-manage-layer *,
   html[data-lite-theme] .lite-security-phase3-layer * { transition: none; animation: none; scroll-behavior: auto; }
 }
+
+/* Black Safety portal correction.  The historical Security polish in
+ * src/index.css intentionally targets body-portalled surfaces with unscoped
+ * !important rules.  Those rules predate Azure Horizon and otherwise repaint
+ * the dark Manage Safety sheet with daylight gradients, backdrop blur, and a
+ * green score-ring halo.  Keep the legacy rules available to their original
+ * consumers, but give the Azure Safety portal an explicit semantic authority.
+ */
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer {
+  color: var(--azure-text) !important;
+  --lite-security-v4-ink: var(--azure-text);
+  --lite-security-v4-muted: var(--azure-muted);
+  --lite-security-v4-soft: var(--azure-surface);
+  --lite-security-v4-line: var(--azure-border);
+  --lite-security-v4-shadow: var(--azure-panel-shadow);
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer > .lite-security-overlay-backdrop {
+  background: var(--azure-backdrop) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-manage-shell {
+  color: var(--azure-text) !important;
+  background: var(--azure-surface) !important;
+  border-color: var(--azure-border) !important;
+  box-shadow: var(--azure-panel-shadow) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-manage-grip,
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-manage-head {
+  background: var(--azure-surface) !important;
+  border-color: var(--azure-border) !important;
+  box-shadow: none !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-manage-grip span {
+  background: var(--azure-strong-border) !important;
+  box-shadow: none !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-manage-head :is(span, strong, p) {
+  color: var(--azure-text) !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-manage-head span {
+  color: var(--azure-accent) !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-manage-head p {
+  color: var(--azure-muted) !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-manage-close {
+  background: var(--azure-raised) !important;
+  color: var(--azure-text) !important;
+  border-color: var(--azure-border) !important;
+  box-shadow: none !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-manage-scroll {
+  color: var(--azure-text) !important;
+  background: var(--azure-surface) !important;
+  box-shadow: none !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-manage-section {
+  color: var(--azure-text) !important;
+  background: var(--azure-surface) !important;
+  border-color: var(--azure-border) !important;
+  box-shadow: none !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer :is(
+  .lite-security-manage-row,
+  .lite-security-manage-score-row,
+  .lite-security-manage-stat,
+  .lite-security-safe-panel,
+  .lite-security-remediation-summary,
+  .lite-security-remediation-sections section,
+  .lite-security-remediation-note,
+  .lite-security-phase2-details-panel,
+  .lite-finding-detail-modal,
+  .lite-security-coverage-card,
+  .lite-security-confidence-card,
+  .lite-security-protection-card,
+  .lite-security-boundary-card,
+  .lite-security-execution-step
+) {
+  color: var(--azure-text) !important;
+  background: var(--azure-raised) !important;
+  border-color: var(--azure-border) !important;
+  box-shadow: none !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer :is(
+  .lite-security-manage-row strong,
+  .lite-security-manage-score-row strong,
+  .lite-security-manage-stat strong,
+  .lite-security-remediation-summary strong,
+  .lite-security-remediation-sections h3,
+  .lite-security-manage-section-head h3
+) {
+  color: var(--azure-text) !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-manage-section-head > span {
+  color: var(--azure-accent) !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer :is(
+  .lite-security-manage-row p,
+  .lite-security-manage-score-row p,
+  .lite-security-manage-stat span,
+  .lite-security-remediation-summary p,
+  .lite-security-remediation-sections p,
+  .lite-security-remediation-note,
+  .lite-security-manage-section-head p
+) {
+  color: var(--azure-muted) !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-score-ring.lite-security-score-ring-green-fill {
+  position: relative !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 3.75rem !important;
+  height: 3.75rem !important;
+  border-radius: 999px !important;
+  border: 1px solid var(--azure-strong-border) !important;
+  background: conic-gradient(from -90deg, var(--azure-success) var(--score, 0%), var(--azure-border) 0) !important;
+  box-shadow: none !important;
+  will-change: background;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-score-ring.lite-security-score-ring-green-fill::before {
+  display: none !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-score-ring.lite-security-score-ring-green-fill::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: .45rem !important;
+  display: block !important;
+  border-radius: inherit !important;
+  background: var(--azure-surface) !important;
+  box-shadow: none !important;
+  z-index: 1 !important;
+}
+
+html[data-lite-theme="dark"] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-score-ring.lite-security-score-ring-green-fill span {
+  position: relative !important;
+  z-index: 2 !important;
+  color: var(--azure-success) !important;
+  text-shadow: none !important;
+}

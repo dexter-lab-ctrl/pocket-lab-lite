@@ -116,6 +116,40 @@ test.describe('Azure Horizon Safety P0–P3 semantic and interaction contract', 
     await expect(page.getByRole('button', { name: /Reconnect to run Quick Scan/i })).toBeDisabled();
   });
 
+  test('dark Manage Safety keeps Azure surfaces and removes legacy green haze', async ({ page }) => {
+    const dialog = await openManage(page, 'security-quick-healthy', 'dark');
+    await dialog.getByRole('button', { name: 'Open Checks in Manage Safety' }).click();
+    const styles = await dialog.evaluate((element) => {
+      const read = (selector: string) => {
+        const node = element.matches(selector) ? element : element.querySelector(selector);
+        if (!(node instanceof HTMLElement)) throw new Error(`Missing Safety style anchor: ${selector}`);
+        const style = getComputedStyle(node);
+        return {
+          backgroundColor: style.backgroundColor,
+          backgroundImage: style.backgroundImage,
+          boxShadow: style.boxShadow,
+          backdropFilter: style.backdropFilter,
+          width: style.width,
+          height: style.height,
+        };
+      };
+      return {
+        shell: read('.lite-security-manage-shell'),
+        scroll: read('.lite-security-manage-scroll'),
+        scoreRing: read('.lite-security-score-ring'),
+      };
+    });
+    expect(styles.shell.backgroundColor).toBe('rgb(11, 15, 20)');
+    expect(styles.shell.backgroundImage).toBe('none');
+    expect(styles.shell.backdropFilter).toBe('none');
+    expect(styles.scroll.backgroundColor).toBe('rgb(11, 15, 20)');
+    expect(styles.scroll.backgroundImage).toBe('none');
+    expect(styles.scroll.boxShadow).toBe('none');
+    expect(styles.scoreRing.width).toBe('60px');
+    expect(styles.scoreRing.height).toBe('60px');
+    expect(styles.scoreRing.boxShadow).toBe('none');
+  });
+
   for (const width of [320, 360, 375, 390, 430, 600, 700, 701, 768, 1024, 1440]) {
     test(`responsive Safety and Manage at ${width}px: no desktop controls on mobile`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
