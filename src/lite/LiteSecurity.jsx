@@ -55,6 +55,7 @@ import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy
 import { acceptSecurityProgressEvent } from '../lib/securityProgressEvents.js';
 import { shouldUseLiteSecurityProgressStream } from '../lib/liteSecurityProgressPolicy.js';
 import { LiteSheet } from './LiteOverlay.jsx';
+import { SafetyCenterHero, SafetyDestinations, SafetyManageNavigation } from './security/SafetyNativeCenter.jsx';
 import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
 import { areComparableSafetyRuns, isMeasuredSafetyProgress, safetyCoverageQuality } from './security/safetyAzurePresentation.js';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
@@ -1454,6 +1455,7 @@ function SecurityRemediationDrawer({ finding, context, onClose }) {
       closeClassName="lite-security-phase3-close"
       gripClassName="lite-security-phase3-grip"
       variant="security"
+      mobileSnap
       motion="safe-grip"
       surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-remediation-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'remediation' }}
     >
@@ -1523,6 +1525,7 @@ function SecurityFindingDetailsPortal({ findings, context, triggerRef }) {
       closeClassName="lite-security-phase3-close"
       gripClassName="lite-security-phase3-grip"
       variant="security"
+      mobileSnap
       motion="safe-grip"
       surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'finding-details' }}
     >
@@ -1953,6 +1956,7 @@ export default function SecurityScreen() {
   const [busy, setBusy] = useState(false);
   const [securityCompletionSettling, setSecurityCompletionSettling] = useState(false);
   const securityManageOpen = useLiteUiStore((state) => state.securityManageOpen);
+  const [mobileManageDetailOpen, setMobileManageDetailOpen] = useState(false);
   const setSecurityManageOpen = useLiteUiStore((state) => state.setSecurityManageOpen);
   const {
     panelRef: safetyManagePanelRef, desktopPanel: safetyManageDesktop,
@@ -2736,10 +2740,12 @@ export default function SecurityScreen() {
   function openSecurityManage(event) {
     preloadSecurityFindingDetails();
     securityDetailsTriggerRef.current = event?.currentTarget || null;
+    setMobileManageDetailOpen(false);
     setSecurityManageOpen(true);
   }
 
   function closeSecurityManage() {
+    setMobileManageDetailOpen(false);
     setSecurityManageOpen(false);
     window.setTimeout(() => securityDetailsTriggerRef.current?.focus?.(), 0);
   }
@@ -2761,6 +2767,7 @@ export default function SecurityScreen() {
 
   function chooseSecurityManageSection(sectionId) {
     setSecurityManageSection(sectionId);
+    setMobileManageDetailOpen(true);
     if (['changes', 'issues', 'coverage', 'check_path', 'evidence', 'history', 'technical_details'].includes(sectionId)) {
       preloadSecurityManageChunks();
       if (sectionId === 'issues') preloadSecurityFindingDetails();
@@ -3007,10 +3014,11 @@ export default function SecurityScreen() {
 
   return (
     <>
+      <main className="lite-safety-native-page" data-safety-native-page="true">
       <PageHeader
         eyebrow="Safety Center"
-        title="Safety Center"
-        description={securityPrecedence.active ? `${securityProfileMeta(securityPrecedence.profile).label} is active. Live progress is shown while your latest saved result remains available.` : "Review current safety, run the right level of check, and open deeper details only when you need them."}
+        title="Safety"
+        description={securityPrecedence.active ? `${securityProfileMeta(securityPrecedence.profile).label} is running. Your latest saved result stays available.` : "Your workspace protection, at a glance."}
         actions={<>
           <LiteButton tone="secondary" ariaLabel="Refresh Safety Center" onClick={refresh} disabled={Boolean(summaryRefreshing)}>Refresh</LiteButton>
           <LiteButton tone="secondary" ariaLabel="Manage Security details" onClick={openSecurityManage}>Manage Safety</LiteButton>
@@ -3018,113 +3026,27 @@ export default function SecurityScreen() {
       />
 
       <animated.section ref={securityLiveShellRef} className={`lite-security-phase5-shell lite-security-phase4-motion lite-security-native-polish ${securityLivePresentation ? 'lite-security-phase4-live' : ''}`.trim()} data-security-native-polish="true" style={safetyShellSpring} aria-label="Safety Center" data-security-phase5-summary-first="true" data-security-phase4-motion="shell" data-security-react-spring="summary-shell">
-        {!securityLivePresentation ? <GlassCard as={animated.section} style={safetyCardSpring} className={`lite-security-safety-center-card lite-security-phase1-hero lite-security-phase1-hero-${safetyState} lite-security-phase4-score-settle`} data-security-phase4-motion="score-settle" data-security-react-spring="safety-card">
-          <div className="lite-security-safety-center-copy">
-            <div className="lite-home-pill">
-              <span className="lite-ready-dot" />
-              {safetyCenterSummary}
-            </div>
-            <h2>Safety overview</h2>
-            <button type="button" className="lite-security-quick-profile-chip lite-security-profile-rollup-trigger" onClick={cycleSecurityProfile} aria-label="Switch Security profile summary" data-security-profile-view="profile-linked">{activeProfileMeta.label}</button>
-            <p>{scanInProgress ? 'Pocket Lab is checking safety and saving a protected result.' : `${activeProfileMeta.summary} ${safetyScoreSummary}`}</p>
-            <div className="lite-security-safety-center-meta" aria-label="Safety state">
-              <span>{lastCheckedLabel}</span>
-              <span>{evidenceStatusLabel}</span>
-              <button type="button" className="lite-security-profile-rollup-link" onClick={cycleSecurityProfile} aria-label="Switch visible Security profile">View: {activeProfileMeta.chip}</button>
-              {activeProfileFreshness?.label && savedSecurityDetails ? <span>{activeProfileFreshness.label}</span> : null}
-              {securityRefreshStatusLabel ? <span className="lite-security-refresh-status-chip" data-security-refresh-status="true">{securityRefreshStatusLabel}</span> : null}
-              {effectiveBackendReachable === false ? <span>Pocket Lab is not reachable</span> : null}
-            </div>
-            <div className="lite-security-safety-center-chips" aria-label="Safety chips">
-              {safetyCenterChips.map((chip) => (
-                <span key={chip.key} className={`lite-security-safety-chip lite-security-safety-chip-${chip.tone}`}>{chip.label}</span>
-              ))}
-            </div>
-            <div className="lite-security-horizon-facts" aria-label="Safety result facts">
-              <div><span>Items to review</span><strong>{activeProfileHasRun ? findings : 'Not checked'}</strong></div>
-              <div><span>Check coverage</span><strong>{coverageIsReported ? checkedCoverageTargets.length + ' checked' : 'Not reported'}</strong>
-                <small>{activeProfileHasRun && (partialCoverageTargets.length || timedOutCoverageTargets.length || missingCoverageTargets.length) ? 'Incomplete checks require review' : 'Scope is profile-specific'}</small></div>
-              <div><span>Evidence</span><strong>{activeProfileHasRun ? (evidenceSaved ? 'Saved' : 'Not confirmed') : 'Not available'}</strong><small>Sanitized records only</small></div>
-            </div>
-            <div className="lite-security-safety-center-actions">
-              <div className="lite-security-profile-action-grid lite-security-phase4-safety-action" data-security-phase4-motion="check-button" data-security-profile-run-actions="quick-full-app" aria-label="Run Safety Check profiles">
-                {SECURITY_SCAN_PROFILES.map((profile) => (
-                  <LiteButton
-                    key={profile.id}
-                    tone={profile.id === scanProfile ? 'primary' : 'secondary'}
-                    onClick={(event) => runSecurityProfile(profile.id, event)}
-                    disabled={scanInProgress || securityFlow.writeBlocked}
-                    haptic
-                    ariaLabel={scanInProgress ? `${profile.label} waits while a safety check is running` : securityFlow.writeBlocked ? `Reconnect to run ${profile.label}` : `Run ${profile.label}`}
-                  >
-                    {scanInProgress && profile.id === latestScanProfile ? profile.running : securityFlow.writeBlocked ? 'Reconnect' : profile.actionLabel}
-                  </LiteButton>
-                ))}
-              </div>
-              
-            </div>
-            {securityFlow.writeBlocked ? <p className="lite-security-phase1-note">{securityFlow.blockedReason || 'Reconnect to continue.'}</p> : null}
-          </div>
+        <SafetyCenterHero
+          status={safetyCenterSummary}
+          profile={activeProfileMeta.label}
+          reportedScore={safetyScoreReported}
+          score={safetyScore}
+          hasRun={activeProfileHasRun}
+          freshness={lastCheckedLabel}
+          saved={savedSecurityDetails}
+          offline={effectiveBackendReachable === false}
+          findings={findings}
+          coverageReported={coverageIsReported}
+          checkedCount={checkedCoverageTargets.length}
+          coverageQuality={coverageQuality}
+          evidenceSaved={evidenceSaved}
+          busy={scanInProgress}
+          writeBlocked={securityFlow.writeBlocked}
+          blockedReason={securityFlow.blockedReason}
+          onQuickCheck={(event) => runSecurityProfile('quick', event)}
+          onOpenChecks={() => { chooseSecurityManageSection('checks'); setSecurityManageOpen(true); }}
+        />
 
-          <div className="lite-security-safety-center-score" aria-label="Safety score">
-            {safetyScoreReported ? <animated.div className="lite-security-score-ring lite-security-score-ring-green-fill" style={scoreRingStyle} data-security-score-fill="spring" role="img" aria-label={'Reported safety score ' + Math.round(safetyScore) + ' for ' + activeProfileMeta.label}>
-               <animated.span>{scoreSpring.number.to((value) => Math.round(value))}</animated.span>
-             </animated.div> : <div className="lite-security-score-ring lite-security-horizon-unreported" role="img" aria-label="Safety score not reported"><span>—</span></div>}
-            <strong>Safety score</strong>
-            <span>{savedSecurityDetails ? 'Saved result' : safetyCenterSummary}</span>
-            <small>A score only describes this profile and its reported coverage.</small>
-            <StatusBadge status={backendBadgeStatus(safetyStatus)}>{safetyLabel}</StatusBadge>
-          </div>
-
-        </GlassCard> : null}
-        {!securityLivePresentation ? <>
-          <LiteOperationalStory
-            className="lite-security-operational-story"
-            story={safetyStory}
-            primaryAction={safetyStory.primaryAction?.id === 'run' ? {
-              label: safetyStory.primaryAction.label,
-              onClick: (event) => runSecurityProfile('quick', event),
-              disabled: securityFlow.writeBlocked,
-              disabledReason: securityFlow.writeBlocked ? securityFlow.blockedReason : '',
-            } : safetyStory.primaryAction?.id === 'refresh' ? {
-              label: safetyStory.primaryAction.label,
-              onClick: refresh,
-            } : safetyStory.primaryAction?.id === 'manage' ? {
-              label: safetyStory.primaryAction.label,
-              onClick: () => { setSecurityManageSection(safetyStory.primaryAction.section || 'overview'); setSecurityManageOpen(true); },
-            } : null}
-            manageAction={null}
-          />
-          <LiteFreshness
-            saved={savedStateOnly}
-            stale={isExpired}
-            refreshing={summaryRefreshing}
-            lastUpdatedLabel={lastUpdatedLabel || lastCheckedLabel}
-            backendReachable={backendReachable}
-          />
-          
-      <LiteEvidenceGuide
-            title="Safety result and coverage"
-            saved={savedStateOnly || isExpired}
-            description="A score describes the latest reported check, not a guarantee that every app or device was examined."
-            facts={[
-              { id: "profile", label: "Check profile", value: activeProfileMeta.label },
-              { id: "score", label: "Reported score", value: safetyScoreReported ? String(safetyScore) : "Not reported" },
-              { id: "findings", label: "Items to review", value: String(findings) },
-              { id: "checks", label: "Checks reviewed", value: checks > 0 ? String(checks) : "Not confirmed" },
-              { id: "freshness", label: "Last result", value: lastCheckedLabel || "Not available" },
-            ]}
-            caution="Coverage and result freshness matter. Open Manage Safety to inspect missing, partial or timed-out checks before acting on findings."
-          />
-      <LiteActionRow
-            className="lite-security-latest-check-row"
-            label="Latest check"
-            value={activeProfileMeta.label}
-            summary={lastCheckedLabel}
-            attention={safetyStory.tone === 'review' || safetyStory.tone === 'danger'}
-            action={{ label: 'View details', onClick: () => { setSecurityManageSection('overview'); setSecurityManageOpen(true); } }}
-          />
-        </> : null}
         {securityLivePresentation ? <LiteFlowStatusPanel
           className="lite-security-live-progress"
           title={activeProfileMeta.label}
@@ -3133,12 +3055,7 @@ export default function SecurityScreen() {
           note={scanProgressStatusText || 'Progress is reported by Pocket Lab.'}
           tone="checking"
         /> : null}
-        {!securityLivePresentation && activeProfileHasRun ? <LiteOutcomeNotice outcome={{
-          tone: safetyStory.tone,
-          headline: safetyStory.headline,
-          summary: safetyStory.latestCheck.summary || safetyStory.summary,
-          consequence: safetyStory.consequence,
-        }} className="lite-security-latest-outcome" /> : null}
+
         {securityLivePresentation ? (
           <animated.div style={liveProgressSpring} className="lite-security-safety-center-live lite-security-phase4-live-motion lite-security-premium-v2-live-progress-motion" aria-live="polite" data-security-phase4-motion="live-check" data-security-react-spring="live-progress">
             <div>
@@ -3174,48 +3091,13 @@ export default function SecurityScreen() {
         </div>
       </animated.section>
 
-      {!securityLivePresentation ? <>
-        <div className="lite-security-horizon-overview-grid" data-security-horizon-overview="true" aria-label="Safety result details">
-          <GlassCard as="section" className="lite-security-horizon-insight" aria-label="Needs attention">
-            <div className="lite-security-horizon-insight-heading"><span>01 / Review</span><h2>Needs attention</h2></div>
-            {!activeProfileHasRun ? <p>No recorded check for this profile. Run a check before interpreting findings.</p> :
-              allReviewFindings.length ? allReviewFindings.slice(0, 2).map((item) => (
-                <div className="lite-security-horizon-finding" key={item.id || item.summary}>
-                  <span className="lite-security-horizon-severity">{item.severity || 'Review'}</span>
-                  <strong>{securityFindingLabel(item)}</strong>
-                  <p>Open the finding to review scope, supporting evidence, and the next safe step.</p>
-                </div>
-              )) : <p>No review items reported for this profile. Confirm coverage and tool outcomes before relying on the result.</p>}
-            <LiteButton tone="secondary" onClick={() => { setSecurityManageSection('issues'); setSecurityManageOpen(true); }}>Review issues</LiteButton>
-          </GlassCard>
-          <GlassCard as="section" className="lite-security-horizon-insight" aria-label="Coverage and checks">
-            <div className="lite-security-horizon-insight-heading"><span>02 / Scope</span><h2>Coverage &amp; checks</h2></div>
-            <p>{!coverageIsReported ? 'Coverage has not been confirmed for this profile.' :
-              coverageQuality === 'incomplete' ?
-              'Some checks were partial, missing or timed out. Review before interpreting the score.' :
-              'Review completed checks and deliberate exclusions for this profile.'}</p>
-            <dl className="lite-security-horizon-coverage">
-              <div><dt>Checked</dt><dd>{coverageIsReported ? checkedCoverageTargets.length : '—'}</dd></div>
-              <div><dt>Partial</dt><dd>{coverageIsReported ? partialCoverageTargets.length : '—'}</dd></div>
-              <div><dt>Timed out</dt><dd>{coverageIsReported ? timedOutCoverageTargets.length : '—'}</dd></div>
-              <div><dt>Skipped</dt><dd>{coverageIsReported ? skippedCoverageTargets.length : '—'}</dd></div>
-            </dl>
-            <p className="lite-security-horizon-tool-status">Lynis: {toolResults?.lynis?.status || 'Not reported'} · Trivy: {toolResults?.trivy?.status || 'Not reported'}</p>
-            <LiteButton tone="secondary" onClick={() => { setSecurityManageSection('coverage'); setSecurityManageOpen(true); }}>View coverage</LiteButton>
-          </GlassCard>
-        </div>
-        <GlassCard as="section" className="lite-security-horizon-recent" aria-label="Recent safety checks">
-          <div>
-            <span className="lite-security-horizon-eyebrow">03 / Recent</span><h2>Recent checks &amp; changes</h2>
-            <p>{activeProfileHasRun ? lastCheckedLabel : 'A recent result appears after a completed check.'}</p>
-            {activeProfileHasRun && activeProfileIsLatest ?
-              <p>Changes: {deltaStats.map((item) => item.label + ' ' + item.value).join(' · ')}</p> : null}
-            <p>{areComparableSafetyRuns(latestHistory, previousHistory) ?
-              'A previous scored result for this profile and app is comparable.' : 'No confirmed comparable prior scored result.'}</p>
-          </div>
-          <LiteButton tone="secondary" onClick={() => { setSecurityManageSection('history'); setSecurityManageOpen(true); }}>View history</LiteButton>
-        </GlassCard>
-      </> : null}
+      <SafetyDestinations
+        onOpen={(section) => { chooseSecurityManageSection(section); setSecurityManageOpen(true); }}
+        hasRun={activeProfileHasRun}
+        findings={findings}
+        coverageReported={coverageIsReported}
+        lastChecked={activeProfileHasRun ? lastCheckedLabel : null}
+      />
 
       {loading ? <LoadingCard label="Loading safety summary..." /> : null}
 
@@ -3238,6 +3120,8 @@ export default function SecurityScreen() {
         />
       ) : null}
 
+      </main>
+
       {securityManageOpen ? <LiteSheet
         open={securityManageOpen}
         onClose={closeSecurityManage}
@@ -3251,6 +3135,7 @@ export default function SecurityScreen() {
         closeClassName="lite-security-manage-close"
         gripClassName="lite-security-manage-grip"
         variant="security"
+        mobileSnap={!safetyManageDesktop}
         motion={safetyManageDesktop || securityMotionReduced ? 'none' : 'safe-grip'}
         surfaceRef={safetyManagePanelRef}
         surfaceStyle={safetyManagePanelStyle}
@@ -3264,27 +3149,15 @@ export default function SecurityScreen() {
       >
         <ManageMotionDiv style={securityMotionReduced ? undefined : manageScrollSpring} className="lite-security-manage-scroll-frame" data-security-react-spring="manage-scroll-frame">
         <p className="lite-security-horizon-manage-context">Profile: <strong>{activeProfileMeta.label}</strong> · {savedSecurityDetails ? 'Saved result' : lastCheckedLabel} · {evidenceStatusLabel}</p>
-        <ManageMotionDiv style={securityMotionReduced ? undefined : manageTabsSpring} className="lite-security-manage-tabs lite-security-premium-v2-manage-tabs-motion" role="tablist" aria-label="Security Manage sections" data-security-react-spring="manage-tabs">
-          {SECURITY_MANAGE_SECTIONS.map((section) => (
-            <button
-              key={section.id}
-              type="button"
-              role="tab"
-              id={'safety-manage-tab-' + section.id}
-              tabIndex={activeManageSection === section.id ? 0 : -1}
-              onKeyDown={(event) => onSecurityManageTabKeyDown(event, section.id)}
-              aria-controls="safety-manage-active-panel"
-              aria-selected={activeManageSection === section.id}
-              aria-label={`Open ${section.label} in Security Manage`}
-              className={`lite-security-manage-tab-button ${activeManageSection === section.id ? 'is-active' : ''}`.trim()}
-              onClick={() => chooseSecurityManageSection(section.id)}
-            >
-              {section.label}
-            </button>
-          ))}
-        </ManageMotionDiv>
-
-        <ManageMotionSection style={securityMotionReduced ? undefined : manageSectionSpring} className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} role="tabpanel" id="safety-manage-active-panel" aria-labelledby={'safety-manage-tab-' + activeManageSection} aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection} data-security-react-spring="manage-section">
+        <SafetyManageNavigation
+          sections={SECURITY_MANAGE_SECTIONS}
+          descriptions={SECURITY_MANAGE_SECTION_DESCRIPTIONS}
+          selected={activeManageSection}
+          mobileDetailOpen={mobileManageDetailOpen}
+          onChoose={chooseSecurityManageSection}
+          onBack={() => setMobileManageDetailOpen(false)}
+        >
+        <ManageMotionSection style={securityMotionReduced ? undefined : manageSectionSpring} className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} role="region" id="safety-manage-active-panel" aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection} data-security-react-spring="manage-section">
           <div className="lite-security-manage-section-head">
             <span>{activeManageSectionMeta.label}</span>
             <h3>{activeManageSectionMeta.label}</h3>
@@ -3530,6 +3403,7 @@ export default function SecurityScreen() {
             </div>
           ) : null}
         </ManageMotionSection>
+        </SafetyManageNavigation>
         </ManageMotionDiv>
       </LiteSheet> : null}
 
@@ -3541,6 +3415,7 @@ export default function SecurityScreen() {
         description="Checks this device more deeply while keeping heavy/private data skipped."
         layerClassName="lite-security-phase3-layer lite-security-detail-layer"
         className="lite-security-phase3-panel lite-security-full-local-confirm"
+        mobileSnap
         bodyClassName="lite-security-phase3-scroll"
         headerClassName="lite-security-phase3-head"
       >
@@ -3569,6 +3444,7 @@ export default function SecurityScreen() {
         description="Checks PhotoPrism app safety while keeping photos and media skipped."
         layerClassName="lite-security-phase3-layer lite-security-detail-layer"
         className="lite-security-phase3-panel lite-security-app-check-confirm"
+        mobileSnap
         bodyClassName="lite-security-phase3-scroll"
         headerClassName="lite-security-phase3-head"
       >
