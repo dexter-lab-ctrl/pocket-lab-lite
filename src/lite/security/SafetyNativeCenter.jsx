@@ -14,7 +14,7 @@ export function SafetyCenterHero({
   findings, coverageReported, checkedCount, coverageQuality, evidenceSaved,
   busy, writeBlocked, blockedReason, onQuickCheck, onOpenChecks,
 }) {
-  const scoreLabel = reportedScore && Number.isFinite(Number(score))
+  const scoreLabel = reportedScore && score !== null && score !== undefined && score !== '' && Number.isFinite(Number(score))
     ? Math.round(Number(score))
     : null;
   const reviewLabel = hasRun ? String(findings) : 'Not checked';
