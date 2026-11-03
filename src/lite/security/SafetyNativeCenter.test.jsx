@@ -40,6 +40,12 @@ describe('Native Safety Center — backend-truthful presentation (unexecuted)', 
     expect(screen.getByText('Not checked')).toBeInTheDocument();
     expect(screen.getByText('Not available')).toBeInTheDocument();
   });
+  it('rejects null and empty numeric score even when reported flag is set', () => {
+    const { rerender } = render(<SafetyCenterHero {...base} reportedScore score={null} />);
+    expect(screen.getByRole('img', { name: 'Safety score not reported' })).toBeInTheDocument();
+    rerender(<SafetyCenterHero {...base} reportedScore score="" />);
+    expect(screen.getByRole('img', { name: 'Safety score not reported' })).toBeInTheDocument();
+  });
   it('preserves partial scope and flags saved offline truth', () => {
     render(<SafetyCenterHero {...base} offline saved coverageQuality="incomplete" />);
     expect(screen.getByText('Incomplete coverage')).toBeInTheDocument();
