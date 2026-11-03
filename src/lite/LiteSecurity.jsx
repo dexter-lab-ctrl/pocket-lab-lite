@@ -1957,6 +1957,7 @@ export default function SecurityScreen() {
   const [securityCompletionSettling, setSecurityCompletionSettling] = useState(false);
   const securityManageOpen = useLiteUiStore((state) => state.securityManageOpen);
   const [mobileManageDetailOpen, setMobileManageDetailOpen] = useState(false);
+  const safetyManageScrollRef = useRef(null);
   const setSecurityManageOpen = useLiteUiStore((state) => state.setSecurityManageOpen);
   const {
     panelRef: safetyManagePanelRef, desktopPanel: safetyManageDesktop,
@@ -2775,6 +2776,14 @@ export default function SecurityScreen() {
     }
   }
 
+  useEffect(() => {
+    if (!mobileManageDetailOpen) return;
+    // A mobile nav row can be below the fold. Reset the shared scroll surface
+    // when its selected detail replaces the index so the new section starts at
+    // its own heading rather than inheriting the index's scroll offset.
+    safetyManageScrollRef.current?.scrollTo?.({ top: 0, behavior: 'auto' });
+  }, [mobileManageDetailOpen, securityManageSection]);
+
   function chooseSecurityProfile(profileId) {
     const nextProfile = normalizeSecurityProfileId(profileId);
     setSelectedScanProfile(nextProfile);
@@ -3122,6 +3131,7 @@ export default function SecurityScreen() {
         mobileSnap={!safetyManageDesktop}
         motion={safetyManageDesktop || securityMotionReduced ? 'none' : 'safe-grip'}
         surfaceRef={safetyManagePanelRef}
+        bodyRef={safetyManageScrollRef}
         surfaceStyle={safetyManagePanelStyle}
         surfaceProps={{ 'data-security-phase5-manage-shell': 'true', 'data-security-manage-layout': safetyManageDesktop ? 'desktop-movable' : 'mobile-sheet', 'data-security-react-spring': 'manage-shell' }}
         headerActions={safetyManageDesktop ? <div className="lite-security-manage-desktop-tools" role="group" aria-label="Desktop Safety panel controls">
@@ -3402,6 +3412,7 @@ export default function SecurityScreen() {
         mobileSnap={!safetyManageDesktop}
         bodyClassName="lite-security-phase3-scroll"
         headerClassName="lite-security-phase3-head"
+        variant="security"
       >
         <div className="lite-security-full-local-confirm-body">
           <p>This checks your Pocket Lab more deeply, including system settings, Pocket Lab files, PhotoPrism app files, service health, and backup records. It may use more CPU and battery than a Quick Scan; charging is recommended.</p>
@@ -3431,6 +3442,7 @@ export default function SecurityScreen() {
         mobileSnap={!safetyManageDesktop}
         bodyClassName="lite-security-phase3-scroll"
         headerClassName="lite-security-phase3-head"
+        variant="security"
       >
         <div className="lite-security-full-local-confirm-body">
           <p>This checks PhotoPrism access, app files, settings, backup records, and current app state. It can take a few minutes. It skips your photo library, media folders, backup contents, logs, and large caches.</p>

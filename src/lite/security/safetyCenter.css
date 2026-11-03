@@ -23,6 +23,7 @@ html[data-lite-theme] .lite-security-manage-layer :is(h1,h2,h3,p,small,strong,bu
 }
 html[data-lite-theme] .lite-safety-native-page .lite-security-phase5-shell {
   gap: var(--safety-section-gap);
+  margin-bottom: 0;
   min-width: 0;
 }
 html[data-lite-theme] .lite-safety-native-hero {
@@ -133,7 +134,25 @@ html[data-lite-theme] .lite-safety-native-destination > svg:last-child { flex: 0
 html[data-lite-theme] .lite-security-manage-scroll { container-type: inline-size; }
 html[data-lite-theme] .lite-security-manage-scroll-frame,
 html[data-lite-theme] .lite-safety-native-workspace { min-width: 0; }
-html[data-lite-theme] .lite-security-manage-scroll-frame { display: grid; gap: 1rem; }
+html[data-lite-theme] .lite-security-manage-scroll {
+  scroll-padding-block: 4rem 0 !important;
+  scrollbar-gutter: auto !important;
+  scrollbar-width: thin;
+}
+/* Keep the Safety surface's content width stable across themes.  Daylight
+ * already owns a thin custom scrollbar in the legacy skin; matching that
+ * geometry in Dark prevents theme changes from reflowing Safety copy. */
+html[data-lite-theme] .lite-security-manage-scroll::-webkit-scrollbar {
+  width: .72rem;
+  height: .72rem;
+}
+/* Legacy daylight Security polish later in index.css changes this shared frame
+ * to flex with a different gap. Safety owns one theme-neutral geometry. */
+html[data-lite-theme] .lite-security-manage-scroll-frame {
+  display: grid !important;
+  gap: 1rem !important;
+  align-items: stretch;
+}
 html[data-lite-theme] .lite-safety-native-workspace { display: grid; gap: 1.1rem; }
 html[data-lite-theme] .lite-safety-native-index { display: grid; gap: 1.2rem; min-width: 0; }
 html[data-lite-theme] .lite-safety-native-group { min-width: 0; }
@@ -157,6 +176,10 @@ html[data-lite-theme] .lite-safety-native-nav-row > svg:last-child { margin-left
 html[data-lite-theme] .lite-safety-native-nav-row > span { display: grid; flex: 1; min-width: 0; gap: .2rem; }
 html[data-lite-theme] .lite-safety-native-nav-row strong { font-size: .92rem; font-weight: 650; }
 html[data-lite-theme] .lite-safety-native-nav-row small { font-size: .78rem; line-height: 1.4; color: var(--azure-muted); }
+/* The daylight raised/selected navigation surfaces are light enough that the
+ * shared muted token falls just below WCAG AA for this small text. Preserve
+ * the same geometry and hierarchy while using the authoritative text role. */
+html[data-lite-theme="light"] .lite-safety-native-navigation .lite-safety-native-nav-row small { color: var(--azure-text); }
 html[data-lite-theme] .lite-safety-native-nav-row:hover { background: var(--azure-hover); }
 html[data-lite-theme] .lite-safety-native-nav-row:active { background: var(--azure-pressed); }
 html[data-lite-theme] .lite-safety-native-nav-row[aria-current="page"] {
@@ -179,9 +202,9 @@ html[data-lite-theme] .lite-safety-native-detail-heading p {
 html[data-lite-theme] .lite-safety-native-detail-content { min-width: 0; display: grid; gap: .85rem; }
 html[data-lite-theme] .lite-safety-native-detail-content > .lite-security-manage-section { min-width: 0; }
 
-/* Mobile: Manage opens on its index; Back returns to index, Close dismisses. */
-html[data-lite-theme] .lite-safety-native-workspace[data-safety-manage-view="index"] .lite-safety-native-detail { display: none; }
-html[data-lite-theme] .lite-safety-native-workspace[data-safety-manage-view="section"] .lite-safety-native-index { display: none; }
+/* Mobile: Manage opens on its index; Back returns to index, Close dismisses.
+ * Keep these state rules inside the narrow-container query. Desktop Manage
+ * keeps the index and selected detail side by side after a selection. */
 @container (min-width: 620px) {
   html[data-lite-theme] .lite-safety-native-workspace {
     display: grid; grid-template-columns: minmax(12rem, .38fr) minmax(0, 1fr);
@@ -193,6 +216,10 @@ html[data-lite-theme] .lite-safety-native-workspace[data-safety-manage-view="sec
     padding-right: .9rem; border-right: 1px solid var(--azure-border);
   }
   html[data-lite-theme] .lite-safety-native-back { display: none; }
+}
+@container (max-width: 619px) {
+  html[data-lite-theme] .lite-safety-native-workspace[data-safety-manage-view="index"] .lite-safety-native-detail { display: none; }
+  html[data-lite-theme] .lite-safety-native-workspace[data-safety-manage-view="section"] .lite-safety-native-index { display: none; }
 }
 html[data-lite-theme] .lite-security-manage-layer .lite-security-manage-shell,
 html[data-lite-theme] .lite-security-phase3-layer .lite-security-phase3-panel {
@@ -221,6 +248,18 @@ html[data-lite-theme] .lite-safety-native-page :is(button,a,input,select,textare
 }
 html[data-lite-theme] .lite-security-manage-layer :is(button,a),
 html[data-lite-theme] .lite-security-phase3-layer :is(button,a) { min-height: var(--safety-control-height, 44px); }
+html[data-lite-theme] .lite-security-manage-layer .lite-security-coverage-toggle {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--safety-control-height, 44px) !important;
+  margin-top: 0 !important;
+  padding: .6rem .95rem !important;
+  font-size: .85rem;
+  font-weight: 850;
+  white-space: nowrap;
+  text-wrap: nowrap !important;
+}
 html[data-lite-theme] .lite-security-manage-head {
   display: flex; gap: .6rem; flex-wrap: wrap; align-items: center;
 }

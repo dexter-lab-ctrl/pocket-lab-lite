@@ -6569,16 +6569,20 @@ def test_lite_security_phase3_mobile_desktop_shell_preserves_boundaries():
 
 def test_lite_security_phase4_motion_polish_contract():
     security = Path("src/lite/LiteSecurity.jsx").read_text()
+    native = Path("src/lite/security/SafetyNativeCenter.jsx").read_text()
     css = Path("src/index.css").read_text()
 
     assert "SECURITY_PHASE4_MOTION_POLISH_SOURCE_GUARDS" in security
     assert "lite-security-phase4-motion" in security
     assert "lite-security-phase4-score-settle" in security
-    assert "lite-security-phase4-safety-action" in security
     assert "lite-security-phase4-delta-count" in security
     assert "lite-security-phase4-evidence-stamp" in security
     assert "lite-security-phase4-panel-motion" in security
     assert "data-security-phase4-motion" in security
+    assert "lite-safety-native-hero" in native
+    assert "data-safety-native-hero" in native
+    assert "lite-safety-native-hero-actions" in native
+    assert "Run Quick Scan" in native
     assert "lite-security-phase4-score-settle" in css
     assert "lite-security-phase4-button-sheen" in css
     assert "lite-security-phase4-delta-count" in css
@@ -6683,38 +6687,43 @@ def test_lite_security_overlay_hotfix_preserves_backend_owned_boundaries():
 
 def test_lite_security_phase5_safety_center_manage_contract():
     security = Path("src/lite/LiteSecurity.jsx").read_text()
+    native = Path("src/lite/security/SafetyNativeCenter.jsx").read_text()
     css = Path("src/index.css").read_text()
 
     assert "SECURITY_PHASE5_SAFETY_CENTER_MANAGE_UX" in security
-    assert "lite-security-safety-center-card" in security
     assert "lite-security-manage-shell" in security
     assert "lite-security-manage-panel" in security
-    assert "lite-security-manage-tabs" in security
     assert "lite-security-manage-section" in security
     assert "data-security-phase5-summary-first" in security
     assert "data-security-phase5-manage-shell" in security
-    assert "Run Safety Check" in security
+    assert "lite-safety-native-hero" in native
+    assert "lite-safety-native-destinations" in native
+    assert "lite-safety-native-workspace" in native
+    assert "data-safety-manage-index" in native
+    assert "data-safety-manage-detail" in native
+    assert "Run Quick Scan" in native
     assert 'ariaLabel="Manage Security details"' in security
     assert ">Manage Safety</LiteButton>" in security
     assert "SECURITY_MANAGE_SECTIONS" in security
     for section_id in ["overview", "changes", "issues", "check_path", "evidence", "history", "technical_details"]:
         assert section_id in security
-    assert "lite-security-safety-center-card" in css
     assert "lite-security-manage-shell" in css
-    assert "lite-security-manage-tabs" in css
     assert "lite-security-manage-section" in css
 
 
 def test_lite_security_phase5_main_page_is_summary_first():
     security = Path("src/lite/LiteSecurity.jsx").read_text()
+    native = Path("src/lite/security/SafetyNativeCenter.jsx").read_text()
     main_start = security.index("data-security-phase5-summary-first")
     manage_start = security.index("data-security-phase5-manage-shell")
     main_section = security[main_start:manage_start]
 
     assert "Safety Center" in main_section
-    assert "Run Safety Check" in main_section
+    assert "SafetyCenterHero" in main_section
+    assert "SafetyDestinations" in main_section
+    assert "lite-safety-native-hero" in native
+    assert "Run Quick Scan" in native
     assert "Manage" in main_section
-    assert "lite-security-safety-center-card" in main_section
     assert "SecurityProgressiveDetailsLazy" not in main_section
     assert "SecurityHistoryLazy" not in main_section
     assert "lite-security-phase1-layout" not in main_section
@@ -6869,6 +6878,7 @@ def test_lite_security_overlay_hotfix_preserves_no_frontend_execution_boundary()
 
 def test_lite_security_premium_visual_polish_uses_react_spring_safely():
     security = Path("src/lite/LiteSecurity.jsx").read_text()
+    native = Path("src/lite/security/SafetyNativeCenter.jsx").read_text()
     css = Path("src/index.css").read_text()
 
     assert "@react-spring/web" in security
@@ -6877,7 +6887,8 @@ def test_lite_security_premium_visual_polish_uses_react_spring_safely():
     assert "useSecurityReducedMotion" in security
     assert "SECURITY_SPRING_CONFIG" in security
     assert "data-security-react-spring=\"summary-shell\"" in security
-    assert "data-security-react-spring=\"safety-card\"" in security
+    assert "data-safety-native-hero" in native
+    assert "lite-safety-native-hero" in native
     assert "data-security-react-spring=\"manage-section\"" in security
     assert "data-security-react-spring': 'manage-shell'" in security
     assert "data-security-react-spring': 'focused-details'" in security
@@ -6946,12 +6957,15 @@ def test_lite_security_premium_polish_v2_uses_react_spring_for_tabs_and_live_pro
     css = Path("src/index.css").read_text()
 
     assert "SECURITY_PREMIUM_POLISH_V2_SOURCE_GUARDS" in security
-    assert "const manageTabsSpring = useSpring" in security
+    assert "const manageScrollSpring = useSpring" in security
+    assert "const manageSectionSpring = useSpring" in security
     assert "const liveProgressSpring = useSpring" in security
-    assert "data-security-react-spring=\"manage-tabs\"" in security
+    assert "data-security-react-spring=\"manage-scroll-frame\"" in security
+    assert "data-security-react-spring=\"manage-section\"" in security
     assert "data-security-react-spring=\"live-progress\"" in security
-    assert "lite-security-premium-v2-manage-tabs-motion" in security
-    assert "lite-security-premium-v2-live-progress-motion" in security
+    assert "lite-security-manage-scroll-frame" in security
+    assert "lite-security-manage-section" in security
+    assert "lite-security-phase4-live-motion" in security
     assert "Security premium polish v2" in css
     assert "React Spring owns safe tab/live motion" in css
 

@@ -41,14 +41,15 @@ test.describe('Azure Horizon Safety P0–P3 semantic and interaction contract', 
       for (const label of sections) {
         const back = dialog.getByRole('button', { name: 'Back to Manage Safety' });
         if (await back.isVisible()) await back.click();
-        const row = dialog.getByRole('button', { name: `Open ${label} in Manage Safety` });
+        const row = dialog.locator(`.lite-safety-native-nav-row[aria-label="Open ${label} in Manage Safety"]`);
         await row.click();
         await expect(row).toHaveAttribute('aria-current', 'page');
         await expect(dialog.getByRole('region', { name: label })).toBeVisible();
+        await expect(dialog.locator('.lite-security-manage-scroll')).toHaveJSProperty('scrollTop', 0);
       }
       const back = dialog.getByRole('button', { name: 'Back to Manage Safety' });
       if (await back.isVisible()) await back.click();
-      const first = dialog.getByRole('button', { name: 'Open Overview in Manage Safety' });
+      const first = dialog.locator('.lite-safety-native-nav-row[aria-label="Open Overview in Manage Safety"]');
       await first.focus();
       await page.keyboard.press('Enter');
       await expect(first).toHaveAttribute('aria-current', 'page');
@@ -81,7 +82,8 @@ test.describe('Azure Horizon Safety P0–P3 semantic and interaction contract', 
     await expect(page.getByRole('button', { name: 'Open Coverage & Checks' })).toBeVisible();
     await page.getByRole('button', { name: 'Open Coverage & Checks' }).click();
     const dialog = page.getByRole('dialog', { name: 'Manage Safety' });
-    await expect(dialog.getByRole('region', { name: 'Coverage' })).toHaveAttribute('aria-selected', 'true');
+    await expect(dialog.locator('.lite-safety-native-nav-row[aria-label="Open Coverage in Manage Safety"]')).toHaveAttribute('aria-current', 'page');
+    await expect(dialog.getByRole('region', { name: 'Coverage' })).toBeVisible();
   });
   test('Full Scan requires confirmation before any scan request', async ({ page }) => {
     await openSafety(page);
