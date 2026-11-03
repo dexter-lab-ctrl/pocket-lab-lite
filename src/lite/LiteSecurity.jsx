@@ -2960,14 +2960,6 @@ export default function SecurityScreen() {
     immediate: securityMotionReduced || securityLivePresentation,
     config: SECURITY_SPRING_CONFIG.calm,
   });
-  const safetyCardSpring = useSpring({
-    to: {
-      scale: securityLivePresentation ? 1.006 : 1,
-      boxShadow: 'var(--azure-shadow)',
-    },
-    immediate: securityMotionReduced || securityLivePresentation,
-    config: SECURITY_SPRING_CONFIG.micro,
-  });
   const manageSectionSpring = useSpring({
     from: { opacity: 0, y: 8, scale: 0.992 },
     to: { opacity: 1, y: 0, scale: 1 },
@@ -2979,14 +2971,6 @@ export default function SecurityScreen() {
     number: safetyScoreReported ? safetyScore : 0,
     immediate: securityMotionReduced,
     config: SECURITY_SPRING_CONFIG.calm,
-  });
-  const manageTabsSpring = useSpring({
-    to: {
-      opacity: securityManageOpen ? 1 : 0,
-      y: securityManageOpen ? 0 : -4,
-    },
-    immediate: securityMotionReduced,
-    config: SECURITY_SPRING_CONFIG.micro,
   });
   const liveProgressSpring = useSpring({
     to: {
