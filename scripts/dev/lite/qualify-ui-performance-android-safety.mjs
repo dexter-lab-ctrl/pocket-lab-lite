@@ -25,6 +25,7 @@ const cdpUrlValue = String(process.env.LITE_ANDROID_CDP_URL || '').trim();
 const baseUrlValue = String(process.env.LITE_BASE_URL || '').trim();
 const browserBridge = String(process.env.POCKETLAB_HARNESS_BROWSER_BRIDGE || '').trim();
 const browserBridgeEnabled = process.env.LITE_QUALIFICATION_BROWSER_BRIDGE === '1';
+const anonymousReadOnly = process.env.LITE_ANDROID_SAFETY_ANONYMOUS_READ_ONLY === '1';
 const MINIMUM_FRAME_COUNT = 20;
 const MINIMUM_SAMPLER_INTERVAL_COUNT = MINIMUM_FRAME_COUNT + 3;
 const MAX_MINIMUM_FRAME_EXTENSION_MS = 2_000;
@@ -39,6 +40,12 @@ let base;
 let hardGateFailures = 0;
 let targetMisses = 0;
 let evidenceCount = 0;
+let hapticProbe = {
+  supported: false,
+  instrumented: false,
+  touchActivationCalls: 0,
+  acceptedCalls: 0,
+};
 const exercisedInteractions = new Set();
 const physicalNotes = [];
 let nestedFindingStatus = 'UNVALIDATED';
@@ -246,6 +253,82 @@ async function installSampler() {
   });
 }
 
+async function installHapticProbe() {
+  await page.addInitScript(() => {
+    const original = typeof Navigator !== 'undefined' ? Navigator.prototype.vibrate : null;
+    const probe = {
+      supported: typeof original === 'function',
+      instrumented: false,
+      calls: [],
+    };
+    window.__POCKETLAB_ANDROID_SAFETY_HAPTIC_PROBE__ = probe;
+    if (!probe.supported) return;
+    try {
+      Object.defineProperty(Navigator.prototype, 'vibrate', {
+        configurable: true,
+        value(pattern) {
+          let accepted = false;
+          try {
+            accepted = Boolean(original.call(this, pattern));
+          } catch {
+            accepted = false;
+          }
+          probe.calls.push({
+            pattern: Array.isArray(pattern) ? pattern.slice(0, 12) : pattern,
+            accepted,
+          });
+          return accepted;
+        },
+      });
+      probe.instrumented = true;
+    } catch {
+      // The support result remains useful even if this optional observer is
+      // blocked by the browser's Navigator implementation.
+    }
+  });
+}
+
+async function qualifyRealDeviceHaptics(manageButton) {
+  const before = await page.evaluate(() => {
+    const probe = window.__POCKETLAB_ANDROID_SAFETY_HAPTIC_PROBE__;
+    return {
+      supported: probe?.supported === true,
+      instrumented: probe?.instrumented === true,
+      count: Array.isArray(probe?.calls) ? probe.calls.length : 0,
+    };
+  });
+  await manageButton.tap();
+  const dialog = await firstVisible(page.getByRole('dialog', { name: 'Manage Safety' }), 'Manage Safety haptic probe dialog');
+  const close = await firstVisible(dialog.getByRole('button', { name: 'Close security details' }), 'Close Manage Safety haptic probe');
+  await close.tap();
+  await dialog.waitFor({ state: 'hidden', timeout: 20_000 });
+  const after = await page.evaluate(() => {
+    const probe = window.__POCKETLAB_ANDROID_SAFETY_HAPTIC_PROBE__;
+    const calls = Array.isArray(probe?.calls) ? probe.calls : [];
+    return {
+      supported: probe?.supported === true,
+      instrumented: probe?.instrumented === true,
+      calls: calls.slice(-4),
+    };
+  });
+  const calls = after.calls.slice(Math.max(0, before.count));
+  hapticProbe = {
+    supported: after.supported,
+    instrumented: after.instrumented,
+    touchActivationCalls: calls.length,
+    acceptedCalls: calls.filter((call) => call?.accepted === true).length,
+  };
+  if (!hapticProbe.supported) {
+    physicalNotes.push('Android Chrome did not expose navigator.vibrate; real-device haptics were not available.');
+  } else if (!hapticProbe.instrumented) {
+    physicalNotes.push('Android Chrome exposed navigator.vibrate, but the optional observation hook was unavailable.');
+  } else if (hapticProbe.acceptedCalls > 0) {
+    physicalNotes.push('Android Chrome accepted vibration requests from real touch activation of Safety controls.');
+  } else {
+    physicalNotes.push('Android Chrome exposed navigator.vibrate, but no vibration request was observed for the touch probe.');
+  }
+}
+
 async function waitForSafety() {
   await page.locator('[data-lite-screen-id="security"]').waitFor({ state: 'visible', timeout: 20_000 });
   await page.locator('[data-safety-native-page="true"]').waitFor({ state: 'visible', timeout: 20_000 });
@@ -451,7 +534,10 @@ async function selectManageSection(dialog, section) {
 }
 
 async function main() {
-  if (browserBridgeEnabled !== Boolean(browserBridge)) {
+  if (anonymousReadOnly && (browserBridgeEnabled || browserBridge)) {
+    fail('Anonymous Safety qualification cannot receive a browser bridge or qualification marker.');
+  }
+  if (!anonymousReadOnly && browserBridgeEnabled !== Boolean(browserBridge)) {
     fail('Synthetic Android browser qualification requires an explicit browser bridge and LITE_QUALIFICATION_BROWSER_BRIDGE=1.');
   }
   commit = exactSourceCommit();
@@ -478,6 +564,7 @@ async function main() {
   const candidatePages = [page, ...existingCandidatePages.filter((candidatePage) => candidatePage !== page)];
 
   await activateCandidate(page);
+  await installHapticProbe();
   await page.goto(new URL('/?pocketlab_qualification_bootstrap=1', base).toString(), { waitUntil: 'domcontentloaded', timeout: 30_000 });
   await requireScreenWakeLock();
   await page.evaluate(async () => {
@@ -530,9 +617,14 @@ async function main() {
   await Promise.all(candidatePages.filter((candidatePage) => candidatePage !== page).map((candidatePage) => candidatePage.close().catch(() => {})));
 
   await installSampler();
+  if (anonymousReadOnly) {
+    physicalNotes.push('Explicit anonymous read-only Safety projection; no harness bridge or write-capable authority was used.');
+  }
   await gotoSafety();
   const hero = page.locator('[data-safety-native-hero="true"]');
   const destinations = page.locator('[data-safety-native-destinations="true"]');
+  const manageButton = await firstVisible(page.getByRole('button', { name: 'Manage Security details' }), 'Manage Safety');
+  await qualifyRealDeviceHaptics(manageButton);
   await measure({
     interaction: 'screen-steady',
     scope: 'safety-landing',
@@ -554,7 +646,6 @@ async function main() {
     settleMs: 480,
   });
 
-  const manageButton = await firstVisible(page.getByRole('button', { name: 'Manage Security details' }), 'Manage Safety');
   await measure({
     interaction: 'manage-open',
     scope: 'safety-manage-open',
@@ -707,6 +798,7 @@ async function main() {
     target_misses: targetMisses,
     hard_gate_misses: hardGateFailures,
     nested_finding_details: nestedFindingStatus,
+    haptics: hapticProbe,
     physical_notes: physicalNotes,
     sanitized: true,
   };

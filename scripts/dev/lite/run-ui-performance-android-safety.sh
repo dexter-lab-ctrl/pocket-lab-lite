@@ -195,6 +195,11 @@ else
     run_name="$(printf 'run-%02d' "$run_index")"
     run_root="$staging_root/$run_name"
     mkdir -p "$run_root/evidence"
+    # A Playwright CDP disconnect can leave the newly-created Android control
+    # tab backgrounded. Re-open the owned candidate before each control sample
+    # so the repository foreground RAF gate measures the physical renderer.
+    powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+      -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -Wake -OpenCandidate
     node scripts/dev/lite/qualify-ui-performance-android-baseline.mjs \
       --label "${run_name}-safety-before" \
       --samples 3 \
@@ -209,6 +214,8 @@ else
     evidence_files=("$run_root/evidence"/ui-performance-android-safety-*.json)
     shopt -u nullglob
     (( ${#evidence_files[@]} > 0 )) || fail "${run_name} produced no Safety interaction reports."
+    powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+      -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -Wake -OpenCandidate
     node scripts/dev/lite/qualify-ui-performance-android-baseline.mjs \
       --label "${run_name}-safety-after" \
       --samples 3 \

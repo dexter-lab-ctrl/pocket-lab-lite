@@ -224,6 +224,22 @@ def test_android_qualifier_uses_the_current_in_control_refresh_progress_surface(
     assert ".lite-refresh-status-popover" not in source
 
 
+def test_safety_android_qualifier_requires_explicit_anonymous_read_only_opt_in():
+    source = Path("scripts/dev/lite/qualify-ui-performance-android-safety.mjs").read_text(encoding="utf-8")
+    assert "LITE_ANDROID_SAFETY_ANONYMOUS_READ_ONLY" in source
+    assert "Anonymous Safety qualification cannot receive a browser bridge" in source
+    assert "Explicit anonymous read-only Safety projection" in source
+    assert "if (!anonymousReadOnly && browserBridgeEnabled !== Boolean(browserBridge))" in source
+    assert "navigator.vibrate" in source
+    assert "real touch activation" in source
+
+
+def test_safety_android_baseline_reopens_owned_candidate_at_control_boundaries():
+    source = Path("scripts/dev/lite/run-ui-performance-android-safety.sh").read_text(encoding="utf-8")
+    assert source.count("-File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -Wake -OpenCandidate") >= 3
+    assert "foreground RAF gate" in source
+
+
 def test_candidate_ui_mode_supports_live_and_android_cdp_and_uses_checked_in_candidate_server():
     runner = _load_runner()
     source = Path("scripts/dev/lite/run-ui-performance-qualified.py").read_text(encoding="utf-8")
