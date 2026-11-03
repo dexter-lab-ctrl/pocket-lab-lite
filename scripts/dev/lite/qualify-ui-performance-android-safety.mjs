@@ -336,14 +336,20 @@ async function dispatchAndroidTouch(locator, label) {
   const y = box.y + box.height / 2;
   const session = await page.context().newCDPSession(page);
   try {
-    await session.send('Input.dispatchTouchEvent', {
-      type: 'touchStart',
-      touchPoints: [{ x, y, radiusX: 1, radiusY: 1, force: 1 }],
-    });
-    await session.send('Input.dispatchTouchEvent', {
-      type: 'touchEnd',
-      touchPoints: [],
-    });
+    // Match Playwright's raw Android touchscreen implementation: the browser
+    // receives a real CDP touch sequence, not a DOM click or mouse event.
+    await Promise.all([
+      session.send('Input.dispatchTouchEvent', {
+        type: 'touchStart',
+        modifiers: 0,
+        touchPoints: [{ x, y }],
+      }),
+      session.send('Input.dispatchTouchEvent', {
+        type: 'touchEnd',
+        modifiers: 0,
+        touchPoints: [],
+      }),
+    ]);
   } finally {
     await session.detach().catch(() => {});
   }
