@@ -17,9 +17,9 @@ async function openManageSection(canvasElement, label = 'Overview') {
   const dialog = await body.findByRole('dialog', { name: /Manage Safety/i });
   await expect(dialog).toBeInTheDocument();
   if (label !== 'Overview') {
-    const tab = within(dialog).getByRole('tab', { name: new RegExp(`Open ${label} in Security Manage`, 'i') });
+    const tab = within(dialog).getByRole('button', { name: new RegExp(`Open ${label} in Manage Safety`, 'i') });
     await userEvent.click(tab);
-    await expect(tab).toHaveAttribute('aria-selected', 'true');
+    await expect(tab).toHaveAttribute('aria-current', 'page');
   }
   await expect(within(dialog).getByRole('heading', { name: label, level: 3 })).toBeInTheDocument();
 }
@@ -130,8 +130,8 @@ export const AzureBlackDesktop = {
   ...createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'desktop' }),
   play: async ({ canvasElement }) => {
     const canvas = await expectSecurity(canvasElement);
-    await expect(canvas.getByRole('heading', { name: 'Safety overview' })).toBeInTheDocument();
-    await expect(canvas.getByRole('region', { name: /Coverage and checks/i })).toBeInTheDocument();
+    await expect(canvas.getByRole('region', { name: 'Safety overview' })).toBeInTheDocument();
+    await expect(canvas.getByRole('button', { name: /Open Coverage & Checks/i })).toBeInTheDocument();
   },
 };
 export const AzureDaylightDesktop = createLiteStory('security', 'security-action-needed', { theme: 'daylight', viewport: 'desktop' });
@@ -158,3 +158,24 @@ export const AzureManageTechnicalMobile = {
   ...createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'mobile390' }),
   play: async ({ canvasElement }) => openManageSection(canvasElement, 'Technical details'),
 };
+
+/* Native P0–P7: authored state coverage; screenshot approval is deferred. */
+export const NativeDarkMobileIndex = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectSecurity(canvasElement);
+    await expect(canvas.getByRole('navigation', { name: 'Safety destinations' })).toBeInTheDocument();
+    await userEvent.click(canvas.getByRole('button', { name: 'Manage Security details' }));
+    const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'Manage Safety' });
+    await expect(within(dialog).getByRole('navigation', { name: 'Manage Safety sections' })).toBeInTheDocument();
+  },
+};
+export const NativeDarkMobileCoverage = {
+  ...createLiteStory('security', 'security-scanner-unavailable', { theme: 'dark', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Coverage'),
+};
+export const NativeSystemFirstRun = createLiteStory('security', 'security-first-run', { theme: 'system', viewport: 'mobile320' });
+export const NativeDaylightOffline = createLiteStory('security', 'offline-saved', { theme: 'daylight', viewport: 'mobile390' });
+export const NativeDarkFullRunning = createLiteStory('security', 'security-full-running', { theme: 'dark', viewport: 'desktop' });
+export const NativeDaylightAttention = createLiteStory('security', 'security-action-needed', { theme: 'daylight', viewport: 'desktop' });
+export const NativeAppCheck = createLiteStory('security', 'security-app-check-healthy', { theme: 'dark', viewport: 'desktop' });
