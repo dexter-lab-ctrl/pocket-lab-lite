@@ -29,7 +29,7 @@ for (const theme of ['light', 'dark'] as const) {
       expect(geometry.left).toBeGreaterThanOrEqual(-1);
       expect(geometry.right).toBeLessThanOrEqual(geometry.viewportWidth + 1);
       expect(geometry.scrollClearance).toBeGreaterThan(geometry.height);
-      expect(geometry.background).toMatch(/^rgb\\(/);
+      expect(geometry.background.startsWith('rgb(')).toBe(true);
       await expect(dock.locator('.pocket-nav-button[aria-current="page"]')).toHaveCount(1);
     });
   }
