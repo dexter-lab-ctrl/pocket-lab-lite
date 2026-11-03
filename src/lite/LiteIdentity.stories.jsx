@@ -5,7 +5,7 @@ export default { title: 'Pocket Lab Lite/Identity', component: LiteStoryFrame, t
 
 async function expectIdentity(canvasElement) {
   const canvas = within(canvasElement);
-  await expect(await canvas.findByRole('heading', { name: 'Identity & Access', level: 1 })).toBeInTheDocument();
+  await expect(await canvas.findByRole('heading', { name: 'Access', level: 1 })).toBeInTheDocument();
   return canvas;
 }
 
@@ -36,7 +36,7 @@ export const IdentitySummary = {
   ...createLiteStory('identity', 'identity-summary', { notes: 'Personal Mode Owner summary using the unified Identity projection while preserving the established Lite storytelling pattern.' }),
   play: async ({ canvasElement }) => {
     const canvas = await expectIdentity(canvasElement);
-    await expect(await canvas.findByLabelText('Access posture')).toBeInTheDocument();
+    await expect(await canvas.findByRole('heading', { name: 'Sign-in & protection' })).toBeInTheDocument();
     await expect(canvasElement).toHaveTextContent(/Passkeys/i);
     await expect(canvasElement).toHaveTextContent(/Sessions/i);
     await expect(canvasElement).toHaveTextContent(/Recovery/i);
@@ -120,7 +120,7 @@ export const EnterprisePeopleManagement = {
   play: async ({ canvasElement }) => {
     const canvas = await expectEnterpriseRole(canvasElement, 'Owner');
     const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', { name: /Manage access/i });
-    await userEvent.click(within(dialog).getByRole('button', { name: 'People', exact: true }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'People & roles', exact: true }));
     await expect(dialog).toHaveTextContent(/Add person/i);
     await expect(dialog).toHaveTextContent(/New Person/i);
     await expect(dialog).toHaveTextContent(/Waiting to join/i);
@@ -141,10 +141,10 @@ export const FutureRoleAwareState = EnterpriseOwner;
 export const PremiumAccessJourney = {
   ...createLiteStory('identity', 'identity-summary', { viewport: 'desktop', notes: 'Conceptual four-stage Journey, not an authentication progress engine.' }),
   play: async ({ canvasElement }) => {
-    const canvas = await expectIdentity(canvasElement);
-    await expect(await canvas.findByRole('heading', { name: 'How your access fits together' })).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole('button', { name: 'View Recovery details' }));
-    await expect(await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: /Access Details/i })).toHaveTextContent(/Recovery/i);
+    await openManageAccess(canvasElement);
+    const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', { name: /Manage access/i });
+    await userEvent.click(within(dialog).getByRole('button', { name: /Explain This/i }));
+    await expect(await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: /Understand your access/i })).toBeInTheDocument();
   },
 };
 export const PremiumPasskeysMultiple = createLiteStory('identity', 'identity-premium-multiple');
@@ -206,7 +206,7 @@ export const PremiumPeopleDetails = {
   play: async ({ canvasElement }) => {
     await openManageAccess(canvasElement);
     const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', { name: /Manage access/i });
-    await userEvent.click(within(dialog).getByRole('button', { name: 'People', exact: true }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'People & roles', exact: true }));
     await userEvent.click(within(dialog).getAllByRole('button', { name: /Open Details/i })[0]);
     await expect(await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: /Access Details/i })).toHaveTextContent(/Owner/i);
   },
@@ -227,3 +227,46 @@ export const AzureAdminGovernanceDaylight = createLiteStory('identity','identity
 export const AzureOwnerPendingBlack = createLiteStory('identity','identity-owner-operation-pending',{viewport:'desktop',theme:'dark',status:'unvalidated'});
 export const AzureTrustedClientDaylight = createLiteStory('identity','identity-owner-client-pairing-pending',{viewport:'desktop',theme:'daylight',status:'unvalidated'});
 export const AzureSavedApprovalBlack = createLiteStory('identity','identity-owner-operation-offline',{viewport:'mobile360',theme:'dark',status:'unvalidated'});
+
+// Azure Horizon Access Center P1–P6 — authored fixtures, deliberately not run.
+const native = (scenario, options = {}) => createLiteStory('identity', scenario, {
+  status: 'unvalidated', notes: 'Native Access Center source candidate; qualification and snapshot approval deferred.', ...options,
+});
+export const NativeDaylightDesktop = native('identity-summary', { viewport: 'desktop', theme: 'daylight' });
+export const NativeDarkDesktop = native('identity-summary', { viewport: 'desktop', theme: 'dark' });
+export const NativeSystem = native('identity-summary', { viewport: 'desktop', theme: 'system' });
+export const NativeDaylightMobile = native('identity-summary', { viewport: 'mobile390', theme: 'daylight' });
+export const NativeDarkMobile = native('identity-summary', { viewport: 'mobile390', theme: 'dark' });
+export const Native320 = native('identity-summary', { viewport: 'mobile360', theme: 'daylight', notes: 'Exact 320px via authored Playwright candidate.' });
+export const Native360 = native('identity-summary', { viewport: 'mobile360' });
+export const Native390 = native('identity-summary', { viewport: 'mobile390' });
+export const Native430 = native('identity-summary', { viewport: 'mobile430' });
+export const NativeTablet = native('identity-summary', { viewport: 'tablet' });
+export const NativeWideDesktop = native('identity-summary', { viewport: 'desktop' });
+export const NativeTextZoom200 = native('identity-premium-long-text', { viewport: 'mobile390', textScale: 2 });
+export const NativeNoPasskeys = native('identity-premium-no-passkeys');
+export const NativeMultiplePasskeys = native('identity-premium-multiple');
+export const NativeMultipleSessions = native('identity-premium-multiple');
+export const NativeRecoveryMissing = native('identity-premium-recovery-missing');
+export const NativeSavedOffline = native('identity-owner-operation-offline');
+export const NativePendingOperation = native('identity-owner-operation-pending');
+export const NativeEnterpriseOwner = native('identity-enterprise-owner');
+export const NativeEnterpriseAdmin = native('identity-enterprise-admin');
+export const NativeEnterpriseOperator = native('identity-enterprise-operator');
+export const NativeEnterpriseAuditor = native('identity-enterprise-auditor');
+export const NativeEnterpriseViewer = native('identity-enterprise-viewer');
+export const NativeManageRoot = { ...native('identity-summary', { viewport: 'mobile390' }), play: async ({ canvasElement }) => openManageAccess(canvasElement) };
+export const NativePasskeyDetails = {
+  ...native('identity-premium-multiple', { viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    await openManageAccess(canvasElement);
+    const dialogs = within(canvasElement.ownerDocument.body);
+    const manage = dialogs.getByRole('dialog', { name: /Manage access/i });
+    await userEvent.click(within(manage).getByRole('button', { name: 'Passkeys', exact: true }));
+    await userEvent.click(within(manage).getByRole('button', { name: /Second passkey/i }));
+    await expect(await dialogs.findByRole('dialog', { name: /Access Details/i })).toBeInTheDocument();
+  },
+};
+export const NativeConfirmation = PremiumProtectedConfirmation;
+export const NativePeopleDetails = PremiumPeopleDetails;
+export const NativeSheetCompactMediumExpanded = native('identity-summary', { viewport: 'mobile390', notes: 'Mobile snap states (35%, 72%, 94%) exercised in authored browser candidates; no baseline is approved.' });

@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 518,
+  "page_count": 519,
   "page_types": [
     "overview",
     "guide",
@@ -17273,6 +17273,29 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "validation/access-native-qualification.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "testing",
+      "generated": false,
+      "id": "page:validation/access-native-qualification",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "validation/access-native-qualification.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "validation/access-native-qualification.md",
+      "title": "Azure Horizon Access Center — P1–P6 qualification record",
+      "url": "/validation/access-native-qualification/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "validation/evidence-history/runtime-security-assurance-qualification.md"
       ],
       "confidence": "source-derived",
@@ -18275,7 +18298,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "fd96382065643978305b7e4df46bea6b5e424bcc3fd7122b8f45601f35fed380",
+  "source_fingerprint": "4f3ff4adbd05e64609d5e3a5ce967dc2a0e28421a680d28990a9f4199c4fa9c9",
   "top_level": [
     "start-here",
     "use",

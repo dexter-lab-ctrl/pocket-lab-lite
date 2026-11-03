@@ -456,16 +456,16 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.goto('/?screen=identity');
     const identity = page.locator('[data-lite-screen-id="identity"]');
     await expect(identity).toBeVisible();
-    await expect(identity).toContainText('Identity & Access');
-    await expect(identity.getByLabel('Access posture')).toBeVisible();
+    await expect(identity.getByRole('heading', { name: 'Access', exact: true })).toBeVisible();
+    await expect(identity.getByLabel('Access profile')).toBeVisible();
     await expect(identity).toContainText('Passkeys');
     await expect(identity).toContainText('Sessions');
-    await expect(identity).toContainText('Recovery');
+    await expect(identity).toContainText(/Account recovery/i);
     // The premium Access Center intentionally exposes the same Manage action
     // in its operational-story action and compact profile CTA. Both are
     // authoritative entry points; target the first visible trigger here.
     await identity.getByRole('button', { name: /^Manage Access$/i }).first().click();
-    await expect(page.getByRole('dialog', { name: 'Manage access' })).toContainText(/Review and manage your reported access/i);
+    await expect(page.getByRole('dialog', { name: 'Manage access' })).toContainText(/Account settings and permissions/i);
     await expect(identity).not.toContainText('local-admin');
 
     await page.goto('/?screen=rules');

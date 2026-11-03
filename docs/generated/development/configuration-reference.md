@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: aa137dd8c33e527bbf08838d6b05d214c14f897ae302922d7d6ad83aaf01cdf5
+source_fingerprint: ec056051544536d1c633cf0b3bb7bdef3dc192d5b722dc374be3d6eaefba7799
 schema_revision: 1
 validation_status: generated
 ---
@@ -35,7 +35,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `LITE_ANDROID_CDP_URL` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/run-ui-performance-qualified.py |
 | `LITE_ANDROID_EXPECTED_INTERACTION_REPORTS` | configuration | $default_expected_interaction_reports | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-baseline.sh |
 | `LITE_ANDROID_GATE` | configuration | 0 | yes | component-dependent | scripts/dev/lite/run-gate.sh |
-| `LITE_ANDROID_QUALIFICATION_SCOPE` | configuration | all | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh |
+| `LITE_ANDROID_QUALIFICATION_SCOPE` | configuration | all | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/run-ui-performance-qualified.py |
 | `LITE_API_DIRECT_URL` | configuration | http://127.0.0.1:8000 | yes | component-dependent | Taskfile.yml, scripts/docs/lite/generate_docs.py, scripts/test/parity/run_schemathesis.sh, scripts/test/parity/run_schemathesis_discovery.sh |
 | `LITE_APP_OPERATION_ID` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh |
 | `LITE_BASE_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, playwright.config.ts, scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-candidate.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/run-ui-performance-live.sh, scripts/dev/lite/run-ui-performance-qualified.py, scripts/docs/lite/generate_docs.py |

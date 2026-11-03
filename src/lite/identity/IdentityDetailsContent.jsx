@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BookOpenText, LockKeyhole } from 'lucide-react';
+import { ArrowLeft, BookOpenText, LockKeyhole } from 'lucide-react';
 import { LiteButton, StateSurface } from '../LiteUi.jsx';
 import { LiteTechnicalFacts } from '../LiteUx.jsx';
 import { getLiteReasonPresentation } from '../../lib/identityRulesPresentation.js';
@@ -35,6 +35,7 @@ export default function IdentityDetailsContent({ selection, view, onRename, onRe
     explain: 'The access summary reflects reported facts. Historical or unavailable data cannot grant authority.',
   })[kind];
   return <div className="lite-id-details" data-identity-details-kind={kind}>
+    {typeof onOpenManage === 'function' ? <button type="button" className="lite-id-details-back" onClick={onOpenManage}><ArrowLeft size={18} aria-hidden="true" /> Back to Manage Access</button> : null}
     <div className="lite-id-detail-heading"><h2>{title}</h2><span>{status}</span><p>{summary}</p></div>
     <DetailGroup title={explanation ? 'What this means' : 'Reported facts'}>
       <dl className="lite-id-detail-facts">
@@ -60,7 +61,6 @@ export default function IdentityDetailsContent({ selection, view, onRename, onRe
       {kind === 'session' && item.current ? <p>This is your current session. Sign-out controls are in Manage Access.</p> : null}
       {kind === 'person' && typeof item.onChangeRole === 'function' && Array.isArray(item.roleOptions) ? <div className="lite-id-person-role"><label>Role <select value={roleDraft} onChange={(event) => setRoleDraft(event.target.value)} disabled={disabled}>{item.roleOptions.map((role) => <option key={role} value={role}>{role}</option>)}</select></label><Action label="Save role" onClick={() => item.onChangeRole(roleDraft)} disabled={disabled || roleDraft === item.role || !item.roleOptions.includes(roleDraft)} why="Role changes require current server authority." /></div> : null}
       {kind === 'person' && Array.isArray(item.detailActions) ? item.detailActions.map((action) => <Action key={action.label} label={action.label} onClick={action.onClick} disabled={disabled || action.disabled} why={action.reason} />) : null}
-      {kind === 'role' || kind === 'authorization' || kind === 'explain' || kind === 'identity' || kind === 'mode' || kind === 'activity' ? <Action label="Back to Manage Access" onClick={onOpenManage} /> : null}
       {kind === 'session' && item.current ? <Action label="Sign out other sessions" onClick={onSignOutOtherSessions} disabled={disabled} /> : null}
     </DetailGroup>
     <DetailGroup title="What this does not confirm"><p>Saved information, reported membership and previous activity do not establish current authorization. Pocket Lab checks live permission and step-up requirements for every protected change.</p></DetailGroup>

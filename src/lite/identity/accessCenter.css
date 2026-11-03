@@ -1,0 +1,191 @@
+/*
+ * Azure Horizon Access Center.
+ * Appearance values come only from the existing Azure semantic tokens.
+ * All dimensions, insets, typography and responsive rules are theme-independent.
+ */
+html[data-lite-theme] .lite-access-center {
+  --access-gap-sm: .625rem;
+  --access-gap-md: 1rem;
+  --access-gap-lg: 1.5rem;
+  display: grid;
+  gap: var(--access-gap-lg);
+  width: min(100%, 60rem);
+  margin-inline: auto;
+  min-width: 0;
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-access-hero {
+  min-width: 0;
+  padding: var(--azure-spacing-card);
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-card);
+  background: var(--azure-surface);
+  box-shadow: var(--azure-shadow);
+}
+html[data-lite-theme] .lite-access-hero-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(13rem, .72fr);
+  gap: var(--access-gap-lg);
+  align-items: center;
+}
+html[data-lite-theme] .lite-access-person {
+  display: flex;
+  gap: var(--access-gap-md);
+  align-items: flex-start;
+  min-width: 0;
+}
+html[data-lite-theme] .lite-access-person > div:last-child { min-width: 0; }
+html[data-lite-theme] .lite-access-avatar,
+html[data-lite-theme] .lite-access-row-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-accent-subtle);
+  color: var(--azure-accent);
+}
+html[data-lite-theme] .lite-access-avatar { width: 3.5rem; height: 3.5rem; }
+html[data-lite-theme] .lite-access-eyebrow { font-size: .78rem; color: var(--azure-muted); }
+html[data-lite-theme] .lite-access-person h2 { margin: .15rem 0; font-size: clamp(1.25rem, 2vw, 1.6rem); line-height: 1.25; letter-spacing: -.02em; }
+html[data-lite-theme] .lite-access-person p { margin: .15rem 0; font-weight: 550; }
+html[data-lite-theme] .lite-access-person small { display:block; color: var(--azure-muted); line-height: 1.5; }
+html[data-lite-theme] .lite-access-hero-action { display: grid; gap: var(--access-gap-md); min-width: 0; }
+html[data-lite-theme] .lite-access-hero-action .pocket-button { justify-self: end; min-height: 44px; }
+html[data-lite-theme] .lite-access-readiness { display: flex; gap: .7rem; align-items: flex-start; min-width:0; }
+html[data-lite-theme] .lite-access-readiness > svg { flex: 0 0 auto; color: var(--azure-warning); }
+html[data-lite-theme] [data-access-readiness="ready"] .lite-access-readiness > svg { color: var(--azure-success); }
+html[data-lite-theme] [data-access-readiness="saved"] .lite-access-readiness > svg,
+html[data-lite-theme] [data-access-readiness="unavailable"] .lite-access-readiness > svg { color: var(--azure-muted); }
+html[data-lite-theme] .lite-access-readiness strong { font-size: .95rem; }
+html[data-lite-theme] .lite-access-readiness p { font-size: .85rem; line-height: 1.45; margin: .25rem 0 0; color: var(--azure-muted); }
+html[data-lite-theme] .lite-access-section { min-width:0; display:grid; gap: .75rem; }
+html[data-lite-theme] .lite-access-section > h2,
+html[data-lite-theme] .lite-access-section-heading h2 { font-size: 1.08rem; font-weight: 650; line-height: 1.35; margin:0; }
+html[data-lite-theme] .lite-access-section-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; }
+html[data-lite-theme] .lite-access-section-heading button { border:0; background:transparent; color:var(--azure-accent); min-height:44px; padding:.35rem .5rem; cursor:pointer; }
+html[data-lite-theme] .lite-access-settings-card,
+html[data-lite-theme] .lite-access-activity-card { border:1px solid var(--azure-border); border-radius:var(--azure-radius-card); background:var(--azure-surface); padding:0; min-width:0; overflow:hidden; }
+html[data-lite-theme] .lite-access-settings-row,
+html[data-lite-theme] .lite-access-activity-row {
+  display:flex; align-items:center; gap:var(--access-gap-md); width:100%;
+  min-height: 64px; padding: .8rem var(--azure-spacing-card);
+  color:var(--azure-text); background:transparent; border:0; text-align:left;
+  cursor:pointer; font:inherit;
+}
+html[data-lite-theme] .lite-access-settings-row + .lite-access-settings-row { border-top:1px solid var(--azure-border); }
+html[data-lite-theme] .lite-access-settings-row:hover,
+html[data-lite-theme] .lite-access-activity-row:hover { background:var(--azure-hover); }
+html[data-lite-theme] .lite-access-row-icon { width:2.5rem; height:2.5rem; }
+html[data-lite-theme] .lite-access-row-copy,
+html[data-lite-theme] .lite-access-activity-row > span { display:grid; gap:.25rem; flex:1; min-width:0; }
+html[data-lite-theme] .lite-access-row-copy strong,
+html[data-lite-theme] .lite-access-activity-row strong { font-size:.97rem; line-height:1.35; overflow-wrap:anywhere; }
+html[data-lite-theme] .lite-access-row-copy small,
+html[data-lite-theme] .lite-access-activity-row small { font-size:.83rem; color:var(--azure-muted); line-height:1.45; overflow-wrap:anywhere; }
+html[data-lite-theme] .lite-access-settings-row > svg:last-child,
+html[data-lite-theme] .lite-access-activity-row > svg:last-child { margin-left:auto; flex:0 0 auto; color:var(--azure-muted); }
+html[data-lite-theme] .lite-access-activity-empty { display:flex; align-items:center; gap:.75rem; padding:var(--azure-spacing-card); color:var(--azure-muted); }
+html[data-lite-theme] .lite-access-activity-empty p { margin:0; }
+
+/* Manage is an actual index -> section flow in narrow containers, not a tab strip. */
+html[data-lite-theme] .lite-identity-manage-sheet { width:min(96vw, 54rem); }
+html[data-lite-theme] .lite-id-manage { container-type:inline-size; display:block; min-width:0; }
+html[data-lite-theme] .lite-id-native-workspace { min-width:0; }
+html[data-lite-theme] .lite-id-native-index { display:grid; gap:1.2rem; min-width:0; }
+html[data-lite-theme] .lite-id-native-group { min-width:0; }
+html[data-lite-theme] .lite-id-native-group > h2 { margin:0 0 .55rem; color:var(--azure-muted); text-transform:uppercase; letter-spacing:.07em; font-weight:700; font-size:.77rem; }
+/* Access keeps its grouped index model, while reusing Recovery's premium
+   Manage treatment: raised group shell, compact gaps, token borders and the
+   selected-state accent. */
+html[data-lite-theme] .lite-id-native-rows {
+  display:grid; gap:.35rem; overflow:hidden; padding:.35rem;
+  background:var(--azure-raised); border:1px solid var(--azure-border); border-radius:.9rem;
+  box-shadow:none; backdrop-filter:none;
+}
+html[data-lite-theme] .lite-id-native-row {
+  display:flex; align-items:center; gap:.7rem; width:100%; min-height:56px;
+  padding:.65rem .8rem; text-align:left; border:1px solid transparent; border-radius:var(--azure-radius-control); background:transparent;
+  color:var(--azure-text); font:inherit; cursor:pointer;
+}
+html[data-lite-theme] .lite-id-native-row + .lite-id-native-row { border-top-color:transparent; }
+html[data-lite-theme] .lite-id-native-row:hover { background:var(--azure-hover); }
+html[data-lite-theme] .lite-id-native-row[aria-current="page"] {
+  background:var(--azure-selected); border-color:var(--azure-strong-border);
+  box-shadow:inset 0 -3px var(--azure-accent);
+}
+html[data-lite-theme] .lite-id-native-row:hover small,
+html[data-lite-theme] .lite-id-native-row[aria-current="page"] small { color:var(--azure-text); }
+html[data-lite-theme] .lite-id-native-row > svg { flex:0 0 auto; color:var(--azure-accent); }
+html[data-lite-theme] .lite-id-native-row > svg:last-child { margin-left:auto; color:var(--azure-muted); }
+html[data-lite-theme] .lite-id-native-row > span { flex:1; min-width:0; display:grid; gap:.2rem; }
+html[data-lite-theme] .lite-id-native-row strong { font-size:.92rem; font-weight:650; }
+html[data-lite-theme] .lite-id-native-row small { font-size:.78rem; color:var(--azure-muted); line-height:1.4; overflow-wrap:anywhere; }
+html[data-lite-theme] .lite-id-native-row:disabled { cursor:not-allowed; opacity:.58; }
+html[data-lite-theme] .lite-id-native-detail { min-width:0; }
+html[data-lite-theme] .lite-id-native-workspace[data-access-manage-view="index"] .lite-id-native-detail { display:none; }
+html[data-lite-theme] .lite-id-native-workspace[data-access-manage-view="section"] .lite-id-native-index { display:none; }
+html[data-lite-theme] .lite-id-native-back {
+  min-height:44px; display:inline-flex; gap:.5rem; align-items:center;
+  border:0; padding:.5rem; background:transparent; color:var(--azure-accent);
+  font:inherit; cursor:pointer; text-align:left;
+}
+html[data-lite-theme] .lite-id-native-detail-heading { margin:.5rem 0 1rem; }
+html[data-lite-theme] .lite-id-native-detail-heading h2 { font-size:1.15rem; margin:0; }
+html[data-lite-theme] .lite-id-native-detail-heading p { margin:.35rem 0 0; font-size:.86rem; color:var(--azure-muted); }
+html[data-lite-theme] .lite-id-native-detail-content,
+html[data-lite-theme] .lite-id-manage-list { display:grid; gap:.9rem; min-width:0; }
+html[data-lite-theme] .lite-id-manage-list .lite-id-item-row { border-radius:var(--azure-radius-control); }
+html[data-lite-theme] .lite-id-details-back { margin-bottom:.7rem; }
+html[data-lite-theme] .lite-id-native-workspace .lite-id-manage-counts { grid-template-columns:repeat(3,minmax(0,1fr)); }
+html[data-lite-theme] .lite-access-center button:focus-visible,
+html[data-lite-theme] .lite-id-native-workspace button:focus-visible,
+html[data-lite-theme] .lite-id-details-back:focus-visible { outline:3px solid var(--azure-focus); outline-offset:2px; }
+
+@container (min-width: 620px) {
+  html[data-lite-theme] .lite-id-native-workspace { display:grid; grid-template-columns:minmax(12.25rem, .34fr) minmax(0,1fr); gap:1.5rem; align-items:start; }
+  html[data-lite-theme] .lite-id-native-workspace .lite-id-native-index,
+  html[data-lite-theme] .lite-id-native-workspace .lite-id-native-detail { display:block; }
+  html[data-lite-theme] .lite-id-native-workspace[data-access-manage-view="index"] .lite-id-native-detail,
+  html[data-lite-theme] .lite-id-native-workspace[data-access-manage-view="section"] .lite-id-native-index { display:block; }
+  html[data-lite-theme] .lite-id-native-workspace .lite-id-native-index { display:grid; border-right:1px solid var(--azure-border); padding-right:.9rem; }
+  html[data-lite-theme] .lite-id-native-row { padding:.65rem .55rem; }
+  html[data-lite-theme] .lite-id-native-back { display:none; }
+}
+@container (max-width: 619px) {
+  html[data-lite-theme] .lite-id-native-workspace .lite-id-manage-counts { grid-template-columns:1fr; }
+}
+@media (max-width: 700px) {
+  html[data-lite-theme] .lite-access-hero-layout { grid-template-columns:minmax(0,1fr); gap:1rem; }
+  html[data-lite-theme] .lite-access-hero-action { border-top:1px solid var(--azure-border); padding-top:1rem; }
+  html[data-lite-theme] .lite-access-hero-action .pocket-button { width:100%; justify-self:stretch; }
+  html[data-lite-theme] .lite-access-center { gap:1.3rem; }
+  html[data-lite-theme] .lite-access-hero,html[data-lite-theme] .lite-access-settings-row { padding:var(--azure-spacing-card); }
+  html[data-lite-theme] .lite-access-settings-row { min-height:66px; }
+  html[data-lite-theme] .lite-identity-manage-sheet { max-width:100%; }
+}
+@media (max-width: 360px) {
+  html[data-lite-theme] .lite-access-person { gap:.7rem; }
+  html[data-lite-theme] .lite-access-avatar { width:3rem; height:3rem; }
+  html[data-lite-theme] .lite-access-settings-row { gap:.7rem; }
+}
+@media (prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-access-center *,
+  html[data-lite-theme] .lite-id-native-workspace * { transition:none !important; animation:none !important; scroll-behavior:auto !important; }
+}
+
+/* Scope Enterprise density refinement to Access Manage; keep the old governance engine. */
+html[data-lite-theme] .lite-id-native-detail .lite-governance-person {
+  padding: var(--azure-spacing-card);
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-surface);
+}
+html[data-lite-theme] .lite-id-native-detail .lite-governance-people { display:grid; gap:.7rem; }
+html[data-lite-theme] .lite-id-native-detail .lite-governance-card { padding:var(--azure-spacing-card); border-radius:var(--azure-radius-card); }
+html[data-lite-theme] .lite-id-native-detail .lite-governance-matrix { max-width:100%; overflow-x:auto; }
+html[data-lite-theme] .lite-id-manage-list [data-current-session="true"] { background:var(--azure-accent-subtle); border-color:var(--azure-strong-border); }
+html[data-lite-theme] .lite-access-nested-details.is-movable { position:fixed; max-width:none; max-height:none; transform:none; display:flex; flex-direction:column; }
+html[data-lite-theme] .lite-access-nested-details.is-movable .lite-overlay-scroll { flex:1; min-height:0; overflow:auto; }
+html[data-lite-theme] .lite-access-nested-details .lite-overlay-head { display:flex; gap:.55rem; align-items:center; flex-wrap:wrap; }
+html[data-lite-theme] .lite-access-nested-details .lite-overlay-head > div:first-child { flex:1 1 12rem; min-width:0; }
+html[data-lite-theme] .lite-access-nested-details .lite-overlay-scroll { overscroll-behavior:contain; }

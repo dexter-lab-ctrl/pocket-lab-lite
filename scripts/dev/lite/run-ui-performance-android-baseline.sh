@@ -32,7 +32,8 @@ qualification_scope="${LITE_ANDROID_QUALIFICATION_SCOPE:-all}"
 case "$qualification_scope" in
   all) default_expected_interaction_reports=28 ;;
   home) default_expected_interaction_reports=18 ;;
-  *) fail 'LITE_ANDROID_QUALIFICATION_SCOPE must be all or home.' ;;
+  access) default_expected_interaction_reports=15 ;;
+  *) fail 'LITE_ANDROID_QUALIFICATION_SCOPE must be all, home or access.' ;;
 esac
 expected_interaction_reports="${LITE_ANDROID_EXPECTED_INTERACTION_REPORTS:-$default_expected_interaction_reports}"
 if ! [[ "$expected_interaction_reports" =~ ^[0-9]+$ ]] || (( expected_interaction_reports < 1 )); then
@@ -62,12 +63,20 @@ for run_index in $(seq 1 "$repetitions"); do
     mkdir -p .pocketlab-dev/performance
 
     set +e
-    node scripts/dev/lite/qualify-ui-performance-android-cdp.mjs
+    if [[ "$qualification_scope" == access ]]; then
+      node scripts/dev/lite/qualify-ui-performance-android-access.mjs
+    else
+      node scripts/dev/lite/qualify-ui-performance-android-cdp.mjs
+    fi
     qualifier_status=$?
     set -e
 
     shopt -s nullglob
-    evidence_files=(.pocketlab-dev/performance/ui-performance-android-cdp-*.json)
+    if [[ "$qualification_scope" == access ]]; then
+      evidence_files=(.pocketlab-dev/performance/ui-performance-android-access-*.json)
+    else
+      evidence_files=(.pocketlab-dev/performance/ui-performance-android-cdp-*.json)
+    fi
     shopt -u nullglob
     evidence_count="${#evidence_files[@]}"
     if (( evidence_count == expected_interaction_reports )); then

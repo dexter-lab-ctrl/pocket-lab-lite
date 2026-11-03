@@ -16,14 +16,20 @@ command -v node >/dev/null 2>&1 || fail 'node is required; activate the checked-
 
 baseline_mode=0
 home_only=0
+access_only=0
 for argument in "$@"; do
   case "$argument" in
     --baseline) baseline_mode=1 ;;
     --home-only) home_only=1 ;;
+    --access-only) access_only=1 ;;
     '') ;;
     *) fail "unknown argument: $argument" ;;
   esac
 done
+
+if (( access_only == 1 )) && (( home_only == 1 )); then
+  fail '--access-only cannot be combined with --home-only.'
+fi
 
 source_commit="$(git rev-parse HEAD)"
 [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || fail 'the candidate source SHA is not an exact commit.'
@@ -76,6 +82,7 @@ printf '[ui-performance-android-candidate] running physical Android qualificatio
 cdp_args=()
 if (( baseline_mode == 1 )); then cdp_args+=(--baseline); fi
 if (( home_only == 1 )); then cdp_args+=(--home-only); fi
+if (( access_only == 1 )); then cdp_args+=(--access-only); fi
 POCKETLAB_ANDROID_WAKE_BEFORE_QUALIFICATION=1 \
 LITE_BASE_URL='http://127.0.0.1:18765' \
 LITE_PERF_SOURCE_COMMIT="$source_commit" \

@@ -22,12 +22,11 @@ test.describe('Azure Horizon Identity source and access contracts', () => {
       await openIdentity(page, 'identity-summary', theme);
       await expect(page.locator('[data-identity-horizon="account"]')).toBeVisible();
       await expect(page.getByRole('region', { name: 'Access profile' })).toContainText('Personal Mode');
-      await expect(page.getByRole('heading', { name: 'Sign-in methods' })).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'Active sessions' })).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'Recent access activity' })).toBeVisible();
-      await expect(page.locator('.lite-id-journey-steps li')).toHaveCount(4);
-      const cards = page.locator('.lite-id-account-layout > *').filter({ has: page.getByRole('heading', { name: 'Sign-in methods' }) });
-      await expect(cards.first()).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Sign-in & protection' })).toBeVisible();
+      await expect(page.getByRole('button', { name: /Sessions, .*active/i })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Recent activity' })).toBeVisible();
+      await expect(page.locator('.lite-id-journey-steps li')).toHaveCount(0);
+      await expect(page.locator('.lite-access-settings-row')).toHaveCount(3);
     });
     test(`manage and protected dialogs inherit theme — ${theme}`, async ({ page }) => {
       const dialog = await manage(page, 'identity-summary', theme);
@@ -39,7 +38,12 @@ test.describe('Azure Horizon Identity source and access contracts', () => {
       await page.keyboard.press('Escape');
       await expect(confirmation).toHaveCount(0);
       await expect(dialog).toBeVisible();
+      const manageLayout = await dialog.getAttribute('data-lite-identity-manage-layout');
       await page.keyboard.press('Escape');
+      if (manageLayout === 'mobile-sheet') {
+        await expect(dialog.locator('[data-access-manage-view="index"]')).toBeVisible();
+        await page.keyboard.press('Escape');
+      }
       await expect(dialog).toHaveCount(0);
     });
     test(`WCAG AA automated screen and Manage scan — ${theme}`, async ({ page }) => {
@@ -127,7 +131,7 @@ test.describe('Azure Horizon Identity source and access contracts', () => {
   });
   test('Enterprise Admin cannot gain Owner-only person actions through Details', async ({ page }) => {
     const dialog = await manage(page,'identity-enterprise-admin');
-    await dialog.getByRole('button',{name:'People',exact:true}).click();
+    await dialog.getByRole('button',{name:'People & roles',exact:true}).click();
     await dialog.getByRole('button',{name:/Open Details/i}).first().click();
     await expect(page.getByRole('dialog',{name:/Access Details/i})).not.toContainText('Remove person');
   });

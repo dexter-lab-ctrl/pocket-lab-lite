@@ -31062,6 +31062,36 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-access-native-performance.spec.ts",
+      "name": "tests/e2e/lite-access-native-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-access-native-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-access-native-visual.spec.ts",
+      "name": "tests/e2e/lite-access-native-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-access-native-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-access-native.spec.ts",
+      "name": "tests/e2e/lite-access-native.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-access-native.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-accessibility-states.spec.ts",
       "name": "tests/e2e/lite-accessibility-states.spec.ts",
       "source_refs": [
@@ -35164,6 +35194,9 @@
         "test:tests/docs/threat-model-layout.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/global-setup.ts",
+        "test:tests/e2e/lite-access-native-performance.spec.ts",
+        "test:tests/e2e/lite-access-native-visual.spec.ts",
+        "test:tests/e2e/lite-access-native.spec.ts",
         "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
         "test:tests/e2e/lite-apps-azure-final-polish-visual.spec.ts",
@@ -36711,6 +36744,9 @@
         "test:tests/docs/threat-model-layout.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/global-setup.ts",
+        "test:tests/e2e/lite-access-native-performance.spec.ts",
+        "test:tests/e2e/lite-access-native-visual.spec.ts",
+        "test:tests/e2e/lite-access-native.spec.ts",
         "test:tests/e2e/lite-accessibility-states.spec.ts",
         "test:tests/e2e/lite-accessibility.spec.ts",
         "test:tests/e2e/lite-apps-azure-final-polish-visual.spec.ts",
@@ -53587,6 +53623,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-access-native-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-accessibility-states.spec.ts": [
         {
           "source": "component:photoprism",
@@ -69232,6 +69274,10 @@
         },
         {
           "target": "test:tests/docs/test_supply_chain_runner_hardening.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-access-native-visual.spec.ts",
           "type": "verified_by"
         },
         {
@@ -87555,6 +87601,15 @@
       "source": "journey:add-device",
       "target": "component:node-agent",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-access-native-visual.spec.ts"
+      ],
+      "id": "rel:5c4357631d8027a3",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-access-native-visual.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -110810,9 +110865,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "fadf31ecdf856734b5f1c2645402cb2f9813b8a6b18fac8263e8c1d06c417aa1",
+  "source_fingerprint": "2f2f5d4de790a1bf402ce29acff58a027b57accf8f2c86077677159c41e72d7c",
   "statistics": {
-    "entity_count": 1465,
+    "entity_count": 1468,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -110829,14 +110884,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 317,
+      "test": 320,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4109,
-    "source_count": 354
+    "relation_count": 4110,
+    "source_count": 357
   }
 }

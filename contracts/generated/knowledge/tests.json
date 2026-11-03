@@ -2293,6 +2293,36 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-access-native-performance.spec.ts",
+      "name": "tests/e2e/lite-access-native-performance.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-access-native-performance.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-access-native-visual.spec.ts",
+      "name": "tests/e2e/lite-access-native-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-access-native-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-access-native.spec.ts",
+      "name": "tests/e2e/lite-access-native.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-access-native.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-accessibility-states.spec.ts",
       "name": "tests/e2e/lite-accessibility-states.spec.ts",
       "source_refs": [
@@ -3177,6 +3207,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "fadf31ecdf856734b5f1c2645402cb2f9813b8a6b18fac8263e8c1d06c417aa1"
+    "source_fingerprint": "2f2f5d4de790a1bf402ce29acff58a027b57accf8f2c86077677159c41e72d7c"
   }
 }

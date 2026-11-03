@@ -44,7 +44,7 @@ describe('Azure Horizon account facts and Manage authorization posture', () => {
   it('shows unavailable account facts explicitly rather than zero', () => {
     mount();
     expect(screen.getAllByText('Unavailable', { selector: 'dd' }).length).toBeGreaterThan(0);
-    expect(screen.queryByRole('button', { name: 'People' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'People & roles' })).toBeNull();
   });
   it('prevents stale passkey registration and recovery-code generation', () => {
     mount({ fresh: false, section: 'passkeys', data: { passkeys: [] } });
@@ -65,7 +65,7 @@ describe('Azure Horizon account facts and Manage authorization posture', () => {
   });
   it('shows Enterprise navigation only when server projection enables it', () => {
     mount({ enterpriseEnabled: true });
-    expect(screen.getByRole('button', { name: 'People' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'People & roles' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Roles & Access' })).toBeTruthy();
   });
 });

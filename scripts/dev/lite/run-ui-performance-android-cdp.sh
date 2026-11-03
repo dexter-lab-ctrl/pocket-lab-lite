@@ -21,6 +21,7 @@ bridge_port="${POCKETLAB_ANDROID_CDP_BRIDGE_PORT:-19222}"
 local_port="${POCKETLAB_ANDROID_CDP_LOCAL_PORT:-9222}"
 check_only=0
 baseline_mode=0
+access_only=0
 qualification_scope="${LITE_ANDROID_QUALIFICATION_SCOPE:-all}"
 owned_socat_pid=""
 
@@ -29,6 +30,7 @@ for argument in "$@"; do
     --check-only) check_only=1 ;;
     --baseline) baseline_mode=1 ;;
     --home-only) qualification_scope=home ;;
+    --access-only) access_only=1; qualification_scope=access ;;
     '') ;;
     *)
       printf '[ui-performance-android-preflight] ERROR: unknown argument: %s\n' "$argument" >&2
@@ -37,9 +39,9 @@ for argument in "$@"; do
   esac
 done
 case "$qualification_scope" in
-  all|home) ;;
+  all|home|access) ;;
   *)
-    printf '[ui-performance-android-preflight] ERROR: LITE_ANDROID_QUALIFICATION_SCOPE must be all or home.\n' >&2
+    printf '[ui-performance-android-preflight] ERROR: LITE_ANDROID_QUALIFICATION_SCOPE must be all, home or access.\n' >&2
     exit 2
     ;;
 esac
@@ -199,6 +201,14 @@ fi
 if (( baseline_mode == 1 )); then
   printf '[ui-performance-android-preflight] running repeated baseline-normalized Android qualification\n'
   exec bash scripts/dev/lite/run-ui-performance-android-baseline.sh
+fi
+
+if (( access_only == 1 )); then
+  printf '[ui-performance-android-preflight] running physical Android Access-only UI performance qualification\n'
+  rm -rf .pocketlab-dev/performance/ui-performance-android-access-*.json
+  node scripts/dev/lite/qualify-ui-performance-android-access.mjs
+  npm run check:render-budgets
+  exit $?
 fi
 
 printf '[ui-performance-android-preflight] running physical Android %s UI performance qualification\n' "$qualification_scope"
