@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import {
-  Activity, AlertTriangle, ArrowLeft, CheckCircle2, ChevronRight, CircleHelp,
+  Activity, AlertTriangle, ArrowLeft, ChevronRight, CircleHelp,
   FileCheck2, GitCompareArrows, History, ListChecks, ScanLine, Settings2,
   ShieldAlert, ShieldCheck, WifiOff,
 } from 'lucide-react';
@@ -50,7 +50,7 @@ export function SafetyCenterHero({
           </button>
         </div>
       </div>
-      <div className="lite-safety-native-score" aria-label={scoreLabel === null ? 'Safety score not reported' : 'Reported safety score ' + scoreLabel}>
+      <div className="lite-safety-native-score" role="img" aria-label={scoreLabel === null ? 'Safety score not reported' : 'Reported safety score ' + scoreLabel}>
         <span>Reported score</span>
         <strong>{scoreLabel === null ? '—' : scoreLabel}</strong>
         <small>{scoreLabel === null ? 'No score available for this profile' : 'Based on reported check coverage'}</small>
