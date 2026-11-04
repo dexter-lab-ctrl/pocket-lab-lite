@@ -381,6 +381,30 @@ async function gotoSafety() {
   await waitForSafety();
 }
 
+async function setPhysicalAppearance(preference, label) {
+  const control = await firstVisible(page.getByRole('combobox', { name: 'Appearance', exact: true }), 'Appearance control for ' + label);
+  await control.selectOption(preference);
+  const expectedTheme = preference === 'dark' ? 'dark' : preference === 'light' ? 'light' : null;
+  await page.waitForFunction(({ value, expected }) => {
+    const select = document.querySelector('select[aria-label="Appearance"]');
+    const resolved = document.documentElement.dataset.liteTheme || '';
+    return select?.value === value && Boolean(resolved) && (!expected || resolved === expected);
+  }, { value: preference, expected: expectedTheme }, { timeout: 20_000 });
+  await waitForSafety();
+  const geometry = await page.evaluate(() => ({
+    preference: document.querySelector('select[aria-label="Appearance"]')?.value || null,
+    resolvedTheme: document.documentElement.dataset.liteTheme || null,
+    viewportWidth: window.innerWidth,
+    documentWidth: document.documentElement.scrollWidth,
+    bodyWidth: document.body?.scrollWidth || 0,
+  }));
+  if (geometry.documentWidth > geometry.viewportWidth + 2 || geometry.bodyWidth > geometry.viewportWidth + 2) {
+    fail('Safety appearance ' + label + ' introduced horizontal document overflow: ' + JSON.stringify(geometry));
+  }
+  physicalNotes.push('Physical Android appearance ' + label + ': preference=' + geometry.preference + ', resolved=' + geometry.resolvedTheme + ', overflow=none.');
+  return geometry;
+}
+
 async function assertDock(label) {
   const state = await page.evaluate(() => {
     const nav = document.querySelector('.pocket-nav-dock');
@@ -648,6 +672,10 @@ async function main() {
     physicalNotes.push('Explicit anonymous read-only Safety projection; no harness bridge or write-capable authority was used.');
   }
   await gotoSafety();
+  const appearanceControl = await firstVisible(page.getByRole('combobox', { name: 'Appearance', exact: true }), 'initial Appearance control');
+  const observedAppearance = await appearanceControl.inputValue().catch(() => 'system');
+  const originalAppearance = ['system', 'light', 'dark'].includes(observedAppearance) ? observedAppearance : 'system';
+  await setPhysicalAppearance('light', 'Light');
   const hero = page.locator('[data-safety-native-hero="true"]');
   const destinations = page.locator('[data-safety-native-destinations="true"]');
   const manageButton = await firstVisible(page.getByRole('button', { name: 'Manage Security details' }), 'Manage Safety');
@@ -664,6 +692,22 @@ async function main() {
     settleMs: 720,
   });
   await capture('landing');
+
+  await setPhysicalAppearance('dark', 'Dark');
+  await assertDock('Safety dark appearance');
+  await capture('dark-landing');
+  const darkManageButton = await firstVisible(page.getByRole('button', { name: 'Manage Security details' }), 'Manage Safety in dark appearance');
+  await darkManageButton.click();
+  const darkDialog = await firstVisible(page.getByRole('dialog', { name: 'Manage Safety' }), 'dark Manage Safety dialog');
+  await assertDock('Safety dark Manage');
+  await capture('dark-manage-index', darkDialog);
+  await firstVisible(darkDialog.getByRole('button', { name: 'Close security details' }), 'Close dark Manage Safety').then((button) => button.click());
+  await darkDialog.waitFor({ state: 'hidden', timeout: 20_000 });
+
+  await setPhysicalAppearance('system', 'System');
+  await assertDock('Safety System appearance');
+  await capture('system-landing');
+  await setPhysicalAppearance(originalAppearance, 'restored original');
 
   await measure({
     interaction: 'list-scroll',
