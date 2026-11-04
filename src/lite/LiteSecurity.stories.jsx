@@ -16,11 +16,10 @@ async function openManageSection(canvasElement, label = 'Overview') {
   const body = within(canvasElement.ownerDocument.body);
   const dialog = await body.findByRole('dialog', { name: /Manage Safety/i });
   await expect(dialog).toBeInTheDocument();
-  if (label !== 'Overview') {
-    const tab = within(dialog).getByRole('button', { name: new RegExp(`Open ${label} in Manage Safety`, 'i') });
-    await userEvent.click(tab);
-    await expect(tab).toHaveAttribute('aria-current', 'page');
-  }
+  // Select Overview explicitly as well: mobile Manage initially opens its index.
+  const tab = within(dialog).getByRole('button', { name: new RegExp(`Open ${label} in Manage Safety`, 'i') });
+  await userEvent.click(tab);
+  await expect(tab).toHaveAttribute('aria-current', 'page');
   await expect(within(dialog).getByRole('heading', { name: label === 'Checks' ? 'Run Checks' : label === 'Issues' ? 'Issues' : label, level: 2 })).toBeInTheDocument();
 }
 
@@ -257,5 +256,19 @@ export const RefinementExpandedSheet = {
     const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', { name: 'Manage Safety' });
     await userEvent.click(within(dialog).getByRole('button', { name: 'Expand' }));
     await expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'expanded');
+  },
+};
+
+export const RefinementRemediation = {
+  ...createLiteStory('security', 'security-urgent', { theme: 'dark', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    await openManageSection(canvasElement, 'Issues');
+    const body = within(canvasElement.ownerDocument.body);
+    const manage = body.getByRole('dialog', { name: 'Manage Safety' });
+    const action = within(manage).queryAllByRole('button', { name: /Show recommended next step for/i })[0];
+    if (action) {
+      await userEvent.click(action);
+      await expect(body.getByRole('dialog', { name: /Remediation guidance|Recommended/i })).toBeInTheDocument();
+    }
   },
 };
