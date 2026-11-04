@@ -21,7 +21,7 @@ async function openManageSection(canvasElement, label = 'Overview') {
     await userEvent.click(tab);
     await expect(tab).toHaveAttribute('aria-current', 'page');
   }
-  await expect(within(dialog).getByRole('heading', { name: label, level: 3 })).toBeInTheDocument();
+  await expect(within(dialog).getByRole('heading', { name: label === 'Checks' ? 'Run Checks' : label === 'Issues' ? 'Issues' : label, level: 2 })).toBeInTheDocument();
 }
 
 export const QuickCheckHealthy = {
@@ -179,3 +179,83 @@ export const NativeDaylightOffline = createLiteStory('security', 'offline-saved'
 export const NativeDarkFullRunning = createLiteStory('security', 'security-full-running', { theme: 'dark', viewport: 'desktop' });
 export const NativeDaylightAttention = createLiteStory('security', 'security-action-needed', { theme: 'daylight', viewport: 'desktop' });
 export const NativeAppCheck = createLiteStory('security', 'security-app-check-healthy', { theme: 'dark', viewport: 'desktop' });
+
+
+/* R6 — authored visual-hardening stories. No snapshots or play runs were generated. */
+export const RefinementDaylightCoverageMobile = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'daylight', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Coverage'),
+};
+export const RefinementDarkCoverage320 = {
+  ...createLiteStory('security', 'security-scanner-unavailable', { theme: 'dark', viewport: 'mobile320' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Coverage'),
+};
+export const RefinementSystemLightCoverage = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'system', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Coverage'),
+};
+export const RefinementSystemDarkIndex = createLiteStory('security', 'security-quick-healthy', { theme: 'system', viewport: 'mobile320' });
+export const RefinementPartialCoverage = {
+  ...createLiteStory('security', 'security-scanner-unavailable', { theme: 'dark', viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Coverage'),
+};
+export const RefinementFindings = {
+  ...createLiteStory('security', 'security-urgent', { theme: 'daylight', viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Issues'),
+};
+export const RefinementHistory = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'History'),
+};
+export const RefinementTechnical = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'daylight', viewport: 'desktop' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Technical details'),
+};
+export const RefinementRunChecks = {
+  ...createLiteStory('security', 'security-full-running', { theme: 'dark', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Checks'),
+};
+export const RefinementEvidence = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'daylight', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Evidence'),
+};
+export const RefinementSavedOffline = createLiteStory('security', 'offline-saved', { theme: 'dark', viewport: 'mobile320' });
+export const RefinementFirstRun = createLiteStory('security', 'security-first-run', { theme: 'daylight', viewport: 'mobile390' });
+export const RefinementAttention = createLiteStory('security', 'security-action-needed', { theme: 'dark', viewport: 'desktop' });
+export const RefinementExpandedDetail = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    await openManageSection(canvasElement, 'Coverage');
+    const body = within(canvasElement.ownerDocument.body);
+    const dialog = body.getByRole('dialog', { name: 'Manage Safety' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Open Security coverage details' }));
+    await expect(body.getByRole('dialog', { name: /Quick safety coverage/i })).toBeInTheDocument();
+  },
+};
+export const RefinementCompactSheet = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    await openManageSection(canvasElement, 'Coverage');
+    const body = within(canvasElement.ownerDocument.body);
+    const dialog = body.getByRole('dialog', { name: 'Manage Safety' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Compact' }));
+    await expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'compact');
+  },
+};
+export const RefinementMediumSheet = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'daylight', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    await openManageSection(canvasElement, 'Coverage');
+    const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', { name: 'Manage Safety' });
+    await expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'medium');
+  },
+};
+export const RefinementExpandedSheet = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    await openManageSection(canvasElement, 'Coverage');
+    const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', { name: 'Manage Safety' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Expand' }));
+    await expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'expanded');
+  },
+};
