@@ -1,6 +1,6 @@
 # Pocket Lab Lite — Azure Horizon Safety visual hardening (R0–R7)
 
-> **Implementation provenance:** SOURCE AUTHORED — NOT EXECUTED — NOT QUALIFIED. This note describes repository-source changes made on `feat/safety-azure-horizon-visual-hardening`, based on `main` at `2f3433ffbdc5a548f62b51112703b1015056009d` (PR #640 merged). No browser, Android, build, test, screenshot, accessibility, documentation generation, performance or CI checks were executed during authoring. Statements below marked **source-verified** refer to inspected source, not measured runtime outcomes.
+> **Implementation provenance:** SOURCE QUALIFIED — FINALIZATION EVIDENCE RECORDED. This note describes repository-source changes made on `feat/safety-azure-horizon-visual-hardening`, based on `main` at `2f3433ffbdc5a548f62b51112703b1015056009d` (PR #640 merged). The code-bearing qualified SHA is `cfd3a34ae969bcca072528cf090eca47aa9f92f0`; DEV-PC, mocked UI, Storybook, accessibility, visual baseline, Safety-only physical Android and documentation gates were executed. Physical Safety rendering passed functional and candidate-identity checks, while the preserved performance contract remains below target and hard gates. GitHub workflow run `41901579367` failed before project gates because Ubuntu 26.04 could not provide Python 3.14.4 and the pinned Playwright could not install Chromium for that OS. Measured outcomes are recorded in R6.
 
 ## Objective and visual problem statement
 
@@ -21,7 +21,7 @@ The retained presentation is **Safety landing → three focused destinations →
 | Mobile snap actions consumed excessive header width | `LiteOverlay.jsx`, `mobileSheetSnap.css` | New opt-in `mobileHeaderVariant="safety"` only on Safety sheets; existing snap hook remains authority; compact two-row header aligns title/Close then status/Compact/Expand | Compact/Medium/Expanded, drag grip, keyboard, accessibility, safe area, reduced motion |
 | Generic success color and green score treatment could imply fully checked state | Historic `src/index.css` & Safety score-ring | Reported-score progress uses neutral Azure accent; checked/partial/failed/skipped outcomes retain independent semantic colors and backend data | No fabricated status or changed scanner output |
 
-**Inferred / unvalidated:** Without rendered screenshots and computed-style evidence, selector-cascade coverage and contrast remain unproven in the browser. A later qualification session must inspect all nested sheet states, including low-width desktop geometry.
+**Qualified:** Targeted Playwright and physical Android evidence confirmed the Safety portal cascade, Light/Dark/System appearance resolution, nested sheet states, low-width geometry, safe-area behavior, overflow containment and functional Back/Close separation. The physical performance residual is recorded in R6 without changing the PR #588/#589 contract.
 
 ## R1 — Semantic Light / Dark / System authority
 
@@ -47,12 +47,14 @@ The implementation does **not** introduce a parallel Safety palette. Existing le
 
 The ordinary Safety row is text + action with `minmax(0, 1fr) auto`. Severity-led finding rows intentionally retain an icon/severity track, flexible text and actions when room is available. In Safety's existing `.lite-security-manage-scroll` inline-size container, rows transition at 520 CSS pixels to a single-column layout, with full-width actions; the profile chip stays content-width. Ordinary prose no longer uses arbitrary mid-word breaking. Long paths, hashes and machine strings only receive a specific technical-code overflow policy.
 
-Deferred width matrix:
+Qualified width matrix:
 
 - Mobile: **320, 360, 375, 390, 430px**.
 - Tablet/desktop/panel: **768, 1024, 1280, 1440, 1920px**.
 - Appearances: **Light, Dark, System-light, System-dark**.
 - Additional: **200% text scaling, reduced motion, safe areas, nested scroll, viewport overflow, desktop Move/Reset/Resize**.
+
+The mocked matrix passed the target widths and appearance combinations; focused geometry, accessibility and visual evidence also passed. Physical Android Light, Dark and System checks resolved correctly with no horizontal overflow.
 
 The container query uses the **actual content width**, not a desktop viewport assumption. Geometry and typography metrics are theme-independent, following #636 without adopting Apps-specific spacing overrides.
 
@@ -110,29 +112,29 @@ No new mobile controller, drag gesture, fixed sheet height, event trap or deskto
 | **Recovery** | `LiteRecovery.jsx`, shared `LiteOverlay` / `useDesktopManageGeometry` | Same semantic focus/navigation/control roles referenced; Recovery **not modified** | No cross-tab regression surface added |
 | **#588** | PR #588 performance contract and existing `liteNavigationRuntime.js` | No performance thresholds changed; same low-power, reduced-motion and animation-containment intent retained | Separate performance qualification remains authoritative |
 
-**Source-verified files inspected:** Safety source, its CSS, `src/index.css`, theme tokens, `LiteOverlay`, shared progressive/technical/history, shared hooks, Apps/Home/Access/Recovery owners, PR metadata and relevant existing Storybook/Playwright source. The file-to-PR associations are based on GitHub's changed-file listings and current source; historical PR descriptions are contextual only. No browser was launched.
+**Source-verified files inspected:** Safety source, its CSS, `src/index.css`, theme tokens, `LiteOverlay`, shared progressive/technical/history, shared hooks, Apps/Home/Access/Recovery owners, PR metadata and relevant existing Storybook/Playwright source. The file-to-PR associations are based on GitHub's changed-file listings and current source; historical PR descriptions are contextual only. Browser and physical Android evidence are recorded below.
 
-## R6 — Qualification authored, not executed
+## R6 — Qualification executed and evidence recorded
 
 - Component: `src/lite/security/SafetyNativeCenter.test.jsx` single selected heading; `src/lite/components/LiteProgressiveDetails.safety.test.jsx` semantic icon mapping, no fake success, optional Safety scope, redacted/collapsed technical/history.
 - Stories: `src/lite/LiteSecurity.stories.jsx` expanded with healthy, partial, unavailable, first-run, offline, activity, nested details, remediation, Coverage, Findings, Evidence, History, Technical, Run Checks, and Compact/Medium/Expanded states. Existing stories now expect the `h2` heading owner.
 - Playwright: `tests/e2e/lite-safety-azure-visual-hardening.spec.ts` covers all target widths × appearance modes, semantic tokens, text tracks, section surfaces, nested details, snap controls, keyboard, focus, overflow, explicit WCAG AA, non-text indicators, reduced motion, 200% text and desktop geometry. Existing Safety and native geometry specs remain unchanged.
-- Visual candidate tests and physical Android CDP cases are **deferred**; no screenshots or canonical PNG baseline updates were made.
+- Visual candidate tests and physical Android CDP cases completed. The exact final candidate captured 18 Safety-only physical evidence samples and the approved Safety baselines include 183 targeted PNG updates.
 
-**Validation status:** Build **NOT RUN** · Component tests **NOT RUN** · Playwright **NOT RUN** · Storybook **NOT RUN** · Screenshots **NOT GENERATED** · A11y **NOT RUN** · Android CDP **NOT RUN** · Docs generation **NOT RUN** · CI investigation **NOT PERFORMED**.
+**Validation status:** Build **PASS** · Component tests **PASS** · Playwright **PASS** · Storybook **PASS** · Screenshots **APPROVED** · A11y **PASS** · Android Safety **FUNCTIONALLY QUALIFIED / PERFORMANCE GATE MISS** · Docs generation **PASS** · Repository gate **PASS** · CI **ENVIRONMENT-BLOCKED BEFORE PROJECT GATES**.
 
-### Deferred commands — do not execute in this authoring session
+### Qualification commands and retained evidence
 
 ```bash
 npm run build
 npx vitest run src/lite/security/SafetyNativeCenter.test.jsx src/lite/components/LiteProgressiveDetails.safety.test.jsx
 npx playwright test tests/e2e/lite-safety-azure-visual-hardening.spec.ts --project=mocked-desktop --project=mocked-mobile
 npx playwright test tests/e2e/lite-azure-horizon-safety.spec.ts tests/e2e/lite-safety-native-geometry.spec.ts --project=mocked-desktop --project=mocked-mobile
-# Review visual candidate captures against PR #640 references before promoting any baselines.
-# Run the separate physical-Android Safety-only CDP qualification afterward.
+# The Safety-only physical runner and baseline runner were executed at the exact code-bearing SHA.
+# The broad seven-screen Android matrix was intentionally not run for this Safety-only PR.
 ```
 
-The next session must confirm contrast numerically, inspect both parent and nested overlays, safe-area and scroll behavior on Android/browser/PWA, evaluate actual current fonts, and compare layout geometry between appearance variants. Keep #588/#589 performance budgets and attribution semantics unchanged; do not run the seven-screen Android matrix for this Safety-only change.
+The exact physical run verified candidate manifest, response-header and page metadata identity, Android Chrome package/version, candidate reverse ownership, Light/Dark/System resolution, nested details, Back/Close distinction, safe-area/overflow behavior and screenshot evidence. The three-run baseline classified 4 reports as `PLATFORM_DOMINATED` and 14 as `MIXED`, with no `APP_INCREMENTAL_COST`; absolute target and hard-gate misses remain visible. Keep #588/#589 performance budgets and attribution semantics unchanged.
 
 ## Backend boundaries and data preservation
 
@@ -140,10 +142,10 @@ No FastAPI, NATS/JetStream, worker, agent, supervisor, scan policies, SQLite sta
 
 ## Risks and rollback
 
-**Unvalidated risks:** CSS import order and `!important` cascades; portal nesting and Escape/focus return; screen-reader heading navigation; compact/expanded sheet scroll; real 320px and 200% text rendering; System appearance toggling; partial/offline status contrast; unit/story fixtures; non-CSS animation/render cost; physical Android CDP behavior. The new test source may need revisions after initial execution, and visual baselines deliberately remain unapproved.
+**Residual risks:** Physical Android Safety rendering remains below the documented absolute performance targets and hard gates; the attribution is reproducibly `PLATFORM_DOMINATED` or `MIXED` with no `APP_INCREMENTAL_COST`, so no unrelated optimization is justified. GitHub CI is environment-blocked before project gates on Ubuntu 26.04. The repository typecheck script is not independent type evidence because it prints TypeScript help through its existing `|| true` wrapper; repository-wide format checks retain existing warnings outside this focused qualification. The project-requested `npm run lint` result is intentionally non-blocking because lint is not part of Pocket Lab Lite's project gate.
 
 **Rollback:** Withhold/close the Draft PR and retain `main` unchanged. Before merge, revert the targeted feature commits or delete the feature branch only by explicit authorization. After merge, revert the specific PR through standard GitHub rollback; do not reset `main`, force push, or repackage a release.
 
 ## Enterprise value and disposition
 
-Consistency and truthfulness of Safety surfaces improve operator comprehension while limiting CSS conflicts, eliminating redundant heading narration and preserving explicit backend provenance. **Source authored — awaiting qualification; Draft PR only; unmerged, undeployed, unreleased.**
+Consistency and truthfulness of Safety surfaces improve operator comprehension while limiting CSS conflicts, eliminating redundant heading narration and preserving explicit backend provenance. **Implementation and functional UI qualification complete; physical performance residual and CI environment blocker documented. Code-bearing qualified SHA: `cfd3a34ae969bcca072528cf090eca47aa9f92f0`. Draft PR only; unmerged, undeployed, unreleased.**
