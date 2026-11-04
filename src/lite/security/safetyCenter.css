@@ -595,3 +595,66 @@ html[data-lite-theme] .lite-security-manage-layer .lite-security-manage-row-acti
     box-shadow: none;
   }
 }
+
+/* Reported scores are assessments, not blanket success indicators. */
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-score-ring.lite-security-score-ring-green-fill {
+  background: conic-gradient(from -90deg, var(--azure-accent) var(--score, 0%), var(--azure-border) 0) !important;
+  border: 1px solid var(--azure-strong-border) !important;
+  box-shadow: none !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-score-ring.lite-security-score-ring-green-fill::before {
+  display: none !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-score-ring.lite-security-score-ring-green-fill::after {
+  background: var(--azure-surface) !important;
+  box-shadow: none !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-score-ring.lite-security-score-ring-green-fill span {
+  color: var(--azure-text) !important;
+  text-shadow: none !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-profile-switcher-button :is(strong,span) {
+  color: var(--azure-text);
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-profile-switcher-button span {
+  color: var(--azure-muted) !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer :is(.lite-security-full-local-confirm-body,.lite-security-app-check-confirm-body) {
+  color: var(--azure-text) !important;
+  background: var(--azure-surface) !important;
+  border-color: var(--azure-border) !important;
+  box-shadow: none !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer :is(.lite-security-full-local-confirm-body,.lite-security-app-check-confirm-body) p {
+  color: var(--azure-muted) !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer .lite-security-quick-coverage-ready {
+  background: var(--azure-success-subtle) !important;
+  color: var(--azure-success) !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer .lite-security-quick-coverage-review {
+  background: var(--azure-warning-subtle) !important;
+  color: var(--azure-warning) !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer .lite-security-quick-coverage-danger {
+  background: var(--azure-danger-subtle) !important;
+  color: var(--azure-danger) !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer .lite-security-quick-coverage-neutral {
+  background: var(--azure-neutral-subtle) !important;
+  color: var(--azure-neutral) !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer :is(.lite-technical-details,.lite-history-section) {
+  min-width: 0;
+  color: var(--azure-text);
+  background: var(--azure-surface) !important;
+  border-color: var(--azure-border) !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer :is(.lite-progressive-disclosure-toggle,.lite-technical-details-row) {
+  color: var(--azure-text) !important;
+  background: var(--azure-raised) !important;
+  border-color: var(--azure-border) !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer .lite-progressive-disclosure-summary {
+  color: var(--azure-muted) !important;
+}
