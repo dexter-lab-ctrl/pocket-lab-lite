@@ -26,7 +26,7 @@ import {
 import LiteRulesEnterprise from './LiteRulesEnterprise.jsx';
 import LiteHelp from './LiteHelp.jsx';
 import { LiteSheet } from './LiteOverlay.jsx';
-import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
+import { useDesktopManageGeometry, MANAGE_DESKTOP_QUERY } from './components/useDesktopManageGeometry.js';
 import { LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 
@@ -62,6 +62,7 @@ export default function RulesScreen() {
   const [sourceSyncNotice, setSourceSyncNotice] = React.useState(null);
   const [activationStatus, setActivationStatus] = React.useState(null);
   const [activationTracked, setActivationTracked] = React.useState(false);
+  const [activationDetailsOpen, setActivationDetailsOpen] = React.useState(false);
   const pushToast = useLiteUiStore((state) => state.pushToast);
   const enterpriseEnabled = identity.data?.enterprise?.enabled === true;
   const enterpriseMode = identity.data?.enterprise?.enabled;
@@ -76,7 +77,7 @@ export default function RulesScreen() {
   const latestView = rulesDecisionView(latest);
   const templates = Array.isArray(data?.templates) ? data.templates : [];
   const protection = rulesProtectionView(data, { savedStateOnly, backendReachable, isExpired, enterprise: enterpriseMode, activationState });
-  const openManage = (section = 'overview') => { setManageDecision(null); setManageSection(!desktopPanel && section === 'overview' ? null : section); setManageOpen(true); };
+  const openManage = (section = 'overview') => { setManageDecision(null); setManageSection(section === 'overview' && !(typeof window !== 'undefined' && window.matchMedia?.(MANAGE_DESKTOP_QUERY)?.matches) ? null : section); setManageOpen(true); };
   React.useEffect(() => {
     if (manageOpen && manageSection && !desktopPanel) manageTitleRef.current?.focus({ preventScroll: true });
   }, [manageOpen, manageSection, desktopPanel]);
@@ -183,7 +184,7 @@ export default function RulesScreen() {
       });
       pushToast({
         id: `rules-source:${result?.operation?.operation_id || result?.updated_at || 'current'}`,
-        kind: result?.accepted ? 'success' : 'info',
+        kind: 'info', // Accepted is not proof of completed activation.
         title: result?.accepted ? 'Safety Rules update accepted' : 'Safety Rules already current',
         message: result?.summary || 'Pocket Lab accepted the Rules reconciliation request.',
       });
@@ -238,7 +239,7 @@ export default function RulesScreen() {
           {(savedStateOnly || isExpired) && latestView ? <p className="lite-rules-premium-saved">Saved decision — current status not confirmed.</p> : null}
         </GlassCard>
       </div>
-      {showActivationProgress ? <RulesActivationTimeline operation={activationStatus} backendReachable={backendReachable && !savedStateOnly} /> : activationInProgress ? <StateSurface tone="neutral" title="Rules update reported" description="The server reports an update but has not returned a detailed activation phase." /> : null}
+      {showActivationProgress ? <div className="lite-rules-activation-entry"><StateSurface tone="neutral" title="Rules update status" description={`Server-reported phase: ${activationStatus.state || 'Uncertain'}. Completion is not assumed.`} /><LiteButton tone="secondary" onClick={() => setActivationDetailsOpen(true)}>View update progress</LiteButton></div> : activationInProgress ? <StateSurface tone="neutral" title="Rules update reported" description="The server reports an update but has not returned a detailed activation phase." /> : null}
       <LiteSheet variant="rules" open={manageOpen} onClose={() => { setManageOpen(false); setManageDecision(null); }} title="Manage Safety Rules" eyebrow="Protection"
         description={`${protection.label} · ${protectedModeLabel} · ${revisionLabel}`}
         className={`lite-rules-manage-sheet lite-rules-premium-manage ${desktopPanel ? 'is-movable' : ''}`}
@@ -304,6 +305,10 @@ export default function RulesScreen() {
             </div> : null}
           </section>
         </div>
+      </LiteSheet>
+      <LiteSheet variant="rules" mobileSnap open={activationDetailsOpen && showActivationProgress} onClose={() => setActivationDetailsOpen(false)}
+        title="Safety Rules update" eyebrow="Revision & Recovery" description="Only the server can confirm completion or rollback." className="lite-rules-activation-sheet">
+        {showActivationProgress ? <RulesActivationTimeline operation={activationStatus} backendReachable={backendReachable && !savedStateOnly} /> : null}
       </LiteSheet>
       <LiteSheet variant="rules" mobileSnap open={Boolean(insightDecision)} onClose={() => setInsightDecision(null)}
         title="Decision Insight" eyebrow="Safety Rules" description="What the server reported about this protected decision."
