@@ -284,3 +284,15 @@ html[data-lite-theme] .lite-rules-premium-chips span {
 @media (prefers-reduced-motion: reduce) {
   html[data-lite-theme] .lite-rules-native-row { transition: none; }
 }
+
+/* The same responsive behavior applies if a desktop panel is resized narrower
+   than its viewport: the manage workspace becomes a focused one-pane navigator. */
+html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-scroll { container-type: inline-size; }
+@container (max-width: 560px) {
+  .lite-rules-native-workspace { grid-template-columns: minmax(0, 1fr) !important; }
+  .lite-rules-native-workspace[data-rules-manage-view="index"] .lite-rules-native-detail { display: none !important; }
+  .lite-rules-native-workspace[data-rules-manage-view="section"] .lite-rules-premium-nav { display: none !important; }
+  .lite-rules-native-back { display: inline-flex !important; }
+}
+html[data-lite-theme] .lite-rules-activation-entry { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+html[data-lite-theme] .lite-rules-activation-entry > * { min-width: 0; }
