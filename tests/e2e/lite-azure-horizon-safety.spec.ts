@@ -1,9 +1,45 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// DEFINED — NOT EXECUTED. Synthetic MSW states only. Never start a real device scan.
+// Synthetic MSW states only. Never start a real device scan.
 const sections = ['Overview', 'Checks', 'Changes', 'Issues', 'Coverage', 'Check path', 'Evidence', 'History', 'Technical details'];
+
+async function waitForSafetyManageToSettle(dialog: Locator) {
+  let previous = '';
+  let stableSamples = 0;
+  const deadline = Date.now() + 15_000;
+  while (Date.now() < deadline) {
+    const signature = await dialog.evaluate((element) => {
+      const read = (selector: string) => {
+        const node = element.querySelector(selector);
+        if (!(node instanceof HTMLElement)) return null;
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return [
+          Math.round(rect.x), Math.round(rect.y), Math.round(rect.width), Math.round(rect.height),
+          style.opacity, style.transform, style.width, style.height,
+        ].join(':');
+      };
+      return [
+        read('[data-security-phase5-manage-shell="true"]'),
+        read('[data-security-react-spring="manage-scroll-frame"]'),
+        read('[data-security-react-spring="manage-section"]'),
+        read('[data-security-score-fill="spring"]'),
+      ].join('|');
+    });
+    if (signature === previous) {
+      stableSamples += 1;
+      if (stableSamples >= 4) return;
+    } else {
+      previous = signature;
+      stableSamples = 0;
+    }
+    await dialog.page().waitForTimeout(60);
+  }
+  throw new Error('Safety Manage surface did not reach a stable post-transition layout');
+}
+
 async function openSafety(page: Page, scenario = 'security-quick-healthy', theme: 'light' | 'dark' | 'system' = 'dark') {
   await page.addInitScript((value) => localStorage.setItem('pocketlab:appearance', value), theme);
   await installScenario(page, scenario);
@@ -15,6 +51,7 @@ async function openManage(page: Page, scenario = 'security-quick-healthy', theme
   await page.getByRole('button', { name: 'Manage Security details' }).click();
   const dialog = page.getByRole('dialog', { name: 'Manage Safety' });
   await expect(dialog).toBeVisible();
+  await waitForSafetyManageToSettle(dialog);
   return dialog;
 }
 async function assertNoPageOverflow(page: Page) {
@@ -45,6 +82,7 @@ test.describe('Azure Horizon Safety P0–P3 semantic and interaction contract', 
         await row.click();
         await expect(row).toHaveAttribute('aria-current', 'page');
         await expect(dialog.getByRole('region', { name: label })).toBeVisible();
+        await waitForSafetyManageToSettle(dialog);
         await expect(dialog.locator('.lite-security-manage-scroll')).toHaveJSProperty('scrollTop', 0);
       }
       const back = dialog.getByRole('button', { name: 'Back to Manage Safety' });
@@ -66,8 +104,10 @@ test.describe('Azure Horizon Safety P0–P3 semantic and interaction contract', 
       await audit();
       const dialog = page.getByRole('dialog', { name: 'Manage Safety' });
       await page.getByRole('button', { name: 'Manage Security details' }).click();
+      await waitForSafetyManageToSettle(dialog);
       await audit();
       await dialog.getByRole('button', { name: 'Open Coverage in Manage Safety' }).click();
+      await waitForSafetyManageToSettle(dialog);
       await audit();
     });
   }
@@ -119,6 +159,7 @@ test.describe('Azure Horizon Safety P0–P3 semantic and interaction contract', 
   test('dark Manage Safety keeps Azure surfaces and removes legacy green haze', async ({ page }) => {
     const dialog = await openManage(page, 'security-quick-healthy', 'dark');
     await dialog.getByRole('button', { name: 'Open Checks in Manage Safety' }).click();
+    await waitForSafetyManageToSettle(dialog);
     const styles = await dialog.evaluate((element) => {
       const read = (selector: string) => {
         const node = element.matches(selector) ? element : element.querySelector(selector);

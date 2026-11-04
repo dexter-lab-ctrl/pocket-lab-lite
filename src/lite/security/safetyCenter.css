@@ -613,6 +613,15 @@ html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-manage-lay
   color: var(--azure-text) !important;
   text-shadow: none !important;
 }
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-score-ring.lite-security-score-ring-green-fill {
+  width: 60px !important;
+  height: 60px !important;
+  flex: 0 0 60px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  border-radius: 999px;
+}
 html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-manage-layer .lite-security-profile-switcher-button :is(strong,span) {
   color: var(--azure-text);
 }
