@@ -163,6 +163,8 @@ test.describe('Azure Horizon native Rules Center: visual/semantic contract (AUTH
     const dialog = await openManage(page);
     await dialog.getByRole('button', { name: 'Policy Settings' }).click();
     await expect(dialog.getByRole('button', { name: 'Create Rules candidate' })).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: 'Test a Change' })).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: 'Temporary Access' })).toHaveCount(0);
     await dialog.getByRole('button', { name: 'Governance' }).click();
     expect(submitted).toEqual([]);
   });
