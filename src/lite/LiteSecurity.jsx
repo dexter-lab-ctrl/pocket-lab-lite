@@ -3302,7 +3302,7 @@ export default function SecurityScreen() {
             <div className="lite-security-manage-card-list lite-security-quick-coverage-card" data-security-progressive-details-summary-first="coverage">
               <div className="lite-security-manage-row">
                 <div>
-                  <strong>{scanProfile === 'app' ? `${coverageSummary.app_label || 'PhotoPrism'} App Check coverage` : scanProfile === 'full' ? 'Full Local Check coverage' : 'Quick safety check coverage'}</strong>
+                  <h3 className="lite-safety-native-content-heading">{scanProfile === 'app' ? `${coverageSummary.app_label || 'PhotoPrism'} App Check coverage` : scanProfile === 'full' ? 'Full Local Check coverage' : 'Quick safety coverage'}</h3>
                   <p>{scanProfile === 'app' ? 'Compact coverage summary is shown here. Full App Check coverage loads only after you open details.' : scanProfile === 'full' ? 'Compact coverage summary is shown here. Full Local Check rows load only after you open details.' : 'Compact coverage summary is shown here. Quick Safety Check rows load only after you open details.'}</p>
                 </div>
                 <span className="lite-security-quick-profile-chip">Profile: {activeProfileMeta.chip}</span>
