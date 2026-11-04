@@ -1910,6 +1910,7 @@ const SECURITY_PROGRESSIVE_DETAILS_PATCH_D_GUARDS = [
   'SECURITY_PROGRESSIVE_DETAILS_PATCH_D',
   'securityDetailNeedsHeavyModel',
   'details panels hydrate only after user opens them',
+  'Target rows, skipped groups, and optional missing targets mount only inside the focused details panel.',
   'data-security-progressive-details-hydrated',
   'lite-security-execution-${securityExecutionStateTone(step.state)}',
 ];

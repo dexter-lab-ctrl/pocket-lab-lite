@@ -31,6 +31,7 @@ void SECURITY_PROGRESSIVE_DETAILS_PATCH_E_GUARDS;
 const SECURITY_PROGRESSIVE_DETAILS_PATCH_D_GUARDS = [
   'SECURITY_PROGRESSIVE_DETAILS_PATCH_D',
   'detailsHydration',
+  'Technical details stay collapsed',
   'coverage rows mount only inside focused details',
   'history rows mount only inside focused details',
 ];
