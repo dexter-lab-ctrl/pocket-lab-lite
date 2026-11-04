@@ -2,25 +2,45 @@ import { getLiteReasonPresentation, getLiteRulesActionLabel } from '../../lib/id
 
 // Deliberately accept only server-provided, display-safe facts. Unknown != blocked.
 const words = (value) => typeof value === 'string' && value.trim() ? value.trim() : '';
-export function rulesProtectionView(policy, { savedStateOnly = false, backendReachable = true, isExpired = false, enterprise = null } = {}) {
+export function rulesProtectionView(policy, { savedStateOnly = false, backendReachable = true, isExpired = false, enterprise = null, activationState = '' } = {}) {
   const current = Boolean(policy && backendReachable && !savedStateOnly && !isExpired);
-  const confirmed = current && policy.status === 'ready' && policy.engine?.healthy === true
-    && policy.engine?.loopback_only === true && !policy.active_policy?.activation_in_progress
-    && !policy.active_policy?.source_update_required;
+  const operation = words(activationState).toLowerCase();
+  const revisionReady = policy?.active_policy?.bundle_ready === true;
+  const updateRequired = policy?.active_policy?.source_update_required === true;
+  const activationRunning = policy?.active_policy?.activation_in_progress === true || policy?.degraded_reason === 'policy_activation_pending'
+    || ['pending', 'validating', 'switching', 'restarting', 'verifying'].includes(operation);
+  const confirmed = current && !activationRunning && !updateRequired && !operation.startsWith('rolling')
+    && policy.status === 'ready' && policy.engine?.healthy === true
+    && policy.engine?.loopback_only === true && revisionReady;
   const saved = Boolean(savedStateOnly || isExpired || (!backendReachable && policy));
-  const state = saved ? (isExpired ? 'stale' : 'saved') : !policy || !backendReachable ? 'unavailable' : confirmed ? 'ready' : 'degraded';
+  // State priority is deliberate: cached or unreachable reads can never assert current protection.
+  const state = saved ? (isExpired ? 'stale' : 'saved')
+    : !current ? 'unavailable'
+    : operation === 'rolling_back' ? 'rollback'
+    : operation === 'rolled_back' ? 'rolled_back'
+    : ['failed', 'not_completed'].includes(operation) ? 'activation_failed'
+    : operation === 'uncertain' ? 'uncertain'
+    : activationRunning ? 'activating'
+    : updateRequired ? 'update_required'
+    : confirmed ? 'ready'
+    : !revisionReady ? 'revision_unverified' : 'degraded';
   const presentation = {
-    ready: ['Ready', 'Your important actions are protected.', 'Pocket Lab checks whether sensitive changes are permitted before they can continue.', 'healthy'],
-    degraded: ['Needs attention', 'Protection needs attention.', 'Current Rules protection could not be fully confirmed. Sensitive changes remain subject to server safeguards.', 'degraded'],
-    stale: ['Stale information', 'Protection is not confirmed.', 'Saved Rules information may be out of date. Current authorization requires a reachable server.', 'neutral'],
-    saved: ['Saved information', 'Live protection is not confirmed.', 'You are viewing saved information. Sensitive changes require current server verification.', 'neutral'],
-    unavailable: ['Unavailable', 'Protection status is unavailable.', 'Pocket Lab cannot currently confirm its protection state.', 'degraded'],
+    ready: ['Protected', 'Important changes are protected', 'Pocket Lab checks sensitive actions before allowing them. Protection is managed locally.', 'healthy'],
+    degraded: ['Needs attention', 'Protection needs attention', 'The server could not fully confirm current protection. Sensitive changes still require server authorization.', 'degraded'],
+    revision_unverified: ['Revision unverified', 'Rules revision not verified', 'Pocket Lab has not confirmed the current Rules bundle. Do not rely on saved or assumed protection.', 'neutral'],
+    update_required: ['Update required', 'Safety Rules need an update', 'Current protection remains controlled by the server until a new revision is verified.', 'degraded'],
+    activating: ['Updating', 'Safety Rules update in progress', 'Pocket Lab is checking and applying a Rules revision. Completion has not been confirmed.', 'neutral'],
+    activation_failed: ['Update failed', 'Safety Rules update did not finish', 'Pocket Lab reported an unsuccessful update. Review the reported status before trying again.', 'degraded'],
+    rollback: ['Rolling back', 'Safety Rules rollback in progress', 'The server is restoring protection. The final outcome has not been confirmed.', 'neutral'],
+    rolled_back: ['Rolled back', 'Previous Rules restored', 'The server reported a rollback. Review the resulting protection and revision status.', 'neutral'],
+    uncertain: ['Status uncertain', 'Rules update status is uncertain', 'Pocket Lab has not confirmed a final activation or rollback outcome.', 'neutral'],
+    stale: ['Stale information', 'Protection is not confirmed', 'Saved Rules information may be out of date. Current authorization requires a reachable server.', 'neutral'],
+    saved: ['Saved information', 'Live protection is not confirmed', 'You are viewing saved information. Sensitive changes require current server verification.', 'neutral'],
+    unavailable: ['Unavailable', 'Protection status is unavailable', 'Pocket Lab cannot currently confirm its protection state.', 'degraded'],
   }[state];
   return { state, label: presentation[0], headline: presentation[1], summary: presentation[2], tone: presentation[3],
     mode: enterprise === true ? 'Enterprise Mode' : enterprise === false ? 'Personal Mode' : 'Workspace mode unavailable',
-    updateAttention: Boolean(policy?.active_policy?.source_update_required),
-    revisionCurrent: confirmed && policy?.active_policy?.bundle_ready === true,
-    canWrite: current };
+    updateAttention: updateRequired, revisionCurrent: confirmed, canWrite: current };
 }
 
 export function rulesDecisionView(record, { simulated = false } = {}) {
