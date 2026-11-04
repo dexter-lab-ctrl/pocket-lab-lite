@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, ArrowRightCircle, FileCheck2, GitCompareArrows, Info, ShieldCheck } from 'lucide-react';
 import LiteTechnicalDetails from './LiteTechnicalDetails.jsx';
 import LiteHistorySection from './LiteHistorySection.jsx';
 import { friendlyLiteText } from '../../lib/liteUxPresentation.js';
@@ -31,12 +32,22 @@ function safeSavedSummary(saved) {
   return 'Troubleshooting records stay protected.';
 }
 
-function DetailListSection({ title, items, tone = '' }) {
+const SAFETY_DETAIL_ICONS = {
+  'What happened': Info,
+  'What changed': GitCompareArrows,
+  'What needs attention': AlertTriangle,
+  'What did not happen': ShieldCheck,
+  'What would happen after confirmation': Info,
+  'What will not happen by default': ShieldCheck,
+};
+
+function DetailListSection({ title, items, tone = '', presentation = 'default' }) {
   const safeItems = toList(items);
   if (!safeItems.length) return null;
+  const Icon = presentation === 'safety' ? SAFETY_DETAIL_ICONS[title] : null;
   return (
     <section className={`lite-progressive-detail-section lite-app-action-detail-section ${tone ? `is-${tone} lite-app-action-detail-section--${tone}` : ''}`.trim()}>
-      <strong>{title}</strong>
+      <strong className={Icon ? 'lite-safety-detail-title' : undefined}>{Icon ? <span className="lite-safety-detail-icon" aria-hidden="true"><Icon size={18} strokeWidth={1.9} /></span> : null}{title}</strong>
       {safeItems.map((item) => <p key={item}>{item}</p>)}
     </section>
   );
@@ -58,6 +69,7 @@ export default function LiteProgressiveDetails({
   technicalDetails = [],
   history = null,
   sectionRenderMode = PROGRESSIVE_DETAILS_DEFAULT_RENDER_MODE,
+  presentation = 'default',
   children,
 }) {
   const savedSummary = safeSavedSummary(saved_for_troubleshooting);
@@ -68,7 +80,7 @@ export default function LiteProgressiveDetails({
     const addListSection = (key, sectionTitle, items, tone = '') => {
       const safeItems = toList(items);
       if (!safeItems.length) return;
-      sections.push(<DetailListSection key={key} title={sectionTitle} items={safeItems} tone={tone} />);
+      sections.push(<DetailListSection key={key} title={sectionTitle} items={safeItems} tone={tone} presentation={presentation} />);
     };
 
     addListSection('what-happened', 'What happened', what_happened);
@@ -79,14 +91,14 @@ export default function LiteProgressiveDetails({
     addListSection('what-will-not-happen', 'What will not happen by default', what_will_not_happen_by_default);
     sections.push(
       <section key="saved" className="lite-progressive-detail-section lite-app-action-detail-section lite-app-action-detail-section--saved is-saved">
-        <strong>Saved for troubleshooting</strong>
+        <strong className={presentation === 'safety' ? 'lite-safety-detail-title' : undefined}>{presentation === 'safety' ? <span className="lite-safety-detail-icon" aria-hidden="true"><FileCheck2 size={18} strokeWidth={1.9} /></span> : null}Saved for troubleshooting</strong>
         <p>{savedSummary}</p>
       </section>,
     );
     if (safeNextStep) {
       sections.push(
         <section key="next-step" className="lite-progressive-detail-section lite-app-action-detail-section is-next-step">
-          <strong>Next step</strong>
+          <strong className={presentation === 'safety' ? 'lite-safety-detail-title' : undefined}>{presentation === 'safety' ? <span className="lite-safety-detail-icon" aria-hidden="true"><ArrowRightCircle size={18} strokeWidth={1.9} /></span> : null}Next step</strong>
           <p>{safeNextStep}</p>
         </section>,
       );
@@ -97,6 +109,7 @@ export default function LiteProgressiveDetails({
     children,
     safeNextStep,
     savedSummary,
+    presentation,
     what_changed,
     what_did_not_happen,
     what_happened,
@@ -135,10 +148,9 @@ export default function LiteProgressiveDetails({
   }, [cssContained, detailSections.length, initialSectionCount]);
 
   return (
-    <article className={`lite-progressive-details is-${status || 'neutral'}`} data-lite-progressive-render={cssContained ? 'css-contained' : 'raf-batched'}>
+    <article className={`lite-progressive-details is-${status || 'neutral'}`} data-lite-progressive-render={cssContained ? 'css-contained' : 'raf-batched'} data-lite-detail-presentation={presentation}>
       <div className="lite-progressive-details-summary">
-        <span>Details</span>
-        <h3>{friendlyLiteText(title, 'Details')}</h3>
+        {presentation !== 'safety' ? <><span>Details</span><h3>{friendlyLiteText(title, 'Details')}</h3></> : null}
         <p>{friendlyLiteText(summary, 'Details are available.')}</p>
         {statusLabel ? <strong className="lite-progressive-details-status">{friendlyLiteText(statusLabel)}</strong> : null}
       </div>
