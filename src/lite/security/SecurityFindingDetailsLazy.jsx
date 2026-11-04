@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
-import { X } from 'lucide-react';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 
@@ -130,7 +129,7 @@ function technicalRows(finding = {}, context = {}) {
   ].filter((row) => row.value);
 }
 
-export default function SecurityFindingDetailsLazy({ finding, context = {}, onClose }) {
+export default function SecurityFindingDetailsLazy({ finding, context = {} }) {
   if (!finding) return null;
   const title = findingTitle(finding);
   const severity = severityLabel(finding?.severity);
@@ -163,20 +162,10 @@ export default function SecurityFindingDetailsLazy({ finding, context = {}, onCl
       data-security-react-spring="finding-details-panel"
       style={securityFindingMotionReduced ? undefined : findingPanelSpring}
     >
-      <div className="lite-security-finding-details-head lite-security-finding-premium-head">
-        <div>
-          <span>Finding details</span>
-          <h3>{title}</h3>
-          <p>{recommendation}</p>
-        </div>
-        <button type="button" className="lite-finding-detail-close" onClick={onClose} aria-label="Close finding details">
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-
       <FindingContent className="lite-security-finding-premium-content" data-security-react-spring="finding-details-content" style={securityFindingMotionReduced ? undefined : findingContentSpring}>
       <LiteProgressiveDetails
         sectionRenderMode="css-contained"
+        presentation="safety"
         title={title}
         status={tone}
         statusLabel={`Severity: ${severity}`}
