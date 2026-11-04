@@ -159,8 +159,8 @@ export default function LiteProgressiveDetails({
         {detailSections.slice(0, visibleSectionCount)}
       </div>
 
-      <LiteTechnicalDetails rows={technicalDetails} />
-      <LiteHistorySection {...historyProps} />
+      <LiteTechnicalDetails rows={technicalDetails} presentation={presentation} />
+      <LiteHistorySection {...historyProps} presentation={presentation} />
     </article>
   );
 }
