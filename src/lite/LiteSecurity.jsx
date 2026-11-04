@@ -4,6 +4,10 @@ import { animated, useSpring } from '@react-spring/web';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Activity,
+  AlertTriangle,
+  ArrowRightCircle,
+  Info,
+  CircleHelp,
   Copy,
   Database,
   Download,
@@ -1469,19 +1473,19 @@ function SecurityRemediationDrawer({ finding, context, onClose, mobileSnap = fal
           </div>
           <div className="lite-security-remediation-sections">
             <section>
-              <h3>What happened</h3>
+              <h3 className="lite-safety-detail-title"><span className="lite-safety-detail-icon" aria-hidden="true"><Info size={18} strokeWidth={1.9} /></span>What happened</h3>
               <p>{remediation.happened}</p>
             </section>
             <section>
-              <h3>What it means</h3>
+              <h3 className="lite-safety-detail-title"><span className="lite-safety-detail-icon" aria-hidden="true"><CircleHelp size={18} strokeWidth={1.9} /></span>What it means</h3>
               <p>{remediation.means}</p>
             </section>
             <section>
-              <h3>Recommended action</h3>
+              <h3 className="lite-safety-detail-title"><span className="lite-safety-detail-icon" aria-hidden="true"><ArrowRightCircle size={18} strokeWidth={1.9} /></span>Recommended action</h3>
               <p>{remediation.recommended}</p>
             </section>
             <section>
-              <h3>Risk</h3>
+              <h3 className="lite-safety-detail-title"><span className="lite-safety-detail-icon" aria-hidden="true"><AlertTriangle size={18} strokeWidth={1.9} /></span>Risk</h3>
               <p>{remediation.risk}</p>
             </section>
           </div>
