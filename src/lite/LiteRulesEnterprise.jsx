@@ -299,7 +299,7 @@ export default function LiteRulesEnterprise({ role: roleProp = '', access: initi
   const activeOperation = activation || (health.data?.activation_operation_state ? { state: health.data.activation_operation_state } : null);
 
   return (
-    <section className="lite-rules-enterprise lite-governance-section" aria-labelledby="enterprise-rules-heading">
+    <section className="lite-rules-enterprise lite-governance-section" aria-labelledby={!embedded ? "enterprise-rules-heading" : undefined} aria-label={embedded ? "Enterprise Safety Rules" : undefined}>
       {!embedded ? <div className="lite-rules-enterprise-head">
         <div><span>Enterprise Mode</span><h2 id="enterprise-rules-heading">Rules governance</h2><p>Protection, policy changes, requests and evidence all use the same server-resolved {resolvedRole || 'Enterprise'} authority shown in Identity & Access.</p></div>
         <div className="lite-governance-inline-actions"><StatusBadge status={rulesReady ? 'healthy' : 'degraded'}>{rulesReady ? 'Rules ready' : 'Needs attention'}</StatusBadge><LiteHelp helpKey="rules.protection" /></div>
