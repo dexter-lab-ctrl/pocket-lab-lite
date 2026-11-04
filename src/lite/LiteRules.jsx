@@ -116,8 +116,10 @@ export default function RulesScreen() {
     ] },
     { heading: 'Advanced', items: [
       ...(enterpriseEnabled ? [
-        ['simulate', 'Test a Change', FlaskConical], ['requests', 'Requests & Approvals', UserCheck],
-        ['exceptions', 'Temporary Access', TimerReset], ['governance', 'Governance', ShieldCheck],
+        ...(['Owner', 'Admin', 'Auditor'].includes(role) ? [['simulate', 'Test a Change', FlaskConical]] : []),
+        ['requests', 'Requests & Approvals', UserCheck],
+        ...(['Owner', 'Admin', 'Auditor'].includes(role) ? [['exceptions', 'Temporary Access', TimerReset]] : []),
+        ['governance', 'Governance', ShieldCheck],
       ] : []),
       ['technical', 'Technical Status', Settings2],
     ] },
