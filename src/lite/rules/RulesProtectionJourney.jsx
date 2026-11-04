@@ -20,7 +20,7 @@ export default function RulesProtectionJourney({ mode = 'understand', decision =
     : inspection && selected === 'outcome' ? 'The policy decision is recorded. Execution outcome is only shown when separately reported.'
     : null;
   return <GlassCard className="lite-rules-premium-journey" data-rules-journey-mode={inspection ? 'inspect' : 'understand'}>
-    <header><span className="lite-rules-eyebrow">Protection Journey</span><h2>How Pocket Lab protects a change</h2><p>{inspection ? 'Verified decision facts only; other stages describe the Rules process, not a reconstructed trace.' : 'Illustrative guide — not a live authorization or execution trace.'}</p></header>
+    <header><span className="lite-rules-eyebrow">Illustrative process</span><h2>How protection works</h2><p>{inspection ? 'Verified decision facts only; other stages describe the Rules process, not a reconstructed trace.' : 'Illustrative guide — not a live authorization or execution trace.'}</p></header>
     <ol className="lite-rules-journey-track" aria-label="Protection Journey stages">
       {STAGES.map(({ id, label, short, Icon }, index) => <li key={id}>
         <button type="button" className={selected === id ? 'is-selected' : ''} aria-expanded={selected === id} aria-controls={detailId} aria-label={`${short} ${label}: ${STAGES[index].detail}`} onClick={() => setSelected((value) => value === id ? null : id)}>
