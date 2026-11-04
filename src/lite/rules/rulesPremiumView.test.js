@@ -40,7 +40,9 @@ describe('Premium Rules source-backed selectors', () => {
   it('models reported rollback/uncertain states without synthesized completion', () => {
     expect(rulesActivationView({ state: 'rolling_back' }).recovery).toBe(true);
     expect(rulesActivationView({ state: 'uncertain' }).steps.every(x => x.state === 'unconfirmed')).toBe(true);
-    expect(rulesActivationView({ state: 'active' }).steps.every(x => x.state === 'completed')).toBe(true);
+    expect(rulesActivationView({ state: 'active' }).steps.filter(x => x.state === 'current')).toHaveLength(1);
+    expect(rulesActivationView({ state: 'verifying' }).steps.filter(x => x.state === 'current')).toHaveLength(1);
+    expect(rulesActivationView({ state: 'verifying' }).steps.every(x => x.state !== 'completed')).toBe(true);
     expect(rulesActivationView(null).steps.every(x => x.state === 'unconfirmed')).toBe(true);
   });
 });
