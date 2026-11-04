@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 520,
+  "page_count": 521,
   "page_types": [
     "overview",
     "guide",
@@ -5304,6 +5304,29 @@
       "source_or_generator": "development/lite-p4-regression-qualification-coverage.md",
       "title": "P4 — Production regression and qualification coverage",
       "url": "/development/lite-p4-regression-qualification-coverage/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-safety-azure-horizon-visual-hardening.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:development/lite-safety-azure-horizon-visual-hardening",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-safety-azure-horizon-visual-hardening.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-safety-azure-horizon-visual-hardening.md",
+      "title": "Pocket Lab Lite — Azure Horizon Safety visual hardening (R0–R7)",
+      "url": "/development/lite-safety-azure-horizon-visual-hardening/"
     },
     {
       "additional_audiences": [],
@@ -18321,7 +18344,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "1cef3e18bcfb013c344b69178b7f5acf69f274bfd0608d02395cfa49b5b15929",
+  "source_fingerprint": "037361be1589834619c5acfa9bd9a5b9b0719017def17c631eaf1a5182ea93dd",
   "top_level": [
     "start-here",
     "use",
