@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   isolated-devpc-qualification:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
@@ -75,7 +75,7 @@ jobs:
     # than after docs generation, Storybook and mocked browser integration.
     # PR #590 explicitly excludes the PR #588/#589 60 FPS qualification.
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.number != 590 }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
       PUPPETEER_SKIP_DOWNLOAD: '1'
@@ -104,7 +104,7 @@ jobs:
           retention-days: 14
 
   quick-and-docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
       PUPPETEER_SKIP_DOWNLOAD: '1'

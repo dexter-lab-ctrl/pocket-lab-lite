@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: f6af2234de206ee7b44c4b3d0fa8b013444b7f660059b351c576787653ad4499
+source_fingerprint: c885883b89354506cbbbed2d02f6803ef37eb0e19fe71c7f15e43a90f2418ec7
 schema_revision: 1
 validation_status: generated
 ---
@@ -222,5 +222,9 @@ validation_status: generated
 | `pocket-lab-lite-security-nativedarkfullrunning` | security | `security-full-running` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-nativedarkfullrunning-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-nativedaylightattention` | security | `security-action-needed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-nativedaylightattention-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-nativeappcheck` | security | `security-app-check-healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-nativeappcheck-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-refinementsystemdarkindex` | security | `security-quick-healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-refinementsystemdarkindex-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-refinementsavedoffline` | security | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-refinementsavedoffline-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-refinementfirstrun` | security | `security-first-run` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-refinementfirstrun-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-security-refinementattention` | security | `security-action-needed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-refinementattention-{viewport}.png` | fixture-dependent |
 
 Screenshot files are produced by the existing WSL2-aware external Chrome resolver. A missing screenshot is not reported as PASS.

@@ -4,6 +4,10 @@ import { animated, useSpring } from '@react-spring/web';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Activity,
+  AlertTriangle,
+  ArrowRightCircle,
+  Info,
+  CircleHelp,
   Copy,
   Database,
   Download,
@@ -565,7 +569,7 @@ const SECURITY_MANAGE_SECTION_DESCRIPTIONS = {
   checks: 'Choose a check and open coverage, path, evidence, or technical detail only when needed.',
   changes: 'New, resolved, and still-present safety changes.',
   issues: 'Compact review rows with focused finding details.',
-  coverage: 'Completed, partial, timed-out, skipped and unavailable checks.',
+  coverage: 'Review completed, partial, skipped and unavailable checks.',
   check_path: 'Backend-reported execution steps and tool outcomes.',
   evidence: 'Sanitized records and check receipts.',
   history: 'Recent profile-matched results, loaded on demand.',
@@ -1455,6 +1459,7 @@ function SecurityRemediationDrawer({ finding, context, onClose, mobileSnap = fal
       closeClassName="lite-security-phase3-close"
       gripClassName="lite-security-phase3-grip"
       variant="security"
+      mobileHeaderVariant="safety"
       mobileSnap={mobileSnap}
       motion="safe-grip"
       surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-remediation-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'remediation' }}
@@ -1468,19 +1473,19 @@ function SecurityRemediationDrawer({ finding, context, onClose, mobileSnap = fal
           </div>
           <div className="lite-security-remediation-sections">
             <section>
-              <h3>What happened</h3>
+              <h3 className="lite-safety-detail-title"><span className="lite-safety-detail-icon" aria-hidden="true"><Info size={18} strokeWidth={1.9} /></span>What happened</h3>
               <p>{remediation.happened}</p>
             </section>
             <section>
-              <h3>What it means</h3>
+              <h3 className="lite-safety-detail-title"><span className="lite-safety-detail-icon" aria-hidden="true"><CircleHelp size={18} strokeWidth={1.9} /></span>What it means</h3>
               <p>{remediation.means}</p>
             </section>
             <section>
-              <h3>Recommended action</h3>
+              <h3 className="lite-safety-detail-title"><span className="lite-safety-detail-icon" aria-hidden="true"><ArrowRightCircle size={18} strokeWidth={1.9} /></span>Recommended action</h3>
               <p>{remediation.recommended}</p>
             </section>
             <section>
-              <h3>Risk</h3>
+              <h3 className="lite-safety-detail-title"><span className="lite-safety-detail-icon" aria-hidden="true"><AlertTriangle size={18} strokeWidth={1.9} /></span>Risk</h3>
               <p>{remediation.risk}</p>
             </section>
           </div>
@@ -1525,6 +1530,7 @@ function SecurityFindingDetailsPortal({ findings, context, triggerRef, mobileSna
       closeClassName="lite-security-phase3-close"
       gripClassName="lite-security-phase3-grip"
       variant="security"
+      mobileHeaderVariant="safety"
       mobileSnap={mobileSnap}
       motion="safe-grip"
       surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'finding-details' }}
@@ -1904,6 +1910,7 @@ const SECURITY_PROGRESSIVE_DETAILS_PATCH_D_GUARDS = [
   'SECURITY_PROGRESSIVE_DETAILS_PATCH_D',
   'securityDetailNeedsHeavyModel',
   'details panels hydrate only after user opens them',
+  'Target rows, skipped groups, and optional missing targets mount only inside the focused details panel.',
   'data-security-progressive-details-hydrated',
   'lite-security-execution-${securityExecutionStateTone(step.state)}',
 ];
@@ -3128,6 +3135,7 @@ export default function SecurityScreen() {
         closeClassName="lite-security-manage-close"
         gripClassName="lite-security-manage-grip"
         variant="security"
+        mobileHeaderVariant="safety"
         mobileSnap={!safetyManageDesktop}
         motion={safetyManageDesktop || securityMotionReduced ? 'none' : 'safe-grip'}
         surfaceRef={safetyManagePanelRef}
@@ -3152,12 +3160,6 @@ export default function SecurityScreen() {
           onBack={() => setMobileManageDetailOpen(false)}
         >
         <ManageMotionSection style={securityMotionReduced ? undefined : manageSectionSpring} className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} role="region" id="safety-manage-active-panel" aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection} data-security-react-spring="manage-section">
-          <div className="lite-security-manage-section-head">
-            <span>{activeManageSectionMeta.label}</span>
-            <h3>{activeManageSectionMeta.label}</h3>
-            <p>{SECURITY_MANAGE_SECTION_DESCRIPTIONS[activeManageSection]}</p>
-          </div>
-
           {activeManageSection === 'overview' ? (
             <div className="lite-security-manage-overview">
               <div className="lite-security-manage-row">
@@ -3301,7 +3303,7 @@ export default function SecurityScreen() {
             <div className="lite-security-manage-card-list lite-security-quick-coverage-card" data-security-progressive-details-summary-first="coverage">
               <div className="lite-security-manage-row">
                 <div>
-                  <strong>{scanProfile === 'app' ? `${coverageSummary.app_label || 'PhotoPrism'} App Check coverage` : scanProfile === 'full' ? 'Full Local Check coverage' : 'Quick safety check coverage'}</strong>
+                  <h3 className="lite-safety-native-content-heading">{scanProfile === 'app' ? `${coverageSummary.app_label || 'PhotoPrism'} App Check coverage` : scanProfile === 'full' ? 'Full Local Check coverage' : 'Quick safety coverage'}</h3>
                   <p>{scanProfile === 'app' ? 'Compact coverage summary is shown here. Full App Check coverage loads only after you open details.' : scanProfile === 'full' ? 'Compact coverage summary is shown here. Full Local Check rows load only after you open details.' : 'Compact coverage summary is shown here. Quick Safety Check rows load only after you open details.'}</p>
                 </div>
                 <span className="lite-security-quick-profile-chip">Profile: {activeProfileMeta.chip}</span>
@@ -3314,8 +3316,8 @@ export default function SecurityScreen() {
               </div>
               <div className="lite-security-manage-row">
                 <div>
-                  <strong>Progressive details</strong>
-                  <p>Target rows, skipped groups, and optional missing targets mount only inside the focused details panel.</p>
+                  <strong>Detailed check scope</strong>
+                  <p>Open the focused details to review target rows, skipped groups and unavailable targets.</p>
                 </div>
                 <button type="button" className="lite-security-coverage-toggle" aria-label="Open Security coverage details" onClick={(event) => openSecurityDetailFromManage('coverage', event)}>Open coverage</button>
               </div>
@@ -3474,6 +3476,7 @@ export default function SecurityScreen() {
         closeClassName="lite-security-phase3-close"
         gripClassName="lite-security-phase3-grip"
         variant="security"
+        mobileHeaderVariant="safety"
         mobileSnap={!safetyManageDesktop}
         motion="safe-grip"
         surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'focused-details', 'data-security-scan-details-profile-bound': scanProfile }}

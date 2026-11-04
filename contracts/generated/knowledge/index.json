@@ -31752,6 +31752,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-safety-azure-visual-hardening.spec.ts",
+      "name": "tests/e2e/lite-safety-azure-visual-hardening.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-safety-azure-visual-hardening.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-safety-native-geometry.spec.ts",
       "name": "tests/e2e/lite-safety-native-geometry.spec.ts",
       "source_refs": [
@@ -35283,6 +35293,7 @@
         "test:tests/e2e/lite-rules-premium-performance.spec.ts",
         "test:tests/e2e/lite-rules-premium-refinement.spec.ts",
         "test:tests/e2e/lite-rules-premium-visual.spec.ts",
+        "test:tests/e2e/lite-safety-azure-visual-hardening.spec.ts",
         "test:tests/e2e/lite-safety-native-geometry.spec.ts",
         "test:tests/e2e/lite-security-runtime.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
@@ -36835,6 +36846,7 @@
         "test:tests/e2e/lite-rules-premium-performance.spec.ts",
         "test:tests/e2e/lite-rules-premium-refinement.spec.ts",
         "test:tests/e2e/lite-rules-premium-visual.spec.ts",
+        "test:tests/e2e/lite-safety-azure-visual-hardening.spec.ts",
         "test:tests/e2e/lite-safety-native-geometry.spec.ts",
         "test:tests/e2e/lite-security-runtime.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
@@ -54037,6 +54049,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-safety-azure-visual-hardening.spec.ts": [
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-safety-native-geometry.spec.ts": [
         {
           "source": "domain:security",
@@ -66552,6 +66570,10 @@
         },
         {
           "target": "test:tests/e2e/lite-performance.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-safety-azure-visual-hardening.spec.ts",
           "type": "verified_by"
         },
         {
@@ -103624,6 +103646,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-safety-azure-visual-hardening.spec.ts"
+      ],
+      "id": "rel:ce0e5db1b8a7d35a",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-safety-azure-visual-hardening.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/e2e/lite-azure-horizon-safety-visual.spec.ts"
       ],
       "id": "rel:ce125c995ce1ebaa",
@@ -110908,9 +110939,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "19460ef3c300db61eb06d86fd59803335cec5e0e6e9b558e3a34b65a93380cdc",
+  "source_fingerprint": "51a7b5cf64408e3371f422b2c0f936099420d9f9f58133f26b1045b19f680c8c",
   "statistics": {
-    "entity_count": 1470,
+    "entity_count": 1471,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -110927,14 +110958,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 322,
+      "test": 323,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4111,
-    "source_count": 359
+    "relation_count": 4112,
+    "source_count": 360
   }
 }

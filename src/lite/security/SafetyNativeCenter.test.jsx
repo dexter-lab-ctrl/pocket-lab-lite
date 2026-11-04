@@ -99,7 +99,9 @@ describe('Safety Manage grouped navigation — authored only', () => {
       <p>Selected backend detail</p>
     </SafetyManageNavigation>);
     expect(within(nav).getByRole('button', { name: 'Open Coverage in Manage Safety' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('heading', { name: 'Coverage' })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { name: 'Coverage' })).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: 'Coverage', level: 2 })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Coverage', level: 3 })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Back to Manage Safety' }));
     expect(back).toHaveBeenCalledOnce();
   });

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Settings2 } from 'lucide-react';
 import { friendlyLiteText } from '../../lib/liteUxPresentation.js';
 
 const TECHNICAL_DETAILS_COLLAPSED_BY_DEFAULT = true;
@@ -38,6 +39,7 @@ export default function LiteTechnicalDetails({
   title = 'Technical details',
   summary = 'Safe operational facts are available when you need them.',
   defaultOpen = false,
+  presentation = 'default',
 }) {
   const [open, setOpen] = useState(Boolean(defaultOpen));
   const safeRows = useMemo(() => normalizeTechnicalRows(rows), [rows]);
@@ -46,14 +48,14 @@ export default function LiteTechnicalDetails({
   if (!safeRows.length) return null;
 
   return (
-    <section className="lite-technical-details" data-collapsed-by-default={!defaultOpen}>
+    <section className="lite-technical-details" data-collapsed-by-default={!defaultOpen} data-lite-detail-presentation={presentation}>
       <button
         type="button"
         className="lite-progressive-disclosure-toggle"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
       >
-        <span>{title}</span>
+        <span className={presentation === 'safety' ? 'lite-safety-detail-title' : undefined}>{presentation === 'safety' ? <span className="lite-safety-detail-icon" aria-hidden="true"><Settings2 size={18} strokeWidth={1.9} /></span> : null}{title}</span>
         <small>{open ? 'Hide' : 'Show'}</small>
       </button>
       <p className="lite-progressive-disclosure-summary">{safeSummary}</p>

@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: f39ec359a8cc25a906384033aee023294d5b09028bda6e2234662814b4c25860
+source_fingerprint: b12ff5d572221b2454322bd84eb42f435f4bd8ac1fb3340770b04867320f94ea
 schema_revision: 1
 validation_status: generated
 ---
@@ -600,6 +600,24 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `NativeDarkFullRunning`
 - `NativeDaylightAttention`
 - `NativeAppCheck`
+- `RefinementDaylightCoverageMobile`
+- `RefinementDarkCoverage320`
+- `RefinementSystemLightCoverage`
+- `RefinementSystemDarkIndex`
+- `RefinementPartialCoverage`
+- `RefinementFindings`
+- `RefinementHistory`
+- `RefinementTechnical`
+- `RefinementRunChecks`
+- `RefinementEvidence`
+- `RefinementSavedOffline`
+- `RefinementFirstRun`
+- `RefinementAttention`
+- `RefinementExpandedDetail`
+- `RefinementCompactSheet`
+- `RefinementMediumSheet`
+- `RefinementExpandedSheet`
+- `RefinementRemediation`
 
 ## LiteUx
 
