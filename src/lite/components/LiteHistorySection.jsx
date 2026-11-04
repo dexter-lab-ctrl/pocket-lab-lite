@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { History } from 'lucide-react';
 import LiteVirtualList from './LiteVirtualList.jsx';
 import { friendlyLiteText } from '../../lib/liteUxPresentation.js';
 
@@ -41,6 +42,7 @@ export default function LiteHistorySection({
   loadingMore = false,
   onLoadMore,
   totalCount = null,
+  presentation = 'default',
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const safeItems = useMemo(() => safeHistoryItems(items), [items]);
@@ -60,14 +62,14 @@ export default function LiteHistorySection({
   };
 
   return (
-    <section className="lite-history-section lite-ux-history-language" data-lazy-history="true" data-history-open={isOpen}>
+    <section className="lite-history-section lite-ux-history-language" data-lazy-history="true" data-history-open={isOpen} data-lite-detail-presentation={presentation}>
       <button
         type="button"
         className="lite-progressive-disclosure-toggle"
         aria-expanded={isOpen}
         onClick={toggle}
       >
-        <span>{title}</span>
+        <span className={presentation === 'safety' ? 'lite-safety-detail-title' : undefined}>{presentation === 'safety' ? <span className="lite-safety-detail-icon" aria-hidden="true"><History size={18} strokeWidth={1.9} /></span> : null}{title}</span>
         <small>{isOpen ? 'Hide' : count ? `${count} saved` : 'Open'}</small>
       </button>
       <p className="lite-progressive-disclosure-summary">{collapsedSummary}</p>
