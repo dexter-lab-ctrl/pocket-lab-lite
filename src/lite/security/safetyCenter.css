@@ -483,6 +483,14 @@ html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-lay
   margin: 0 !important;
 }
 
+html[data-lite-theme] .lite-security-manage-layer .lite-safety-native-content-heading {
+  margin: 0 0 .3rem;
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 700;
+  color: var(--azure-text);
+}
+
 /* R2: width-based action composition (not viewport-only) and readable prose. */
 html[data-lite-theme] .lite-security-manage-layer .lite-security-manage-row {
   grid-template-columns: minmax(0, 1fr) auto;
