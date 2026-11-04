@@ -565,7 +565,7 @@ const SECURITY_MANAGE_SECTION_DESCRIPTIONS = {
   checks: 'Choose a check and open coverage, path, evidence, or technical detail only when needed.',
   changes: 'New, resolved, and still-present safety changes.',
   issues: 'Compact review rows with focused finding details.',
-  coverage: 'Completed, partial, timed-out, skipped and unavailable checks.',
+  coverage: 'Review completed, partial, skipped and unavailable checks.',
   check_path: 'Backend-reported execution steps and tool outcomes.',
   evidence: 'Sanitized records and check receipts.',
   history: 'Recent profile-matched results, loaded on demand.',
@@ -1455,6 +1455,7 @@ function SecurityRemediationDrawer({ finding, context, onClose, mobileSnap = fal
       closeClassName="lite-security-phase3-close"
       gripClassName="lite-security-phase3-grip"
       variant="security"
+      mobileHeaderVariant="safety"
       mobileSnap={mobileSnap}
       motion="safe-grip"
       surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-remediation-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'remediation' }}
@@ -1525,6 +1526,7 @@ function SecurityFindingDetailsPortal({ findings, context, triggerRef, mobileSna
       closeClassName="lite-security-phase3-close"
       gripClassName="lite-security-phase3-grip"
       variant="security"
+      mobileHeaderVariant="safety"
       mobileSnap={mobileSnap}
       motion="safe-grip"
       surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'finding-details' }}
@@ -3128,6 +3130,7 @@ export default function SecurityScreen() {
         closeClassName="lite-security-manage-close"
         gripClassName="lite-security-manage-grip"
         variant="security"
+        mobileHeaderVariant="safety"
         mobileSnap={!safetyManageDesktop}
         motion={safetyManageDesktop || securityMotionReduced ? 'none' : 'safe-grip'}
         surfaceRef={safetyManagePanelRef}
@@ -3152,12 +3155,6 @@ export default function SecurityScreen() {
           onBack={() => setMobileManageDetailOpen(false)}
         >
         <ManageMotionSection style={securityMotionReduced ? undefined : manageSectionSpring} className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} role="region" id="safety-manage-active-panel" aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection} data-security-react-spring="manage-section">
-          <div className="lite-security-manage-section-head">
-            <span>{activeManageSectionMeta.label}</span>
-            <h3>{activeManageSectionMeta.label}</h3>
-            <p>{SECURITY_MANAGE_SECTION_DESCRIPTIONS[activeManageSection]}</p>
-          </div>
-
           {activeManageSection === 'overview' ? (
             <div className="lite-security-manage-overview">
               <div className="lite-security-manage-row">
@@ -3314,8 +3311,8 @@ export default function SecurityScreen() {
               </div>
               <div className="lite-security-manage-row">
                 <div>
-                  <strong>Progressive details</strong>
-                  <p>Target rows, skipped groups, and optional missing targets mount only inside the focused details panel.</p>
+                  <strong>Detailed check scope</strong>
+                  <p>Open the focused details to review target rows, skipped groups and unavailable targets.</p>
                 </div>
                 <button type="button" className="lite-security-coverage-toggle" aria-label="Open Security coverage details" onClick={(event) => openSecurityDetailFromManage('coverage', event)}>Open coverage</button>
               </div>
@@ -3474,6 +3471,7 @@ export default function SecurityScreen() {
         closeClassName="lite-security-phase3-close"
         gripClassName="lite-security-phase3-grip"
         variant="security"
+        mobileHeaderVariant="safety"
         mobileSnap={!safetyManageDesktop}
         motion="safe-grip"
         surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'focused-details', 'data-security-scan-details-profile-bound': scanProfile }}
