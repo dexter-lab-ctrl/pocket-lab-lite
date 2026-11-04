@@ -12,6 +12,7 @@ import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteEnterpriseApi } from '../lib/liteEnterpriseApi.js';
 import { getLitePasskey } from '../lib/liteWebAuthn.js';
+import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { getLiteReasonPresentation, getLiteRulesActionLabel } from '../lib/identityRulesPresentation.js';
 import {
   GlassCard,
@@ -70,7 +71,8 @@ export default function RulesScreen() {
   const rulesReadOnly = savedStateOnly || isExpired || !backendReachable;
   const sourceUpdateRequired = Boolean(data?.active_policy?.source_update_required);
   const activationInProgress = Boolean(data?.active_policy?.activation_in_progress) || data?.degraded_reason === 'policy_activation_pending';
-  const activationState = String(activationStatus?.state || '');
+  const activationOperation = activationStatus || (data?.active_policy?.activation_operation && typeof data.active_policy.activation_operation === 'object' ? data.active_policy.activation_operation : null);
+  const activationState = String(activationOperation?.state || data?.active_policy?.activation_state || '');
   const activationBusy = sourceSyncBusy || activationInProgress || RULE_ACTIVATION_NONTERMINAL.has(activationState);
   const recent = Array.isArray(data?.recent_decisions) ? data.recent_decisions : [];
   const latest = recent[0] || null;
@@ -123,7 +125,7 @@ export default function RulesScreen() {
   const selectedLabel = groups.flatMap((group) => group.items).find(([id]) => id === manageSection)?.[1] || 'Protection Overview';
 
   React.useEffect(() => {
-    if (!backendReachable || (!activationInProgress && !activationTracked)) return undefined;
+    if (!backendReachable || (!activationInProgress && !activationTracked && !RULE_ACTIVATION_NONTERMINAL.has(activationState))) return undefined;
     if (['active', 'not_completed', 'uncertain', 'rolled_back', 'failed'].includes(activationState)) return undefined;
 
     let cancelled = false;
@@ -192,13 +194,14 @@ export default function RulesScreen() {
     } catch (syncError) {
       const reason = getLiteReasonPresentation(errorCode(syncError), syncError?.message || 'Pocket Lab could not start the Safety Rules update.');
       setSourceSyncNotice({ error: true, title: reason.title, message: reason.message });
+      triggerLiteHaptic('warning'); // Reported API failure only, never accepted/queued success.
       pushToast({ id: 'rules-source:problem', kind: 'error', title: reason.title, message: reason.message });
     } finally {
       setSourceSyncBusy(false);
     }
   }
 
-  const showActivationProgress = Boolean(activationStatus);
+  const showActivationProgress = Boolean(activationOperation);
   const protectedModeLabel = protection.mode;
   const revisionLabel = protection.revisionCurrent ? 'Revision verified' : sourceUpdateRequired ? 'Update required' : 'Revision unverified';
   return (
@@ -239,7 +242,7 @@ export default function RulesScreen() {
           {(savedStateOnly || isExpired) && latestView ? <p className="lite-rules-premium-saved">Saved decision — current status not confirmed.</p> : null}
         </GlassCard>
       </div>
-      {showActivationProgress ? <div className="lite-rules-activation-entry"><StateSurface tone="neutral" title="Rules update status" description={`Server-reported phase: ${activationStatus.state || 'Uncertain'}. Completion is not assumed.`} /><LiteButton tone="secondary" onClick={() => setActivationDetailsOpen(true)}>View update progress</LiteButton></div> : activationInProgress ? <StateSurface tone="neutral" title="Rules update reported" description="The server reports an update but has not returned a detailed activation phase." /> : null}
+      {showActivationProgress ? <div className="lite-rules-activation-entry"><StateSurface tone="neutral" title="Rules update status" description={`Server-reported phase: ${activationOperation?.state || 'Uncertain'}. Completion is not assumed.`} /><LiteButton tone="secondary" onClick={() => setActivationDetailsOpen(true)}>View update progress</LiteButton></div> : activationInProgress ? <StateSurface tone="neutral" title="Rules update reported" description="The server reports an update but has not returned a detailed activation phase." /> : null}
       <LiteSheet variant="rules" open={manageOpen} onClose={() => { setManageOpen(false); setManageDecision(null); }} title="Manage Safety Rules" eyebrow="Protection"
         description={`${protection.label} · ${protectedModeLabel} · ${revisionLabel}`}
         className={`lite-rules-manage-sheet lite-rules-premium-manage ${desktopPanel ? 'is-movable' : ''}`}
@@ -278,7 +281,7 @@ export default function RulesScreen() {
               <p>Mode: {protection.mode}. Revision: {revisionLabel}. Rules updates and decisions require current server authority.</p>
               {sourceUpdateRequired ? <StateSurface tone="neutral" title="Safety Rules update required" description="An Owner must confirm the update. Known-good protection stays authoritative until verified." /> : null}
               {sourceUpdateRequired && role === 'Owner' ? <LiteButton disabled={rulesReadOnly || activationBusy} onClick={updateSafetyRules}>{activationBusy ? 'Update running' : 'Update Safety Rules'}</LiteButton> : null}
-              {showActivationProgress ? <RulesActivationTimeline operation={activationStatus} backendReachable={backendReachable && !savedStateOnly} /> : null}
+              {showActivationProgress ? <RulesActivationTimeline operation={activationOperation} backendReachable={backendReachable && !savedStateOnly} /> : null}
             </div> : null}
             {manageSection === 'protections' ? <div className="lite-rules-premium-manage-content" data-rules-manage-section="protections">
               {(data?.policy_groups || []).map((group,index) => <LiteActionRow key={group.id || index} label={group.label || 'Protected group'} value={Array.isArray(group.actions) ? group.actions.length + ' actions' : 'Information unavailable'} summary={Array.isArray(group.actions) ? group.actions.map(actionLabel).join(' · ') : 'No actions reported'} />)}
@@ -308,7 +311,7 @@ export default function RulesScreen() {
       </LiteSheet>
       <LiteSheet variant="rules" mobileSnap open={activationDetailsOpen && showActivationProgress} onClose={() => setActivationDetailsOpen(false)}
         title="Safety Rules update" eyebrow="Revision & Recovery" description="Only the server can confirm completion or rollback." className="lite-rules-activation-sheet">
-        {showActivationProgress ? <RulesActivationTimeline operation={activationStatus} backendReachable={backendReachable && !savedStateOnly} /> : null}
+        {showActivationProgress ? <RulesActivationTimeline operation={activationOperation} backendReachable={backendReachable && !savedStateOnly} /> : null}
       </LiteSheet>
       <LiteSheet variant="rules" mobileSnap open={Boolean(insightDecision)} onClose={() => setInsightDecision(null)}
         title="Decision Insight" eyebrow="Safety Rules" description="What the server reported about this protected decision."
