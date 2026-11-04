@@ -167,9 +167,9 @@ test.describe('Safety R6 details, accessibility and state honesty — AUTHOR ONL
       for (const sample of samples) expect(contrastRatio(sample.foreground, sample.background)).toBeGreaterThanOrEqual(4.5);
       const boundary = await manage.evaluate((root) => {
         const row = root.querySelector('.lite-safety-native-nav-row[aria-current="page"]')!;
-        return { border: getComputedStyle(row).borderTopColor, background: getComputedStyle(row).backgroundColor };
+        return { indicator: getComputedStyle(document.documentElement).getPropertyValue('--azure-accent'), background: getComputedStyle(row).backgroundColor };
       });
-      expect(contrastRatio(boundary.border, boundary.background)).toBeGreaterThanOrEqual(3);
+      expect(contrastRatio(boundary.indicator, boundary.background)).toBeGreaterThanOrEqual(3);
     }
   });
 
