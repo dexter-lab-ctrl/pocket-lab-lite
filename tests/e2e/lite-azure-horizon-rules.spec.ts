@@ -24,7 +24,7 @@ test.describe('Azure Horizon Rules P0-P4 mocked regression',()=>{
       await expect(page.locator('.lite-rules-journey-track > li')).toHaveCount(4);
       const resolved=await page.locator('html').getAttribute('data-lite-theme');
       expect(['light','dark']).toContain(resolved);
-      await dialog.getByRole('button',{name:'Policies',exact:true}).click();
+      await dialog.getByRole('button',{name:'Policy Settings',exact:true}).click();
       await expect(dialog).toContainText('Policy settings');
       const color=await dialog.evaluate(el=>getComputedStyle(el).backgroundColor);
       expect(color).not.toBe('rgba(0, 0, 0, 0)');
@@ -80,7 +80,7 @@ test.describe('Azure Horizon Rules P0-P4 mocked regression',()=>{
   test('clicking policy form does not drag Manage',async({page})=>{
     await page.setViewportSize({width:1280,height:900});
     const dialog=await manage(page,'rules-enterprise-owner');
-    await dialog.getByRole('button',{name:'Policies',exact:true}).click();
+    await dialog.getByRole('button',{name:'Policy Settings',exact:true}).click();
     const before=await dialog.boundingBox();
     await dialog.locator('textarea').first().click();
     const after=await dialog.boundingBox();
@@ -91,7 +91,7 @@ test.describe('Azure Horizon Rules P0-P4 mocked regression',()=>{
     const stage=page.getByRole('button',{name:/Evaluate:/});
     await stage.focus();await page.keyboard.press('Enter');
     await expect(stage).toHaveAttribute('aria-expanded','true');
-    const explain=page.getByLabel('Latest Decision').getByRole('button',{name:'Explain this'});
+    const explain=page.getByLabel('Latest Decision').getByRole('button',{name:'Explain decision'});
     if(await explain.count()) {
       await explain.click();
       const detail=page.getByRole('dialog',{name:'Decision Insight'});
@@ -110,7 +110,7 @@ test.describe('Azure Horizon Rules P0-P4 mocked regression',()=>{
   test('role/capability surfaces use backend reporting',async({page})=>{
     for(const role of ['owner','admin','operator','auditor','viewer']) {
       const dialog=await manage(page,'rules-enterprise-'+role);
-      await dialog.getByRole('button',{name:'Policies',exact:true}).click();
+      await dialog.getByRole('button',{name:'Policy Settings',exact:true}).click();
       if(role==='viewer') await expect(dialog.getByRole('button',{name:'Create Rules candidate'})).toHaveCount(0);
       await dialog.getByRole('button',{name:'Temporary Access'}).click();
       if(['operator','viewer'].includes(role)) await expect(dialog).toContainText(/not available to this role/i);
