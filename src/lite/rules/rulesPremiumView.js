@@ -83,6 +83,7 @@ export function rulesActivationView(operation) {
   const index = steps.findIndex(([id]) => id === state);
   const terminal = ['active', 'failed', 'rolled_back', 'not_completed', 'uncertain'].includes(state);
   return { state: state || 'unknown', steps: steps.map(([id, label], idx) => ({
-    id, label, state: state === 'active' ? 'completed' : index < 0 ? 'unconfirmed' : idx < index ? 'reported' : idx === index ? 'current' : 'unconfirmed',
+    // Only the current server-reported phase is marked; earlier phases are not invented.
+    id, label, state: idx === index ? 'current' : 'unconfirmed',
   })), terminal, recovery: ['rolling_back', 'rolled_back', 'failed', 'not_completed', 'uncertain'].includes(state) };
 }
