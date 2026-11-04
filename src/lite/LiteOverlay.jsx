@@ -273,6 +273,7 @@ export function LiteSheet({
   variant = 'manage',
   motion = 'none',
   mobileSnap = false,
+  mobileHeaderVariant = 'default',
 }) {
   const generatedId = useId();
   const titleId = labelledBy || `lite-sheet-title-${generatedId}`;
@@ -389,6 +390,7 @@ export function LiteSheet({
           aria-modal="true"
           aria-labelledby={titleId}
           data-lite-sheet-variant={variant}
+          data-lite-mobile-header={mobileHeaderVariant === 'safety' ? 'safety' : undefined}
            data-lite-sheet-snap={mobileSheet.active ? mobileSheet.state : undefined}
           data-lite-safe-motion={safeMotionEnabled ? 'safe-grip' : 'none'}
           data-lite-perf-primitive="sheet"
@@ -407,6 +409,7 @@ export function LiteSheet({
             </div>
             {headerActions}
             {mobileSheet.active ? <div className="lite-sheet-mobile-snap-actions" role="group" aria-label="Sheet size">
+              {mobileHeaderVariant === 'safety' ? <span className="lite-sheet-safety-snap-status" aria-live="polite">{mobileSheet.state === 'expanded' ? 'Expanded' : mobileSheet.state === 'compact' ? 'Compact' : 'Medium'} · Drag handle to resize</span> : null}
               <button type="button" onClick={mobileSheet.contract} disabled={!mobileSheet.canContract}>Compact</button>
               <button type="button" onClick={mobileSheet.expand} disabled={!mobileSheet.canExpand}>Expand</button>
             </div> : null}
