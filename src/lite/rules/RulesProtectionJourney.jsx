@@ -1,12 +1,12 @@
 import React, { useId, useState } from 'react';
-import { MousePointerClick, ScanSearch, Scale, ClipboardCheck } from 'lucide-react';
+import { MousePointerClick, ScanSearch, Scale, ClipboardList } from 'lucide-react';
 import { GlassCard } from '../LiteUi.jsx';
 
 const STAGES = [
   { id: 'request', label: 'Request', short: 'Who', Icon: MousePointerClick, detail: 'Someone requests an important change. Pocket Lab receives the authenticated actor, requested action and target.' },
   { id: 'evaluate', label: 'Evaluate', short: 'Check', Icon: ScanSearch, detail: 'Pocket Lab evaluates the applicable Rules, permissions, target and protections on the server.' },
   { id: 'decision', label: 'Decision', short: 'Decide', Icon: Scale, detail: 'The server decides whether the requested change is allowed, blocked or needs additional confirmation or review.' },
-  { id: 'outcome', label: 'Outcome', short: 'Record', Icon: ClipboardCheck, detail: 'Pocket Lab records the decision. Authorization is not proof that the requested operation finished.' },
+  { id: 'outcome', label: 'Outcome', short: 'Record', Icon: ClipboardList, detail: 'Pocket Lab records the decision. Authorization is not proof that the requested operation finished.' },
 ];
 export const RULES_JOURNEY_STAGES = STAGES.map(({ id, label, short, detail }) => ({ id, label, short, detail }));
 
