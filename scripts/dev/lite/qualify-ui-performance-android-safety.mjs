@@ -770,7 +770,7 @@ async function main() {
       action: async () => {
         // PR #641 removes the duplicate inner finding close control. The
         // owning Safety LiteSheet remains the single close boundary.
-        const close = page.locator('.lite-security-detail-layer').getByRole('button', { name: 'Close security details' }).first();
+        const close = page.locator('.lite-security-detail-layer button.lite-security-phase3-close').first();
         await close.click();
         await page.locator('.lite-security-detail-layer').waitFor({ state: 'hidden', timeout: 20_000 });
       },
