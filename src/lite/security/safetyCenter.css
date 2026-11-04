@@ -295,6 +295,48 @@ html[data-lite-theme] .lite-security-manage-tabs { display: none; }
   html[data-lite-theme] .lite-safety-native-page .lite-page-header { min-width: 0; }
 }
 @media (max-width: 360px) {
+  /* At browser text zoom the 320px viewport can leave only a 256px content
+   * column. Keep the header actions and destination copy usable at that
+   * width: the label/details get a full row instead of being squeezed between
+   * the icon and chevron one character at a time. */
+  html[data-lite-theme] .lite-safety-native-page .lite-page-header {
+    align-items: stretch;
+    padding: .75rem;
+  }
+  html[data-lite-theme] .lite-safety-native-page .lite-page-header > :last-child {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+  }
+  html[data-lite-theme] .lite-safety-native-page .lite-page-header > :last-child > .pocket-button {
+    width: 100%;
+    padding-inline: .65rem;
+    white-space: normal;
+  }
+  html[data-lite-theme] .lite-safety-native-destination {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: start;
+    column-gap: .5rem;
+    row-gap: .45rem;
+    padding: .65rem;
+  }
+  html[data-lite-theme] .lite-safety-native-destination-icon {
+    grid-column: 1;
+    grid-row: 1;
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+  html[data-lite-theme] .lite-safety-native-destination-copy {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: auto;
+  }
+  html[data-lite-theme] .lite-safety-native-destination > svg:last-child {
+    grid-column: 3;
+    grid-row: 1;
+  }
   html[data-lite-theme] .lite-safety-native-stats { grid-template-columns: minmax(0, 1fr); }
   html[data-lite-theme] .lite-safety-native-hero { gap: .8rem; }
 }
