@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
 import { animated, useSpring } from '@react-spring/web';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
