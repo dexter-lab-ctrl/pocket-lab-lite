@@ -472,20 +472,11 @@ export default function SecurityProgressiveDetailsLazy({ type = 'evidence', mode
       data-security-progressive-details-type={safeText(detailsHydration?.type || type, 'evidence')}
       style={securityDetailsMotionReduced ? undefined : detailsPanelSpring}
     >
-      <div className="lite-security-phase2-details-head lite-security-details-premium-head">
-        <div>
-          <span>Progressive details</span>
-          <h2>{details.title}</h2>
-          <p>Summary first. Technical details stay collapsed and sanitized.</p>
-        </div>
-        <button type="button" className="lite-finding-detail-close" onClick={onClose} aria-label="Close Security details">
-          <X className="h-4 w-4" />
-        </button>
-      </div>
       <DetailsContent className="lite-security-details-premium-content" data-security-react-spring="details-content" style={securityDetailsMotionReduced ? undefined : detailsContentSpring}>
         <LiteProgressiveDetails
           {...details}
           sectionRenderMode="css-contained"
+          presentation="safety"
           history={type === 'history' ? {
             ...details.history,
             title: details.history?.title || 'History',
