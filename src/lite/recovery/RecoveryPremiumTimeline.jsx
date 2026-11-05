@@ -10,7 +10,7 @@ export default function RecoveryPremiumTimeline({ items = [], unavailable = fals
   return <GlassCard className="lite-recovery-recent-activity" aria-label="Recent Activity" data-recovery-activity="compact">
     <header className="lite-recovery-recent-head">
       <div><h2>Recent Activity</h2><p>{saved || unavailable ? 'Live activity is not confirmed.' : 'Most recent reported record'}</p></div>
-      <LiteButton tone="secondary" haptic onClick={onViewActivity} ariaLabel="View all recovery activity">View all activity</LiteButton>
+      <LiteButton tone="secondary" onClick={onViewActivity} ariaLabel="View all recovery activity">View all activity</LiteButton>
     </header>
     {item ? <div className="lite-recovery-recent-event" data-recovery-activity-state={item.state}>
       <span className="lite-recovery-recent-icon" aria-hidden="true"><Icon size={20}/></span>
