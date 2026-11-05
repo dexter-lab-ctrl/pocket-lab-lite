@@ -83,7 +83,7 @@ MAX_SYMBOLS_PER_FILE = 200
 # tracked repository grows. The path and high-value labels are emitted first;
 # the bounded tail is only a compact search aid, not canonical source evidence.
 MAX_BROWSER_SEARCH_CHARS = 480
-MAX_BROWSER_SYMBOLS_PER_FILE = 80
+MAX_BROWSER_SYMBOLS_PER_FILE = 70
 
 
 def stable_json(value: Any) -> str:

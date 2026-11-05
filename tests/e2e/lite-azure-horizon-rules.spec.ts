@@ -40,7 +40,7 @@ test.describe('Azure Horizon Rules P0-P4 mocked regression',()=>{
       await scan();
     });
   }
-  for(const width of [320,360,375,390,430,700,701,768,1024,1440]) {
+  for(const width of [320,360,375,390,430,700,701,768,1024,1440,1920]) {
     test('200% zoom and responsive Manage at '+width,async({page})=>{
       await page.setViewportSize({width,height:850});
       await launch(page,'rules-premium-long');
@@ -111,9 +111,15 @@ test.describe('Azure Horizon Rules P0-P4 mocked regression',()=>{
     for(const role of ['owner','admin','operator','auditor','viewer']) {
       const dialog=await manage(page,'rules-enterprise-'+role);
       await dialog.getByRole('button',{name:'Policy Settings',exact:true}).click();
+      if((page.viewportSize()?.width || 0) <= 700) {
+        await dialog.getByRole('button',{name:'All Safety Rules settings',exact:true}).click();
+      }
       if(role==='viewer') await expect(dialog.getByRole('button',{name:'Create Rules candidate'})).toHaveCount(0);
-      await dialog.getByRole('button',{name:'Temporary Access'}).click();
-      if(['operator','viewer'].includes(role)) await expect(dialog).toContainText(/not available to this role/i);
+      if(['operator','viewer'].includes(role)) {
+        await expect(dialog.getByRole('button',{name:'Temporary Access',exact:true})).toHaveCount(0);
+      } else {
+        await dialog.getByRole('button',{name:'Temporary Access',exact:true}).click();
+      }
       await page.keyboard.press('Escape');
     }
   });

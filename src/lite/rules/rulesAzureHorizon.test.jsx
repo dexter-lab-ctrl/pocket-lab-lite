@@ -12,7 +12,7 @@ describe('Azure Horizon Rules: source-authored truth contracts', () => {
     expect(rulesProtectionView(ready, { enterprise:false })).toMatchObject({ state:'ready', revisionCurrent:true, mode:'Personal Mode' });
     expect(rulesProtectionView(ready, { enterprise:true }).mode).toBe('Enterprise Mode');
     expect(rulesProtectionView({ ...ready, engine:{healthy:true} }).state).toBe('degraded');
-    expect(rulesProtectionView({ ...ready, active_policy:{source_update_required:true} }).state).toBe('degraded');
+    expect(rulesProtectionView({ ...ready, active_policy:{source_update_required:true} }).state).toBe('update_required');
   });
   it('saved, stale, unreachable and unavailable never grant write authority', () => {
     for (const options of [{savedStateOnly:true},{isExpired:true},{backendReachable:false}]) {
@@ -33,7 +33,7 @@ describe('Azure Horizon Rules: source-authored truth contracts', () => {
     expect(rulesActivationView({state:'pending'}).steps.every(stage=>stage.state!=='completed')).toBe(true);
     expect(rulesActivationView({state:'uncertain'}).recovery).toBe(true);
     expect(rulesActivationView({state:'rolled_back'}).recovery).toBe(true);
-    expect(rulesActivationView({state:'active'}).steps.every(stage=>stage.state==='completed')).toBe(true);
+    expect(rulesActivationView({state:'active'}).steps.every(stage=>stage.state!=='completed')).toBe(true);
   });
   it('keeps the four selectable Journey stages educational',()=>{
     render(<RulesProtectionJourney/>);

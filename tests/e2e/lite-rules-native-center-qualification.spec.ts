@@ -2,8 +2,9 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// AUTHOR ONLY. Mocked fixtures cannot prove live authorization or policy activation.
-// Screenshots are deliberately not generated or approved in this implementation phase.
+// Mocked qualification cannot prove live authorization or policy activation.
+// The deterministic Rules baselines below are reviewed and approved separately
+// from the blocked physical Android gate.
 const appearances = ['light', 'dark'] as const;
 const layoutWidths = [1280, 768, 390, 360, 320] as const;
 const criticalSelectors = [
@@ -39,7 +40,7 @@ async function axeAA(page: Page) {
   expect(report.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')).toEqual([]);
 }
 
-test.describe('Azure Horizon native Rules Center: visual/semantic contract (AUTHORED — NOT EXECUTED)', () => {
+test.describe('Azure Horizon native Rules Center: visual/semantic contract (EXECUTED — MOCKED; PHYSICAL BLOCKED)', () => {
   for (const appearance of appearances) {
     for (const width of layoutWidths) {
       test('page hierarchy and no overflow at ' + width + ' / ' + appearance, async ({ page }) => {
@@ -165,6 +166,9 @@ test.describe('Azure Horizon native Rules Center: visual/semantic contract (AUTH
     await expect(dialog.getByRole('button', { name: 'Create Rules candidate' })).toHaveCount(0);
     await expect(dialog.getByRole('button', { name: 'Test a Change' })).toHaveCount(0);
     await expect(dialog.getByRole('button', { name: 'Temporary Access' })).toHaveCount(0);
+    if ((page.viewportSize()?.width || 0) <= 700) {
+      await dialog.getByRole('button', { name: 'All Safety Rules settings' }).click();
+    }
     await dialog.getByRole('button', { name: 'Governance' }).click();
     expect(submitted).toEqual([]);
   });
@@ -191,7 +195,8 @@ test.describe('Azure Horizon native Rules Center: visual/semantic contract (AUTH
     expect(await page.evaluate(() => (window as typeof window & { __rulesHaptics?: number[] }).__rulesHaptics?.length)).toBe(1);
   });
 
-  // Baseline candidates only. No screenshot or screenshot update is executed here.
+  // Deterministic mocked baselines. Physical Android screenshots remain
+  // unavailable while the secure device keyguard cannot be dismissed.
   for (const appearance of appearances) {
     test('pending desktop visual baseline: ' + appearance, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
