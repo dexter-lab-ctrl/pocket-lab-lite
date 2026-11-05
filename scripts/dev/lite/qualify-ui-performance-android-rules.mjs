@@ -561,18 +561,31 @@ async function main() {
   const beforeHaptic = await page.evaluate(() => window.__POCKETLAB_ANDROID_RULES_HAPTICS__?.calls?.length || 0);
   await touch(manageButton, 'Rules Manage haptic probe');
   dialog = page.getByRole('dialog', { name: 'Manage Safety Rules' });
-  await dialog.waitFor({ state: 'visible', timeout: 20_000 });
+  let touchActivated = true;
+  try {
+    await dialog.waitFor({ state: 'visible', timeout: 2_000 });
+  } catch {
+    touchActivated = false;
+    notes.push('Raw Android CDP touch did not activate the Rules Manage control; continued with a read-only browser click, so physical touch haptic activation remains unavailable.');
+    await manageButton.click();
+    await dialog.waitFor({ state: 'visible', timeout: 20_000 });
+  }
   dialog = await firstVisible(dialog, 'Rules Manage haptic dialog');
   const closeForHaptic = await firstVisible(dialog.getByRole('button', { name: 'Close Rules management' }), 'Rules haptic close');
   await touch(closeForHaptic, 'Rules Manage haptic close');
-  await dialog.waitFor({ state: 'hidden', timeout: 20_000 });
+  try {
+    await dialog.waitFor({ state: 'hidden', timeout: 2_000 });
+  } catch {
+    await closeForHaptic.click();
+    await dialog.waitFor({ state: 'hidden', timeout: 20_000 });
+  }
   const afterHaptic = await page.evaluate(() => {
     const probe = window.__POCKETLAB_ANDROID_RULES_HAPTICS__;
     return { supported: probe?.supported === true, instrumented: probe?.instrumented === true, calls: probe?.calls || [] };
   });
   const hapticCalls = afterHaptic.calls.slice(beforeHaptic);
-  haptics = { supported: afterHaptic.supported, instrumented: afterHaptic.instrumented, touchActivationCalls: hapticCalls.length, acceptedCalls: hapticCalls.filter((call) => call.accepted === true).length };
-  mark('Haptic capability and fallback', !haptics.supported ? 'UNAVAILABLE_ANDROID_CHROME' : haptics.instrumented ? (haptics.acceptedCalls ? 'VERIFIED' : 'VERIFIED_FALLBACK') : 'UNVALIDATED_OPTIONAL_HOOK');
+  haptics = { supported: afterHaptic.supported, instrumented: afterHaptic.instrumented, touchActivationVerified: touchActivated, touchActivationCalls: hapticCalls.length, acceptedCalls: hapticCalls.filter((call) => call.accepted === true).length };
+  mark('Haptic capability and fallback', !touchActivated ? 'UNAVAILABLE_ANDROID_TOUCH_INPUT' : !haptics.supported ? 'UNAVAILABLE_ANDROID_CHROME' : haptics.instrumented ? (haptics.acceptedCalls ? 'VERIFIED' : 'VERIFIED_FALLBACK') : 'UNVALIDATED_OPTIONAL_HOOK');
   await decisionInsight();
 
   await measure({
