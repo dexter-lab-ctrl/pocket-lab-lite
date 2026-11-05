@@ -241,15 +241,8 @@ async function installHapticProbe(targetPage = page) {
 async function touch(locator, label) {
   const box = await locator.boundingBox().catch(() => null);
   if (!box || box.width <= 0 || box.height <= 0) fail(label + ' is not touchable.');
-  const session = await page.context().newCDPSession(page);
-  try {
-    await Promise.all([
-      session.send('Input.dispatchTouchEvent', { type: 'touchStart', modifiers: 0, touchPoints: [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }] }),
-      session.send('Input.dispatchTouchEvent', { type: 'touchEnd', modifiers: 0, touchPoints: [] }),
-    ]);
-  } finally {
-    await session.detach().catch(() => {});
-  }
+  await locator.scrollIntoViewIfNeeded();
+  await locator.tap({ timeout: 20_000 });
 }
 
 async function assertRulesLoaded() {
