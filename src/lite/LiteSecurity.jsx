@@ -2870,6 +2870,7 @@ export default function SecurityScreen() {
     scanProgressLabel,
     scanProfile,
     coverageSummary: hydrateCoverageDetails ? coverageSummary : {},
+    coverageReported: hydrateCoverageDetails && Boolean(activeProfileHasRun && (activeProfileView?.coverage_summary || activeProfileRun?.coverage_summary || (activeProfileIsLatest && data?.coverage_summary))),
     checkedCoverageTargets: hydrateCoverageDetails ? checkedCoverageTargets : [],
     skippedCoverageTargets: hydrateCoverageDetails ? skippedCoverageTargets : [],
     partialCoverageTargets: hydrateCoverageDetails ? partialCoverageTargets : [],
