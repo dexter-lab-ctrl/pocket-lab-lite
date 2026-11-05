@@ -1,4 +1,5 @@
-// NOT RUN — implementation-only session; historical visual baselines require later recapture and approval.
+// Canonical synthetic Recovery baselines are reviewed and updated only after
+// the Recovery functional and physical qualification passes are complete.
 import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
