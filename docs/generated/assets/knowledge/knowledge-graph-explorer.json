@@ -15883,6 +15883,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-recovery-native-center.spec.ts",
+      "name": "tests/e2e/lite-recovery-native-center.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-recovery-native-center.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-recovery-premium-performance.spec.ts",
       "name": "tests/e2e/lite-recovery-premium-performance.spec.ts",
       "source_refs": [
