@@ -71,4 +71,24 @@ describe('Global Lite button/tab/navigation haptics — source only', () => {
     const button = document.createElement('button'); document.body.appendChild(button);
     expect(() => click(button)).not.toThrow();
   });
+  it('delegates one haptic to late-mounted Safety navigation and disclosure in a portal', () => {
+    const portal = document.createElement('div');
+    portal.setAttribute('data-lite-overlay-portal', 'true');
+    portal.innerHTML = '<button aria-label="Open Safety history"><span>History</span></button>';
+    document.body.appendChild(portal);
+    click(portal.querySelector('span'));
+    click(portal.querySelector('span')); // global 65ms deduplication
+    expect(vibrate).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not vibrate for passive Safety status, drag grip, or disabled snap controls', () => {
+    const portal = document.createElement('div');
+    portal.innerHTML = '<p aria-live="polite">Scanner pending</p><button data-lite-haptic="off">Drag grip</button><button disabled>Expand</button>';
+    document.body.appendChild(portal);
+    click(portal.querySelector('p'));
+    click(portal.querySelector('[data-lite-haptic="off"]'));
+    click(portal.querySelector('[disabled]'));
+    expect(vibrate).not.toHaveBeenCalled();
+  });
+
 });
