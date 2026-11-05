@@ -4,7 +4,7 @@ import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers'
 
 // Mocked qualification cannot prove live authorization or policy activation.
 // The deterministic Rules baselines below are reviewed and approved separately
-// from the blocked physical Android gate.
+// from the read-only physical Android evidence.
 const appearances = ['light', 'dark'] as const;
 const layoutWidths = [1280, 768, 390, 360, 320] as const;
 const criticalSelectors = [
@@ -40,7 +40,7 @@ async function axeAA(page: Page) {
   expect(report.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')).toEqual([]);
 }
 
-test.describe('Azure Horizon native Rules Center: visual/semantic contract (EXECUTED — MOCKED; PHYSICAL BLOCKED)', () => {
+test.describe('Azure Horizon native Rules Center: visual/semantic contract (EXECUTED — MOCKED; PHYSICAL RULES-ONLY QUALIFIED)', () => {
   for (const appearance of appearances) {
     for (const width of layoutWidths) {
       test('page hierarchy and no overflow at ' + width + ' / ' + appearance, async ({ page }) => {
@@ -195,8 +195,9 @@ test.describe('Azure Horizon native Rules Center: visual/semantic contract (EXEC
     expect(await page.evaluate(() => (window as typeof window & { __rulesHaptics?: number[] }).__rulesHaptics?.length)).toBe(1);
   });
 
-  // Deterministic mocked baselines. Physical Android screenshots remain
-  // unavailable while the secure device keyguard cannot be dismissed.
+  // Deterministic mocked baselines. Physical Android captures are retained as
+  // separate candidate evidence because the device is not a deterministic
+  // snapshot source.
   for (const appearance of appearances) {
     test('pending desktop visual baseline: ' + appearance, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });

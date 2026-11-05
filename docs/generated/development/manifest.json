@@ -35,7 +35,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "3fc4f22d43696680aaad9932b0b070cb565f16df3de7c9eb52587cbd08e9c7a7",
+  "source_fingerprint": "a9188e4b2432db9d3279414b81aeec4c68f000a01c80a752fd41bbc678c780f0",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
     ".github/workflows/lite-quality.yml": "3da2b99fc807aed2f2bcb4370b905b077c25d5dce1c65e3f887c101653fbfef0",
@@ -72,7 +72,7 @@
     "scripts/dev/lite/qualify-ui-performance-android-apps.mjs": "ec7a411a6bb33f785544b0d1308469accfef1896ae2ae036bbe5ce61c39055d4",
     "scripts/dev/lite/qualify-ui-performance-android-baseline.mjs": "524ff7f726b6d7d43164611b44e918df6bfb4a65f71baf42e24f51b5251964c8",
     "scripts/dev/lite/qualify-ui-performance-android-cdp.mjs": "e121de1a8b663ae4ed0ed50bfe54842db3a6810bbaf62056ca5e2eb851cc1b8d",
-    "scripts/dev/lite/qualify-ui-performance-android-rules.mjs": "bda0928545ef8b0782b6310230b47d2639c23e21983c2a07150e823b8616642e",
+    "scripts/dev/lite/qualify-ui-performance-android-rules.mjs": "8b26adc7dbe2332f084a8e90777b66430d06039458b19b6a6a290daeeb01dad5",
     "scripts/dev/lite/qualify-ui-performance-android-safety.mjs": "33538df5a0b3e9334a9aa86b7a82cc719b0b1573a0840f3da3b9a528ea8b5e1d",
     "scripts/dev/lite/recover-main-database.py": "770819e329306990019d2074d3c7b35cf88c0e40002d9323b8e2d2d33321af34",
     "scripts/dev/lite/redaction_check.py": "e063173dfbedaf3e57680ee70c7518c4f07a77c885cd41c504691d6fc954f980",
