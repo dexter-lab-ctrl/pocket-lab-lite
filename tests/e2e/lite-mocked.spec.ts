@@ -472,8 +472,8 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     const rules = page.locator('[data-lite-screen-id="rules"]');
     await expect(rules).toBeVisible();
     await expect(rules).toContainText('Safety Rules');
-    await expect(rules).toContainText('Your important actions are protected.');
-    await expect(rules).toContainText('Protection Journey');
+    await expect(rules).toContainText('Important changes are protected');
+    await expect(rules).toContainText('How protection works');
     await expect(rules).toContainText('Latest Decision');
     await expect(rules).toContainText('No recorded decisions');
     await expect(rules).not.toContainText('Open Policy Agent');
@@ -500,23 +500,31 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await expect(rulesSheet.getByText('Supported hypothetical facts')).toBeVisible();
     await expect(rulesSheet.getByText('Recent passkey assurance')).toBeVisible();
 
-    await rulesSheet.getByRole('button', { name: 'Decisions', exact: true }).click();
+    const selectManageSection = async (name: string) => {
+      if ((page.viewportSize()?.width || 1024) < 768) {
+        await rulesSheet.getByRole('button', { name: 'All Safety Rules settings', exact: true }).click();
+      }
+      await rulesSheet.getByRole('button', { name, exact: true }).click();
+    };
+
+    await selectManageSection('Decision History');
     await expect(rulesSheet.getByRole('heading', { name: 'Rules activity', exact: true })).toBeVisible();
     await expect(rulesSheet).not.toContainText('raw policy input');
 
-    await rulesSheet.getByRole('button', { name: 'Requests', exact: true }).click();
+    await selectManageSection('Requests & Approvals');
     await expect(rulesSheet.getByRole('heading', { name: 'Review requests', exact: true })).toBeVisible();
     await expect(rulesSheet).toContainText(/exact-target|exact-Rules-revision/i);
     await expect(rulesSheet).not.toContainText('Requesting identity ID');
 
-    await rulesSheet.getByRole('button', { name: 'Temporary Access', exact: true }).click();
+    await selectManageSection('Temporary Access');
     await expect(rulesSheet.getByRole('heading', { name: 'Temporary access', exact: true })).toBeVisible();
     await expect(rulesSheet).toContainText(/Exact scope only|Expires/i);
     await expect(rulesSheet).not.toContainText('Human ID');
 
-    await rulesSheet.getByRole('button', { name: 'Protections', exact: true }).click();
-    await expect(rulesSheet.getByRole('heading', { name: 'Protected actions', exact: true })).toBeVisible();
-    await rulesSheet.getByRole('button', { name: 'Governance', exact: true }).click();
+    await selectManageSection('Protected Actions');
+    await expect(rulesSheet.locator('[data-rules-manage-section="protections"]')).toBeVisible();
+    await expect(rulesSheet.locator('[data-rules-manage-section="protections"]')).toContainText('Owner actions');
+    await selectManageSection('Governance');
     await expect(rulesSheet.getByRole('heading', { name: 'Runtime protection', exact: true })).toBeVisible();
     await expect(rulesSheet.getByRole('heading', { name: 'Runtime facts', exact: true })).toBeVisible();
     await expect(rulesSheet).toContainText(/Analysis boundary|Only direct registered-action coverage is provable/i);
@@ -957,7 +965,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     const rulesSheet = page.getByRole('dialog', { name: 'Manage Safety Rules' });
     await rulesSheet.getByRole('button', { name: 'Test a Change', exact: true }).click();
     await expect(rulesSheet.getByText(/This is a simulation\. No real permission or system change is granted\./)).toBeVisible();
-    const protectedAction = rulesSheet.getByLabel('Protected action');
+    const protectedAction = rulesSheet.locator('label').filter({ hasText: 'Protected action' }).locator('select');
     const options = await protectedAction.locator('option').allTextContents();
     expect(options.some((label) => /Install app resource|app\.install/i.test(label))).toBe(true);
     if (await protectedAction.locator('option[value="app.install"]').count()) {

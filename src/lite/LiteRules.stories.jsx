@@ -3,7 +3,7 @@ import LiteStoryFrame, { createLiteStory } from './stories/LiteStoryFrame.jsx';
 
 export default { title: 'Pocket Lab Lite/Rules', component: LiteStoryFrame, tags: ['autodocs'] };
 const rules = (scenario, options = {}) => createLiteStory('rules', scenario, options);
-async function openManage(canvasElement, section = 'Overview') {
+async function openManage(canvasElement, section = 'Protection Overview') {
   const canvas = within(canvasElement);
   await userEvent.click(await canvas.findByRole('button', { name: 'Manage Safety Rules' }));
   const sheet = await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'Manage Safety Rules' });
@@ -47,21 +47,21 @@ export const NarrowMobile = rules('rules-enabled', { viewport: 'mobile360' });
 export const ManageRulesOpen = {
   ...rules('rules-enabled', { viewport: 'desktop' }),
   play: async ({ canvasElement }) => {
-    const sheet = await openManage(canvasElement, 'Protections');
+    const sheet = await openManage(canvasElement, 'Protected Actions');
     await expect(sheet).toHaveTextContent(/Protected actions/i);
   },
 };
 export const EnterpriseOwnerPolicies = {
   ...rules('rules-enterprise-owner', { viewport: 'desktop' }),
   play: async ({ canvasElement }) => {
-    const sheet = await openManage(canvasElement, 'Policies');
+    const sheet = await openManage(canvasElement, 'Policy Settings');
     await expect(sheet).toHaveTextContent(/Policy settings/i);
   },
 };
 export const DecisionHistoryOpen = {
   ...rules('rules-enabled', { viewport: 'desktop' }),
   play: async ({ canvasElement }) => {
-    const sheet = await openManage(canvasElement, 'Decisions');
+    const sheet = await openManage(canvasElement, 'Decision History');
     await expect(sheet).toHaveTextContent(/Decision History/i);
   },
 };
@@ -77,7 +77,7 @@ export const DecisionInsightOpen = {
   ...rules('rules-present', { viewport: 'desktop', notes: 'Opens only when the server fixture provides a protected decision.' }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const buttons = canvas.queryAllByRole('button', { name: 'Explain this' });
+    const buttons = canvas.queryAllByRole('button', { name: 'Explain decision' });
     if (buttons.length) {
       await userEvent.click(buttons[0]);
       await expect(await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'Decision Insight' })).toBeInTheDocument();
@@ -119,7 +119,18 @@ export const AzureRulesTemporaryAccess = {
 export const AzureRulesReviewRequests = {
   ...rules('rules-approval-required', { viewport: 'desktop' }),
   play: async ({ canvasElement }) => {
-    const sheet = await openManage(canvasElement,'Requests');
+    const sheet = await openManage(canvasElement,'Requests & Approvals');
     await expect(sheet).toHaveTextContent(/Review requests/i);
   },
 };
+
+export const NativeManageDesktop = ManageRulesOpen;
+export const NativeManageMobileIndex = rules('rules-enabled', { viewport: 'mobile360', notes: 'Grouped settings index with a medium shared snap sheet.' });
+export const NativeManageMobile320TextScale = rules('rules-premium-long', { viewport: 'mobile360', textScale: 2, notes: 'Qualification must resize to 320px and confirm back navigation.' });
+export const NativeDecisionNoHistory = rules('rules-empty', { notes: 'No fabricated history or action outcomes.' });
+export const NativeRevisionUnverified = rules('rules-validation-error', { notes: 'Server-backed unknown or failed revision only.' });
+export const NativeActivationPending = rules('rules-execution-pending', { notes: 'Fixture projection only; never animate unreported completion.' });
+export const NativeSavedOffline = rules('api-unavailable', { notes: 'Read-only, without optimistic policy writes.' });
+export const NativeDaylight = rules('rules-present', { notes: 'Switch appearance via existing Storybook toolbar.' });
+export const NativeDark = rules('rules-present', { notes: 'Switch appearance via existing Storybook toolbar.' });
+export const NativeSystem = rules('rules-present', { notes: 'Resolved appearance comes from the provider.' });

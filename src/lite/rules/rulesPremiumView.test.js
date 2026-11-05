@@ -9,7 +9,14 @@ describe('Premium Rules source-backed selectors', () => {
     expect(rulesProtectionView(ready, { backendReachable: false, isExpired: true }).state).toBe('stale');
     expect(rulesProtectionView(null).state).toBe('unavailable');
     expect(rulesProtectionView({ ...ready, engine: { healthy: true, loopback_only: false } }).state).toBe('degraded');
-    expect(rulesProtectionView({ ...ready, active_policy: { source_update_required: true } }).state).toBe('degraded');
+    expect(rulesProtectionView({ ...ready, active_policy: { source_update_required: true } }).state).toBe('update_required');
+    expect(rulesProtectionView({ ...ready, active_policy: { bundle_ready: false } }).state).toBe('revision_unverified');
+    expect(rulesProtectionView(ready, { activationState: 'verifying' }).state).toBe('activating');
+    expect(rulesProtectionView(ready, { activationState: 'rolling_back' }).state).toBe('rollback');
+    expect(rulesProtectionView(ready, { activationState: 'failed' }).state).toBe('activation_failed');
+    expect(rulesProtectionView(ready, { activationState: 'uncertain' }).state).toBe('uncertain');
+    expect(rulesProtectionView(ready, { activationState: 'rolled_back' }).state).toBe('rolled_back');
+    expect(rulesProtectionView(ready, { savedStateOnly: true, activationState: 'active' }).tone).not.toBe('healthy');
   });
   it('never treats simulation as live permission or authorization as execution', () => {
     expect(rulesDecisionView({ outcome: 'allow', action_id: 'device.remove' }, { simulated: true }).status).toBe('Simulation allowed');
@@ -33,7 +40,9 @@ describe('Premium Rules source-backed selectors', () => {
   it('models reported rollback/uncertain states without synthesized completion', () => {
     expect(rulesActivationView({ state: 'rolling_back' }).recovery).toBe(true);
     expect(rulesActivationView({ state: 'uncertain' }).steps.every(x => x.state === 'unconfirmed')).toBe(true);
-    expect(rulesActivationView({ state: 'active' }).steps.every(x => x.state === 'completed')).toBe(true);
+    expect(rulesActivationView({ state: 'active' }).steps.filter(x => x.state === 'current')).toHaveLength(1);
+    expect(rulesActivationView({ state: 'verifying' }).steps.filter(x => x.state === 'current')).toHaveLength(1);
+    expect(rulesActivationView({ state: 'verifying' }).steps.every(x => x.state !== 'completed')).toBe(true);
     expect(rulesActivationView(null).steps.every(x => x.state === 'unconfirmed')).toBe(true);
   });
 });

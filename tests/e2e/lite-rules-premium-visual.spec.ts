@@ -39,7 +39,7 @@ test.describe('Premium Rules — owner-reviewed visual contract', () => {
   });
   test('Decision Insight when backend provides decision', async ({ page }) => {
     await launch(page, 'rules-present');
-    const trigger = page.getByLabel('Latest Decision').getByRole('button', { name:'Explain this' });
+    const trigger = page.getByLabel('Latest Decision').getByRole('button', { name:'Explain decision' });
     if (await trigger.count()) {
       await trigger.click();
       await expect(page).toHaveScreenshot('rules-premium-decision-insight.png', { animations:'disabled' });

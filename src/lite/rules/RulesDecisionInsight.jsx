@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserRoundCheck, Target, Scale, ArrowRightCircle } from 'lucide-react';
-import { GlassCard, StatusBadge, StateSurface } from '../LiteUi.jsx';
+import { StatusBadge, StateSurface } from '../LiteUi.jsx';
 import { LiteTechnicalFacts } from '../LiteUx.jsx';
 import { rulesDecisionView } from './rulesPremiumView.js';
 
@@ -16,7 +16,6 @@ export default function RulesDecisionInsight({ decision, simulated = false }) {
   return <section className="lite-rules-insight" aria-label="Decision Insight">
     <div className="lite-rules-insight-top"><span className="lite-rules-eyebrow">Decision Insight</span><h2>Why did Pocket Lab decide this?</h2><div><StatusBadge status={view.tone}>{view.status}</StatusBadge><strong>{view.action}</strong></div></div>
     {view.isSimulation ? <StateSurface tone="neutral" title="Simulation only" description="This is a simulation. No real permission or system change is granted." /> : null}
-    <GlassCard className="lite-rules-insight-reason"><h3>Reported explanation</h3><p>{view.reason}</p></GlassCard>
     <ol className="lite-rules-insight-breakdown">{rows.map(({ title, value, Icon }) => <li key={title}><Icon size={19} aria-hidden="true" /><div><h3>{title}</h3><p>{value}</p></div></li>)}</ol>
     <p className="lite-rules-insight-boundary">{view.execution ? 'Separately reported execution: ' + view.execution + '.' : 'Authorization does not establish that execution started or completed.'}</p>
     <LiteTechnicalFacts title="Show technical details" facts={[

@@ -2,19 +2,17 @@
 .lite-rules-premium-screen { display: grid; gap: 1rem; min-width: 0; padding-bottom: 1.5rem; }
 .lite-rules-premium-screen > * { min-width: 0; }
 .lite-rules-premium-screen .lite-rules-eyebrow { display: block; font-size: .78rem; font-weight: 720; letter-spacing: .035em; color: var(--azure-muted); }
-.lite-rules-premium-screen :is(h2,h3,p,strong,span,small,dd,dt,time,label,button) { overflow-wrap: anywhere; }
+.lite-rules-premium-screen :is(h2,h3,p,strong,span,small,dd,dt,time,label,button) { min-width: 0; overflow-wrap: break-word; word-break: normal; }
 .lite-rules-premium-screen :is(button,summary) { scroll-margin: 1rem; }
 .lite-rules-premium-screen :is(button,summary):focus-visible { outline: 3px solid var(--azure-focus); outline-offset: 3px; }
-.lite-rules-premium-hero { display: grid; gap: .85rem; padding: clamp(1.15rem, 4vw, 1.85rem); }
+.lite-rules-premium-hero { display: grid; gap: .85rem; padding: var(--azure-spacing-card); }
 .lite-rules-premium-overview-grid { display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; min-width: 0; }
 .lite-rules-premium-overview-grid > * { min-width: 0; }
 .lite-rules-premium-hero-head, .lite-rules-premium-brand { display: flex; align-items: center; gap: .75rem; min-width: 0; flex-wrap: wrap; }
 .lite-rules-premium-hero-head { justify-content: space-between; }
-.lite-rules-premium-brand > svg { flex: none; }
-.lite-rules-premium-brand > div { display: grid; gap: .12rem; }
-.lite-rules-premium-brand span { font-weight: 760; }
-.lite-rules-premium-brand small { opacity: .8; }
-.lite-rules-premium-hero h2 { font-weight: 770; font-size: clamp(1.45rem, 5vw, 2rem); line-height: 1.18; max-width: 32ch; margin: .4rem 0 0; }
+.lite-rules-premium-shield { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border: 1px solid var(--azure-border); border-radius: var(--azure-radius-control); background: var(--azure-accent-subtle); color: var(--azure-accent); }
+.lite-rules-premium-brand .lite-rules-eyebrow { font-weight: 750; text-transform: uppercase; }
+.lite-rules-premium-hero h2 { font-weight: 750; font-size: clamp(1.45rem, 4vw, 1.9rem); line-height: 1.22; max-width: 36ch; margin: 0; }
 .lite-rules-premium-hero p { line-height: 1.6; max-width: 66ch; margin: 0; }
 .lite-rules-premium-chips { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
 .lite-rules-premium-chips > span { color: var(--azure-muted); border: 1px solid var(--azure-strong-border); border-radius: 999px; padding: .3rem .7rem; font-size: .84rem; font-weight: 650; }
@@ -34,12 +32,12 @@ html[data-lite-theme] .lite-rules-premium-screen :is(.lite-rules-premium-journey
 .lite-rules-journey-track { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .4rem; padding: 0; margin: .3rem 0; }
 .lite-rules-journey-track li { min-width: 0; position: relative; display: flex; align-items: center; }
 .lite-rules-journey-track button { display: grid; place-items: center; gap: .25rem; padding: .65rem .3rem; width: 100%; min-width: 0; min-height: 82px; border: 1px solid var(--azure-strong-border); border-radius: .8rem; background: var(--azure-surface); color: var(--azure-text); line-height: 1.25; cursor: pointer; transition: border-color .14s ease, background-color .14s ease; }
-.lite-rules-journey-track button:hover, .lite-rules-journey-track button.is-selected { border-width: 2px; background: var(--azure-selected); }
+.lite-rules-journey-track button:hover, .lite-rules-journey-track button.is-selected { border-color: var(--azure-accent); background: var(--azure-selected); box-shadow: inset 0 0 0 1px var(--azure-accent); }
 .lite-rules-journey-track button strong { font-size: .95rem; }
 .lite-rules-journey-track button span { font-size: .8rem; }
 .lite-rules-journey-connector { display: none; }
 .lite-rules-journey-hint { font-size: .85rem; }
-.lite-rules-journey-explanation { padding: .85rem 1rem; border-radius: .8rem; border: 1px solid var(--lite-border, #8293aa); }
+.lite-rules-journey-explanation { padding: .85rem 1rem; border-radius: .8rem; border: 1px solid var(--azure-border); }
 .lite-rules-journey-explanation p { margin-top: .3rem; }
 .lite-rules-premium-latest { display: grid; gap: .75rem; }
 .lite-rules-premium-latest header { display: flex; justify-content: space-between; gap: .75rem; align-items: start; flex-wrap: wrap; }
@@ -57,9 +55,7 @@ html[data-lite-theme] .lite-rules-premium-screen :is(.lite-rules-premium-journey
 .lite-rules-overlay-close { flex: 0 0 44px; }
 .lite-rules-overlay-scroll { overflow-x: hidden; }
 .lite-rules-overlay-scroll > * { min-width: 0; max-width: 100%; }
-.lite-rules-premium-nav { display: flex; flex-wrap: wrap; gap: .45rem; padding: .15rem 0 1rem; }
-.lite-rules-premium-nav button { border: 1px solid var(--azure-strong-border); border-radius: .65rem; color: var(--azure-text); background: var(--azure-surface); padding: .6rem .8rem; min-height: 44px; cursor: pointer; font-weight: 620; max-width: 100%; }
-.lite-rules-premium-nav button.is-active { border-color: var(--azure-accent); border-width: 2px; background: var(--azure-selected); }
+/* Manage navigation is a persistent, grouped settings index rather than wrapping pills. */
 .lite-rules-premium-manage-content { display: grid; gap: .9rem; min-width: 0; }
 .lite-rules-premium-manage-content h2 { font-size: 1.1rem; font-weight: 740; }
 .lite-rules-insight { display: grid; gap: 1rem; min-width: 0; }
@@ -89,15 +85,18 @@ html[data-lite-theme] .lite-rules-premium-screen :is(.lite-rules-premium-journey
 .lite-rules-revision-premium dl { display: grid; gap: .6rem; }
 .lite-rules-revision-premium dl div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: .5rem; }
 .lite-rules-revision-premium dd { min-width: 0; word-break: break-word; }
-.lite-rules-premium-screen .lite-rules-enterprise { min-width: 0; }
-.lite-rules-premium-screen .lite-rules-enterprise .lite-governance-matrix { max-width: 100%; overflow-x: auto; }
+.lite-rules-overlay-surface .lite-rules-enterprise { min-width: 0; }
+.lite-rules-overlay-surface .lite-rules-enterprise .lite-governance-matrix { max-width: 100%; overflow-x: auto; }
 @media (max-width: 700px) {
   .lite-rules-premium-overview-grid { grid-template-columns: 1fr; }
   .lite-rules-journey-track { grid-template-columns: 1fr; }
   .lite-rules-journey-track li { display: block; }
   .lite-rules-journey-track button { min-height: 54px; display: flex; justify-content: flex-start; gap: .75rem; padding: .75rem; text-align: left; }
   .lite-rules-journey-track button strong { min-width: 2.6rem; }
-  .lite-rules-header-actions { flex-wrap: wrap; }
+  .lite-rules-premium-screen .lite-page-header > :last-child { width: 100%; min-width: 0; }
+  .lite-rules-header-actions { flex-wrap: wrap; min-width: 0; max-width: 100%; width: 100%; }
+  .lite-rules-header-actions .lite-refresh-control { width: 10rem; min-width: 0; max-width: 100%; flex: 0 1 10rem; }
+  .lite-rules-header-actions .lite-refresh-button { width: 100%; max-width: 100%; min-width: 0; }
   .lite-rules-premium-hero > button { width: 100%; }
   .lite-rules-premium-latest header > button { width: auto; }
 }
@@ -172,13 +171,13 @@ html[data-lite-theme] .lite-rules-manage-sheet.is-movable {
   position: fixed; max-width: none; max-height: none; transform: none;
   display: flex; flex-direction: column; box-sizing: border-box;
 }
-html[data-lite-theme] .lite-rules-manage-sheet.is-movable .lite-overlay-scroll { flex: 1; min-height: 0; overflow: auto; }
+html[data-lite-theme] .lite-rules-manage-sheet.is-movable .lite-overlay-scroll { flex: 1; min-height: 0; overflow: hidden; }
 html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-head { display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; }
 html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-head > div:first-child { flex: 1 1 12rem; min-width: 0; }
 html[data-lite-theme] .lite-rules-overlay-scroll { overscroll-behavior: contain; }
-html[data-lite-theme] .lite-rules-premium-nav { position: sticky; top: 0; z-index: 1; background: var(--azure-surface); }
+/* Navigation scrolling is owned by the index pane, not the outer overlay. */
 html[data-lite-theme] .lite-rules-overlay-surface :is(.lite-rules-form-grid, .lite-governance-form) { min-width: 0; }
-html[data-lite-theme] .lite-rules-overlay-surface :is(.lite-rules-approval-card, .lite-rules-exception-row, .lite-rules-revision-row) { overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-rules-overlay-surface :is(.lite-rules-approval-card, .lite-rules-exception-row, .lite-rules-revision-row) { overflow-wrap: break-word; }
 @media (max-width: 700px) {
   html[data-lite-theme] .lite-rules-desktop-panel-tools { display: none; }
   html[data-lite-theme] .lite-rules-overlay-surface :is(.lite-rules-form-grid, .lite-governance-form, .lite-rules-detail-list, .lite-rules-compact-meta) { grid-template-columns: minmax(0, 1fr); }
@@ -188,3 +187,127 @@ html[data-lite-theme] .lite-rules-overlay-surface :is(.lite-rules-approval-card,
 @media (prefers-reduced-motion: reduce) {
   html[data-lite-theme] .lite-rules-overlay-surface *, html[data-lite-theme] .lite-rules-overlay-surface *::before, html[data-lite-theme] .lite-rules-overlay-surface *::after { transition: none !important; animation: none !important; }
 }
+
+/* Azure Horizon Rules Center P0–P7: appearance-independent geometry.
+   The theme supplies colors and shadows exclusively through semantic tokens.
+   These selectors deliberately target Rules-owned surfaces, including the portal. */
+html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-scroll {
+  display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+  overflow: hidden; padding: 0;
+}
+/* Android Chrome can keep the fixed layout viewport taller than the current
+   visual viewport while its URL/navigation chrome is visible. Pin the Rules
+   portal layer to the measured visual height so the medium sheet never hangs
+   below the physical viewport. */
+@media (max-width: 700px) {
+  html[data-lite-theme] .lite-rules-overlay-layer {
+    height: var(--lite-visual-viewport-height, 100dvh);
+    max-height: var(--lite-visual-viewport-height, 100dvh);
+    min-height: 0;
+    box-sizing: border-box;
+  }
+}
+html[data-lite-theme] .lite-rules-native-workspace {
+  display: grid; grid-template-columns: minmax(13rem, .75fr) minmax(0, 2fr);
+  width: 100%; flex: 1 1 auto; min-height: 0; min-width: 0; overflow: hidden;
+  background: var(--azure-surface); color: var(--azure-text);
+}
+html[data-lite-theme] .lite-rules-premium-nav {
+  display: grid; align-content: start; gap: 1.15rem;
+  min-height: 0; min-width: 0; overflow-y: auto; overflow-x: hidden;
+  padding: 1rem; background: var(--azure-raised);
+  border-inline-end: 1px solid var(--azure-border);
+  overscroll-behavior: contain;
+}
+html[data-lite-theme] .lite-rules-native-group { display: grid; gap: .4rem; min-width: 0; }
+html[data-lite-theme] .lite-rules-native-group h2 {
+  margin: 0; padding: 0 .65rem; font-size: .73rem; font-weight: 720;
+  letter-spacing: .07em; text-transform: uppercase; color: var(--azure-muted);
+}
+html[data-lite-theme] .lite-rules-native-group-rows { display: grid; gap: .2rem; min-width: 0; }
+html[data-lite-theme] .lite-rules-native-row {
+  display: grid; grid-template-columns: 20px minmax(0, 1fr) 18px; align-items: center;
+  gap: .7rem; padding: .7rem .65rem; min-height: 44px; min-width: 0;
+  border: 1px solid transparent; border-radius: var(--azure-radius-control);
+  background: transparent; color: var(--azure-text); text-align: left; cursor: pointer;
+  font: inherit; font-weight: 620; line-height: 1.35;
+}
+html[data-lite-theme] .lite-rules-native-row span { min-width: 0; overflow-wrap: break-word; }
+html[data-lite-theme] .lite-rules-native-row > svg:last-child { color: var(--azure-muted); justify-self: end; }
+html[data-lite-theme] .lite-rules-native-row:hover { background: var(--azure-hover); }
+html[data-lite-theme] .lite-rules-native-row.is-active {
+  background: var(--azure-selected); color: var(--azure-text); border-color: var(--azure-strong-border);
+}
+html[data-lite-theme] .lite-rules-native-row:focus-visible,
+html[data-lite-theme] .lite-rules-native-back:focus-visible { outline: 2px solid var(--azure-focus); outline-offset: 2px; }
+html[data-lite-theme] .lite-rules-native-detail {
+  display: grid; align-content: start; gap: 1rem; min-width: 0; min-height: 0;
+  overflow: auto; padding: var(--azure-spacing-card); overscroll-behavior: contain;
+}
+html[data-lite-theme] .lite-rules-native-detail-title {
+  font-size: 1.2rem; line-height: 1.3; margin: 0; font-weight: 740;
+}
+html[data-lite-theme] .lite-rules-native-back {
+  display: none; gap: .5rem; align-items: center; width: fit-content; min-height: 44px;
+  color: var(--azure-accent); background: transparent; border: 0; cursor: pointer;
+}
+html[data-lite-theme] .lite-rules-overlay-surface :is(.lite-rules-insight-breakdown, .lite-rules-focus-detail, .lite-governance-form) {
+  min-width: 0; max-width: 100%;
+}
+html[data-lite-theme] .lite-rules-overlay-surface :is(p, h2, h3, strong, label, dd, dt) {
+  overflow-wrap: break-word; word-break: normal;
+}
+html[data-lite-theme] .lite-rules-overlay-surface :is(.lite-governance-actions, .lite-rules-inline-actions) {
+  min-width: 0; flex-wrap: wrap;
+}
+html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-head,
+html[data-lite-theme] .lite-rules-insight-sheet .lite-overlay-head {
+  min-width: 0; gap: .5rem; padding-block: .65rem; padding-inline: var(--azure-spacing-card);
+}
+html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-head > div:first-child,
+html[data-lite-theme] .lite-rules-insight-sheet .lite-overlay-head > div:first-child { min-width: 0; flex: 1 1 12rem; }
+html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-head p,
+html[data-lite-theme] .lite-rules-insight-sheet .lite-overlay-head p { line-height: 1.35; }
+html[data-lite-theme] .lite-rules-manage-sheet .lite-sheet-mobile-snap-actions,
+html[data-lite-theme] .lite-rules-insight-sheet .lite-sheet-mobile-snap-actions { flex: 0 1 auto; }
+html[data-lite-theme] .lite-rules-premium-hero > button { justify-self: start; }
+html[data-lite-theme] .lite-rules-premium-chips span {
+  border-color: var(--azure-border); background: var(--azure-raised); color: var(--azure-muted);
+}
+@media (max-width: 820px) {
+  html[data-lite-theme] .lite-rules-native-workspace { grid-template-columns: minmax(0, 1fr); }
+  html[data-lite-theme] .lite-rules-premium-nav { border-inline-end: 0; }
+}
+@media (max-width: 700px) {
+  html[data-lite-theme] .lite-rules-premium-screen { gap: .85rem; }
+  html[data-lite-theme] .lite-rules-premium-hero > button { width: 100%; }
+  html[data-lite-theme] .lite-rules-native-workspace[data-rules-manage-view="index"] .lite-rules-native-detail { display: none; }
+  html[data-lite-theme] .lite-rules-native-workspace[data-rules-manage-view="section"] .lite-rules-premium-nav { display: none; }
+  html[data-lite-theme] .lite-rules-native-detail { padding: var(--azure-spacing-card); }
+  html[data-lite-theme] .lite-rules-native-back { display: inline-flex; }
+  html[data-lite-theme] .lite-rules-premium-nav { padding: .9rem; }
+  html[data-lite-theme] .lite-rules-native-row { min-height: 48px; }
+  html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-head,
+  html[data-lite-theme] .lite-rules-insight-sheet .lite-overlay-head { align-items: center; flex-wrap: wrap; }
+}
+@media (max-width: 360px) {
+  html[data-lite-theme] .lite-rules-premium-hero-head { align-items: flex-start; }
+  html[data-lite-theme] .lite-rules-premium-latest-body > button { width: 100%; }
+  html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-head,
+  html[data-lite-theme] .lite-rules-insight-sheet .lite-overlay-head { padding-inline: .75rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-lite-theme] .lite-rules-native-row { transition: none; }
+}
+
+/* The same responsive behavior applies if a desktop panel is resized narrower
+   than its viewport: the manage workspace becomes a focused one-pane navigator. */
+html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-scroll { container-type: inline-size; }
+@container (max-width: 560px) {
+  .lite-rules-native-workspace { grid-template-columns: minmax(0, 1fr) !important; }
+  .lite-rules-native-workspace[data-rules-manage-view="index"] .lite-rules-native-detail { display: none !important; }
+  .lite-rules-native-workspace[data-rules-manage-view="section"] .lite-rules-premium-nav { display: none !important; }
+  .lite-rules-native-back { display: inline-flex !important; }
+}
+html[data-lite-theme] .lite-rules-activation-entry { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+html[data-lite-theme] .lite-rules-activation-entry > * { min-width: 0; }

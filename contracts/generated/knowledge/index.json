@@ -31722,6 +31722,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-rules-native-center-qualification.spec.ts",
+      "name": "tests/e2e/lite-rules-native-center-qualification.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-rules-native-center-qualification.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-rules-premium-performance.spec.ts",
       "name": "tests/e2e/lite-rules-premium-performance.spec.ts",
       "source_refs": [
@@ -35290,6 +35300,7 @@
         "test:tests/e2e/lite-recovery-premium-refinement.spec.ts",
         "test:tests/e2e/lite-recovery-premium-visual.spec.ts",
         "test:tests/e2e/lite-rules-activation-progress.spec.ts",
+        "test:tests/e2e/lite-rules-native-center-qualification.spec.ts",
         "test:tests/e2e/lite-rules-premium-performance.spec.ts",
         "test:tests/e2e/lite-rules-premium-refinement.spec.ts",
         "test:tests/e2e/lite-rules-premium-visual.spec.ts",
@@ -36843,6 +36854,7 @@
         "test:tests/e2e/lite-recovery-premium-refinement.spec.ts",
         "test:tests/e2e/lite-recovery-premium-visual.spec.ts",
         "test:tests/e2e/lite-rules-activation-progress.spec.ts",
+        "test:tests/e2e/lite-rules-native-center-qualification.spec.ts",
         "test:tests/e2e/lite-rules-premium-performance.spec.ts",
         "test:tests/e2e/lite-rules-premium-refinement.spec.ts",
         "test:tests/e2e/lite-rules-premium-visual.spec.ts",
@@ -54043,6 +54055,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-rules-native-center-qualification.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-rules-premium-visual.spec.ts": [
         {
           "source": "reason:disabled",
@@ -69430,6 +69448,10 @@
         },
         {
           "target": "test:tests/e2e/lite-recovery-premium-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-rules-native-center-qualification.spec.ts",
           "type": "verified_by"
         },
         {
@@ -91015,6 +91037,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-rules-native-center-qualification.spec.ts"
+      ],
+      "id": "rel:730e57171a786c68",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-rules-native-center-qualification.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:7310051dbd914413",
@@ -110939,9 +110970,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "51a7b5cf64408e3371f422b2c0f936099420d9f9f58133f26b1045b19f680c8c",
+  "source_fingerprint": "524d32c62fdb11ffabd0805911482354e320e48e3eedd923c887fe1c7a292522",
   "statistics": {
-    "entity_count": 1471,
+    "entity_count": 1472,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -110958,14 +110989,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 323,
+      "test": 324,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4112,
-    "source_count": 360
+    "relation_count": 4113,
+    "source_count": 361
   }
 }

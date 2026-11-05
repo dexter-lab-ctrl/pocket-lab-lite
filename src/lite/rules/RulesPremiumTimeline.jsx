@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Ban, Clock3, History, GitBranch, CircleAlert } from 'lucide-react';
+import { CheckCircle2, Ban, Clock3, Circle, History, GitBranch, CircleAlert } from 'lucide-react';
 import { LiteButton, StateSurface, StatusBadge } from '../LiteUi.jsx';
 import { rulesActivationView, rulesDecisionView } from './rulesPremiumView.js';
 import { formatLiteTime } from '../../lib/liteApi.js';
@@ -24,7 +24,7 @@ export function RulesActivationTimeline({ operation, backendReachable = true }) 
   return <section className="lite-rules-activation-premium" aria-label="Rules activation timeline" data-rules-activation-state={progress.state}>
     <header><History size={19} aria-hidden="true" /><h2>Rules activation</h2><StatusBadge status={progress.state === 'active' && backendReachable ? 'healthy' : 'review'}>{progress.state === 'active' && backendReachable ? 'Succeeded' : terminalLabel[progress.state] || progress.state}</StatusBadge></header>
     <p>{backendReachable ? 'Stages reflect the latest server-reported operation state.' : 'Live confirmation is unavailable. The previous known-good Rules remain the safe reference until server verification.'}</p>
-    <ol className="lite-rules-premium-timeline">{progress.steps.map((step) => <li key={step.id} className={'is-' + step.state}><CheckCircle2 size={18} aria-hidden="true" /><div><strong>{step.label}</strong><span>{step.state === 'reported' ? 'Previously reported stage' : step.state === 'current' ? 'Current reported stage' : step.state === 'completed' && backendReachable ? 'Server-reported activation success' : 'Not confirmed'}</span></div></li>)}
+    <ol className="lite-rules-premium-timeline">{progress.steps.map((step) => <li key={step.id} className={'is-' + step.state}>{step.state === 'current' ? <Clock3 size={18} aria-hidden="true" /> : <Circle size={18} aria-hidden="true" />}<div><strong>{step.label}</strong><span>{step.state === 'current' ? 'Current server-reported phase' : 'Not confirmed'}</span></div></li>)}
       {progress.recovery ? <li className="is-recovery"><CircleAlert size={18} aria-hidden="true" /><div><strong>{terminalLabel[progress.state] || 'Recovery'}</strong><span>Recovery is server-owned. Completion is not assumed.</span></div></li> : null}
     </ol>
   </section>;

@@ -3588,7 +3588,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "b3b5e890b008a345534c0c23511fa3750cab5a130585413107aacb0aba660926",
+    "aggregate_fingerprint": "ca5644c5ef92bf956542c92fb4d779bbfa86eac4691b20ed183e9d49c63c979f",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3631,9 +3631,9 @@
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "c42cd0646545ddd7107a1321e9f565fb70ea8a1215bafb23cbf9dd4a413acf89",
       "src/lite/LiteRevisionSyncBridge.jsx": "f4eb52b13ea61c36fbe428836ec43f7c2df6e09eccd62e85230723dd2389309f",
-      "src/lite/LiteRules.jsx": "19d598d5f00334db2e5a6c72927c089094c9e678c596623cc8857d6e2fbeb4cc",
-      "src/lite/LiteRules.stories.jsx": "cc62db7bf0a7fe2989bd264a34bd58c3a758e7077f55789f1fa2ae06158df405",
-      "src/lite/LiteRulesEnterprise.jsx": "19868d99c7a2dd43201a0db851cf6a2d21cdb77f9eb4374734fbe58b3456111a",
+      "src/lite/LiteRules.jsx": "e3b831c66f6fdd93fc5aca49609706b98af6689204c45e6369f7d087f2dc0243",
+      "src/lite/LiteRules.stories.jsx": "4c671240afa9895c5b7474dde6bc4d22c9a68d3b9157297451f3027c4664050c",
+      "src/lite/LiteRulesEnterprise.jsx": "ed437ba7996952a42a79f4f5cf1373f24ceae897c0e8068e1c57b4861f018e19",
       "src/lite/LiteScreenBoundary.jsx": "34c27301bd03cf3f5555738c61c6d5d3b313a772fd08a8115c8508888b53d5e1",
       "src/lite/LiteSecurity.jsx": "2fefbf1414a8d803bac58d712120ebe9a5d527ba5858eb43833534b765bab977",
       "src/lite/LiteSecurity.stories.jsx": "1d4191e6ae8fe642d86b09fa37c1c0d7f0b9af1be3f1d585ae4586fe17163167",

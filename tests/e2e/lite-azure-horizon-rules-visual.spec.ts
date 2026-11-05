@@ -22,7 +22,7 @@ for(const theme of ['light','dark','system']) {
       await expect(page).toHaveScreenshot('azure-rules-'+theme+'-width-'+width+'.png',{animations:'disabled'});
     });
   }
-  for(const section of ['Policies','Test a Change','Requests','Temporary Access','Revision & Recovery']) {
+  for(const section of ['Policy Settings','Test a Change','Requests & Approvals','Temporary Access','Rules Version']) {
     test('Azure Rules Enterprise Manage '+theme+' '+section,async({page})=>{
       await page.setViewportSize({width:1280,height:900});
       await open(page,'rules-enterprise-owner',theme);
@@ -43,6 +43,6 @@ test('Azure Rules desktop resized Manage',async({page})=>{
 });
 test('Azure Rules Decision Insight',async({page})=>{
   await open(page,'rules-present','dark');
-  const explain=page.getByLabel('Latest Decision').getByRole('button',{name:'Explain this'});
+  const explain=page.getByLabel('Latest Decision').getByRole('button',{name:'Explain decision'});
   if(await explain.count()){await explain.click();await expect(page).toHaveScreenshot('azure-rules-decision-insight.png',{animations:'disabled'});}
 });

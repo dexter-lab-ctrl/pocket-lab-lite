@@ -54,6 +54,7 @@
     "test:perf:android:apps:baseline": "bash scripts/dev/lite/run-ui-performance-android-apps.sh --baseline",
     "test:perf:android:safety": "bash scripts/dev/lite/run-ui-performance-android-safety.sh",
     "test:perf:android:safety:baseline": "bash scripts/dev/lite/run-ui-performance-android-safety.sh --baseline",
+    "test:perf:android:rules": "bash scripts/dev/lite/run-ui-performance-android-rules.sh",
     "test:perf:android-baseline": "bash scripts/dev/lite/run-ui-performance-android-candidate.sh --baseline",
     "analyze:perf:android-baseline": "bash scripts/dev/lite/analyze-ui-performance-android-baseline.sh",
     "check:perf:android-baseline": "bash scripts/dev/lite/analyze-ui-performance-android-baseline.sh --fail-on-app-cost",
