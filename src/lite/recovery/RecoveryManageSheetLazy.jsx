@@ -300,7 +300,7 @@ export default function RecoveryManageSheetLazy({
               <React.Suspense fallback={<div className="lite-recovery-history-loading">Opening restore points…</div>}>
                 <RecoveryBackupHistory
                   initialHistory={history} latestPreview={latestPreview} savedStateOnly={savedStateOnly || recoveryWriteBlocked}
-                  selectedBackupId={selectedBackupId} onSelectBackup={onSelectBackup}
+                  selectedBackupId={selectedBackupId} onSelectBackup={onSelectBackup} selectionOnly
                   onVerify={onVerify} onPreview={onPreview} onRecover={onRestore}
                 />
               </React.Suspense>
