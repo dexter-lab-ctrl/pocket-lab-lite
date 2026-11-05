@@ -271,9 +271,11 @@ async function geometry(label, hasDialog = false) {
     const navStyle = nav ? getComputedStyle(nav) : null;
     const surface = withDialog ? document.querySelector('[data-rules-manage-layout]') : null;
     const surfaceRect = surface?.getBoundingClientRect();
-    const targets = surface ? [...surface.querySelectorAll('.lite-rules-native-row, .lite-rules-overlay-close, .lite-sheet-mobile-snap-actions button')].map((node) => {
+    const targets = surface ? [...surface.querySelectorAll('.lite-rules-native-row, .lite-rules-overlay-close, .lite-sheet-mobile-snap-actions button')].flatMap((node) => {
       const rect = node.getBoundingClientRect();
-      return { width: rect.width, height: rect.height };
+      const style = getComputedStyle(node);
+      if (rect.width <= 0 || rect.height <= 0 || style.display === 'none' || style.visibility === 'hidden') return [];
+      return [{ width: rect.width, height: rect.height }];
     }) : [];
     return {
       viewport: { width: window.innerWidth, height: window.innerHeight },
