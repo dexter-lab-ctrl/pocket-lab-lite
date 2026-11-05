@@ -23,7 +23,7 @@ describe('Recovery Center native experience — qualification authored only', ()
     fireEvent.click(screen.getByRole('button', { name: /Step 3: Review safety checks/ }));
     expect(onStepChange).toHaveBeenCalledWith('safety');
     expect(onRestore).not.toHaveBeenCalled();
-    expect(screen.getByText(/Selecting a stage never starts an action/i)).toBeInTheDocument();
+    expect(screen.getByText(/selection never starts recovery/i)).toBeInTheDocument();
   });
   it('does not describe an unavailable or mismatched preview as ready', () => {
     const wrong = { ...preview, backup_id: 'another-backup' };
