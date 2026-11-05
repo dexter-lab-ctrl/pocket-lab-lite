@@ -55,6 +55,13 @@ export const OfflineSaved = { render: () => <JourneyStory name="HealthyVerified"
 export const HistoryEmpty = { render: () => <JourneyStory name="EmptyHistory"/> };
 export const HistoryPopulated = { render: () => <JourneyStory name="PopulatedHistory"/> };
 export const Unknown = { render: () => <JourneyStory name="Unknown"/> };
+export const ReducedMotion = { render: () => <div style={{ animation:'none', transition:'none' }}><JourneyStory name="PreviewReady" /></div>, parameters: { reducedMotion: true } };
+export const Mobile320 = { render: () => <div style={{ maxWidth:320 }}><JourneyStory name="HealthyVerified"/></div> };
+export const Mobile360 = { render: () => <div style={{ maxWidth:360 }}><JourneyStory name="HealthyVerified"/></div> };
+export const Mobile390 = { render: () => <div style={{ maxWidth:390 }}><JourneyStory name="HealthyVerified"/></div> };
+export const Mobile430 = { render: () => <div style={{ maxWidth:430 }}><JourneyStory name="HealthyVerified"/></div> };
+export const Tablet768 = { render: () => <div style={{ maxWidth:768 }}><JourneyStory name="HealthyVerified"/></div> };
+export const Desktop1280 = { render: () => <div style={{ maxWidth:1100 }}><JourneyStory name="HealthyVerified"/></div> };
 export const LongLocalizedText = { render: () => <div style={{ maxWidth:320, fontSize:'200%' }}><JourneyStory name="VerificationRequired"/></div> };
 export const RestoreAssistantChoose = { render: () => <RecoveryRestoreAssistant step="choose" onStepChange={() => {}}>Select a safe restore point from the library.</RecoveryRestoreAssistant> };
 export const RestoreAssistantReview = { render: () => <RecoveryRestoreAssistant step="safety" verified previewReady onStepChange={() => {}}>Live backend checks still determine the outcome.</RecoveryRestoreAssistant> };
