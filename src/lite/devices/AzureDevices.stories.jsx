@@ -31,7 +31,7 @@ export const Resource200PercentBlack = createLiteStory('devices', 'devices-resou
 
 /* P7 stories: AUTHORED — NOT EXECUTED — UNVALIDATED.
    Existing production Devices screen and mocked FastAPI projections are reused. */
-export const NativeLibraryDaylightTablet = createLiteStory('devices', 'devices-online', { theme:'daylight', viewport:'tablet' });
+export const NativeLibraryDaylightTablet = createLiteStory('devices', 'devices-online', { theme:'daylight', viewport:'desktop', notes:'Tablet-sized deferred qualification uses responsive preview viewport controls.' });
 export const NativeLibraryDarkLongNames = createLiteStory('devices', 'devices-long-name', { theme:'dark', viewport:'mobile360', textScale:2 });
 export const NativeLibrarySavedUnconfirmed = createLiteStory('devices', 'offline-saved', { theme:'daylight', viewport:'mobile390' });
 export const NativeLibraryConnectionAttention = createLiteStory('devices', 'devices-services-stale', { theme:'dark', viewport:'desktop' });
