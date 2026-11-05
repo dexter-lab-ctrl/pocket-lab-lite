@@ -1026,68 +1026,41 @@ export default function DevicesScreen() {
         </div>}
       />
 
-      <LiteOperationalStory className="lite-devices-operational-story" story={fleetStory} />
-      <LiteFreshness
-        saved={savedStateOnly}
-        stale={isExpired}
-        refreshing={refreshing}
-        lastUpdatedLabel={lastUpdatedLabel}
-        backendReachable={backendReachable}
-      />
-      <LiteNextSteps
-        title="Connection review"
-        description="Connection and remote access are separate checks. Review the affected device before sending a command."
-        saved={savedStateOnly || isExpired}
-        items={[
-          ...devices.filter((device) => deviceLinkState(device) !== "joined" && deviceLinkState(device) !== "server").map((device) => ({
-            id: String(device.id || device.name), label: device.name || "Device",
-            description: deviceLinkState(device) === "repairing" ? "Connection is being repaired." : "Device connection is not confirmed.",
-            actionLabel: "Review device", onClick: () => toggleDeviceDetails(String(device.id || device.name)),
-          })),
-          ...(!remoteAccessReady ? [{ id: "remote-access", label: "Remote access not ready", description: remoteAccessView.summary || "Review Tailnet connectivity below." }] : []),
-        ]}
-      />
-      <DeviceRelationshipMap devices={devices} savedStateOnly={savedStateOnly || isExpired} />
-      <section className="lite-devices-horizon-summary" aria-label="Workspace operational summary">
-        <div><span>Connected devices</span><strong>{savedStateOnly || isExpired ? 'Not confirmed' : onlineDevices}</strong></div>
-        <div><span>Needs attention</span><strong>{savedStateOnly || isExpired ? 'Review saved status' : devices.filter((device) => !['joined', 'server'].includes(deviceRelationshipPresentation(device, savedStateOnly).state)).length}</strong></div>
-        <div><span>Remote access</span><strong>{remoteAccessView.title}</strong></div>
+      <section className="lite-device-library-status" aria-label="Environment status">
+        <LiteOperationalStory className="lite-devices-operational-story" story={fleetStory} />
+        <LiteFreshness saved={savedStateOnly} stale={isExpired} refreshing={refreshing}
+          lastUpdatedLabel={lastUpdatedLabel} backendReachable={backendReachable} />
       </section>
-
-      <section className={`lite-remote-access-panel ${remoteAccessReady ? 'lite-remote-access-ready' : 'lite-remote-access-not-ready'}`} aria-live="polite">
-        <div className="lite-remote-access-icon">
-          {remoteAccessReady ? <CheckCircle2 className="h-5 w-5" aria-hidden="true" /> : <CircleAlert className="h-5 w-5" aria-hidden="true" />}
-        </div>
-        <div className="lite-remote-access-copy">
-          <span>Remote access</span>
-          <strong>{remoteAccessView.title}</strong>
-          <p>{remoteAccessView.summary}</p>
-        </div>
-
-        <div className="lite-remote-access-facts" aria-label="Remote access readiness">
-          {remoteAccessSummaryRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
-            <div key={item.label} className={`is-${item.state}`}>
-              <span>{item.label}</span>
-              <strong><i aria-hidden="true" />{item.value}</strong>
-            </div>
-          ))}
-        </div>
-
-        <details className="lite-remote-access-details" onToggle={(event) => setRemoteAccessDetailsOpen(event.currentTarget.open)}>
-          <summary>Technical connection details</summary>
-          {remoteAccessDetailsOpen ? (
-            <dl>
-              {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
-                <div key={item.label}>
-                  <dt>{item.label}</dt>
-                  <dd>{item.label === 'Tailscale IP' && remoteAccessReady && !savedStateOnly && !isExpired && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
-                    ? <><span>Available</span> <code>{remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}</code></>
-                    : item.value}</dd>
-                </div>
-              ))}
-            </dl>
-          ) : null}
-        </details>
+      <section className="lite-devices-horizon-summary" aria-label="Fleet summary">
+        {[
+          { key: 'all', label: 'Total devices', value: fleetMetrics.total },
+          { key: 'connected', label: 'Connected', value: fleetMetrics.connected },
+          { key: 'attention', label: 'Needs attention', value: fleetMetrics.attention },
+        ].map((metric) => (
+          <button key={metric.key} type="button" className={deviceFilter === metric.key ? 'is-selected' : ''}
+            aria-pressed={deviceFilter === metric.key}
+            onClick={() => { triggerLiteHaptic('tap'); setDeviceFilter(metric.key); }}>
+            <span>{metric.label}</span>
+            <strong>{metric.value === null ? '—' : metric.value}</strong>
+            {metric.value === null ? <small>Not confirmed</small> : null}
+          </button>
+        ))}
+      </section>
+      <section className="lite-devices-library-tools" aria-label="Find devices">
+        <label className="lite-devices-search-field">
+          <Search className="h-4 w-4" aria-hidden="true" />
+          <span className="sr-only">Search devices</span>
+          <input type="search" value={deviceSearch} onChange={(event) => setDeviceSearch(event.target.value)}
+            placeholder="Search devices" aria-label="Search devices" />
+        </label>
+        <label className="lite-devices-filter-field">
+          <span className="sr-only">Filter devices</span>
+          <select value={deviceFilter} aria-label="Filter devices" onChange={(event) => {
+            triggerLiteHaptic('tap'); setDeviceFilter(event.target.value);
+          }}>
+            {DEVICE_LIBRARY_FILTERS.map((filter) => <option key={filter.id} value={filter.id}>{filter.label}</option>)}
+          </select>
+        </label>
       </section>
 
       <div className="lite-devices-layout">
@@ -1287,7 +1260,73 @@ export default function DevicesScreen() {
               description="Add a device to create your first invite."
             />
           ) : null}
+          {!loading && devices.length > 0 && filteredDevices.length === 0 ? (
+            <StateSurface tone="empty" title="No matching devices"
+              description="Try another search or choose All devices." />
+          ) : null}
         </section>
+        <details className="lite-devices-topology-workspace" open={topologyOpen}
+          onToggle={(event) => setTopologyOpen(event.currentTarget.open)}>
+          <summary onClick={() => triggerLiteHaptic('tap')}>
+            <Network className="h-5 w-5" aria-hidden="true" />
+            <span><strong>Connections &amp; Topology</strong><small>Device links, remote access and connection readiness</small></span>
+            <span aria-hidden="true">›</span>
+          </summary>
+          {topologyOpen ? (
+            <div className="lite-devices-topology-content">
+              <DeviceRelationshipMap devices={devices} savedStateOnly={savedStateOnly || isExpired}
+                onOpenDevice={(device) => toggleDeviceDetails(deviceListKey(device))} />
+              <LiteNextSteps
+                title="Connection review"
+                description="Device connectivity and remote access are separate checks."
+                saved={savedStateOnly || isExpired}
+                items={[
+                  ...devices.filter((device) => deviceLinkState(device) !== 'joined' && deviceLinkState(device) !== 'server').slice(0, 12).map((device) => ({
+                    id: String(device.id || device.name), label: device.name || 'Device',
+                    description: deviceLinkState(device) === 'repairing' ? 'Connection is being repaired.' : 'Device connection is not confirmed.',
+                    actionLabel: 'Review device', onClick: () => toggleDeviceDetails(String(device.id || device.name)),
+                  })),
+                  ...(!remoteAccessReady ? [{ id: 'remote-access', label: 'Remote access not ready', description: remoteAccessView.summary || 'Review private network connectivity below.' }] : []),
+                ]}
+              />
+              <section className={`lite-remote-access-panel ${remoteAccessReady ? 'lite-remote-access-ready' : 'lite-remote-access-not-ready'}`} aria-live="polite">
+                <div className="lite-remote-access-icon">
+                  {remoteAccessReady ? <CheckCircle2 className="h-5 w-5" aria-hidden="true" /> : <CircleAlert className="h-5 w-5" aria-hidden="true" />}
+                </div>
+                <div className="lite-remote-access-copy">
+                  <span>Remote access</span>
+                  <strong>{remoteAccessView.title}</strong>
+                  <p>{remoteAccessView.summary}</p>
+                </div>
+        
+                <div className="lite-remote-access-facts" aria-label="Remote access readiness">
+                  {remoteAccessSummaryRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
+                    <div key={item.label} className={`is-${item.state}`}>
+                      <span>{item.label}</span>
+                      <strong><i aria-hidden="true" />{item.value}</strong>
+                    </div>
+                  ))}
+                </div>
+        
+                <details className="lite-remote-access-details" onToggle={(event) => setRemoteAccessDetailsOpen(event.currentTarget.open)}>
+                  <summary>Technical connection details</summary>
+                  {remoteAccessDetailsOpen ? (
+                    <dl>
+                      {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
+                        <div key={item.label}>
+                          <dt>{item.label}</dt>
+                          <dd>{item.label === 'Tailscale IP' && remoteAccessReady && !savedStateOnly && !isExpired && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
+                            ? <><span>Available</span> <code>{remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}</code></>
+                            : item.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : null}
+                </details>
+              </section>
+            </div>
+          ) : null}
+        </details>
         <details ref={addDeviceDisclosureRef} id="lite-devices-onboarding" className="lite-devices-add-disclosure" onToggle={(event) => setAddDeviceOpen(event.currentTarget.open)}>
           <summary>
             <span>Expand your workspace</span>
