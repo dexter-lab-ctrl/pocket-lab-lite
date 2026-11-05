@@ -503,7 +503,7 @@ html[data-lite-theme] .lite-device-action-layer :is(button,summary,input,select)
   html[data-lite-theme] .lite-device-details-focus-anchor,
   html[data-lite-theme] .pocket-card.lite-device-remove-panel {
     inset:auto 0 0!important;top:auto!important;left:0!important;right:0!important;
-    width:100%!important;max-width:100%!important;height:auto!important;
+    width:100%!important;max-width:100%!important;height:auto;
     transform:none!important;
     max-height:calc(100dvh - max(1rem,env(safe-area-inset-top)))!important;
     padding-bottom:env(safe-area-inset-bottom);
@@ -597,4 +597,217 @@ html[data-lite-theme] .lite-device-relationship-peer:is(.is-disconnected,.is-sto
     left:0;right:auto;top:0;bottom:0;width:2px;height:100%;transform:none;
   }
   html[data-lite-theme] .lite-device-relationship-peers {gap:.65rem;}
+}
+
+/* Native Device Library P0–P6: shared geometry for Daylight, Dark and System.
+ * This is the Devices-owned composition layer. Colors reference only the
+ * existing Azure Horizon semantic tokens; themes never redefine spacing. */
+html[data-lite-theme] .lite-device-library-status {
+  display:grid;gap:.35rem;min-width:0;margin-block:.3rem 1rem;
+}
+html[data-lite-theme] .lite-device-library-status .lite-devices-operational-story {
+  min-width:0;margin:0;
+}
+html[data-lite-theme] .lite-devices-horizon-summary {
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:.65rem;margin-block:0 1rem;
+}
+html[data-lite-theme] .lite-devices-horizon-summary > button {
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+  min-width:0;min-height:5.5rem;padding:var(--azure-spacing-card);
+  gap:.2rem;border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);
+  background:var(--azure-surface);color:var(--azure-text);box-shadow:var(--azure-shadow);
+  text-align:start;cursor:pointer;font-family:var(--azure-font-ui);
+}
+html[data-lite-theme] .lite-devices-horizon-summary > button:hover,
+html[data-lite-theme] .lite-devices-horizon-summary > button.is-selected {
+  border-color:var(--azure-strong-border);background:var(--azure-selected);
+}
+html[data-lite-theme] .lite-devices-horizon-summary > button span {
+  color:var(--azure-muted);font-size:.79rem;line-height:1.4;
+}
+html[data-lite-theme] .lite-devices-horizon-summary > button.is-selected span {
+  color:var(--azure-text);
+}
+html[data-lite-theme] .lite-devices-horizon-summary > button strong {
+  color:var(--azure-text);font-size:clamp(1.25rem,2.5vw,1.75rem);line-height:1.2;
+}
+html[data-lite-theme] .lite-devices-horizon-summary > button small {
+  color:var(--azure-muted);font-size:.7rem;
+}
+html[data-lite-theme] .lite-devices-library-tools {
+  display:flex;align-items:stretch;gap:.7rem;min-width:0;margin-bottom:1rem;
+}
+html[data-lite-theme] .lite-devices-search-field {
+  display:flex;align-items:center;gap:.5rem;flex:1 1 auto;min-width:0;
+  padding-inline:.8rem;background:var(--azure-input);color:var(--azure-muted);
+  border:1px solid var(--azure-strong-border);border-radius:var(--azure-radius-control);
+}
+html[data-lite-theme] .lite-devices-search-field input {
+  min-width:0;flex:1 1 auto;width:100%;height:2.9rem;border:0;background:transparent;
+  color:var(--azure-text);font:inherit;outline:none;
+}
+html[data-lite-theme] .lite-devices-filter-field {display:flex;min-width:0;}
+html[data-lite-theme] .lite-devices-filter-field select {
+  min-height:2.9rem;max-width:100%;min-width:8.5rem;padding:.5rem .7rem;
+  background:var(--azure-input);color:var(--azure-text);
+  border:1px solid var(--azure-strong-border);border-radius:var(--azure-radius-control);
+  font:inherit;cursor:pointer;
+}
+html[data-lite-theme] .lite-device-library-card {
+  display:flex;flex-direction:column;justify-content:space-between;gap:1rem;
+  min-width:0;min-height:10.5rem;margin:0;padding:var(--azure-spacing-card);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);
+  background:var(--azure-surface);box-shadow:var(--azure-shadow);
+  font-family:var(--azure-font-ui);
+}
+html[data-lite-theme] .lite-device-library-identity {
+  display:flex;align-items:flex-start;gap:.85rem;min-width:0;
+}
+html[data-lite-theme] .lite-device-library-icon {
+  display:grid;place-items:center;flex:0 0 3.2rem;width:3.2rem;height:3.2rem;
+  border-radius:1rem;background:var(--azure-raised);color:var(--azure-accent);
+}
+html[data-lite-theme] .lite-device-library-icon.is-server {
+  background:var(--azure-accent-subtle);
+}
+html[data-lite-theme] .lite-device-library-name {flex:1 1 auto;min-width:0;}
+html[data-lite-theme] .lite-device-library-name h3 {
+  margin:0;color:var(--azure-text);font-size:1.07rem;line-height:1.35;font-weight:750;
+  overflow-wrap:break-word;
+}
+html[data-lite-theme] .lite-device-library-name p {
+  margin:.18rem 0 0;color:var(--azure-muted);font-size:.83rem;line-height:1.45;
+}
+html[data-lite-theme] .lite-device-library-lock {flex:none;color:var(--azure-muted);}
+html[data-lite-theme] .lite-device-library-footer {
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  gap:.5rem;min-width:0;
+}
+html[data-lite-theme] .lite-device-library-status {
+  display:inline-flex;align-items:center;gap:.4rem;min-width:0;max-width:100%;
+  font-size:.82rem;font-weight:650;line-height:1.4;color:var(--azure-neutral);
+}
+html[data-lite-theme] .lite-device-library-status > span {min-width:0;overflow-wrap:break-word;}
+html[data-lite-theme] .lite-device-library-status i {
+  display:block;flex:0 0 .48rem;width:.48rem;height:.48rem;border-radius:100%;
+  background:currentColor;
+}
+html[data-lite-theme] .lite-device-library-status.is-connected {color:var(--azure-success);}
+html[data-lite-theme] .lite-device-library-status:is(.is-repairing,.is-joining,.is-waiting,.is-attention) {color:var(--azure-warning);}
+html[data-lite-theme] .lite-device-library-status:is(.is-blocked,.is-stopped,.is-disconnected) {color:var(--azure-danger);}
+html[data-lite-theme] .lite-device-library-manage {
+  display:inline-flex;align-items:center;justify-content:center;gap:.25rem;
+  min-height:2.75rem;min-width:4.8rem;margin-inline-start:auto;padding:.45rem .55rem;
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  background:var(--azure-raised);color:var(--azure-text);font:inherit;
+  font-size:.85rem;font-weight:700;cursor:pointer;
+}
+html[data-lite-theme] .lite-device-library-manage:hover {background:var(--azure-hover);}
+html[data-lite-theme] .lite-devices-topology-workspace {
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);
+  background:var(--azure-surface);color:var(--azure-text);min-width:0;
+  overflow:hidden;margin-block:1rem;
+}
+html[data-lite-theme] .lite-devices-topology-workspace > summary {
+  display:flex;align-items:center;gap:.8rem;min-height:4.1rem;padding:var(--azure-spacing-card);
+  cursor:pointer;list-style:none;
+}
+html[data-lite-theme] .lite-devices-topology-workspace > summary::-webkit-details-marker {display:none;}
+html[data-lite-theme] .lite-devices-topology-workspace > summary > svg {flex:none;color:var(--azure-accent);}
+html[data-lite-theme] .lite-devices-topology-workspace > summary > span:nth-child(2) {
+  display:grid;gap:.2rem;flex:1 1 auto;min-width:0;
+}
+html[data-lite-theme] .lite-devices-topology-workspace > summary strong {color:var(--azure-text);}
+html[data-lite-theme] .lite-devices-topology-workspace > summary small {color:var(--azure-muted);}
+html[data-lite-theme] .lite-devices-topology-content {
+  display:grid;gap:1rem;padding:var(--azure-spacing-card);min-width:0;
+}
+html[data-lite-theme] .lite-devices-topology-content .lite-remote-access-panel {margin:0;}
+html[data-lite-theme] .lite-device-relationship-node[role="button"] {cursor:pointer;}
+html[data-lite-theme] .lite-device-manage-navigation {
+  display:flex;gap:.4rem;padding:.55rem .65rem;overflow-x:auto;overscroll-behavior-inline:contain;
+  border-bottom:1px solid var(--azure-border);scrollbar-width:thin;
+}
+html[data-lite-theme] .lite-device-manage-navigation button {
+  display:inline-flex;align-items:center;gap:.35rem;min-height:2.65rem;flex:0 0 auto;
+  padding:.45rem .7rem;border:1px solid transparent;border-radius:var(--azure-radius-control);
+  background:transparent;color:var(--azure-muted);font:inherit;font-size:.83rem;
+  cursor:pointer;
+}
+html[data-lite-theme] .lite-device-manage-navigation button.is-current {
+  background:var(--azure-selected);color:var(--azure-text);border-color:var(--azure-strong-border);
+}
+html[data-lite-theme] .lite-device-manage-content {
+  display:grid;gap:1rem;min-width:0;padding-block:.75rem;
+}
+html[data-lite-theme] .lite-device-native-overview {
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);
+  padding:var(--azure-spacing-card);background:var(--azure-raised);min-width:0;
+}
+html[data-lite-theme] .lite-device-native-overview dl {display:grid;gap:.65rem;margin:0;}
+html[data-lite-theme] .lite-device-native-overview dl > div {
+  display:flex;justify-content:space-between;align-items:flex-start;gap:.8rem;min-width:0;
+}
+html[data-lite-theme] .lite-device-native-overview dt {color:var(--azure-muted);}
+html[data-lite-theme] .lite-device-native-overview dd {
+  color:var(--azure-text);margin:0;text-align:end;overflow-wrap:break-word;min-width:0;
+}
+html[data-lite-theme] .lite-device-native-overview p {margin:.8rem 0 0;color:var(--azure-muted);}
+html[data-lite-theme] .lite-device-mobile-snap {display:none;}
+html[data-lite-theme] .lite-devices-horizon-summary > button:focus-visible,
+html[data-lite-theme] .lite-devices-library-tools :focus-within,
+html[data-lite-theme] .lite-devices-filter-field select:focus-visible,
+html[data-lite-theme] .lite-device-library-manage:focus-visible,
+html[data-lite-theme] .lite-device-manage-navigation button:focus-visible,
+html[data-lite-theme] .lite-devices-topology-workspace summary:focus-visible,
+html[data-lite-theme] .lite-device-relationship-node[role="button"]:focus-visible {
+  outline:2px solid var(--azure-focus);outline-offset:2px;
+}
+@media (max-width:700px) {
+  html[data-lite-theme] .lite-devices-horizon-summary {gap:.4rem;}
+  html[data-lite-theme] .lite-devices-horizon-summary > button {min-height:5rem;padding:.6rem .45rem;}
+  html[data-lite-theme] .lite-devices-horizon-summary > button strong {font-size:1.4rem;}
+  html[data-lite-theme] .lite-devices-library-tools {flex-direction:column;gap:.5rem;}
+  html[data-lite-theme] .lite-devices-filter-field select {width:100%;}
+  html[data-lite-theme] .lite-device-library-card {min-height:8.75rem;}
+  html[data-lite-theme] .lite-device-mobile-snap {
+    display:grid;gap:.2rem;position:sticky;top:0;z-index:6;padding:.3rem .65rem;
+    border-bottom:1px solid var(--azure-border);background:var(--azure-surface);
+  }
+  html[data-lite-theme] .lite-device-mobile-grip {
+    position:relative;display:block;width:6rem;height:2.75rem;min-height:2.75rem;
+    margin:0 auto;padding:0;border:0;border-radius:999px;touch-action:none;
+    cursor:ns-resize;background:transparent;
+  }
+  html[data-lite-theme] .lite-device-mobile-grip::before {
+    content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:3rem;height:.36rem;background:var(--azure-strong-border);
+    border-radius:999px;pointer-events:none;
+  }
+  html[data-lite-theme] .lite-device-mobile-snap-actions {
+    display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  }
+  html[data-lite-theme] .lite-device-mobile-snap-actions button {
+    min-height:2.75rem;min-width:4.3rem;padding:.35rem .6rem;
+    border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+    background:var(--azure-raised);color:var(--azure-text);font:inherit;font-size:.8rem;
+  }
+  html[data-lite-theme] .lite-device-mobile-snap-actions span {
+    color:var(--azure-muted);font-size:.75rem;text-transform:capitalize;
+  }
+  html[data-lite-theme] .lite-device-details-focus-anchor {
+    overflow-y:auto;overscroll-behavior:contain;
+    max-height:calc(100dvh - env(safe-area-inset-top) - 1rem);
+  }
+}
+@media (max-width:360px) {
+  html[data-lite-theme] .lite-device-library-footer {align-items:flex-start;}
+  html[data-lite-theme] .lite-device-native-overview dl > div {flex-direction:column;gap:.15rem;}
+  html[data-lite-theme] .lite-device-native-overview dd {text-align:start;}
+}
+@media (prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-device-library-card *,
+  html[data-lite-theme] .lite-devices-topology-workspace *,
+  html[data-lite-theme] .lite-device-manage-navigation * {transition:none;animation:none;}
 }

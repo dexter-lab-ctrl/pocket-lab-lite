@@ -15608,6 +15608,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-devices-native-workspace-qualification.spec.ts",
+      "name": "tests/e2e/lite-devices-native-workspace-qualification.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-devices-native-workspace-qualification.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-home-command-performance.spec.ts",
       "name": "tests/e2e/lite-home-command-performance.spec.ts",
       "source_refs": [
@@ -41064,6 +41075,20 @@
       "source": "domain:operation",
       "target": "subject:pocketlab.events.operation.failed",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-devices-native-workspace-qualification.spec.ts"
+      ],
+      "id": "rel:665e94731adf4785",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-devices-native-workspace-qualification.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {

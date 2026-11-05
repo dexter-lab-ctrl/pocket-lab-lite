@@ -22,6 +22,7 @@ import {
   Server,
   ShieldCheck,
   Smartphone,
+  Search,
   Trash2,
   WifiOff,
   X,
@@ -106,6 +107,8 @@ import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 import LiteNextSteps from './components/LiteNextSteps.jsx';
 import './devices/azureDevices.css';
 import { deviceHorizonConnection } from './devices/deviceHorizonPresentation.js';
+import { deviceLibraryEntry, deviceLibrarySummary, filterDeviceLibrary, DEVICE_LIBRARY_FILTERS } from './devices/deviceLibraryPresentation.js';
+import { useMobileSheetSnap } from './components/useMobileSheetSnap.js';
 
 const MemoLiteVirtualList = React.memo(LiteVirtualList);
 const DeviceCardLazy = React.lazy(loadDeviceCard);
@@ -174,7 +177,7 @@ export function deviceRelationshipPresentation(device, savedStateOnly = false) {
         : ['unknown', 'stale'].includes(view.kind) ? 'unknown' : 'disconnected' };
 }
 
-function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
+function DeviceRelationshipMap({ devices = [], savedStateOnly = false, onOpenDevice }) {
   const server = devices.find((device) => deviceLinkState(device) === 'server') || null;
   const peers = devices.filter((device) => device !== server);
   const serverName = server?.name || server?.hostname || 'Server Host';
@@ -224,7 +227,7 @@ function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
           return (
             <div className={`lite-device-relationship-peer is-${state}`} key={deviceListKey(device)} role="listitem">
               <span className={`lite-device-relationship-link is-${state}`} aria-hidden="true"><i /></span>
-              <div className={`lite-device-relationship-node is-${state}`} data-relationship-state={state} aria-label={`${device.name || device.hostname || 'Device'}: ${stateLabel}`}>
+              <div className={`lite-device-relationship-node is-${state}`} data-relationship-state={state} aria-label={`${device.name || device.hostname || 'Device'}: ${stateLabel}`} onClick={() => { triggerLiteHaptic('tap'); onOpenDevice?.(device); }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); triggerLiteHaptic('tap'); onOpenDevice?.(device); } }}>
                 {icon === 'connected' ? <Smartphone className="h-4 w-4" aria-hidden="true" /> : icon === 'repairing' ? <RefreshCw className="h-4 w-4" aria-hidden="true" /> : <WifiOff className="h-4 w-4" aria-hidden="true" />}
                 <span>{device.name || device.hostname || 'Device'}</span>
                 <small>{stateLabel}</small>
@@ -287,7 +290,7 @@ function toggleDeviceDetails(deviceKey) {
   store.setActiveDeviceDetailsId(store.activeDeviceDetailsId === deviceKey ? '' : deviceKey);
 }
 
-function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
+function DeviceDetailsPortal({ devices, detailsButtonRefs, deviceActionHandlersRef, restartBusy, removeBusy, savedStateOnly }) {
   const detailsDeviceId = useLiteUiStore((state) => state.activeDeviceDetailsId);
   const setDeviceModelPickerId = useLiteUiStore((state) => state.setDeviceModelPickerId);
   const [detailsBodyReady, setDetailsBodyReady] = useState(false);
@@ -297,6 +300,7 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
   );
   const { panelRef: detailsPanelRef, desktopPanel, panelStyle, announcement, reset: resetPanelGeometry,
     startPanelInteraction, adjustPanelWithKeyboard } = useDesktopManageGeometry({ open: Boolean(activeDetailsDevice) });
+  const mobileSnap = useMobileSheetSnap({ open: Boolean(activeDetailsDevice), enabled: !desktopPanel, surfaceRef: detailsPanelRef, initialState: 'medium' });
 
   useEffect(() => {
     if (!activeDetailsDevice) {
@@ -315,6 +319,7 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
 
   const closeDeviceDetails = useCallback(() => {
     const trigger = detailsButtonRefs.current.get(detailsDeviceId);
+    triggerLiteHaptic('tap');
     useLiteUiStore.getState().setActiveDeviceDetailsId('');
     window.requestAnimationFrame(() => trigger?.focus?.({ preventScroll: true }));
   }, [detailsButtonRefs, detailsDeviceId]);
@@ -368,8 +373,18 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
             event.preventDefault(); first.focus();
           }
         }}
-        style={panelStyle}
+        style={desktopPanel ? panelStyle : mobileSnap.style}
       >
+        {mobileSnap.active ? (
+          <div className="lite-device-mobile-snap" aria-label="Device Manage sheet size">
+            <button type="button" className="lite-device-mobile-grip" {...mobileSnap.gripProps} aria-label={`Resize device Manage sheet · ${mobileSnap.state}`} />
+            <div className="lite-device-mobile-snap-actions">
+              <button type="button" onClick={() => { triggerLiteHaptic('tap'); mobileSnap.contract(); }} disabled={!mobileSnap.canContract} aria-label="Make device sheet smaller">Smaller</button>
+              <span aria-live="polite">{mobileSnap.state}</span>
+              <button type="button" onClick={() => { triggerLiteHaptic('tap'); mobileSnap.expand(); }} disabled={!mobileSnap.canExpand} aria-label="Expand device sheet">Expand</button>
+            </div>
+          </div>
+        ) : null}
         {desktopPanel ? (
           <div className="lite-device-details-panel-tools" aria-label="Desktop device details panel controls">
             <button
@@ -378,13 +393,13 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
               aria-label="Move device details panel"
               title="Move panel with the pointer or arrow keys"
               aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
-              onPointerDown={(event) => startPanelInteraction('move', event)}
+              onPointerDown={(event) => { triggerLiteHaptic('tap'); startPanelInteraction('move', event); }}
               onKeyDown={(event) => adjustPanelWithKeyboard('move', event)}
             >
               <Move className="h-4 w-4" aria-hidden="true" />
             </button>
             <span>Desktop panel</span>
-            <button type="button" className="lite-device-details-panel-tool" aria-label="Reset device details panel position and size" onClick={resetPanelGeometry}>Reset</button>
+            <button type="button" className="lite-device-details-panel-tool" aria-label="Reset device details panel position and size" onClick={() => { triggerLiteHaptic('tap'); resetPanelGeometry(); }}>Reset</button>
             <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
             <button
               type="button"
@@ -392,7 +407,7 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
               aria-label="Resize device details panel"
               title="Resize panel with the pointer or arrow keys"
               aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
-              onPointerDown={(event) => startPanelInteraction('resize', event)}
+              onPointerDown={(event) => { triggerLiteHaptic('tap'); startPanelInteraction('resize', event); }}
               onKeyDown={(event) => adjustPanelWithKeyboard('resize', event)}
             >
               <Maximize2 className="h-4 w-4" aria-hidden="true" />
@@ -402,9 +417,15 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
         {detailsBodyReady ? (
           <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
             <MemoDeviceDetailsLazy
+              key={String(activeDetailsDevice?.id || activeDetailsDevice?.name || '')}
               device={activeDetailsDevice}
               onClose={closeDeviceDetails}
               onChooseModel={chooseDeviceModel}
+               onRestartAgent={() => deviceActionHandlersRef.current.restartAgent?.(activeDetailsDevice)}
+               onReviewRemoval={() => deviceActionHandlersRef.current.loadRemovalAssessment?.(activeDetailsDevice)}
+               restartBusy={restartBusy === activeDetailsDevice.id}
+               removeBusy={removeBusy}
+               actionsBlocked={savedStateOnly}
             />
           </Suspense>
         ) : (
@@ -586,6 +607,9 @@ export default function DevicesScreen() {
   const [addDeviceOpen, setAddDeviceOpen] = useState(false);
   const addDeviceDisclosureRef = useRef(null);
   const [remoteAccessDetailsOpen, setRemoteAccessDetailsOpen] = useState(false);
+  const [topologyOpen, setTopologyOpen] = useState(false);
+  const [deviceSearch, setDeviceSearch] = useState('');
+  const [deviceFilter, setDeviceFilter] = useState('all');
   const [result, setResult] = useState(null);
   const [invite, setInvite] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -680,7 +704,16 @@ export default function DevicesScreen() {
   const onlineDevices = devices.filter((device) => deviceRelationshipPresentation(device, savedStateOnly || isExpired).state === 'joined').length;
   const healthAttentionCurrent = Boolean(data?.health_summary?.attention_current);
   const healthAttentionCount = healthAttentionCurrent ? Number(data?.health_summary?.attention_count || 0) : 0;
-  const fleetStory = fleetOperationalStory({ data, devices, onlineDevices, healthAttentionCount, savedStateOnly });
+  const fleetStory = fleetOperationalStory({ data, devices, onlineDevices, healthAttentionCount, savedStateOnly: savedStateOnly || isExpired });
+  const libraryEntries = useMemo(() => devices.map((device) => deviceLibraryEntry(device, {
+    saved: savedStateOnly || isExpired, presentation: canonicalDevicePresentation(device), linkState: deviceLinkState(device),
+  })), [devices, savedStateOnly, isExpired]);
+  const fleetMetrics = useMemo(() => deviceLibrarySummary(libraryEntries, {
+    confirmed: Boolean(data) && !savedStateOnly && !isExpired,
+  }), [libraryEntries, data, savedStateOnly, isExpired]);
+  const filteredDevices = useMemo(() => filterDeviceLibrary(libraryEntries, {
+    filter: deviceFilter, query: deviceSearch,
+  }), [libraryEntries, deviceFilter, deviceSearch]);
   const selectedRoleLabels = selectedRoles.map((role) => roleLabel(role));
   const selectedRoleLabel = selectedRoleLabels.join(' + ');
   const candidateDeviceName = hostname.trim() || `Pocket Lab ${selectedRoleLabel}`;
@@ -978,12 +1011,12 @@ export default function DevicesScreen() {
   return (
     <>
       <PageHeader
-        eyebrow="Devices"
+        eyebrow="Self-hosted workspace"
         title="Devices"
-        description="Your self-hosted workspace, connected devices, and safe recovery actions."
+        description="Manage your connected environment."
         actions={<div className="lite-devices-title-actions">
-          <LiteRefreshButton scope="devices" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
-          <LiteButton aria-expanded={addDeviceOpen} aria-controls="lite-devices-onboarding" onClick={() => {
+          <LiteRefreshButton scope="devices" refresh={() => { triggerLiteHaptic('tap'); refresh(); }} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
+          <LiteButton haptic aria-expanded={addDeviceOpen} aria-controls="lite-devices-onboarding" onClick={() => {
             if (addDeviceDisclosureRef.current) {
               addDeviceDisclosureRef.current.open = true;
               setAddDeviceOpen(true);
@@ -993,68 +1026,41 @@ export default function DevicesScreen() {
         </div>}
       />
 
-      <LiteOperationalStory className="lite-devices-operational-story" story={fleetStory} />
-      <LiteFreshness
-        saved={savedStateOnly}
-        stale={isExpired}
-        refreshing={refreshing}
-        lastUpdatedLabel={lastUpdatedLabel}
-        backendReachable={backendReachable}
-      />
-      <LiteNextSteps
-        title="Connection review"
-        description="Connection and remote access are separate checks. Review the affected device before sending a command."
-        saved={savedStateOnly || isExpired}
-        items={[
-          ...devices.filter((device) => deviceLinkState(device) !== "joined" && deviceLinkState(device) !== "server").map((device) => ({
-            id: String(device.id || device.name), label: device.name || "Device",
-            description: deviceLinkState(device) === "repairing" ? "Connection is being repaired." : "Device connection is not confirmed.",
-            actionLabel: "Review device", onClick: () => toggleDeviceDetails(String(device.id || device.name)),
-          })),
-          ...(!remoteAccessReady ? [{ id: "remote-access", label: "Remote access not ready", description: remoteAccessView.summary || "Review Tailnet connectivity below." }] : []),
-        ]}
-      />
-      <DeviceRelationshipMap devices={devices} savedStateOnly={savedStateOnly || isExpired} />
-      <section className="lite-devices-horizon-summary" aria-label="Workspace operational summary">
-        <div><span>Connected devices</span><strong>{savedStateOnly || isExpired ? 'Not confirmed' : onlineDevices}</strong></div>
-        <div><span>Needs attention</span><strong>{savedStateOnly || isExpired ? 'Review saved status' : devices.filter((device) => !['joined', 'server'].includes(deviceRelationshipPresentation(device, savedStateOnly).state)).length}</strong></div>
-        <div><span>Remote access</span><strong>{remoteAccessView.title}</strong></div>
+      <section className="lite-device-library-status" aria-label="Environment status">
+        <LiteOperationalStory className="lite-devices-operational-story" story={fleetStory} />
+        <LiteFreshness saved={savedStateOnly} stale={isExpired} refreshing={refreshing}
+          lastUpdatedLabel={lastUpdatedLabel} backendReachable={backendReachable} />
       </section>
-
-      <section className={`lite-remote-access-panel ${remoteAccessReady ? 'lite-remote-access-ready' : 'lite-remote-access-not-ready'}`} aria-live="polite">
-        <div className="lite-remote-access-icon">
-          {remoteAccessReady ? <CheckCircle2 className="h-5 w-5" aria-hidden="true" /> : <CircleAlert className="h-5 w-5" aria-hidden="true" />}
-        </div>
-        <div className="lite-remote-access-copy">
-          <span>Remote access</span>
-          <strong>{remoteAccessView.title}</strong>
-          <p>{remoteAccessView.summary}</p>
-        </div>
-
-        <div className="lite-remote-access-facts" aria-label="Remote access readiness">
-          {remoteAccessSummaryRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
-            <div key={item.label} className={`is-${item.state}`}>
-              <span>{item.label}</span>
-              <strong><i aria-hidden="true" />{item.value}</strong>
-            </div>
-          ))}
-        </div>
-
-        <details className="lite-remote-access-details" onToggle={(event) => setRemoteAccessDetailsOpen(event.currentTarget.open)}>
-          <summary>Technical connection details</summary>
-          {remoteAccessDetailsOpen ? (
-            <dl>
-              {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
-                <div key={item.label}>
-                  <dt>{item.label}</dt>
-                  <dd>{item.label === 'Tailscale IP' && remoteAccessReady && !savedStateOnly && !isExpired && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
-                    ? <><span>Available</span> <code>{remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}</code></>
-                    : item.value}</dd>
-                </div>
-              ))}
-            </dl>
-          ) : null}
-        </details>
+      <section className="lite-devices-horizon-summary" aria-label="Fleet summary">
+        {[
+          { key: 'all', label: 'Total devices', value: fleetMetrics.total },
+          { key: 'connected', label: 'Connected', value: fleetMetrics.connected },
+          { key: 'attention', label: 'Needs attention', value: fleetMetrics.attention },
+        ].map((metric) => (
+          <button key={metric.key} type="button" className={deviceFilter === metric.key ? 'is-selected' : ''}
+            aria-pressed={deviceFilter === metric.key}
+            onClick={() => { triggerLiteHaptic('tap'); setDeviceFilter(metric.key); }}>
+            <span>{metric.label}</span>
+            <strong>{metric.value === null ? '—' : metric.value}</strong>
+            {metric.value === null ? <small>Not confirmed</small> : null}
+          </button>
+        ))}
+      </section>
+      <section className="lite-devices-library-tools" aria-label="Find devices">
+        <label className="lite-devices-search-field">
+          <Search className="h-4 w-4" aria-hidden="true" />
+          <span className="sr-only">Search devices</span>
+          <input type="search" value={deviceSearch} onChange={(event) => setDeviceSearch(event.target.value)}
+            placeholder="Search devices" aria-label="Search devices" />
+        </label>
+        <label className="lite-devices-filter-field">
+          <span className="sr-only">Filter devices</span>
+          <select value={deviceFilter} aria-label="Filter devices" onChange={(event) => {
+            triggerLiteHaptic('tap'); setDeviceFilter(event.target.value);
+          }}>
+            {DEVICE_LIBRARY_FILTERS.map((filter) => <option key={filter.id} value={filter.id}>{filter.label}</option>)}
+          </select>
+        </label>
       </section>
 
       <div className="lite-devices-layout">
@@ -1062,15 +1068,10 @@ export default function DevicesScreen() {
         <section className="lite-devices-list-area" aria-busy={loading ? 'true' : 'false'}>
           <div className="lite-devices-section-title">
             <div>
-              <p>Workspace</p>
               <h2>Your devices</h2>
-              <small>Current connection, system identity, and health at a glance.</small>
+              <small>Choose a device to review connection, roles, health or recovery.</small>
             </div>
-            <div className="lite-devices-section-metrics" aria-label="Device totals">
-              {savedStateOnly ? <span><strong>Saved</strong> information</span> : <span><strong>{onlineDevices}</strong> online</span>}
-              <span><strong>{devices.length}</strong> total</span>
-              {healthAttentionCurrent ? <span><strong>{healthAttentionCount}</strong> need attention</span> : null}
-            </div>
+
           </div>
 
           {error ? (
@@ -1192,7 +1193,7 @@ export default function DevicesScreen() {
 
                 <div className="lite-device-remove-actions">
                   {removalFlow.isConfirming ? (
-                    <LiteButton tone="danger" onClick={removeOldDevice} disabled={removeBusy || !(removeAssessment?.allowed ?? removeAssessment?.safe_to_remove)}>
+                    <LiteButton tone="danger" onClick={() => { triggerLiteHaptic('warning'); removeOldDevice(); }} disabled={removeBusy || !(removeAssessment?.allowed ?? removeAssessment?.safe_to_remove)}>
                       {removeBusy ? 'Removing...' : 'Confirm removal'}
                     </LiteButton>
                   ) : (
@@ -1214,7 +1215,9 @@ export default function DevicesScreen() {
 
           {loading ? <LoadingCard label="Loading devices..." /> : null}
 
-          <DeviceDetailsPortal devices={devices} detailsButtonRefs={detailsButtonRefs} />
+          <DeviceDetailsPortal devices={devices} detailsButtonRefs={detailsButtonRefs}
+            deviceActionHandlersRef={deviceActionHandlersRef} restartBusy={restartBusy}
+            removeBusy={removeBusy} savedStateOnly={savedStateOnly || isExpired} />
 
           {modelPickerDevice ? (
             <Suspense fallback={null}>
@@ -1229,11 +1232,11 @@ export default function DevicesScreen() {
           ) : null}
 
           <DeviceFleetList
-            items={devices}
+            items={filteredDevices}
             domain="devices"
-            datasetKey="fleet:all"
+            datasetKey={`fleet:${deviceFilter}:${deviceSearch.trim().toLocaleLowerCase()}`}
             getItemKey={deviceListKey}
-            estimateSize={312}
+            estimateSize={168}
             overscan={4}
             viewportHeight={720}
             lanes={2}
@@ -1257,9 +1260,75 @@ export default function DevicesScreen() {
               description="Add a device to create your first invite."
             />
           ) : null}
+          {!loading && devices.length > 0 && filteredDevices.length === 0 ? (
+            <StateSurface tone="empty" title="No matching devices"
+              description="Try another search or choose All devices." />
+          ) : null}
         </section>
+        <details className="lite-devices-topology-workspace" open={topologyOpen}
+          onToggle={(event) => setTopologyOpen(event.currentTarget.open)}>
+          <summary onClick={() => triggerLiteHaptic('tap')}>
+            <Network className="h-5 w-5" aria-hidden="true" />
+            <span><strong>Connections &amp; Topology</strong><small>Device links, remote access and connection readiness</small></span>
+            <span aria-hidden="true">›</span>
+          </summary>
+          {topologyOpen ? (
+            <div className="lite-devices-topology-content">
+              <DeviceRelationshipMap devices={devices} savedStateOnly={savedStateOnly || isExpired}
+                onOpenDevice={(device) => toggleDeviceDetails(deviceListKey(device))} />
+              <LiteNextSteps
+                title="Connection review"
+                description="Device connectivity and remote access are separate checks."
+                saved={savedStateOnly || isExpired}
+                items={[
+                  ...devices.filter((device) => deviceLinkState(device) !== 'joined' && deviceLinkState(device) !== 'server').slice(0, 12).map((device) => ({
+                    id: String(device.id || device.name), label: device.name || 'Device',
+                    description: deviceLinkState(device) === 'repairing' ? 'Connection is being repaired.' : 'Device connection is not confirmed.',
+                    actionLabel: 'Review device', onClick: () => toggleDeviceDetails(String(device.id || device.name)),
+                  })),
+                  ...(!remoteAccessReady ? [{ id: 'remote-access', label: 'Remote access not ready', description: remoteAccessView.summary || 'Review private network connectivity below.' }] : []),
+                ]}
+              />
+              <section className={`lite-remote-access-panel ${remoteAccessReady ? 'lite-remote-access-ready' : 'lite-remote-access-not-ready'}`} aria-live="polite">
+                <div className="lite-remote-access-icon">
+                  {remoteAccessReady ? <CheckCircle2 className="h-5 w-5" aria-hidden="true" /> : <CircleAlert className="h-5 w-5" aria-hidden="true" />}
+                </div>
+                <div className="lite-remote-access-copy">
+                  <span>Remote access</span>
+                  <strong>{remoteAccessView.title}</strong>
+                  <p>{remoteAccessView.summary}</p>
+                </div>
+        
+                <div className="lite-remote-access-facts" aria-label="Remote access readiness">
+                  {remoteAccessSummaryRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
+                    <div key={item.label} className={`is-${item.state}`}>
+                      <span>{item.label}</span>
+                      <strong><i aria-hidden="true" />{item.value}</strong>
+                    </div>
+                  ))}
+                </div>
+        
+                <details className="lite-remote-access-details" onToggle={(event) => setRemoteAccessDetailsOpen(event.currentTarget.open)}>
+                  <summary onClick={() => triggerLiteHaptic('tap')}>Technical connection details</summary>
+                  {remoteAccessDetailsOpen ? (
+                    <dl>
+                      {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
+                        <div key={item.label}>
+                          <dt>{item.label}</dt>
+                          <dd>{item.label === 'Tailscale IP' && remoteAccessReady && !savedStateOnly && !isExpired && (remoteAccess?.ip || remoteAccess?.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip)
+                            ? <><span>Available</span> <code>{remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}</code></>
+                            : item.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : null}
+                </details>
+              </section>
+            </div>
+          ) : null}
+        </details>
         <details ref={addDeviceDisclosureRef} id="lite-devices-onboarding" className="lite-devices-add-disclosure" onToggle={(event) => setAddDeviceOpen(event.currentTarget.open)}>
-          <summary>
+          <summary onClick={() => triggerLiteHaptic('tap')}>
             <span>Expand your workspace</span>
             <strong>Add a device</strong>
             <small>Create a protected invite only when you need one.</small>

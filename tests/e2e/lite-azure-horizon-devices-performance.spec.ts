@@ -33,6 +33,7 @@ for (const appearance of ['light', 'dark'] as const) {
       await waitForLiteScreenToSettle(page, 'devices');
       const firstPaintDuration = Date.now() - enteredAt;
       const mapStart = Date.now();
+      await page.getByText('Connections & Topology').click();
       await expect(page.locator('.lite-device-relationship-map')).toBeVisible();
       const mapDuration = Date.now() - mapStart;
       const managedAt = Date.now();

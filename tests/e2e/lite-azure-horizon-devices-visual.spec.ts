@@ -30,6 +30,7 @@ for (const theme of ['light','dark'] as const) {
         await installScenario(page,scenario);
         await page.goto('/?screen=devices');
         await waitForLiteScreenToSettle(page,'devices');
+        await page.getByText('Connections & Topology').click();
         await expect(page.locator('.lite-device-relationship-map')).toHaveScreenshot(`devices-${theme}-${width}-${scenario}.png`,{animations:'disabled'});
       });
     }

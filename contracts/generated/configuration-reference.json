@@ -104,6 +104,7 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
+        "scripts/dev/lite/run-ui-performance-android-devices.sh",
         "scripts/dev/lite/run-ui-performance-android-rules.sh",
         "scripts/dev/lite/run-ui-performance-android-safety.sh"
       ],
@@ -124,6 +125,7 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
+        "scripts/dev/lite/run-ui-performance-android-devices.sh",
         "scripts/dev/lite/run-ui-performance-android-rules.sh",
         "scripts/dev/lite/run-ui-performance-android-safety.sh"
       ],
@@ -144,6 +146,7 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
+        "scripts/dev/lite/run-ui-performance-android-devices.sh",
         "scripts/dev/lite/run-ui-performance-android-rules.sh",
         "scripts/dev/lite/run-ui-performance-android-safety.sh"
       ],
@@ -166,9 +169,46 @@
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
         "scripts/dev/lite/run-ui-performance-android-baseline.sh",
         "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+        "scripts/dev/lite/run-ui-performance-android-devices.sh",
         "scripts/dev/lite/run-ui-performance-android-rules.sh",
         "scripts/dev/lite/run-ui-performance-android-safety.sh",
         "scripts/dev/lite/run-ui-performance-qualified.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_ANDROID_DEVICES_BASELINE_REPETITIONS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-ui-performance-android-devices.sh"
+      ],
+      "safe_default": "3",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_ANDROID_DEVICES_OUTPUT_DIR",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-ui-performance-android-devices.sh"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -362,6 +402,7 @@
         "scripts/dev/lite/run-ui-performance-android-baseline.sh",
         "scripts/dev/lite/run-ui-performance-android-candidate.sh",
         "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+        "scripts/dev/lite/run-ui-performance-android-devices.sh",
         "scripts/dev/lite/run-ui-performance-android-rules.sh",
         "scripts/dev/lite/run-ui-performance-android-safety.sh",
         "scripts/dev/lite/run-ui-performance-live.sh",
@@ -877,6 +918,7 @@
         "scripts/dev/lite/run-ui-performance-android-baseline.sh",
         "scripts/dev/lite/run-ui-performance-android-candidate.sh",
         "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+        "scripts/dev/lite/run-ui-performance-android-devices.sh",
         "scripts/dev/lite/run-ui-performance-android-rules.sh",
         "scripts/dev/lite/run-ui-performance-android-safety.sh",
         "scripts/dev/lite/ui_performance_candidate_server.py"
@@ -2038,6 +2080,7 @@
       "runtime_readers": [
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
         "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+        "scripts/dev/lite/run-ui-performance-android-devices.sh",
         "scripts/dev/lite/run-ui-performance-android-rules.sh",
         "scripts/dev/lite/run-ui-performance-android-safety.sh"
       ],
@@ -2059,6 +2102,7 @@
       "runtime_readers": [
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
         "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+        "scripts/dev/lite/run-ui-performance-android-devices.sh",
         "scripts/dev/lite/run-ui-performance-android-rules.sh",
         "scripts/dev/lite/run-ui-performance-android-safety.sh"
       ],
@@ -2455,6 +2499,7 @@
       "runtime_readers": [
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
         "scripts/dev/lite/run-ui-performance-android-candidate.sh",
+        "scripts/dev/lite/run-ui-performance-android-devices.sh",
         "scripts/dev/lite/run-ui-performance-android-rules.sh",
         "scripts/dev/lite/run-ui-performance-android-safety.sh",
         "scripts/dev/lite/run-ui-performance-candidate.sh"
@@ -11909,6 +11954,7 @@
       "runtime_readers": [
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
         "scripts/dev/lite/run-ui-performance-android-cdp.sh",
+        "scripts/dev/lite/run-ui-performance-android-devices.sh",
         "scripts/dev/lite/run-ui-performance-android-rules.sh",
         "scripts/dev/lite/run-ui-performance-android-safety.sh",
         "scripts/dev/lite/run-ui-performance-live.sh"
@@ -17531,6 +17577,7 @@
       "runtime_readers": [
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
         "scripts/dev/lite/run-ui-performance-android-candidate.sh",
+        "scripts/dev/lite/run-ui-performance-android-devices.sh",
         "scripts/dev/lite/run-ui-performance-android-rules.sh",
         "scripts/dev/lite/run-ui-performance-android-safety.sh",
         "scripts/dev/lite/run-ui-performance-candidate.sh"
@@ -19101,7 +19148,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "825ee39474d87a63159da307f5ffc61f91483e3f5000cae6ce15564677ae9b3b",
+    "aggregate_fingerprint": "9de840721ed68c24566c0f6df2b0c0b4942726bac777704ea43592e0fd9b7de9",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -19375,6 +19422,7 @@
       "scripts/dev/lite/run-ui-performance-android-baseline.sh": "f490c1878b45d37207f65a366b4c8dc18933fa8fdb5c86c1cdd4467823e91eda",
       "scripts/dev/lite/run-ui-performance-android-candidate.sh": "ef39603cfe0a185b9c62dd25d5808b11ec26a69e3d5cf7984914bc22aa08f6fa",
       "scripts/dev/lite/run-ui-performance-android-cdp.sh": "562f077c2719c4375b68f099b198fd78a4520f19fa82dd14b1f932a6ca624241",
+      "scripts/dev/lite/run-ui-performance-android-devices.sh": "601a3f03d6bcab4dbe657f648427fc8a82dc5943b0d83b7cbd831169392b7334",
       "scripts/dev/lite/run-ui-performance-android-rules.sh": "dd254a923b042d40c0887354dde44c358ade7dd9c5895e230d8333fcebfc045f",
       "scripts/dev/lite/run-ui-performance-android-safety.sh": "b4718af841b04eb50268068df3729451f796adb4557ff8b1c27841813e0e0291",
       "scripts/dev/lite/run-ui-performance-candidate.sh": "d6200d8b4b30a2d10d739237f26040a67d85b701090eb8b065d466711b84d16d",

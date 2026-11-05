@@ -17,8 +17,11 @@ for (const scenario of states) {
   test(`Devices preserves connection and recovery semantics: ${scenario}`, async ({page}) => {
     await openDevices(page, scenario);
     await expect(page.getByRole('heading',{name:'Devices',exact:true})).toBeVisible();
+    await expect(page.locator('.lite-devices-horizon-summary')).toBeVisible();
+    await expect(page.getByRole('searchbox',{name:'Search devices'})).toBeVisible();
+    await expect(page.locator('.lite-remote-access-panel')).toHaveCount(0);
+    await page.getByText('Connections & Topology').click();
     await expect(page.getByRole('region',{name:'Pocket Lab device connections'}).or(page.getByRole('group',{name:'Pocket Lab device connections'})).first()).toBeVisible();
-    await expect(page.getByRole('region',{name:'Workspace operational summary'}).or(page.locator('.lite-devices-horizon-summary'))).toBeVisible();
     await expect(page.locator('.lite-remote-access-panel')).toBeVisible();
   });
 }
@@ -29,6 +32,7 @@ for (const appearance of ['dark','light'] as const) {
       await page.emulateMedia({reducedMotion:'reduce'});
       await openDevices(page,'devices-online',appearance);
       await expect(page.locator('html')).toHaveAttribute('data-lite-theme',appearance);
+      await page.getByText('Connections & Topology').click();
       await expect(page.locator('.lite-device-relationship-node.is-server')).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 2)).toBe(false);
       const accessibility = await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
@@ -39,6 +43,7 @@ for (const appearance of ['dark','light'] as const) {
 test('System appearance follows OS without changing Devices connection facts', async ({page}) => {
   await page.emulateMedia({colorScheme:'dark'});
   await openDevices(page,'devices-online','system');
+  await page.getByText('Connections & Topology').click();
   const previous = await page.locator('.lite-device-relationship-summary').innerText();
   await page.emulateMedia({colorScheme:'light'});
   await expect(page.locator('html')).toHaveAttribute('data-lite-theme','light');

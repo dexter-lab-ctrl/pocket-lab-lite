@@ -1,72 +1,15 @@
 import React from 'react';
-import { LockKeyhole, RefreshCw, Server, Smartphone, WifiOff } from 'lucide-react';
-import {
-  GlassCard,
-  LiteButton,
-  roleLabel,
-  deviceRoleSummary,
-  deviceCapabilitySummary,
-  canonicalDevicePresentation,
-  deviceLinkState,
-  canRestartDeviceAgent,
-  canRemoveDevice,
-  LiteActionRow,
-  LiteOperationalStory,
-} from '../LiteUi.jsx';
-import { formatLiteTime } from '../../lib/liteApi.js';
-import { selectDeviceOperationalStory } from '../../lib/liteViewModels.js';
+import { ChevronRight, LockKeyhole, Monitor, Server, Smartphone } from 'lucide-react';
+import { GlassCard, canonicalDevicePresentation, deviceLinkState, deviceRoleSummary } from '../LiteUi.jsx';
+import { triggerLiteHaptic } from '../../lib/liteNativeFeedback.js';
+import { deviceLibraryEntry } from './deviceLibraryPresentation.js';
 import './deviceActionFocus.css';
-import { deviceHorizonConnection } from './deviceHorizonPresentation.js';
 
-const DEVICES_CARD_RENDER_REDUCTION_M1 = true;
-const DEVICES_CARD_ACTIONS_OWN_CLICKS = true;
-void DEVICES_CARD_RENDER_REDUCTION_M1;
-void DEVICES_CARD_ACTIONS_OWN_CLICKS;
-
-function identityLabel(device) {
-  const status = String(device?.identity?.status || device?.identity_status || '').toLowerCase();
-  if (status === 'protected_server_host') return 'Protected server host';
-  if (status === 'verified') return 'Identity verified';
-  if (status === 'join_blocked') return 'Join blocked';
-  if (device?.identity?.repair_required) return 'Repair required';
-  return 'Identity check pending';
-}
-
-function healthLabel(value) {
-  const status = String(value || 'unknown').toLowerCase().replace(/[\s-]+/g, '_');
-  return ({
-    healthy: 'Healthy',
-    watch: 'Watch',
-    needs_attention: 'Needs attention',
-    degraded: 'Degraded',
-    repairing: 'Repairing',
-    unreachable: 'Unreachable',
-    unknown: 'Health pending',
-  })[status] || 'Health pending';
-}
-
-function healthTone(value) {
-  const status = String(value || '').toLowerCase();
-  if (['degraded', 'unreachable'].includes(status)) return 'is-critical';
-  if (['watch', 'needs_attention'].includes(status)) return 'is-review';
-  if (status === 'repairing') return 'is-repairing';
-  if (status === 'healthy') return 'is-ready';
-  return 'is-unknown';
-}
-
-function responsibilitySummary(device) {
-  const dependencies = device?.dependencies || {};
-  const parts = [];
-  if (Number(dependencies.hosted_app_count || 0) > 0) parts.push(`${dependencies.hosted_app_count} hosted app${Number(dependencies.hosted_app_count) === 1 ? '' : 's'}`);
-  if (Number(dependencies.backup_set_count || 0) > 0) parts.push(`${dependencies.backup_set_count} backup set${Number(dependencies.backup_set_count) === 1 ? '' : 's'}`);
-  if (dependencies.command_delivery_status === 'deliverable') parts.push('Receives recovery commands');
-  return parts.slice(0, 2).join(' · ');
-}
-
+// Public connection helpers are retained for existing source consumers.
 export function deviceConnectionFlowState({ isServerCard, linkState, presentation }) {
   if (isServerCard) return 'server';
-  if (linkState === 'repairing' || presentation.state === 'repairing') return 'repairing';
-  if (linkState === 'joined' || presentation.state === 'online') return 'connected';
+  if (linkState === 'repairing' || presentation?.state === 'repairing') return 'repairing';
+  if (linkState === 'joined' || presentation?.state === 'online') return 'connected';
   return 'disconnected';
 }
 
@@ -82,207 +25,70 @@ export function deviceConnectionFlowLabel(state, deviceName, isServerCard, conne
   return `Pocket Lab Server is disconnected from ${deviceName}.`;
 }
 
-function deviceConnectionSummary(state) {
-  if (state === 'connected') return 'Connected privately';
-  if (state === 'repairing') return 'Repairing connection';
-  if (state === 'server') return 'Protected server host';
-  return 'Connection interrupted';
-}
-
-function deviceConnectionCopyLabel(connectionView, flowState, isServerCard) {
-  if (isServerCard) return deviceConnectionSummary(flowState);
-  if (connectionView.kind === 'repairing') return 'Repairing connection';
-  return connectionView.label;
-}
-
-function DeviceConnectionIcon({ state, isServer = false, className = '' }) {
-  const Icon = isServer ? Server : state === 'connected' ? Smartphone : state === 'repairing' ? RefreshCw : WifiOff;
-  return <Icon className={className} aria-hidden="true" />;
+function DeviceTypeIcon({ device, server }) {
+  if (server) return <Server aria-hidden="true" size={21} />;
+  const details = [device?.system_profile?.os_name, device?.system_profile?.device_type,
+    device?.system_profile?.display_model, device?.device_type, device?.role]
+    .filter(Boolean).join(' ').toLowerCase();
+  if (/desktop|laptop|windows|workstation|computer|macos|pc/.test(details)) return <Monitor aria-hidden="true" size={21} />;
+  return <Smartphone aria-hidden="true" size={21} />;
 }
 
 function DeviceCard({
-  device,
-  restartBusy = '',
-  removeBusy = false,
-  detailsOpen = false,
-  onRestartAgent,
-  onRemoveDevice,
-  onOpenDetails,
-  onPreloadDetails,
-  detailsButtonRef = null,
-  removeButtonRef = null,
-  savedStateOnly = false,
+  device, detailsOpen = false, onOpenDetails, onPreloadDetails,
+  detailsButtonRef = null, savedStateOnly = false,
 }) {
-  const [technicalDetailsOpen, setTechnicalDetailsOpen] = React.useState(false);
   const presentation = canonicalDevicePresentation(device);
   const linkState = deviceLinkState(device);
-  const connectionView = deviceHorizonConnection(device, { saved: savedStateOnly, presentation, linkState });
-  const online = connectionView.kind === 'connected';
-  const role = String(device?.role || '').toLowerCase();
-  const isServerCard = Boolean(device?.protected_server_host || role === 'server_host' || device?.is_current || device?.isCurrent);
-  const effectiveLinkState = connectionView.kind === 'connected' ? 'joined' : connectionView.kind === 'repairing' ? 'repairing' : 'disconnected';
-  const connectionClass = isServerCard
-    ? 'lite-device-card-server'
-    : `lite-device-card-linked lite-device-card-linked-${effectiveLinkState}`;
-  const deviceName = device?.name || 'Unnamed device';
-  const agentState = device?.agent?.status || device?.agent_status || device?.agent_connection?.status || null;
-  const supervisorState = device?.supervisor?.status || device?.supervisor_status || null;
-  const capabilitySummary = technicalDetailsOpen ? deviceCapabilitySummary(device) : null;
-  const canRestart = !savedStateOnly && canRestartDeviceAgent(device);
-  const canRemove = !savedStateOnly && canRemoveDevice(device);
-  const proactiveHealth = device?.proactive_health || null;
-  const healthAttentionCurrent = Boolean(proactiveHealth?.attention_current !== false);
-  const healthAttentionCount = healthAttentionCurrent ? Number(proactiveHealth?.attention_count || 0) : 0;
-  // Joining is an explicit backend state, but it is not recovery in progress.
-  // Keep its copy truthful while rendering the connection rail as disconnected
-  // until the backend reports either a live connection or repairing work.
-  const flowState = isServerCard ? 'server' : connectionView.kind === 'connected' ? 'connected' : connectionView.kind === 'repairing' ? 'repairing' : 'disconnected';
-  const showHealthAttention = Boolean(proactiveHealth && (healthAttentionCount > 0 || !['healthy', 'unknown'].includes(String(proactiveHealth.status || '').toLowerCase())));
-  const lastSeen = device?.last_seen_state?.last_seen_at || device?.last_seen;
-  const story = selectDeviceOperationalStory(device, { savedStateOnly });
-  function openRemovalReview() {
-    onRemoveDevice?.();
-  }
+  const entry = deviceLibraryEntry(device, { saved: savedStateOnly, presentation, linkState });
+  const server = entry.connection.kind === 'server';
+  const name = device?.name || device?.hostname || 'Unnamed device';
+  const statusText = savedStateOnly ? 'Saved · connection not confirmed'
+    : entry.healthAttention ? 'Health needs review'
+      : entry.connection.label;
+  const state = savedStateOnly ? 'stale' : entry.healthAttention ? 'attention' : entry.connection.kind;
+  const roleText = server ? 'Protected server host'
+    : device?.system_profile?.os_name
+      ? `${deviceRoleSummary(device)} · ${device.system_profile.os_name}`
+      : deviceRoleSummary(device) || 'Managed device';
+  const handleManage = () => {
+    triggerLiteHaptic('tap');
+    onOpenDetails?.();
+  };
 
   return (
-    <GlassCard className={`lite-device-card ${connectionClass}`}>
-        <div className="lite-device-card-top">
-          <div className={`lite-device-icon is-${flowState}`} data-device-icon-state={flowState}>
-            <DeviceConnectionIcon state={flowState} isServer={isServerCard} className="lite-device-icon-symbol" />
-            <span className={online ? 'lite-device-pulse' : 'lite-device-pulse lite-device-pulse-muted'} />
-          </div>
+    <GlassCard className={`lite-device-card lite-device-library-card ${server ? 'lite-device-card-server' : 'lite-device-card-peer'}`}>
+      <div className="lite-device-library-identity">
+        <span className={`lite-device-library-icon is-${server ? 'server' : 'peer'}`} aria-hidden="true">
+          <DeviceTypeIcon device={device} server={server} />
+        </span>
+        <div className="lite-device-library-name">
+          <h3 title={name}>{name}</h3>
+          <p>{roleText}</p>
         </div>
-
-        <div className="lite-device-card-heading">
-          <span className="lite-device-card-kicker">
-            {isServerCard ? 'Server host' : deviceRoleSummary(device)}
-          </span>
-          <h2>{deviceName}</h2>
-          {isServerCard ? <p>Protected host for this self-hosted workspace.</p> : null}
-        </div>
-
-        <div className={`lite-device-connection-flow is-${flowState}`} data-connection-state={flowState} role="img" aria-label={deviceConnectionFlowLabel(flowState, deviceName, isServerCard, connectionView)}>
-          <div className="lite-device-connection-copy">
-            <span>Connection</span>
-            <strong>{deviceConnectionCopyLabel(connectionView, flowState, isServerCard)}</strong>
-          </div>
-          {isServerCard ? (
-            <div className="lite-device-protected-host" aria-hidden="true">
-              <span className="lite-device-flow-node lite-device-flow-server">
-                <Server className="lite-device-flow-node-icon" />
-                <small>Pocket Lab Server</small>
-              </span>
-              <span className="lite-device-protected-lock">
-                <LockKeyhole className="lite-device-protected-lock-icon" />
-                Protected
-              </span>
-            </div>
-          ) : (
-            <div className={`lite-device-flow-topology is-${flowState}`} aria-hidden="true">
-              <span className="lite-device-flow-node lite-device-flow-server">
-                <Server className="lite-device-flow-node-icon" />
-                <small>Server</small>
-              </span>
-              <span className="lite-device-flow-track">
-                <span className="lite-device-flow-rail" />
-                <span className="lite-device-flow-signal" />
-                <span className="lite-device-flow-break">×</span>
-              </span>
-              <span className="lite-device-flow-node lite-device-flow-device">
-                <DeviceConnectionIcon state={flowState} className="lite-device-flow-node-icon" />
-                <small title={deviceName}>{deviceName}</small>
-              </span>
-            </div>
-          )}
-        </div>
-
-        <div className="lite-device-service-summary" aria-label="Reported device services">
-          <div><span>Agent</span><strong>{savedStateOnly ? 'Saved · unconfirmed' : agentState || 'Not reported'}</strong></div>
-          <div><span>Supervisor</span><strong>{savedStateOnly ? 'Saved · unconfirmed' : supervisorState || 'Not reported'}</strong></div>
-        </div>
-        <LiteOperationalStory
-          className="lite-device-operational-story"
-          story={{
-            ...story,
-            freshness: lastSeen ? { label: savedStateOnly ? 'Saved status' : 'Last seen', detail: formatLiteTime(lastSeen), state: savedStateOnly ? 'stale' : 'live' } : null,
-          }}
-          primaryAction={story.next_action?.kind === 'restart' ? { label: story.next_action.label, onClick: onRestartAgent, tone: 'primary', haptic: true } : null}
-          manageAction={{
-            label: detailsOpen ? 'Hide details' : 'Manage',
-            onClick: onOpenDetails,
-            ariaLabel: `${detailsOpen ? 'Hide' : 'Manage'} ${deviceName}`,
-            ariaExpanded: detailsOpen,
-            buttonRef: detailsButtonRef,
-            onPointerEnter: onPreloadDetails,
-            onFocus: onPreloadDetails,
-            onTouchStart: onPreloadDetails,
-            haptic: true,
-          }}
-        />
-
-        {story.remote_access === 'not_ready' ? (
-          <LiteActionRow
-            className="lite-device-remote-access-row"
-            label="Remote access"
-            value="Not ready"
-            summary="This is separate from the local Pocket Lab connection."
-            attention
-          />
-        ) : null}
-
-        {showHealthAttention ? (
-          <div className={`lite-device-health-strip ${healthTone(proactiveHealth.status)}`} aria-label="Proactive device health">
-            <span className="lite-device-health-strip-icon">
-              <span className="lite-device-health-static-glyph" aria-hidden="true" />
-            </span>
-            <span>
-              <strong>{healthLabel(proactiveHealth.status)}</strong>
-              <small>{proactiveHealth.summary || 'Device health is not available yet.'}</small>
-            </span>
-            {healthAttentionCount > 0 ? <em>{healthAttentionCount} item{healthAttentionCount === 1 ? '' : 's'}</em> : null}
-          </div>
-        ) : null}
-
-        <div className="lite-device-actions">
-          <details className="lite-device-card-disclosure" onToggle={(event) => setTechnicalDetailsOpen(event.currentTarget.open)}>
-            <summary aria-label={`More details and actions for ${deviceName}`}>
-              <span>Technical and safety</span><span className="lite-device-card-chevron" aria-hidden="true" />
-            </summary>
-            {technicalDetailsOpen ? (
-              <div className="lite-device-card-disclosure-content">
-                <div className="lite-device-trust-strip" aria-label="Device trust and responsibilities">
-                  <span><span className="lite-device-card-static-glyph" aria-hidden="true" /> <strong>{identityLabel(device)}</strong></span>
-                  {responsibilitySummary(device) ? <small>{responsibilitySummary(device)}</small> : <small>No active dependencies reported.</small>}
-                  {device?.removal_assessment ? (
-                    <small className={device.removal_assessment.safe_to_remove ? 'is-ready' : 'is-review'}>
-                      {device.removal_assessment.protected ? 'Protected server host' : (device.removal_assessment.allowed ?? device.removal_assessment.safe_to_remove) ? 'Remove after confirmation' : 'Removal blocked'}
-                    </small>
-                  ) : null}
-                  <small>Capabilities: {capabilitySummary.label}</small>
-                </div>
-                {(canRestart || canRemove) ? <div className="lite-device-secondary-actions">
-                  {canRestart && story.next_action?.kind !== 'restart' ? <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy === device?.id}>
-                    <span className="lite-device-card-action-glyph" aria-hidden="true" />{restartBusy === device?.id ? 'Checking progress...' : 'Restart agent'}
-                  </LiteButton> : null}
-                  {canRemove ? <LiteButton tone="danger" onClick={openRemovalReview} disabled={removeBusy} buttonRef={removeButtonRef}>
-                    <span className="lite-device-card-action-glyph is-danger" aria-hidden="true" />{(device?.removal_assessment?.allowed ?? device?.removal_assessment?.safe_to_remove) ? 'Remove device' : 'Review removal'}
-                  </LiteButton> : null}
-                </div> : null}
-              </div>
-            ) : null}
-          </details>
-        </div>
+        {server ? <LockKeyhole size={15} className="lite-device-library-lock" aria-label="Protected server host" /> : null}
+      </div>
+      <div className="lite-device-library-footer">
+        <span className={`lite-device-library-status is-${state}`} data-connection-state={state}>
+          <i aria-hidden="true" />
+          <span>{statusText}</span>
+        </span>
+        <button type="button" ref={detailsButtonRef} className="lite-device-library-manage"
+          aria-label={`Manage ${name}`} aria-expanded={detailsOpen}
+          onPointerEnter={onPreloadDetails} onFocus={onPreloadDetails} onTouchStart={onPreloadDetails}
+          onClick={handleManage}>
+          <span>Manage</span><ChevronRight size={17} aria-hidden="true" />
+        </button>
+      </div>
     </GlassCard>
   );
 }
 
 function areEqual(previous, next) {
   return previous.device === next.device
-    && previous.restartBusy === next.restartBusy
-    && previous.removeBusy === next.removeBusy
     && previous.detailsOpen === next.detailsOpen
-    && previous.onPreloadDetails === next.onPreloadDetails
-    && previous.savedStateOnly === next.savedStateOnly;
+    && previous.savedStateOnly === next.savedStateOnly
+    && previous.onPreloadDetails === next.onPreloadDetails;
 }
 
 export default React.memo(DeviceCard, areEqual);

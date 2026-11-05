@@ -52,6 +52,7 @@ test('expired or blocked invite must not turn into a fabricated copy command', a
 
 test('remote access unavailable cannot surface a saved or unready Tailnet address', async ({ page }) => {
   await openDevices(page, 'devices-remote-not-ready', 'dark');
+  await page.getByText('Connections & Topology').click();
   await expect(page.locator('.lite-remote-access-panel')).toContainText(/Remote access not ready/i);
   await page.locator('.lite-remote-access-details summary').click();
   await expect(page.locator('.lite-remote-access-details')).toContainText('Tailscale');
@@ -60,6 +61,7 @@ test('remote access unavailable cannot surface a saved or unready Tailnet addres
 test('connected, repairing, stopped, offline and saved state keep text alongside rails', async ({ page }) => {
   for (const scenario of ['devices-online','devices-repairing','devices-agent-stopped','devices-offline','offline-saved']) {
     await openDevices(page, scenario);
+    await page.getByText('Connections & Topology').click();
     const map = page.getByRole('region', { name: 'Pocket Lab device connections' });
     await expect(map).toBeVisible();
     await expect(map.locator('.lite-device-relationship-node.is-server')).toBeVisible();
