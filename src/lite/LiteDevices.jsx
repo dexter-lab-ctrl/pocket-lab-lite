@@ -43,7 +43,6 @@ import {
   DEVICE_ROLE_OPTIONS,
   NAV_ITEMS,
   roleLabel,
-  deviceRoleSummary,
   deviceConnectionLabel,
   canRestartDeviceAgent,
   canRemoveDevice,
