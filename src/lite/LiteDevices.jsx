@@ -394,7 +394,7 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs, deviceActionHandlersR
               aria-label="Move device details panel"
               title="Move panel with the pointer or arrow keys"
               aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
-              onPointerDown={(event) => startPanelInteraction('move', event)}
+              onPointerDown={(event) => { triggerLiteHaptic('tap'); startPanelInteraction('move', event); }}
               onKeyDown={(event) => adjustPanelWithKeyboard('move', event)}
             >
               <Move className="h-4 w-4" aria-hidden="true" />
@@ -408,7 +408,7 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs, deviceActionHandlersR
               aria-label="Resize device details panel"
               title="Resize panel with the pointer or arrow keys"
               aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
-              onPointerDown={(event) => startPanelInteraction('resize', event)}
+              onPointerDown={(event) => { triggerLiteHaptic('tap'); startPanelInteraction('resize', event); }}
               onKeyDown={(event) => adjustPanelWithKeyboard('resize', event)}
             >
               <Maximize2 className="h-4 w-4" aria-hidden="true" />
@@ -418,6 +418,7 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs, deviceActionHandlersR
         {detailsBodyReady ? (
           <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
             <MemoDeviceDetailsLazy
+              key={String(activeDetailsDevice?.id || activeDetailsDevice?.name || '')}
               device={activeDetailsDevice}
               onClose={closeDeviceDetails}
               onChooseModel={chooseDeviceModel}
@@ -1193,7 +1194,7 @@ export default function DevicesScreen() {
 
                 <div className="lite-device-remove-actions">
                   {removalFlow.isConfirming ? (
-                    <LiteButton tone="danger" onClick={removeOldDevice} disabled={removeBusy || !(removeAssessment?.allowed ?? removeAssessment?.safe_to_remove)}>
+                    <LiteButton tone="danger" onClick={() => { triggerLiteHaptic('warning'); removeOldDevice(); }} disabled={removeBusy || !(removeAssessment?.allowed ?? removeAssessment?.safe_to_remove)}>
                       {removeBusy ? 'Removing...' : 'Confirm removal'}
                     </LiteButton>
                   ) : (
@@ -1309,7 +1310,7 @@ export default function DevicesScreen() {
                 </div>
         
                 <details className="lite-remote-access-details" onToggle={(event) => setRemoteAccessDetailsOpen(event.currentTarget.open)}>
-                  <summary>Technical connection details</summary>
+                  <summary onClick={() => triggerLiteHaptic('tap')}>Technical connection details</summary>
                   {remoteAccessDetailsOpen ? (
                     <dl>
                       {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
@@ -1328,7 +1329,7 @@ export default function DevicesScreen() {
           ) : null}
         </details>
         <details ref={addDeviceDisclosureRef} id="lite-devices-onboarding" className="lite-devices-add-disclosure" onToggle={(event) => setAddDeviceOpen(event.currentTarget.open)}>
-          <summary>
+          <summary onClick={() => triggerLiteHaptic('tap')}>
             <span>Expand your workspace</span>
             <strong>Add a device</strong>
             <small>Create a protected invite only when you need one.</small>
