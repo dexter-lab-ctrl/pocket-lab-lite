@@ -239,11 +239,9 @@ function buildDetails({ type, model = {} }) {
       title: appProfile ? 'App Check coverage' : fullProfile ? 'Full Local Check coverage' : 'Quick safety coverage',
       status: !coverageReported || partial.length || timedOut.length || missing.length ? 'review' : 'ready',
       statusLabel: `Profile: ${safeText(scanProfile, 'quick')}`,
-      summary: appProfile
-        ? 'App Check focuses on PhotoPrism route, app metadata, settings, backup metadata, and action state while skipping photos and media.'
-        : fullProfile
-          ? 'Full Local Check checks this device more deeply while still skipping photos, backup payloads, logs, Android shared storage, and large caches.'
-          : 'Quick Safety Check checks Pocket Lab basics and skips huge or private areas by default.',
+      summary: !coverageReported
+        ? 'Coverage has not been reported. Open a completed result to review actual checked and excluded areas.'
+        : 'Checked, excluded and incomplete targets below come from the reported scan scope.',
       what_happened: [
         appProfile ? 'Pocket Lab used the app scan profile.' : fullProfile ? 'Pocket Lab used the full local scan profile.' : 'Pocket Lab used the quick scan profile.',
         ...checked.map((item) => `Checked: ${item}`),
@@ -251,21 +249,11 @@ function buildDetails({ type, model = {} }) {
       ],
       what_changed: ['Opening this coverage view did not start a scan or change the device.'],
       what_needs_attention: [...partial.map((item) => `Partial: ${item}`), ...timedOut.map((item) => `Timed out: ${item}`), ...missing.map((item) => `Missing optional target: ${item}`)],
-      what_did_not_happen: appProfile ? [
-        'Photos, originals, imports, thumbnails, sidecars, and media files were not scanned.',
-        'PhotoPrism media indexing was not started.',
-        'Backup payloads and raw logs were not scanned.',
-        'The browser did not access PhotoPrism internals.',
-      ] : fullProfile ? [
-        'Photo libraries and user media were not scanned.',
-        'Backup contents were not scanned.',
-        'Android shared storage was not scanned.',
-        'Logs, caches, thumbnails, sidecars, and old PWA builds were skipped.',
-      ] : [
-        'Photo libraries and user media were not scanned by the quick profile.',
-        'Backup payloads and restore checkpoints were not scanned by the quick profile.',
-        'The full PROot Ubuntu filesystem was not scanned by the quick profile.',
-        'Large cache folders and old PWA builds were skipped.',
+      what_did_not_happen: [
+        'Opening this view did not trigger a new scan or change any device.',
+        !coverageReported ? 'Coverage and exclusions have not been reported for this profile.'
+          : skipped.length ? 'Review the grouped skipped-target list below for reported exclusions.'
+            : 'No exclusion rows were reported for this check.',
       ],
       saved_for_troubleshooting: {
         saved: Boolean(lastRun?.run_id),
