@@ -607,6 +607,9 @@ export default function DevicesScreen() {
   const [addDeviceOpen, setAddDeviceOpen] = useState(false);
   const addDeviceDisclosureRef = useRef(null);
   const [remoteAccessDetailsOpen, setRemoteAccessDetailsOpen] = useState(false);
+  const [topologyOpen, setTopologyOpen] = useState(false);
+  const [deviceSearch, setDeviceSearch] = useState('');
+  const [deviceFilter, setDeviceFilter] = useState('all');
   const [result, setResult] = useState(null);
   const [invite, setInvite] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -701,7 +704,16 @@ export default function DevicesScreen() {
   const onlineDevices = devices.filter((device) => deviceRelationshipPresentation(device, savedStateOnly || isExpired).state === 'joined').length;
   const healthAttentionCurrent = Boolean(data?.health_summary?.attention_current);
   const healthAttentionCount = healthAttentionCurrent ? Number(data?.health_summary?.attention_count || 0) : 0;
-  const fleetStory = fleetOperationalStory({ data, devices, onlineDevices, healthAttentionCount, savedStateOnly });
+  const fleetStory = fleetOperationalStory({ data, devices, onlineDevices, healthAttentionCount, savedStateOnly: savedStateOnly || isExpired });
+  const libraryEntries = useMemo(() => devices.map((device) => deviceLibraryEntry(device, {
+    saved: savedStateOnly || isExpired, presentation: canonicalDevicePresentation(device), linkState: deviceLinkState(device),
+  })), [devices, savedStateOnly, isExpired]);
+  const fleetMetrics = useMemo(() => deviceLibrarySummary(libraryEntries, {
+    confirmed: Boolean(data) && !savedStateOnly && !isExpired,
+  }), [libraryEntries, data, savedStateOnly, isExpired]);
+  const filteredDevices = useMemo(() => filterDeviceLibrary(libraryEntries, {
+    filter: deviceFilter, query: deviceSearch,
+  }), [libraryEntries, deviceFilter, deviceSearch]);
   const selectedRoleLabels = selectedRoles.map((role) => roleLabel(role));
   const selectedRoleLabel = selectedRoleLabels.join(' + ');
   const candidateDeviceName = hostname.trim() || `Pocket Lab ${selectedRoleLabel}`;
@@ -999,12 +1011,12 @@ export default function DevicesScreen() {
   return (
     <>
       <PageHeader
-        eyebrow="Devices"
+        eyebrow="Self-hosted workspace"
         title="Devices"
-        description="Your self-hosted workspace, connected devices, and safe recovery actions."
+        description="Manage your connected environment."
         actions={<div className="lite-devices-title-actions">
-          <LiteRefreshButton scope="devices" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
-          <LiteButton aria-expanded={addDeviceOpen} aria-controls="lite-devices-onboarding" onClick={() => {
+          <LiteRefreshButton scope="devices" refresh={() => { triggerLiteHaptic('tap'); refresh(); }} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
+          <LiteButton haptic aria-expanded={addDeviceOpen} aria-controls="lite-devices-onboarding" onClick={() => {
             if (addDeviceDisclosureRef.current) {
               addDeviceDisclosureRef.current.open = true;
               setAddDeviceOpen(true);
@@ -1083,15 +1095,10 @@ export default function DevicesScreen() {
         <section className="lite-devices-list-area" aria-busy={loading ? 'true' : 'false'}>
           <div className="lite-devices-section-title">
             <div>
-              <p>Workspace</p>
               <h2>Your devices</h2>
-              <small>Current connection, system identity, and health at a glance.</small>
+              <small>Choose a device to review connection, roles, health or recovery.</small>
             </div>
-            <div className="lite-devices-section-metrics" aria-label="Device totals">
-              {savedStateOnly ? <span><strong>Saved</strong> information</span> : <span><strong>{onlineDevices}</strong> online</span>}
-              <span><strong>{devices.length}</strong> total</span>
-              {healthAttentionCurrent ? <span><strong>{healthAttentionCount}</strong> need attention</span> : null}
-            </div>
+
           </div>
 
           {error ? (
@@ -1235,7 +1242,9 @@ export default function DevicesScreen() {
 
           {loading ? <LoadingCard label="Loading devices..." /> : null}
 
-          <DeviceDetailsPortal devices={devices} detailsButtonRefs={detailsButtonRefs} />
+          <DeviceDetailsPortal devices={devices} detailsButtonRefs={detailsButtonRefs}
+            deviceActionHandlersRef={deviceActionHandlersRef} restartBusy={restartBusy}
+            removeBusy={removeBusy} savedStateOnly={savedStateOnly || isExpired} />
 
           {modelPickerDevice ? (
             <Suspense fallback={null}>
@@ -1250,11 +1259,11 @@ export default function DevicesScreen() {
           ) : null}
 
           <DeviceFleetList
-            items={devices}
+            items={filteredDevices}
             domain="devices"
-            datasetKey="fleet:all"
+            datasetKey={`fleet:${deviceFilter}:${deviceSearch.trim().toLocaleLowerCase()}`}
             getItemKey={deviceListKey}
-            estimateSize={312}
+            estimateSize={168}
             overscan={4}
             viewportHeight={720}
             lanes={2}
