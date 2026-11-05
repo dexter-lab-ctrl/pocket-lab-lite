@@ -5430,7 +5430,8 @@ def test_lite_progressive_details_keeps_history_lazy_and_technical_collapsed():
     assert "{open ? (" in technical
     assert "HISTORY_SECTION_COLLAPSED_BY_DEFAULT" in history
     assert "HISTORY_CONTENT_MOUNTS_ONLY_WHEN_OPENED" in history
-    assert "const [isOpen, setIsOpen] = useState(false)" in history
+    assert "initiallyOpen = false" in history
+    assert "const [isOpen, setIsOpen] = useState(Boolean(initiallyOpen))" in history
     assert "const shouldMountHistory = Boolean(isOpen && enabled)" in history
     assert "{shouldMountHistory ? (" in history
     assert "data-lazy-history" in history
@@ -5554,7 +5555,8 @@ def test_lite_devices_details_keep_history_lazy_and_technical_collapsed():
     assert "technicalDetails={technicalRows(device)}" in details
     assert "<details className=\"lite-device-advanced-details\">" in details
     assert "Technical and troubleshooting details" in details
-    assert "const [isOpen, setIsOpen] = useState(false)" in history
+    assert "initiallyOpen = false" in history
+    assert "const [isOpen, setIsOpen] = useState(Boolean(initiallyOpen))" in history
     assert "const shouldMountHistory = Boolean(isOpen && enabled)" in history
     assert "{shouldMountHistory ? (" in history
     assert "TECHNICAL_DETAILS_COLLAPSED_BY_DEFAULT" in technical
@@ -5639,8 +5641,9 @@ def test_lite_recovery_details_keep_history_lazy_and_technical_collapsed():
     assert "history={{" in action_details
     assert "Recovery history" in action_details
     assert "technicalDetails={technicalRows" in action_details
-    assert "title=\"Backup history\"" in backup_history
-    assert "const [isOpen, setIsOpen] = useState(false)" in history
+    assert "title=\"Browse restore points\"" in backup_history
+    assert "initiallyOpen = false" in history
+    assert "const [isOpen, setIsOpen] = useState(Boolean(initiallyOpen))" in history
     assert "const shouldMountHistory = Boolean(isOpen && enabled)" in history
     assert "{shouldMountHistory ? (" in history
     assert "TECHNICAL_DETAILS_COLLAPSED_BY_DEFAULT" in technical
@@ -5735,7 +5738,8 @@ def test_lite_security_details_keep_history_lazy_and_technical_collapsed():
     assert "Finding history" in finding_details
     assert "technicalDetails={technicalRows" in finding_details
     assert 'data-security-history-cursor-v2="true"' in security_history
-    assert "const [isOpen, setIsOpen] = useState(false)" in history
+    assert "initiallyOpen = false" in history
+    assert "const [isOpen, setIsOpen] = useState(Boolean(initiallyOpen))" in history
     assert "const shouldMountHistory = Boolean(isOpen && enabled)" in history
     assert "{shouldMountHistory ? (" in history
     assert "TECHNICAL_DETAILS_COLLAPSED_BY_DEFAULT" in technical
@@ -8140,7 +8144,9 @@ def test_lite_n2_render_containment_is_targeted_and_overlay_safe():
     assert "lite-devices-grid lite-devices-linked-grid lite-render-containment" in devices
     assert "lite-catalog-grid lite-app-library-grid lite-render-containment" in catalog
     assert "lite-security-s7-profile-cards lite-render-containment" in security
-    assert "lite-recovery-premium-screen lite-render-containment lite-render-containment--recovery" in recovery
+    assert "lite-recovery-premium-screen" in recovery
+    assert "lite-render-containment" in recovery
+    assert "lite-render-containment--recovery" in recovery
     for unsafe_class in [
         "lite-catalog-manage-sheet lite-render-containment",
         "lite-security-manage-shell lite-render-containment",

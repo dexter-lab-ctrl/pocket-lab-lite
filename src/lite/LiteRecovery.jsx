@@ -32,6 +32,7 @@ import {
 import { LiteFreshness } from './LiteUx.jsx';
 import RecoveryJourney from './recovery/RecoveryJourney.jsx';
 import RecoveryPremiumTimeline from './recovery/RecoveryPremiumTimeline.jsx';
+import { useRecoveryMobileSheet } from './recovery/useRecoveryMobileSheet.js';
 import { isRecoveryLocationReady, recoveryPremiumHero, recoveryJourneyStatus, recoveryPremiumActivity, recoveryOverviewFacts } from './recovery/recoveryPremiumView.js';
 import './recovery/recoveryPremium.css';
 
@@ -66,6 +67,7 @@ function mergeOptional(...values) {
 }
 
 export default function RecoveryScreen() {
+  const mobileRecoverySheet = useRecoveryMobileSheet();
   const [copiedEvidence, setCopiedEvidence] = useState('');
   const [selectedBackup, setSelectedBackup] = useState(null);
   const recoveryManageOpen = useLiteUiStore((state) => state.recoveryManageOpen);
@@ -332,8 +334,8 @@ export default function RecoveryScreen() {
   };
   const activePanel = actionPanelMeta[activeActionPanel] || null;
 
-  const recoveryLive = Boolean(busy) || recoveryFlow.isBusy || serverRecoveryLive;
-  useLiteServiceWorkerUpdateBlocker('recovery-workflow', Boolean(recoveryLive || restoreConfirmation));
+  const recoveryLive = serverRecoveryLive;
+  useLiteServiceWorkerUpdateBlocker('recovery-workflow', Boolean(recoveryLive || busy || recoveryFlow.isBusy || restoreConfirmation));
   const premiumHero = recoveryPremiumHero({
     data, backup: latestBackup, preview: latestPreview, repository, database: databaseProtection,
     busy, saved: savedStateOnly, stale: projectionStale || isExpired, reachable: backendReachable,
@@ -370,6 +372,7 @@ export default function RecoveryScreen() {
   async function copyEvidence(value, label) {
     const copied = await copyTextToClipboard(value);
     if (copied) {
+      triggerLiteHaptic('accepted');
       setCopiedEvidence(label);
       pushToast({ id: `recovery:evidence-copied:${label}`, kind: 'success', title: 'Evidence copied', message: `${label} is ready to paste.` });
       window.setTimeout(() => setCopiedEvidence(''), 1600);
@@ -659,6 +662,7 @@ export default function RecoveryScreen() {
   ]);
 
   function cancelRestoreConfirmation() {
+    triggerLiteHaptic('accepted');
     if (restoreConfirmation === 'lite') recoveryFlow.cancel();
     setRestoreConfirmation('');
   }
@@ -671,16 +675,16 @@ export default function RecoveryScreen() {
   return (
     <>
       <PageHeader
-        eyebrow="Recovery"
-        title="Recovery"
-        description="Protect your workspace and review each step before restoring anything."
+        eyebrow="Self-hosted workspace"
+        title="Recovery Center"
+        description="Your workspace protection and recovery tools."
         actions={<LiteRefreshButton scope="recovery" refresh={refreshSummary} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       
-      <div className="lite-recovery-premium-screen lite-render-containment lite-render-containment--recovery" data-recovery-premium="true">
+      <div className="lite-recovery-premium-screen lite-recovery-center lite-render-containment lite-render-containment--recovery" data-recovery-premium="true">
         <div className="lite-recovery-native-announcer" role="status" aria-live="polite" aria-atomic="true">{recoveryAnnouncement}</div>
-        <GlassCard className="lite-recovery-premium-protection lite-recovery-r1-hero" data-recovery-protection-state={premiumHero.state} data-recovery-r1-summary="true">
+        <GlassCard className="lite-recovery-premium-protection lite-recovery-center-hero lite-recovery-r1-hero" data-recovery-protection-state={premiumHero.state} data-recovery-r1-summary="true">
           <div className="lite-recovery-premium-brand">
             <ShieldCheck aria-hidden="true" />
             <div>
@@ -704,7 +708,7 @@ export default function RecoveryScreen() {
             ))}
           </ul>
           <div className="lite-recovery-premium-actions">
-            <LiteButton onClick={backup} disabled={premiumHero.disabled || recoveryWriteBlocked || Boolean(busy)} haptic>{busy ? 'Recovery working…' : 'Back Up Now'}</LiteButton>
+            <LiteButton onClick={backup} disabled={premiumHero.disabled || recoveryWriteBlocked || Boolean(busy)}>{busy ? serverRecoveryLive ? 'Recovery in progress…' : 'Checking request…' : 'Back Up Now'}</LiteButton>
             <LiteButton tone="secondary" onClick={() => openRecoveryManage('backup')} ariaLabel="Manage Recovery">Manage Recovery</LiteButton>
           </div>
           {(recoveryWriteBlocked || premiumHero.disabled) && !busy ? (
@@ -730,11 +734,13 @@ export default function RecoveryScreen() {
 
       <LiteSheet
         open={recoveryManageOpen}
-        onClose={() => setRecoveryManageOpen(false)}
+        onClose={() => { triggerLiteHaptic('accepted'); setRecoveryManageOpen(false); }}
         title="Manage backups and recovery"
         eyebrow="Manage"
         description="Create and verify backups, preview restores, and review protection history in one focused workspace."
         variant="manage"
+        mobileSnap={mobileRecoverySheet && !desktopManagePanel}
+        snapHaptic
         className={`lite-recovery-manage-sheet ${desktopManagePanel ? 'is-movable' : ''}`.trim()}
         bodyClassName="lite-recovery-manage-scroll"
         surfaceRef={managePanelRef}
@@ -744,7 +750,7 @@ export default function RecoveryScreen() {
           <div className="lite-recovery-desktop-panel-tools" role="group" aria-label="Desktop Recovery panel controls">
             <button type="button" aria-label="Move Recovery panel" title="Drag or use arrow keys to move; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
               onPointerDown={(event) => startPanelInteraction('move', event)} onKeyDown={(event) => adjustPanelWithKeyboard('move', event)}><Move size={16} aria-hidden="true" /></button>
-            <button type="button" aria-label="Reset Recovery panel position and size" onClick={resetManagePanel}><RotateCcw size={16} aria-hidden="true" /> Reset</button>
+            <button type="button" aria-label="Reset Recovery panel position and size" onClick={() => { triggerLiteHaptic('accepted'); resetManagePanel(); }}><RotateCcw size={16} aria-hidden="true" /> Reset</button>
             <button type="button" aria-label="Resize Recovery panel" title="Drag or use arrow keys to resize; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
               onPointerDown={(event) => startPanelInteraction('resize', event)} onKeyDown={(event) => adjustPanelWithKeyboard('resize', event)}><Maximize2 size={16} aria-hidden="true" /></button>
             <span className="sr-only" role="status" aria-live="polite">{managePanelAnnouncement}</span>
@@ -785,12 +791,12 @@ export default function RecoveryScreen() {
             onPreview={previewLatestRestore}
             onRestore={restoreLatestBackup}
             onDatabaseBackup={backUpDatabase}
-            onOpenDatabaseDetails={() => setDatabaseDetailsOpen(true)}
+            onOpenDatabaseDetails={() => { triggerLiteHaptic('accepted'); setDatabaseDetailsOpen(true); }}
             onBackUpApp={backUpApp}
             onOpenActionDetails={openActionPanel}
             onOpenEvidence={() => setEvidenceOpen(true)}
             selectedBackupId={selectedRestorePoint?.backup_id || ''}
-            onSelectBackup={setSelectedBackup}
+            onSelectBackup={(backupPoint) => { triggerLiteHaptic('accepted'); setSelectedBackup(backupPoint); }}
             onDiscoverLocation={discoverRecoveryLocation}
             onSelectLocation={selectRecoveryLocation}
             onForgetLocation={forgetRecoveryLocation}
@@ -803,11 +809,13 @@ export default function RecoveryScreen() {
 
       <LiteSheet
         open={Boolean(activePanel)}
-        onClose={() => setActiveActionPanel('')}
+        onClose={() => { triggerLiteHaptic('accepted'); setActiveActionPanel(''); }}
         title={activePanel?.title || 'Recovery details'}
         eyebrow="Details"
         description={activePanel?.subtitle || 'Verified backup and restore details with recorded outcomes.'}
         variant="security"
+        mobileSnap={mobileRecoverySheet}
+        snapHaptic
         className="lite-recovery-action-details-sheet"
         bodyClassName="lite-recovery-action-details-scroll"
       >
@@ -835,11 +843,13 @@ export default function RecoveryScreen() {
 
       <LiteSheet
         open={databaseDetailsOpen}
-        onClose={() => setDatabaseDetailsOpen(false)}
+        onClose={() => { triggerLiteHaptic('accepted'); setDatabaseDetailsOpen(false); }}
         title="Pocket Lab data protection"
         eyebrow="Recovery Details"
         description="Verified backup, restore preview, safety guard, and protected diagnostics."
         variant="security"
+        mobileSnap={mobileRecoverySheet}
+        snapHaptic
         className="lite-recovery-database-manage-sheet"
         bodyClassName="lite-recovery-database-manage-scroll"
       >
@@ -869,6 +879,8 @@ export default function RecoveryScreen() {
         eyebrow="Confirm Restore"
         description="Review the protected action before local state changes."
         variant="security"
+        mobileSnap={mobileRecoverySheet}
+        snapHaptic
         className="lite-recovery-confirm-sheet"
         bodyClassName="lite-recovery-confirm-scroll"
       >
@@ -887,11 +899,13 @@ export default function RecoveryScreen() {
 
       <LiteSheet
         open={evidenceOpen}
-        onClose={() => setEvidenceOpen(false)}
+        onClose={() => { triggerLiteHaptic('accepted'); setEvidenceOpen(false); }}
         title="Recovery record"
         eyebrow="Troubleshooting record"
         description="Protected reference values for support and recovery review."
         variant="security"
+        mobileSnap={mobileRecoverySheet}
+        snapHaptic
         className="lite-recovery-evidence-sheet"
         bodyClassName="lite-recovery-evidence-list"
       >

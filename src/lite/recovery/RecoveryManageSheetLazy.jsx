@@ -7,12 +7,15 @@ import {
   HardDrive,
   RotateCcw,
   ShieldCheck,
+  ChevronRight,
 } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import { friendlyLiteText } from '../../lib/liteUxPresentation.js';
 import { LiteButton, LoadingCard, StateSurface, StatusBadge } from '../LiteUi.jsx';
 import RecoveryBackupLocation from './RecoveryBackupLocation.jsx';
 import { recoveryRestoreImpact } from './recoveryPremiumView.js';
+import RecoveryRestoreAssistant from './RecoveryRestoreAssistant.jsx';
+import { triggerLiteHaptic } from '../../lib/liteNativeFeedback.js';
 
 const RecoveryBackupHistory = React.lazy(() => import('./RecoveryBackupHistory.jsx'));
 
@@ -131,6 +134,9 @@ export default function RecoveryManageSheetLazy({
   onSelectLocation,
   onForgetLocation,
 }) {
+  const [restoreStep, setRestoreStep] = React.useState('choose');
+  const [locationsOpen, setLocationsOpen] = React.useState(false);
+  const [appsOpen, setAppsOpen] = React.useState(false);
   const activeSection = RECOVERY_MANAGE_SECTIONS.some((item) => item.id === section) ? section : 'backup';
   const recentHistory = (Array.isArray(history) ? history : []).slice(0, 3);
   const impact = recoveryRestoreImpact({ backup: latestBackup, preview: latestPreview, location: latestBackup?.location });
@@ -148,6 +154,7 @@ export default function RecoveryManageSheetLazy({
           ? (index + 1) % RECOVERY_MANAGE_SECTIONS.length
           : (index - 1 + RECOVERY_MANAGE_SECTIONS.length) % RECOVERY_MANAGE_SECTIONS.length;
     const next = RECOVERY_MANAGE_SECTIONS[nextIndex];
+    triggerLiteHaptic('accepted');
     onSectionChange(next.id);
     tabRefs.current[nextIndex]?.focus?.({ preventScroll: true });
   };
@@ -166,7 +173,7 @@ export default function RecoveryManageSheetLazy({
             aria-controls={`recovery-manage-panel-${item.id}`}
             tabIndex={activeSection === item.id ? 0 : -1}
             className={activeSection === item.id ? 'is-active' : ''}
-            onClick={() => onSectionChange(item.id)}
+            onClick={() => { triggerLiteHaptic('accepted'); onSectionChange(item.id); }}
             onKeyDown={(event) => onTabKeyDown(event, index)}
           >
             {item.label}
@@ -188,14 +195,17 @@ export default function RecoveryManageSheetLazy({
       {activeSection === 'backup' ? (
         <section id="recovery-manage-panel-backup" className="lite-recovery-manage-section" role="tabpanel" aria-labelledby="recovery-manage-tab-backup" tabIndex={0}>
           <SectionHeading eyebrow="Backup" title="Create and manage restore points" description="Create verified restore points for Pocket Lab Lite, its database, and supported apps." />
-          <RecoveryBackupLocation
+          <RecoveryActionRow icon={HardDrive} title="Backup locations" description="Review backend-approved backup destinations and their storage health."
+            status={backupLocations?.selected_location?.status || 'Not confirmed'} statusTone={backupLocations?.selected_location?.status === 'ready' ? 'healthy' : 'unknown'}
+            onDetails={() => { triggerLiteHaptic('accepted'); setLocationsOpen((value) => !value); }} detailsLabel={locationsOpen ? 'Hide locations' : 'Manage locations'} />
+          {locationsOpen ? <RecoveryBackupLocation
             locations={backupLocations}
             disabled={Boolean(busy) || databaseWriteBlocked || savedStateOnly}
             busy={busy}
             onDiscover={onDiscoverLocation}
             onSelect={onSelectLocation}
             onForget={onForgetLocation}
-          />
+          /> : null}
           <div className="lite-recovery-manage-action-list">
             <RecoveryActionRow
               icon={ArchiveRestore}
@@ -241,7 +251,9 @@ export default function RecoveryManageSheetLazy({
 
           {appBackups.length ? (
             <div className="lite-recovery-manage-subsection">
-              <strong>App backups</strong>
+              <RecoveryActionRow icon={ShieldCheck} title="App protection" description="Review available application backups and their exclusions."
+                onDetails={() => { triggerLiteHaptic('accepted'); setAppsOpen((value) => !value); }} detailsLabel={appsOpen ? 'Hide apps' : 'View apps'} />
+              {appsOpen ? <>
               <div className="lite-recovery-manage-app-list">
                 {appBackups.map((app) => {
                   const lifecycle = lifecycleByApp.get(app.app_id) || app.lifecycle || {};
@@ -269,7 +281,7 @@ export default function RecoveryManageSheetLazy({
                     </article>
                   );
                 })}
-              </div>
+              </div></> : null}
             </div>
           ) : null}
         </section>
@@ -277,80 +289,75 @@ export default function RecoveryManageSheetLazy({
 
       {activeSection === 'restore' ? (
         <section id="recovery-manage-panel-restore" className="lite-recovery-manage-section" role="tabpanel" aria-labelledby="recovery-manage-tab-restore" tabIndex={0}>
-          <SectionHeading eyebrow="Restore" title="Review and restore safely" description="Verify the selected backup, review expected changes, and confirm before restoration begins." />
-          <section className="lite-recovery-impact" aria-label="Restore impact preview">
-            <strong>Selected restore point</strong>
-            <dl>
-              <dt>Backup</dt><dd>{impact.backupId || 'Not selected'}</dd>
-              <dt>Verified</dt><dd>{impact.verified ? 'Yes' : 'Not confirmed'}</dd>
-              <dt>Preview</dt><dd>{impact.ready ? 'Ready for confirmation' : 'Fresh matching preview required'}</dd>
-              <dt>Expected items</dt><dd>{impact.count === null ? 'Not reported' : impact.count}</dd>
-              <dt>Excluded</dt><dd>{impact.excluded.length ? impact.excluded.join(', ') : 'Not reported'}</dd>
-            </dl>
-            <p>A verified backup, matching current preview, available destination, live authority and confirmation are all required.</p>
-            {!impact.ready || recoveryWriteBlocked ? (
-              <p className="lite-recovery-restore-blocked-reason" role="status">
-                {recoveryWriteBlocked ? recoveryWriteBlockedReason || 'Live recovery authority unavailable.' :
-                  !latestBackup ? 'Select a backup first.' :
-                  !impact.verified ? 'Verify the selected backup first.' :
-                  !latestPreview?.preview_id ? 'Preview the selected backup first.' :
-                  !impact.locationReady ? 'The backup destination is unavailable.' : 'Refresh or prepare a matching restore preview.'}
+          <SectionHeading eyebrow="Restore" title="Restore Assistant" description="Choose a restore point, prepare a matching preview, review safeguards, then explicitly confirm." />
+          <RecoveryRestoreAssistant step={restoreStep} onStepChange={setRestoreStep} verified={latestBackupVerified}
+            previewReady={impact.ready} writeBlocked={recoveryWriteBlocked || savedStateOnly}>
+            {restoreStep === 'choose' ? <>
+              <p className="lite-recovery-assistant-selection" role="status">
+                Selected: {latestBackup?.created_at ? formatLiteTime(latestBackup.created_at) : 'No restore point'}
+                {' · '}{latestBackupVerified ? 'Verified' : 'Verification required'}
               </p>
-            ) : null}
-          </section>
-          <div className="lite-recovery-manage-action-list">
-            <RecoveryActionRow
-              icon={CheckCircle2}
-              title="Verify backup"
-              description={latestBackupVerified ? 'Evidence checks passed and the backup is ready.' : 'Confirm the latest backup passed integrity and readiness checks.'}
-              status={latestBackupVerified ? 'Verified' : 'Required'}
-              statusTone={latestBackupVerified ? 'healthy' : 'review'}
-              actionLabel="Verify"
-              busyLabel="Checking…"
-              busy={busy === 'verify'}
-              disabled={Boolean(busy) || !latestBackup || databaseWriteBlocked}
-              onAction={onVerify}
-              onDetails={() => onOpenActionDetails('verify')}
-            />
-            <RecoveryActionRow
-              icon={FileCheck}
-              title="Preview restore"
-              description={latestPreviewReady ? impact.count === null ? 'Preview ready; impact count not reported.' : String(impact.count) + ' item(s) checked without changing local state.' : 'Review expected changes before restoration is enabled.'}
-              status={latestPreviewReady ? 'Ready' : 'Preview needed'}
-              statusTone={latestPreviewReady ? 'healthy' : 'review'}
-              actionLabel="Preview"
-              busyLabel="Preparing…"
-              busy={busy === 'preview'}
-              disabled={Boolean(busy) || !latestBackup || databaseWriteBlocked}
-              onAction={onPreview}
-              onDetails={() => onOpenActionDetails('preview')}
-            />
-            <RecoveryActionRow
-              icon={RotateCcw}
-              title="Restore selected backup"
-              description="Creates a checkpoint and requires explicit confirmation. A prior successful restore does not authorize this selected backup."
-              status={impact.ready && !recoveryWriteBlocked ? 'Review and confirm' : 'Protected'}
-              statusTone={impact.ready && !recoveryWriteBlocked ? 'review' : 'unknown'}
-              actionLabel="Restore"
-              busyLabel="Restoring…"
-              busy={busy === 'restore'}
-              disabled={Boolean(busy) || !impact.ready || databaseWriteBlocked || savedStateOnly || recoveryWriteBlocked}
-              tone="danger"
-              onAction={onRestore}
-              onDetails={() => onOpenActionDetails('restore')}
-            >
-              {busy === 'restore' ? <div className="lite-recovery-manage-inline-progress">Checkpoint and health checks are running…</div> : null}
-            </RecoveryActionRow>
-            <RecoveryActionRow
-              icon={Database}
-              title="Database restore"
-              description={databasePreviewReady ? 'Verified database restore preview is ready.' : 'Open database protection to verify and preview a restore.'}
-              status={databaseBackupVerified ? 'Protected' : 'Backup needed'}
-              statusTone={databaseBackupVerified ? 'healthy' : 'review'}
-              detailsLabel="Manage"
-              onDetails={onOpenDatabaseDetails}
-            />
-          </div>
+              <React.Suspense fallback={<div className="lite-recovery-history-loading">Opening restore points…</div>}>
+                <RecoveryBackupHistory
+                  initialHistory={history} latestPreview={latestPreview} savedStateOnly={savedStateOnly || recoveryWriteBlocked}
+                  selectedBackupId={selectedBackupId} onSelectBackup={onSelectBackup} selectionOnly
+                  onVerify={onVerify} onPreview={onPreview} onRecover={onRestore}
+                />
+              </React.Suspense>
+              <LiteButton tone="secondary" haptic disabled={!latestBackup?.backup_id}
+                onClick={() => setRestoreStep('preview')}>Continue to preview <ChevronRight aria-hidden="true" size={16}/></LiteButton>
+            </> : null}
+            {restoreStep === 'preview' ? <div className="lite-recovery-manage-action-list">
+              <RecoveryActionRow icon={CheckCircle2} title="Verify selected backup"
+                description={latestBackupVerified ? 'Backend verification is recorded for this restore point.' : 'A saved backup must pass the backend verification check.'}
+                status={latestBackupVerified ? 'Verified' : 'Required'} statusTone={latestBackupVerified ? 'healthy' : 'review'}
+                actionLabel="Verify" busyLabel="Checking…" busy={busy === 'verify'}
+                disabled={Boolean(busy) || !latestBackup || databaseWriteBlocked || recoveryWriteBlocked || savedStateOnly}
+                onAction={onVerify} onDetails={() => onOpenActionDetails('verify')} />
+              <RecoveryActionRow icon={FileCheck} title="Preview selected restore point"
+                description={impact.ready ? 'Matching backend preview recorded. No restore has been applied.' : 'Preview the selected backup without applying changes.'}
+                status={impact.ready ? 'Ready' : 'Preview required'} statusTone={impact.ready ? 'healthy' : 'review'}
+                actionLabel="Preview" busyLabel="Preparing…" busy={busy === 'preview'}
+                disabled={Boolean(busy) || !latestBackupVerified || databaseWriteBlocked || recoveryWriteBlocked || savedStateOnly}
+                onAction={onPreview} onDetails={() => onOpenActionDetails('preview')} />
+              <LiteButton tone="secondary" haptic onClick={() => setRestoreStep('safety')}>Review safety checks <ChevronRight size={16} aria-hidden="true"/></LiteButton>
+            </div> : null}
+            {restoreStep === 'safety' ? <>
+              <section className="lite-recovery-impact" aria-label="Restore impact preview">
+                <strong>Backend-reported restore impact</strong>
+                <dl>
+                  <dt>Selected backup</dt><dd>{latestBackup?.created_at ? formatLiteTime(latestBackup.created_at) : 'Not selected'}</dd>
+                  <dt>Verification</dt><dd>{impact.verified ? 'Verified' : 'Not confirmed'}</dd>
+                  <dt>Matching preview</dt><dd>{impact.ready ? 'Ready' : 'Fresh matching preview required'}</dd>
+                  <dt>Expected items</dt><dd>{impact.count === null ? 'Not reported' : impact.count}</dd>
+                  <dt>Destination</dt><dd>{impact.location || 'Not reported'}</dd>
+                  <dt>Destination readiness</dt><dd>{impact.location ? (impact.locationReady ? 'Available' : 'Unavailable') : 'Not reported'}</dd>
+                  <dt>Excluded data</dt><dd>{impact.excluded.length ? impact.excluded.join(', ') : 'Not reported'}</dd>
+                  <dt>Checkpoint</dt><dd>Created by Pocket Lab before changing state</dd>
+                  <dt>Database safeguards</dt><dd>{databaseMaintenance?.active ? 'Maintenance active' : databaseWriteBlocked ? 'Blocked or not confirmed' : 'Live backend checks still required'}</dd>
+                </dl>
+                <p>Authorization, service interruption, checkpoint completion, and post-restore health are determined by the backend. Unknown checks are never treated as passed.</p>
+                {!impact.ready || recoveryWriteBlocked ? <p role="status" className="lite-recovery-restore-blocked-reason">
+                  {recoveryWriteBlockedReason || (!latestBackupVerified ? 'Verify the selected backup first.' : 'Prepare a matching restore preview before confirmation.')}
+                </p> : null}
+              </section>
+              <LiteButton tone="secondary" haptic onClick={() => setRestoreStep('confirm')}>Review confirmation <ChevronRight aria-hidden="true" size={16}/></LiteButton>
+            </> : null}
+            {restoreStep === 'confirm' ? <div className="lite-recovery-manage-action-list">
+              <RecoveryActionRow icon={RotateCcw} title="Restore selected backup"
+                description="Creates a pre-restore checkpoint. Only a live, verified and matching preview can enable confirmation."
+                status={impact.ready && !recoveryWriteBlocked ? 'Review and confirm' : 'Protected'}
+                statusTone={impact.ready && !recoveryWriteBlocked ? 'review' : 'unknown'}
+                actionLabel="Restore" busyLabel="Restoring…" busy={busy === 'restore'}
+                disabled={Boolean(busy) || !impact.ready || databaseWriteBlocked || savedStateOnly || recoveryWriteBlocked}
+                tone="danger" onAction={onRestore} onDetails={() => onOpenActionDetails('restore')}>
+                {busy === 'restore' ? <div className="lite-recovery-manage-inline-progress">Backend checkpoint and health checks are running…</div> : null}
+              </RecoveryActionRow>
+              <RecoveryActionRow icon={Database} title="Database restore" description="A separate protected database workflow with its own matching preview and guards."
+                status={databaseBackupVerified ? 'Backup recorded' : 'Backup needed'} statusTone={databaseBackupVerified ? 'neutral' : 'review'}
+                detailsLabel="Manage database" onDetails={onOpenDatabaseDetails} />
+            </div> : null}
+          </RecoveryRestoreAssistant>
         </section>
       ) : null}
 

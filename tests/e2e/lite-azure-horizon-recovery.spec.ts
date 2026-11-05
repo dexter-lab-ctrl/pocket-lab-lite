@@ -25,15 +25,15 @@ test.describe('Azure Horizon Recovery P0–P4 semantic, accessible and protected
   for (const appearance of ['light', 'dark', 'system'] as const) {
     test(`Recovery overview distinguishes backup, destination and preview — ${appearance}`, async ({ page }) => {
       await openRecovery(page, 'recovery-verified', appearance);
-      await expect(page.getByRole('heading', { name: 'Recovery', exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Recovery Center', exact: true })).toBeVisible();
       await expect(page.locator('[data-recovery-summary-facts] > li')).toHaveCount(3);
       await expect(page.locator('[data-recovery-fact="backup"]')).toContainText(/Verified/i);
       await expect(page.locator('[data-recovery-fact="destination"]')).toBeVisible();
       await expect(page.locator('[data-recovery-fact="preview"]')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Back Up Now' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Manage Recovery' })).toHaveCount(1);
-      await expect(page.locator('.lite-recovery-premium-stage-grid button')).toHaveCount(4);
-      await expect(page.locator('.lite-recovery-premium-timeline')).toBeVisible();
+      await expect(page.locator('.lite-recovery-readiness-steps button')).toHaveCount(4);
+      await expect(page.locator('.lite-recovery-recent-activity')).toBeVisible();
       expect(['light', 'dark']).toContain(await page.locator('html').getAttribute('data-lite-theme'));
     });
     test(`theme and four Manage tabs retain portal and keyboard semantics — ${appearance}`, async ({ page }) => {
@@ -83,6 +83,7 @@ test.describe('Azure Horizon Recovery P0–P4 semantic, accessible and protected
         expect(bounds.x).toBeGreaterThanOrEqual(-1);
         expect(bounds.x + bounds.width).toBeLessThanOrEqual(width + 1);
       }
+      await dialog.getByRole('button', { name: /Manage locations/ }).click();
       const locationStatus = dialog.locator('.lite-recovery-location-head > [data-lite-perf-primitive="status-badge"]');
       await expect(locationStatus).toHaveCSS('white-space', 'nowrap');
       expect(await locationStatus.evaluate((node) => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
@@ -122,8 +123,8 @@ test.describe('Azure Horizon Recovery P0–P4 semantic, accessible and protected
     page.on('request', (request) => {
       if (request.method() !== 'GET' && request.url().includes('/api/lite/recovery/')) sends.push(request.url());
     });
-    await page.locator('.lite-recovery-premium-stage-grid button').nth(2).click();
-    await expect(page.locator('.lite-recovery-premium-stage-grid button').nth(2)).toHaveAttribute('aria-expanded', 'true');
+    await page.locator('.lite-recovery-readiness-steps button').nth(2).click();
+    await expect(page.locator('.lite-recovery-readiness-steps button').nth(2)).toHaveAttribute('aria-expanded', 'true');
     expect(sends).toEqual([]);
   });
   test('backend stale summary blocks backup and restore while retaining saved visibility', async ({ page }) => {
@@ -132,6 +133,7 @@ test.describe('Azure Horizon Recovery P0–P4 semantic, accessible and protected
     await expect(page.getByRole('button', { name: 'Back Up Now' })).toBeDisabled();
     const dialog = await (async () => { await page.getByRole('button', { name: 'Manage Recovery' }).click(); return page.getByRole('dialog', { name: /Manage backups and recovery/i }); })();
     await dialog.getByRole('tab', { name: 'Restore' }).click();
+    await dialog.getByRole('button', { name: /Step 4: Confirm and restore/ }).click();
     await expect(dialog.getByRole('button', { name: 'Restore', exact: true })).toBeDisabled();
   });
   test('protected restore confirmation cannot dispatch a restore on Cancel or panel interaction', async ({ page }) => {
@@ -144,6 +146,7 @@ test.describe('Azure Horizon Recovery P0–P4 semantic, accessible and protected
     await page.getByRole('button', { name: 'Manage Recovery' }).click();
     const panel = page.getByRole('dialog', { name: /Manage backups and recovery/i });
     await panel.getByRole('tab', { name: 'Restore' }).click();
+    await panel.getByRole('button', { name: /Step 4: Confirm and restore/ }).click();
     await panel.getByRole('button', { name: 'Move Recovery panel' }).focus();
     await page.keyboard.press('ArrowLeft');
     await panel.getByRole('button', { name: 'Resize Recovery panel' }).focus();
@@ -183,7 +186,7 @@ test.describe('Azure Horizon Recovery P0–P4 semantic, accessible and protected
       await expect(page.locator('.lite-recovery-premium-protection')).toBeVisible();
       await expect(page.locator('[data-recovery-fact="backup"]')).toBeVisible();
       await expect(page.locator('[data-recovery-fact="preview"]')).toBeVisible();
-      await expect(page.locator('.lite-recovery-premium-stage-grid button')).toHaveCount(4);
+      await expect(page.locator('.lite-recovery-readiness-steps button')).toHaveCount(4);
     });
   }
 });

@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 523,
+  "page_count": 524,
   "page_types": [
     "overview",
     "guide",
@@ -4821,6 +4821,29 @@
       "source_or_generator": "architecture/universal-app-platform.md",
       "title": "Universal App Platform",
       "url": "/architecture/universal-app-platform/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/azure-horizon-recovery-center-revamp.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "recovery",
+      "generated": false,
+      "id": "page:development/azure-horizon-recovery-center-revamp",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/azure-horizon-recovery-center-revamp.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/azure-horizon-recovery-center-revamp.md",
+      "title": "Azure Horizon Recovery Center — source implementation and qualification handoff",
+      "url": "/development/azure-horizon-recovery-center-revamp/"
     },
     {
       "additional_audiences": [],
@@ -18390,7 +18413,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "3dc9503fc6506f179037bdf9735bc3cce962cb430103e93c57f7722a574b711c",
+  "source_fingerprint": "af4f7a50b2fa894d9272aebb89e2c7ab6ba50ccf2bba8cd3ba42ec8e0e594398",
   "top_level": [
     "start-here",
     "use",

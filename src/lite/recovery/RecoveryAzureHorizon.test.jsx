@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+// NOT RUN — implementation-only session
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -27,7 +28,7 @@ describe('Azure Horizon Recovery accessible compositions', () => {
   it('marks saved activity as unconfirmed instead of fabricating an event', () => {
     render(<RecoveryPremiumTimeline items={[]} saved onViewActivity={vi.fn()} />);
     expect(screen.getByText(/cannot be confirmed/i)).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'View Activity' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'View all recovery activity' })).toBeTruthy();
   });
   it('distinguishes available and ready destination and preserves approved location actions', () => {
     const onSelect = vi.fn();

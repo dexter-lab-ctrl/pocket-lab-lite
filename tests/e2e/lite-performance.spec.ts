@@ -449,7 +449,8 @@ test('[interaction] Recovery Manage sections and action details stay inside the 
   await writeLitePerformanceEvidence(testInfo, sectionReport);
 
   await sheet.getByRole('tab', { name: 'Restore', exact: true }).click();
-  const details = sheet.getByRole('button', { name: /Details: Verify backup/i });
+  await sheet.getByRole('button', { name: /Step 2: Preview changes/i }).click();
+  const details = sheet.getByRole('button', { name: /Details: Verify selected backup/i });
   await expect(details).toBeVisible();
   const detailsReport = await measureLiteInteraction(
     page,

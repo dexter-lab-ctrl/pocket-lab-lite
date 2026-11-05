@@ -1,7 +1,7 @@
 /* Recovery-only refinement; shared PR #606 surface/overlay primitives remain authoritative. */
 .lite-recovery-premium-screen { display:grid; gap:1rem; min-width:0; max-width:1100px; margin-inline:auto; padding-bottom:max(1.5rem, env(safe-area-inset-bottom)); }
 .lite-recovery-premium-screen > * { min-width:0; max-width:100%; }
-.lite-recovery-premium-screen :is(h2,h3,p,strong,span,small,time,button,li) { min-width:0; overflow-wrap:anywhere; word-break:normal; }
+.lite-recovery-premium-screen :is(h2,h3,p,strong,span,small,time,button,li) { min-width:0; overflow-wrap:break-word; word-break:normal; }
 .lite-recovery-premium-screen button:focus-visible,.lite-recovery-premium-screen [role="tab"]:focus-visible { outline:3px solid var(--lite-accent, #165ead); outline-offset:3px; }
 .lite-recovery-premium-eyebrow,.lite-recovery-premium-status { display:block; }
 .lite-recovery-location-head > .pocket-badge { flex:0 0 auto; white-space:nowrap; }
@@ -107,7 +107,7 @@ html[data-lite-perf-mode='true'][data-lite-theme] .lite-screen-stage-recovery .l
 .lite-recovery-impact dl { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr); gap:.5rem; margin:0; }
 .lite-recovery-impact dd,.lite-recovery-impact dt { margin:0; min-width:0; overflow-wrap:anywhere; }
 .lite-recovery-impact dd { font-weight:650; }
-.lite-recovery-manage-sheet :is(button,p,small,strong,span),.lite-recovery-confirm-sheet :is(button,p,small,strong,span) { overflow-wrap:anywhere; white-space:normal; min-width:0; max-width:100%; }
+.lite-recovery-manage-sheet :is(button,p,small,strong,span),.lite-recovery-confirm-sheet :is(button,p,small,strong,span) { overflow-wrap:break-word; white-space:normal; min-width:0; max-width:100%; }
 @media(max-width:640px) { .lite-recovery-premium-indicators { grid-template-columns:repeat(2,minmax(0,1fr)); } .lite-recovery-premium-stage-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .lite-recovery-premium-actions { display:grid; grid-template-columns:1fr; } .lite-recovery-premium-actions button { width:100%; } .lite-recovery-impact dl { grid-template-columns:1fr; } }
 @media(max-width:360px) {
   .lite-recovery-premium-indicators { grid-template-columns:1fr; }
@@ -320,4 +320,220 @@ html[data-lite-theme] .lite-recovery-native-confirm-actions button {min-height:4
 @media(prefers-reduced-motion:reduce) {
   html[data-lite-theme] .lite-recovery-manage-scroll {scroll-behavior:auto;}
   html[data-lite-theme] .lite-recovery-desktop-panel-tools * {transition:none;animation:none;}
+}
+
+
+/* Recovery Center P0–P6 — one semantic-token owner for new Recovery-only surfaces.
+   Structural geometry is independent of Daylight/Dark/System theme selection.
+   Apps #636 is the spacing reference; no new palette or snap controller is used. */
+html[data-lite-theme] .lite-recovery-center {
+  width:100%;max-width:1100px;gap:var(--azure-spacing-card);
+  padding-inline:clamp(.75rem,2vw,1.25rem);
+}
+html[data-lite-theme] .lite-recovery-center > :is(.lite-recovery-center-hero,.lite-recovery-premium-layout) {
+  min-width:0;
+}
+html[data-lite-theme] .lite-recovery-center-hero {
+  gap:var(--azure-spacing-card);padding:clamp(1rem,2.2vw,1.6rem);
+  border-radius:var(--azure-radius-card);
+}
+html[data-lite-theme] .lite-recovery-center-hero .lite-recovery-premium-indicators {
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+html[data-lite-theme] .lite-recovery-center-hero .lite-recovery-premium-indicators li {
+  min-height:0;gap:.25rem;padding:.7rem .8rem;
+  background:var(--azure-raised);border-color:var(--azure-border);
+}
+html[data-lite-theme] .lite-recovery-center-hero .lite-recovery-premium-brand h2 {
+  font-size:clamp(1.35rem,2.6vw,1.9rem);line-height:1.22;
+}
+html[data-lite-theme] .lite-recovery-premium-layout {
+  grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--azure-spacing-card);
+  align-items:stretch;
+}
+html[data-lite-theme] :is(.lite-recovery-readiness,.lite-recovery-recent-activity) {
+  display:flex;flex-direction:column;gap:.8rem;min-width:0;
+  padding:var(--azure-spacing-card);height:100%;border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-card);color:var(--azure-text);
+  background:var(--azure-surface);box-shadow:var(--azure-shadow);
+}
+html[data-lite-theme] :is(.lite-recovery-readiness-head,.lite-recovery-recent-head) {
+  display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.65rem;
+  min-width:0;background:transparent;border:0;box-shadow:none;backdrop-filter:none;
+  padding:0;margin:0;
+}
+html[data-lite-theme] :is(.lite-recovery-readiness,.lite-recovery-recent-activity) h2 {
+  font-size:1.05rem;line-height:1.35;font-weight:700;margin:0;color:var(--azure-text);
+}
+html[data-lite-theme] :is(.lite-recovery-readiness,.lite-recovery-recent-activity) p {
+  font-size:.88rem;line-height:1.5;color:var(--azure-muted);margin:.2rem 0 0;
+  overflow-wrap:break-word;
+}
+html[data-lite-theme] .lite-recovery-readiness-steps {
+  list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.4rem;
+  margin:0;padding:0;min-width:0;
+}
+html[data-lite-theme] .lite-recovery-readiness-steps li {min-width:0;}
+html[data-lite-theme] .lite-recovery-readiness-steps button {
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.3rem;
+  width:100%;min-height:76px;padding:.55rem .3rem;
+  color:var(--azure-text);background:var(--azure-raised);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  cursor:pointer;line-height:1.25;
+}
+html[data-lite-theme] .lite-recovery-readiness-steps button strong {
+  font-size:.85rem;font-weight:650;
+}
+html[data-lite-theme] .lite-recovery-readiness-steps button span {
+  font-size:.72rem;line-height:1.35;color:var(--azure-muted);text-align:center;
+}
+html[data-lite-theme] .lite-recovery-readiness-steps button svg:last-child {display:none;}
+html[data-lite-theme] .lite-recovery-readiness-steps li[data-stage-status="completed"] button {
+  border-block-end:3px solid var(--azure-success);
+}
+html[data-lite-theme] .lite-recovery-readiness-steps li[data-stage-status="needs_action"] button,
+html[data-lite-theme] .lite-recovery-readiness-steps li[data-stage-status="blocked"] button {
+  border-block-end:3px solid var(--azure-warning);
+}
+html[data-lite-theme] .lite-recovery-readiness-steps li[data-stage-status="failed"] button {
+  border-block-end:3px solid var(--azure-danger);
+}
+html[data-lite-theme] .lite-recovery-readiness-note {
+  margin-top:auto!important;font-size:.78rem!important;
+}
+html[data-lite-theme] .lite-recovery-recent-head .pocket-button {
+  min-height:44px;white-space:normal;max-width:100%;
+}
+html[data-lite-theme] .lite-recovery-recent-event {
+  display:grid;grid-template-columns:auto minmax(0,1fr);gap:.75rem;align-items:flex-start;
+  min-width:0;padding:.6rem 0;
+}
+html[data-lite-theme] .lite-recovery-recent-icon {
+  display:grid;place-items:center;width:40px;height:40px;flex:none;
+  background:var(--azure-accent-subtle);color:var(--azure-info);
+  border:1px solid var(--azure-border);border-radius:50%;
+}
+html[data-lite-theme] .lite-recovery-recent-event > div {display:grid;gap:.18rem;min-width:0;}
+html[data-lite-theme] .lite-recovery-recent-event strong {font-size:.95rem;}
+html[data-lite-theme] .lite-recovery-recent-event small {
+  display:block;font-size:.78rem;line-height:1.4;color:var(--azure-muted);
+}
+html[data-lite-theme] .lite-recovery-readiness-explanation,
+html[data-lite-theme] .lite-recovery-assistant-content {
+  color:var(--azure-text);min-width:0;
+}
+html[data-lite-theme] .lite-recovery-readiness-explanation {
+  padding:var(--azure-spacing-card);background:var(--azure-raised);
+  border-radius:var(--azure-radius-card);
+}
+html[data-lite-theme] .lite-recovery-readiness-explanation p {line-height:1.5;}
+html[data-lite-theme] .lite-recovery-assistant-steps {
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));list-style:none;gap:.4rem;
+  margin:0 0 .9rem;padding:0;
+}
+html[data-lite-theme] .lite-recovery-assistant-steps li {min-width:0;}
+html[data-lite-theme] .lite-recovery-assistant-steps button {
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;
+  text-align:center;min-height:68px;width:100%;padding:.5rem .4rem;
+  color:var(--azure-text);background:var(--azure-raised);
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-control);
+  cursor:pointer;font-size:.8rem;line-height:1.4;overflow-wrap:break-word;
+}
+html[data-lite-theme] .lite-recovery-assistant-steps button[aria-current="step"] {
+  background:var(--azure-selected);border-color:var(--azure-accent);
+  box-shadow:inset 0 -3px var(--azure-accent);
+}
+html[data-lite-theme] .lite-recovery-assistant-content {
+  display:grid;gap:.8rem;
+}
+html[data-lite-theme] .lite-recovery-assistant-intro h4 {
+  color:var(--azure-text);font-size:1rem;font-weight:700;line-height:1.4;margin:0;
+}
+html[data-lite-theme] .lite-recovery-assistant-intro p,
+html[data-lite-theme] .lite-recovery-assistant-selection {
+  color:var(--azure-muted);line-height:1.5;margin:.2rem 0;
+}
+html[data-lite-theme] .lite-recovery-assistant-warning {
+  color:var(--azure-warning);background:var(--azure-warning-subtle);
+  border:1px solid var(--azure-border);padding:.75rem;
+  border-radius:var(--azure-radius-control);
+}
+html[data-lite-theme] .lite-recovery-point-library {
+  border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);
+  background:var(--azure-surface);padding:.75rem;box-shadow:none;
+}
+html[data-lite-theme] .lite-recovery-point-library .lite-recovery-history-action-row {
+  display:grid;grid-template-columns:minmax(0,1fr);gap:.5rem;padding:.4rem;
+}
+html[data-lite-theme] .lite-recovery-point-library .lite-recovery-history-select {
+  display:grid;gap:.3rem;text-align:start;min-height:58px;width:100%;
+  padding:.7rem;background:transparent;border:0;
+  color:var(--azure-text);cursor:pointer;
+}
+html[data-lite-theme] .lite-recovery-point-library .lite-recovery-history-select :is(span,small) {
+  color:var(--azure-muted);font-size:.85rem;line-height:1.45;overflow-wrap:break-word;
+}
+html[data-lite-theme] .lite-recovery-point-details {
+  display:grid;gap:.45rem;padding:.75rem;border-top:1px solid var(--azure-border);min-width:0;
+}
+html[data-lite-theme] .lite-recovery-point-details p {margin:0;color:var(--azure-muted);}
+html[data-lite-theme] .lite-recovery-point-details .lite-recovery-history-row-actions {
+  display:flex;flex-wrap:wrap;gap:.5rem;
+}
+html[data-lite-theme] .lite-recovery-manage-action-row .lite-recovery-manage-action-buttons {
+  display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.5rem;
+}
+html[data-lite-theme] .lite-recovery-manage-action-row button,
+html[data-lite-theme] .lite-recovery-point-details button {
+  min-height:44px;white-space:normal;
+}
+html[data-lite-theme] .lite-recovery-manage-section-heading {
+  background:transparent;border:0;box-shadow:none;
+}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-evidence-sheet,.lite-recovery-readiness-sheet)
+  .lite-overlay-head {gap:.65rem;min-width:0;}
+html[data-lite-theme] :is(.lite-recovery-manage-sheet,.lite-recovery-action-details-sheet,.lite-recovery-database-manage-sheet,.lite-recovery-confirm-sheet,.lite-recovery-evidence-sheet,.lite-recovery-readiness-sheet)
+  .lite-overlay-head > div:first-child {flex:1 1 16rem;min-width:0;}
+html[data-lite-theme] .lite-recovery-desktop-panel-tools {
+  flex-wrap:nowrap;gap:.35rem;
+}
+html[data-lite-theme] .lite-recovery-desktop-panel-tools button {
+  padding:.45rem;min-height:44px;min-width:44px;
+}
+@media(max-width:900px) {
+  html[data-lite-theme] .lite-recovery-premium-layout {grid-template-columns:minmax(0,1fr);}
+}
+@media(max-width:700px) {
+  html[data-lite-theme] .lite-recovery-center {padding-inline:.75rem;}
+  html[data-lite-theme] .lite-recovery-center-hero .lite-recovery-premium-indicators {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  html[data-lite-theme] .lite-recovery-readiness-steps {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  html[data-lite-theme] .lite-recovery-readiness-steps button {
+    flex-direction:row;justify-content:flex-start;min-height:52px;gap:.45rem;text-align:left;
+  }
+  html[data-lite-theme] .lite-recovery-readiness-steps button span {margin-inline-start:auto;text-align:end;}
+  html[data-lite-theme] .lite-recovery-assistant-steps {grid-template-columns:repeat(2,minmax(0,1fr));}
+  html[data-lite-theme] .lite-recovery-assistant-steps button {
+    display:flex;flex-direction:row;justify-content:flex-start;min-height:52px;text-align:left;
+  }
+  html[data-lite-theme] .lite-recovery-manage-action-row .lite-recovery-manage-action-buttons {justify-content:flex-start;}
+  html[data-lite-theme] .lite-recovery-manage-sheet.is-mobile-resizable {
+    max-height:calc(var(--lite-visual-viewport-height,100dvh) - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 1rem);
+  }
+}
+@media(max-width:360px) {
+  html[data-lite-theme] .lite-recovery-center-hero .lite-recovery-premium-indicators {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-center-hero .lite-recovery-premium-brand h2 {font-size:1.35rem;line-height:1.3;}
+  html[data-lite-theme] .lite-recovery-center-hero .lite-recovery-premium-backup-date {font-size:.88rem;}
+  html[data-lite-theme] .lite-recovery-readiness-steps {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-recent-head {display:grid;grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-assistant-steps {grid-template-columns:minmax(0,1fr);}
+  html[data-lite-theme] .lite-recovery-manage-action-row .lite-recovery-manage-action-buttons {display:grid;grid-template-columns:minmax(0,1fr);}
+}
+@media(prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-recovery-center *,
+  html[data-lite-theme] .lite-recovery-restore-assistant * {transition:none;animation:none;}
 }

@@ -43,8 +43,9 @@ export default function LiteHistorySection({
   onLoadMore,
   totalCount = null,
   presentation = 'default',
+  initiallyOpen = false,
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(Boolean(initiallyOpen));
   const safeItems = useMemo(() => safeHistoryItems(items), [items]);
   const sourceCount = Array.isArray(items) ? items.filter(Boolean).length : 0;
   const count = safeItems.length;

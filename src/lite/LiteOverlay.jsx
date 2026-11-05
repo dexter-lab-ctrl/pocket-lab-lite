@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Move, Maximize2, RotateCcw } from 'lucide-react';
 import { useMobileSheetSnap } from './components/useMobileSheetSnap.js';
+import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import './components/mobileSheetSnap.css';
 import { animated, useSpring } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
@@ -273,6 +274,7 @@ export function LiteSheet({
   variant = 'manage',
   motion = 'none',
   mobileSnap = false,
+  snapHaptic = false,
   mobileHeaderVariant = 'default',
 }) {
   const generatedId = useId();
@@ -410,8 +412,8 @@ export function LiteSheet({
             {headerActions}
             {mobileSheet.active ? <div className="lite-sheet-mobile-snap-actions" role="group" aria-label="Sheet size">
               {mobileHeaderVariant === 'safety' ? <span className="lite-sheet-safety-snap-status" aria-live="polite">{mobileSheet.state === 'expanded' ? 'Expanded' : mobileSheet.state === 'compact' ? 'Compact' : 'Medium'} · Drag handle to resize</span> : null}
-              <button type="button" onClick={mobileSheet.contract} disabled={!mobileSheet.canContract}>Compact</button>
-              <button type="button" onClick={mobileSheet.expand} disabled={!mobileSheet.canExpand}>Expand</button>
+              <button type="button" onClick={() => { if (snapHaptic) triggerLiteHaptic('accepted'); mobileSheet.contract(); }} disabled={!mobileSheet.canContract}>Compact</button>
+              <button type="button" onClick={() => { if (snapHaptic) triggerLiteHaptic('accepted'); mobileSheet.expand(); }} disabled={!mobileSheet.canExpand}>Expand</button>
             </div> : null}
             <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={onClose} aria-label={variantClasses.closeLabel} {...closeLabelOverride}>
               <X className="h-4 w-4" />

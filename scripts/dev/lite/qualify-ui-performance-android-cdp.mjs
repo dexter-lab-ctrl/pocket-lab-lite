@@ -17,7 +17,8 @@ const browserBridgeEnabled = process.env.LITE_QUALIFICATION_BROWSER_BRIDGE === '
 const qualificationScope = String(process.env.LITE_ANDROID_QUALIFICATION_SCOPE || 'all').trim().toLowerCase();
 const outputDir = resolve('.pocketlab-dev/performance');
 const homeOnly = qualificationScope === 'home';
-const screens = homeOnly ? ['home'] : ['home', 'catalog', 'devices', 'security', 'identity', 'rules', 'recovery'];
+const recoveryOnly = qualificationScope === 'recovery';
+const screens = recoveryOnly ? ['recovery'] : homeOnly ? ['home'] : ['home', 'catalog', 'devices', 'security', 'identity', 'rules', 'recovery'];
 const MINIMUM_FRAME_COUNT = 20;
 const MINIMUM_SAMPLER_INTERVAL_COUNT = MINIMUM_FRAME_COUNT + 3;
 const MAX_MINIMUM_FRAME_EXTENSION_MS = 2_000;
@@ -31,8 +32,8 @@ function fail(message) {
 if (browserBridgeEnabled !== Boolean(browserBridge)) {
   fail('Synthetic Android browser qualification requires an explicit browser bridge and LITE_QUALIFICATION_BROWSER_BRIDGE=1.');
 }
-if (!['all', 'home'].includes(qualificationScope)) {
-  fail('LITE_ANDROID_QUALIFICATION_SCOPE must be either all or home.');
+if (!['all', 'home', 'recovery'].includes(qualificationScope)) {
+  fail('LITE_ANDROID_QUALIFICATION_SCOPE must be all, home or recovery.');
 }
 
 function sourceCommit() {
@@ -223,14 +224,16 @@ try {
 } catch {
   fail('The Android candidate manifest was not valid JSON.');
 }
-if (candidateManifest?.source_commit !== commit || candidateManifest?.sanitized !== true) {
+const candidateManifestVerified = candidateManifest?.source_commit === commit && candidateManifest?.sanitized === true;
+if (!candidateManifestVerified) {
   fail('The Android candidate manifest source SHA does not match the requested exact commit.');
 }
 const candidateManifestResponseHeaderVerified = candidateManifestResponse.headers()['x-pocket-lab-candidate-sha'] === commit;
 if (!candidateManifestResponseHeaderVerified) {
   fail('The Android candidate response header did not prove the requested exact commit.');
 }
-const candidatePageResponse = await page.goto(new URL('/?screen=home', base).toString(), { waitUntil: 'domcontentloaded' });
+const identityScreen = recoveryOnly ? 'recovery' : 'home';
+const candidatePageResponse = await page.goto(new URL(`/?screen=${identityScreen}`, base).toString(), { waitUntil: 'domcontentloaded' });
 if (!candidatePageResponse || !candidatePageResponse.ok()) {
   fail('The Android candidate page did not load.');
 }
@@ -245,8 +248,8 @@ if (!candidatePageMetaVerified) {
 }
 
 async function proveCandidatePage(candidatePage) {
-  const proof = await candidatePage.evaluate(async () => {
-    const response = await fetch('/?screen=home&pocketlab_qualification_sha_probe=1', {
+  const proof = await candidatePage.evaluate(async (screen) => {
+    const response = await fetch(`/?screen=${screen}&pocketlab_qualification_sha_probe=1`, {
       cache: 'no-store',
       credentials: 'same-origin',
     });
@@ -255,7 +258,7 @@ async function proveCandidatePage(candidatePage) {
       responseHeader: response.headers.get('x-pocket-lab-candidate-sha'),
       meta: document.querySelector('meta[name="pocketlab-candidate-sha"]')?.getAttribute('content') || null,
     };
-  }).catch(() => null);
+  }, identityScreen).catch(() => null);
   if (!proof?.ok) {
     fail('The Android foreground candidate page did not expose a readable candidate response.');
   }
@@ -366,6 +369,50 @@ let targetMisses = 0;
 let evidenceCount = 0;
 const exercisedInteractions = new Set();
 const unavailableSurfaces = [];
+const recoveryInteractionResults = [];
+const recoveryMutationRequests = [];
+
+page.on('request', (request) => {
+  const method = request.method();
+  let pathname = '';
+  try { pathname = new URL(request.url()).pathname; } catch {}
+  if (method !== 'GET' && pathname.startsWith('/api/lite/recovery/')) {
+    recoveryMutationRequests.push({ method, pathname });
+  }
+});
+
+function recoveryReason(error, fallback = 'surface_not_available') {
+  const value = String(error?.message || error || fallback)
+    .replace(/\s+/g, ' ')
+    .replace(/https?:\/\/[^ ]+/gi, '[redacted-url]')
+    .slice(0, 180)
+    .trim();
+  return value || fallback;
+}
+
+function markRecoveryInteraction(id, surface, status = 'COMPLETED', reason = '') {
+  if (!recoveryOnly) return;
+  recoveryInteractionResults.push({
+    id,
+    surface,
+    status,
+    ...(reason ? { reason: recoveryReason(reason) } : {}),
+  });
+}
+
+async function recordRecoveryInteraction(id, surface, action) {
+  if (!recoveryOnly) return;
+  try {
+    const result = await action();
+    if (result && typeof result === 'object' && result.status) {
+      markRecoveryInteraction(id, surface, result.status, result.reason);
+      return;
+    }
+    markRecoveryInteraction(id, surface);
+  } catch (error) {
+    markRecoveryInteraction(id, surface, 'NOT_EXERCISED', error);
+  }
+}
 
 async function firstVisible(locator, label) {
   const count = await locator.count();
@@ -525,6 +572,7 @@ async function measurePhase4Interaction({
   surface,
   action,
   evidenceId = null,
+  qualificationInteractionId = null,
   settleMs = 180,
 }) {
   if (!LITE_PERFORMANCE_INTERACTIONS.includes(interaction)) {
@@ -573,6 +621,7 @@ async function measurePhase4Interaction({
     phase4_interaction: interaction,
     interaction_scope: scope,
     interaction_surface: surface,
+    qualification_interaction_id: qualificationInteractionId,
     mode: 'live',
     qualification_surface: 'android-cdp',
     browser_project: 'android-cdp',
@@ -593,7 +642,7 @@ async function measurePhase4Interaction({
   };
 
   const fileName = [
-    'ui-performance-android-cdp',
+    recoveryOnly ? 'ui-performance-android-recovery' : 'ui-performance-android-cdp',
     sanitizeLitePerformanceName(scope),
     sanitizeLitePerformanceName(interaction),
   ].join('-') + '.json';
@@ -619,6 +668,7 @@ async function measureNestedInteraction({
   surface,
   action,
   settleMs = 440,
+  qualificationInteractionId = null,
 }) {
   return measurePhase4Interaction({
     interaction,
@@ -626,6 +676,7 @@ async function measureNestedInteraction({
     surface,
     action,
     settleMs,
+    qualificationInteractionId,
     evidenceId: matrixEvidence(screen, interaction, nestedSurface),
   });
 }
@@ -637,18 +688,23 @@ for (const screenId of screens) {
     interaction: 'screen-steady',
     scope: screenId,
     surface: `[data-lite-screen-id="${screenId}"]`,
+    qualificationInteractionId: recoveryOnly && screenId === 'recovery' ? 'R01' : null,
     action: async () => {
       await page.waitForTimeout(720);
     },
     settleMs: 0,
   });
+  if (recoveryOnly && screenId === 'recovery') {
+    markRecoveryInteraction('R01', 'Recovery page initial rendering', 'COMPLETED');
+  }
 }
 
 // Phase 4: real destination navigation through the rendered Home cards. The
 // Home-only selector proves all four destination controls without entering the
 // unrelated screen-specific matrices below.
-await gotoScreen('home');
-if (homeOnly) {
+if (!recoveryOnly) {
+  await gotoScreen('home');
+  if (homeOnly) {
   for (const [label, screenId] of [
     ['Apps', 'catalog'],
     ['Devices', 'devices'],
@@ -671,7 +727,7 @@ if (homeOnly) {
       settleMs: 700,
     });
   }
-} else {
+  } else {
   await measurePhase4Interaction({
     interaction: 'screen-navigation',
     scope: 'home-to-devices',
@@ -683,9 +739,11 @@ if (homeOnly) {
     },
     settleMs: 700,
   });
+  }
 }
 
 // Phase 4: representative Manage open/close using the always-read-only Home workspace details surface.
+if (!recoveryOnly) {
 await gotoScreen('home');
 const workspaceDetailsButton = await firstVisible(
   page.getByRole('button', { name: /Workspace details/i }),
@@ -773,6 +831,7 @@ await measurePhase4Interaction({
   // collection completeness only; frame targets and hard gates remain fixed.
   settleMs: 700,
 });
+}
 
 if (homeOnly) {
   await gotoScreen('home');
@@ -829,7 +888,7 @@ if (homeOnly) {
   });
 }
 
-if (!homeOnly) {
+if (!homeOnly && !recoveryOnly) {
 // Deep Apps coverage stays in the prepared PhotoPrism Manage projection. The
 // section switch and Details panel do not submit an app operation.
 await gotoScreen('catalog');
@@ -1012,6 +1071,8 @@ if (!findingDetailsButton) {
   });
 }
 
+}
+
 // Phase 4: explicit list/page scrolling on a content-rich screen.
 await gotoScreen('recovery');
 await captureRecoveryScreenshot('landing', page.locator('[data-lite-screen-id="recovery"]'));
@@ -1019,14 +1080,57 @@ await measurePhase4Interaction({
   interaction: 'list-scroll',
   scope: 'recovery',
   surface: 'Recovery screen scroll surface',
+  qualificationInteractionId: recoveryOnly ? 'R03' : null,
   action: async () => {
     await exerciseScroll(900);
   },
   settleMs: 180,
 });
 
+if (recoveryOnly) {
+  await recordRecoveryInteraction('R02', 'Recovery protection hero', async () => {
+    const hero = await firstVisibleOrNull(page.locator('.lite-recovery-r1-hero'));
+    return hero ? { status: 'COMPLETED' } : { status: 'NOT_EXERCISED', reason: 'protection_hero_not_reported' };
+  });
+  markRecoveryInteraction('R03', 'Recovery landing-page scrolling', 'COMPLETED');
+
+  await recordRecoveryInteraction('R04', 'Recovery Readiness stage selection', async () => {
+    const stage = await firstVisibleOrNull(page.locator('.lite-recovery-readiness-steps button').first());
+    if (!stage) return { status: 'NOT_EXERCISED', reason: 'readiness_stage_not_reported' };
+    await stage.click();
+    return { status: 'COMPLETED' };
+  });
+  await recordRecoveryInteraction('R05', 'Recovery Readiness details opening', async () => {
+    const details = await firstVisibleOrNull(page.getByRole('dialog', { name: /readiness/i }));
+    if (!details) return { status: 'NOT_EXERCISED', reason: 'readiness_details_not_reported' };
+    await details.locator('[aria-label="Recovery stage explanation"]').waitFor({ state: 'visible' });
+    return { status: 'COMPLETED' };
+  });
+  await recordRecoveryInteraction('R06', 'Recovery Readiness details closing', async () => {
+    const details = await firstVisibleOrNull(page.getByRole('dialog', { name: /readiness/i }));
+    if (!details) return { status: 'NOT_EXERCISED', reason: 'readiness_details_not_open' };
+    const close = await firstVisibleOrNull(details.getByRole('button', { name: /Close/i }));
+    if (!close) return { status: 'NOT_EXERCISED', reason: 'readiness_close_control_not_reported' };
+    await close.click();
+    await details.waitFor({ state: 'hidden', timeout: 10_000 }).catch(() => {});
+    return { status: 'COMPLETED' };
+  });
+  await recordRecoveryInteraction('R07', 'Recovery Recent Activity rendering', async () => {
+    const activity = await firstVisibleOrNull(page.locator('.lite-recovery-recent-activity'));
+    return activity ? { status: 'COMPLETED' } : { status: 'NOT_EXERCISED', reason: 'recent_activity_not_reported' };
+  });
+  await recordRecoveryInteraction('R08', 'Recovery View All Activity', async () => {
+    const viewAll = await firstVisibleOrNull(page.getByRole('button', { name: 'View all recovery activity', exact: true }));
+    if (!viewAll) return { status: 'NOT_EXERCISED', reason: 'view_all_activity_not_reported' };
+    await viewAll.click();
+    const dialog = await firstVisibleOrNull(page.locator('[data-lite-sheet-variant="manage"]:visible').first());
+    return dialog ? { status: 'COMPLETED' } : { status: 'NOT_EXERCISED', reason: 'recovery_manage_not_opened_from_activity' };
+  });
+}
+
 // Identity and Rules coverage stops at presentation. No confirmation is
 // accepted and no identity or policy mutation is submitted.
+if (!homeOnly && !recoveryOnly) {
 await gotoScreen('identity');
 const manageAccessButton = await firstVisibleOrNull(page.getByRole('button', { name: /Manage Access/i }));
 if (!manageAccessButton) {
@@ -1081,12 +1185,52 @@ if (!manageRulesButton) {
   });
 }
 
+}
+
 // Recovery exercises only section navigation and the Verify-backup detail
 // projection. Restore apply and backup creation remain untouched.
 await gotoScreen('recovery');
 const manageRecoveryButton = await firstVisible(page.getByRole('button', { name: 'Manage Recovery' }), 'Recovery Manage button');
-await manageRecoveryButton.click();
+if (recoveryOnly) {
+  await measurePhase4Interaction({
+    interaction: 'manage-open',
+    scope: 'recovery-manage',
+    surface: 'Recovery Manage sheet',
+    action: async () => {
+      if (!await page.locator('[data-lite-sheet-variant="manage"]:visible').count()) await manageRecoveryButton.click();
+      await page.locator('[data-lite-sheet-variant="manage"]:visible').first().waitFor({ state: 'visible', timeout: 10_000 });
+    },
+    qualificationInteractionId: 'R09',
+    settleMs: 420,
+  });
+} else if (!await page.locator('[data-lite-sheet-variant="manage"]:visible').count()) {
+  await manageRecoveryButton.click();
+}
 const recoveryManage = await firstVisible(page.locator('[data-lite-sheet-variant="manage"]:visible').first(), 'Recovery Manage sheet');
+if (recoveryOnly) {
+  markRecoveryInteraction('R09', 'Manage Recovery opening', 'COMPLETED');
+  await recordRecoveryInteraction('R10', 'Manage Backup navigation', async () => {
+    const backupTab = await firstVisibleOrNull(recoveryManage.getByRole('tab', { name: 'Backup', exact: true }));
+    if (!backupTab) return { status: 'NOT_EXERCISED', reason: 'backup_tab_not_reported' };
+    await backupTab.click();
+    await recoveryManage.getByRole('tabpanel', { name: 'Backup' }).waitFor({ state: 'visible' });
+    return { status: 'COMPLETED' };
+  });
+  await recordRecoveryInteraction('R11', 'Backup Locations details', async () => {
+    const locationsButton = await firstVisibleOrNull(recoveryManage.getByRole('button', { name: /Manage locations/i }));
+    if (!locationsButton) return { status: 'NOT_EXERCISED', reason: 'backup_locations_not_reported' };
+    await locationsButton.click();
+    const locations = await firstVisibleOrNull(recoveryManage.locator('[data-recovery-backup-location="true"]'));
+    return locations ? { status: 'COMPLETED' } : { status: 'NOT_EXERCISED', reason: 'backup_locations_details_not_opened' };
+  });
+  await recordRecoveryInteraction('R12', 'App Protection details', async () => {
+    const appsButton = await firstVisibleOrNull(recoveryManage.getByRole('button', { name: /View apps/i }));
+    if (!appsButton) return { status: 'NOT_EXERCISED', reason: 'app_protection_not_reported' };
+    await appsButton.click();
+    const apps = await firstVisibleOrNull(recoveryManage.locator('.lite-recovery-manage-app-list'));
+    return apps ? { status: 'COMPLETED' } : { status: 'NOT_EXERCISED', reason: 'app_protection_details_not_opened' };
+  });
+}
 // The recovery sheet is lazy-mounted after the screen transition. Resolve the
 // source-owned stable tab ids at page scope after the sheet is visible instead
 // of retaining a role locator under a potentially replaced sheet subtree.
@@ -1105,26 +1249,142 @@ await measureNestedInteraction({
   },
   settleMs: 480,
 });
+if (recoveryOnly) markRecoveryInteraction('R20', 'Manage History navigation', 'COMPLETED');
 const recoveryRestoreTab = page.locator('#recovery-manage-tab-restore');
 await recoveryRestoreTab.waitFor({ state: 'visible', timeout: 10_000 });
 await recoveryRestoreTab.click();
-const verifyBackupDetails = await firstVisible(
-  recoveryManage.getByRole('button', { name: /Details: Verify backup/i }),
-  'Recovery Verify backup details button',
-);
-await measureNestedInteraction({
-  screen: 'recovery',
-  nestedSurface: 'Manage recovery / action details',
-  interaction: 'nested-detail-open',
-  scope: 'recovery-verify-details',
-  surface: 'Manage recovery / action details',
-  action: async () => {
-    await verifyBackupDetails.click();
-    await page.getByRole('dialog', { name: 'Verify Backup' }).waitFor({ state: 'visible' });
-  },
-  settleMs: 500,
-});
-await captureRecoveryScreenshot('verify-backup-details', page.getByRole('dialog', { name: 'Verify Backup' }));
+if (recoveryOnly) {
+  markRecoveryInteraction('R13', 'Manage Restore navigation', 'COMPLETED');
+  await recordRecoveryInteraction('R14', 'Restore Assistant step navigation', async () => {
+    const steps = recoveryManage.locator('.lite-recovery-assistant-steps button');
+    if (await steps.count() < 4) return { status: 'NOT_EXERCISED', reason: 'restore_assistant_steps_not_reported' };
+    const stepIds = ['choose', 'preview', 'safety', 'confirm'];
+    for (let index = 0; index < 4; index += 1) {
+      await steps.nth(index).click();
+      const activeStep = await recoveryManage.locator('[data-recovery-assistant="presentation-only"]').getAttribute('data-active-step');
+      if (activeStep !== stepIds[index]) return { status: 'NOT_EXERCISED', reason: `restore_step_${index + 1}_not_selected` };
+    }
+    return { status: 'COMPLETED' };
+  });
+  await recoveryManage.locator('.lite-recovery-assistant-steps button').nth(0).click();
+  await recordRecoveryInteraction('R15', 'Restore Point Library opening', async () => {
+    await recoveryManage.locator('.lite-recovery-point-library').waitFor({ state: 'visible' });
+    return { status: 'COMPLETED' };
+  });
+  await recordRecoveryInteraction('R16', 'Restore-point selection without mutation', async () => {
+    const point = await firstVisibleOrNull(recoveryManage.locator('.lite-recovery-history-select').first());
+    if (!point) return { status: 'NOT_EXERCISED', reason: 'restore_point_not_reported' };
+    await point.click();
+    return { status: 'COMPLETED' };
+  });
+  await recoveryManage.locator('.lite-recovery-assistant-steps button').nth(2).click();
+  await recordRecoveryInteraction('R17', 'Restore safety details', async () => {
+    const safety = await firstVisibleOrNull(recoveryManage.locator('.lite-recovery-impact'));
+    return safety ? { status: 'COMPLETED' } : { status: 'NOT_EXERCISED', reason: 'restore_safety_details_not_reported' };
+  });
+  await recoveryManage.locator('.lite-recovery-assistant-steps button').nth(3).click();
+  await recordRecoveryInteraction('R28', 'Read-only protected confirmation presentation', async () => {
+    const restoreAction = await firstVisibleOrNull(recoveryManage.locator('.lite-recovery-manage-action-row').filter({ hasText: 'Restore selected backup' }));
+    if (!restoreAction) return { status: 'NOT_EXERCISED', reason: 'protected_confirmation_not_reported' };
+    return { status: 'COMPLETED' };
+  });
+} else {
+  const verifyBackupDetails = await firstVisible(
+    recoveryManage.getByRole('button', { name: /Details: Verify backup/i }),
+    'Recovery Verify backup details button',
+  );
+  await measureNestedInteraction({
+    screen: 'recovery',
+    nestedSurface: 'Manage recovery / action details',
+    interaction: 'nested-detail-open',
+    scope: 'recovery-verify-details',
+    surface: 'Manage recovery / action details',
+    action: async () => {
+      await verifyBackupDetails.click();
+      await page.getByRole('dialog', { name: 'Verify Backup' }).waitFor({ state: 'visible' });
+    },
+    settleMs: 500,
+  });
+  await captureRecoveryScreenshot('verify-backup-details', page.getByRole('dialog', { name: 'Verify Backup' }));
+}
+
+if (recoveryOnly) {
+  await recordRecoveryInteraction('R18', 'Manage Protection navigation', async () => {
+    const protectionTab = await firstVisibleOrNull(page.locator('#recovery-manage-tab-protection'));
+    if (!protectionTab) return { status: 'NOT_EXERCISED', reason: 'protection_tab_not_reported' };
+    await protectionTab.click();
+    await recoveryManage.locator('#recovery-manage-panel-protection').waitFor({ state: 'visible' });
+    return { status: 'COMPLETED' };
+  });
+  await recordRecoveryInteraction('R19', 'Database protection read-only details', async () => {
+    const databaseDetails = await firstVisibleOrNull(recoveryManage.getByRole('button', { name: 'Protection details', exact: true }));
+    if (!databaseDetails) return { status: 'NOT_EXERCISED', reason: 'database_protection_details_not_reported' };
+    await databaseDetails.click();
+    const detailSheet = page.locator('[data-recovery-s8-lazy-details="true"]');
+    try {
+      await detailSheet.waitFor({ state: 'visible', timeout: 10_000 });
+      return { status: 'COMPLETED' };
+    } finally {
+      await page.keyboard.press('Escape').catch(() => {});
+      await detailSheet.waitFor({ state: 'hidden', timeout: 10_000 }).catch(() => {});
+    }
+  });
+  await recordRecoveryInteraction('R21', 'Manage History scrolling and pagination', async () => {
+    await recoveryHistoryTab.click();
+    const historyPanel = recoveryManage.locator('#recovery-manage-panel-history');
+    await historyPanel.waitFor({ state: 'visible' });
+    await historyPanel.evaluate((element) => {
+      const scroll = element.closest('.lite-recovery-manage-scroll') || element;
+      scroll.scrollTop = Math.min(scroll.scrollHeight, scroll.scrollTop + Math.max(180, scroll.clientHeight * 0.45));
+    });
+    const loadMore = await firstVisibleOrNull(historyPanel.getByRole('button', { name: /Load more/i }));
+    if (loadMore) await loadMore.click();
+    return { status: 'COMPLETED' };
+  });
+  await recordRecoveryInteraction('R22', 'Mobile sheet Compact to Medium', async () => {
+    const mobile = await page.evaluate(() => window.matchMedia('(max-width: 700px)').matches);
+    if (!mobile) return { status: 'NOT_APPLICABLE', reason: 'physical_browser_is_not_mobile_width' };
+    const sheet = page.locator('[data-lite-sheet-variant="manage"]:visible').first();
+    await sheet.getByRole('button', { name: 'Compact', exact: true }).click();
+    await sheet.getByRole('button', { name: 'Expand', exact: true }).click();
+    return (await sheet.getAttribute('data-lite-sheet-snap')) === 'medium'
+      ? { status: 'COMPLETED' }
+      : { status: 'NOT_EXERCISED', reason: 'mobile_sheet_medium_snap_not_reached' };
+  });
+  await recordRecoveryInteraction('R23', 'Mobile sheet Medium to Expanded', async () => {
+    const sheet = page.locator('[data-lite-sheet-variant="manage"]:visible').first();
+    if (!await sheet.count()) return { status: 'NOT_EXERCISED', reason: 'manage_sheet_not_open' };
+    await sheet.getByRole('button', { name: 'Expand', exact: true }).click();
+    return (await sheet.getAttribute('data-lite-sheet-snap')) === 'expanded'
+      ? { status: 'COMPLETED' }
+      : { status: 'NOT_EXERCISED', reason: 'mobile_sheet_expanded_snap_not_reached' };
+  });
+  await recordRecoveryInteraction('R24', 'Mobile sheet Expanded to Medium', async () => {
+    const sheet = page.locator('[data-lite-sheet-variant="manage"]:visible').first();
+    if (!await sheet.count()) return { status: 'NOT_EXERCISED', reason: 'manage_sheet_not_open' };
+    await sheet.getByRole('button', { name: 'Compact', exact: true }).click();
+    return (await sheet.getAttribute('data-lite-sheet-snap')) === 'medium'
+      ? { status: 'COMPLETED' }
+      : { status: 'NOT_EXERCISED', reason: 'mobile_sheet_medium_return_not_reached' };
+  });
+  await recordRecoveryInteraction('R27', 'Offline, stale or blocked Recovery state rendering', async () => {
+    const state = page.locator(
+      '[data-testid="recovery-projection-stale"], .lite-recovery-premium-disabled-reason, .lite-recovery-r1-hero[data-recovery-protection-state="unknown"], .lite-recovery-manage-content [role="status"]',
+    ).first();
+    const unavailableSummary = page.getByText('Current recovery state unavailable', { exact: true }).first();
+    return (await state.count() && await state.isVisible().catch(() => false)) || (await unavailableSummary.count() && await unavailableSummary.isVisible().catch(() => false))
+      ? { status: 'COMPLETED' }
+      : { status: 'NOT_EXERCISED', reason: 'live_backend_did_not_report_offline_stale_or_blocked_state' };
+  });
+  await recordRecoveryInteraction('R25', 'Manage sheet close and focus return', async () => {
+    const sheet = page.locator('[data-lite-sheet-variant="manage"]:visible').first();
+    if (!await sheet.count()) return { status: 'NOT_EXERCISED', reason: 'manage_sheet_not_open' };
+    await page.keyboard.press('Escape');
+    await sheet.waitFor({ state: 'hidden', timeout: 10_000 }).catch(() => {});
+    const focused = await manageRecoveryButton.evaluate((node) => document.activeElement === node).catch(() => false);
+    return focused ? { status: 'COMPLETED' } : { status: 'NOT_EXERCISED', reason: 'manage_focus_return_not_confirmed' };
+  });
+  markRecoveryInteraction('R26', 'Desktop Manage move, resize and reset', 'NOT_APPLICABLE', 'desktop qualification is executed on the Dev-PC browser matrix');
 }
 
 // Phase 4: truthful read-only progress/feedback lifecycle.
@@ -1137,6 +1397,7 @@ await captureRecoveryScreenshot('verify-backup-details', page.getByRole('dialog'
 // completion toast was exercised. A bounded status-response delay makes the
 // transient in-control progress state observable without changing the candidate
 // application or issuing a write action.
+if (!recoveryOnly) {
 await page.addInitScript(() => {
   const nativeFetch = window.fetch.bind(window);
   window.fetch = async (input, init) => {
@@ -1215,7 +1476,11 @@ await measurePhase4Interaction({
   settleMs: 420,
 });
 
-const requiredInteractions = homeOnly
+}
+
+const requiredInteractions = recoveryOnly
+  ? ['screen-steady', 'list-scroll', 'manage-open', 'section-switch']
+  : homeOnly
   ? ['screen-steady', 'screen-navigation', 'manage-open', 'manage-close', 'nested-detail-open', 'nested-detail-close', 'section-switch', 'progress-update', 'toast-settle', 'refresh-feedback']
   : LITE_PERFORMANCE_INTERACTIONS;
 const missingInteractions = requiredInteractions.filter((interaction) => !exercisedInteractions.has(interaction));
@@ -1227,7 +1492,70 @@ if (qualificationGaps.length) {
   fail(`physical Android qualification could not exercise all requested coverage: ${qualificationGaps.join(' | ')}`);
 }
 
-await page.close();
+if (recoveryOnly) {
+  const recoveryMatrix = [
+    ['R01', 'Recovery page initial rendering'],
+    ['R02', 'Protection hero visibility'],
+    ['R03', 'Recovery landing-page scrolling'],
+    ['R04', 'Recovery Readiness stage selection'],
+    ['R05', 'Recovery Readiness details opening'],
+    ['R06', 'Recovery Readiness details closing'],
+    ['R07', 'Recent Activity rendering'],
+    ['R08', 'View All Activity'],
+    ['R09', 'Manage Recovery opening'],
+    ['R10', 'Manage Backup navigation'],
+    ['R11', 'Backup Locations details'],
+    ['R12', 'App Protection details'],
+    ['R13', 'Manage Restore navigation'],
+    ['R14', 'Restore Assistant step navigation'],
+    ['R15', 'Restore Point Library opening'],
+    ['R16', 'Restore-point selection without mutation'],
+    ['R17', 'Restore safety details'],
+    ['R18', 'Manage Protection navigation'],
+    ['R19', 'Database protection read-only details'],
+    ['R20', 'Manage History navigation'],
+    ['R21', 'Manage History scrolling and pagination'],
+    ['R22', 'Mobile sheet Compact to Medium'],
+    ['R23', 'Mobile sheet Medium to Expanded'],
+    ['R24', 'Mobile sheet Expanded to Medium'],
+    ['R25', 'Manage sheet close and focus return'],
+    ['R26', 'Desktop Manage move, resize and reset'],
+    ['R27', 'Offline, stale or blocked Recovery state rendering'],
+    ['R28', 'Read-only protected confirmation presentation'],
+  ];
+  const recordedIds = new Set(recoveryInteractionResults.map((item) => item.id));
+  for (const [id, surface] of recoveryMatrix) {
+    if (!recordedIds.has(id)) markRecoveryInteraction(id, surface, 'NOT_EXERCISED', 'qualifier_path_did_not_reach_surface');
+  }
+  if (recoveryMutationRequests.length) {
+    fail(`Recovery-only qualifier observed non-GET Recovery requests: ${recoveryMutationRequests.map((request) => `${request.method} ${request.pathname}`).join(', ')}`);
+  }
+  await writeFile(resolve(outputDir, 'android-recovery-interactions.json'), JSON.stringify({
+    schema_version: '1.0.0',
+    qualification_scope: 'recovery',
+    qualification_surface: 'physical-android-chrome',
+    source_commit: commit,
+    candidate_origin: base.origin,
+    route: '/?screen=recovery',
+    android_chrome_version: androidChromeVersion,
+    android_package: 'com.android.chrome',
+    candidate_manifest_verified: candidateManifestVerified,
+    candidate_manifest_source_commit: candidateManifest.source_commit,
+    candidate_manifest_response_header_verified: candidateManifestResponseHeaderVerified,
+    candidate_page_response_header_verified: candidatePageResponseHeaderVerified,
+    candidate_page_meta_verified: candidatePageMetaVerified,
+    recovery_mutation_requests: recoveryMutationRequests,
+    interactions: recoveryInteractionResults,
+    sanitized: true,
+  }, null, 2) + '\n', 'utf8');
+}
+
+// The paired baseline runner reuses the ADB-opened candidate tab for its
+// after-control sample.  Keep that physical foreground page alive only for
+// that bounded handoff; ordinary direct qualification retains its cleanup.
+if (process.env.LITE_ANDROID_KEEP_CANDIDATE_PAGE !== '1') {
+  await page.close();
+}
 
 if (failures || targetMisses) {
   if (failures) console.error(`[ui-performance-android] ${failures} evidence sample(s) exceeded the hard render gate.`);
