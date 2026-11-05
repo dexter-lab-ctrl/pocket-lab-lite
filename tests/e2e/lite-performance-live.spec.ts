@@ -471,7 +471,13 @@ test.describe('Pocket Lab Lite live UI performance qualification', () => {
           return;
         }
         await restoreTab.click();
-        const details = sheet.getByRole('button', { name: /^Details:/ }).first();
+        const previewStep = sheet.getByRole('button', { name: /Step 2: Preview changes/i });
+        if (!(await previewStep.isVisible().catch(() => false))) {
+          console.log('[ui-performance-live] UNAVAILABLE recovery action details: the current runtime did not expose the Restore Assistant preview step.');
+          return;
+        }
+        await previewStep.click();
+        const details = sheet.getByRole('button', { name: /Details: Verify selected backup/i }).first();
         if (!(await details.isVisible().catch(() => false))) {
           console.log('[ui-performance-live] UNAVAILABLE recovery action details: the current runtime did not expose a safe read-only action detail projection.');
           return;
