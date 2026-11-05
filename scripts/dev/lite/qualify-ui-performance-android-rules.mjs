@@ -241,8 +241,15 @@ async function installHapticProbe(targetPage = page) {
 async function touch(locator, label) {
   const box = await locator.boundingBox().catch(() => null);
   if (!box || box.width <= 0 || box.height <= 0) fail(label + ' is not touchable.');
-  await locator.scrollIntoViewIfNeeded();
-  await locator.tap({ timeout: 20_000 });
+  const session = await page.context().newCDPSession(page);
+  try {
+    await Promise.all([
+      session.send('Input.dispatchTouchEvent', { type: 'touchStart', modifiers: 0, touchPoints: [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }] }),
+      session.send('Input.dispatchTouchEvent', { type: 'touchEnd', modifiers: 0, touchPoints: [] }),
+    ]);
+  } finally {
+    await session.detach().catch(() => {});
+  }
 }
 
 async function assertRulesLoaded() {
@@ -552,7 +559,9 @@ async function main() {
 
   const beforeHaptic = await page.evaluate(() => window.__POCKETLAB_ANDROID_RULES_HAPTICS__?.calls?.length || 0);
   await touch(manageButton, 'Rules Manage haptic probe');
-  dialog = await firstVisible(page.getByRole('dialog', { name: 'Manage Safety Rules' }), 'Rules Manage haptic dialog');
+  dialog = page.getByRole('dialog', { name: 'Manage Safety Rules' });
+  await dialog.waitFor({ state: 'visible', timeout: 20_000 });
+  dialog = await firstVisible(dialog, 'Rules Manage haptic dialog');
   const closeForHaptic = await firstVisible(dialog.getByRole('button', { name: 'Close Rules management' }), 'Rules haptic close');
   await touch(closeForHaptic, 'Rules Manage haptic close');
   await dialog.waitFor({ state: 'hidden', timeout: 20_000 });
