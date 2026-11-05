@@ -166,7 +166,7 @@ async function wakeLock() {
 }
 
 async function installSampler(targetPage = page) {
-  await targetPage.addInitScript(() => {
+  const setupSampler = () => {
     let active = null;
     window.__POCKETLAB_ANDROID_RULES_SAMPLER__ = {
       start(name) {
@@ -214,7 +214,9 @@ async function installSampler(targetPage = page) {
       },
       count() { return active?.intervals?.length || 0; },
     };
-  });
+  };
+  await targetPage.addInitScript(setupSampler);
+  await targetPage.evaluate(setupSampler).catch(() => {});
 }
 
 async function installHapticProbe(targetPage = page) {
@@ -690,6 +692,8 @@ async function main() {
     action: async () => {
       await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 });
       await assertRulesLoaded();
+      await installSampler(page);
+      await page.evaluate((name) => window.__POCKETLAB_ANDROID_RULES_SAMPLER__?.start(name), 'android-cdp:rules:manage-open:rules-manage-reopen-after-navigation');
       await (await firstVisible(page.getByRole('button', { name: 'Manage Safety Rules', exact: true }), 'reopened Manage Safety Rules')).click();
       dialog = await firstVisible(page.getByRole('dialog', { name: 'Manage Safety Rules' }), 'reopened Rules Manage');
       await geometry('Rules Manage reopen', true);
