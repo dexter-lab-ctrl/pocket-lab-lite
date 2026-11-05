@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import DeviceCard from './DeviceCard.jsx';
+
+afterEach(cleanup);
 
 describe('Azure Horizon native device library card — authored, not executed', () => {
   it('shows one Manage entry without flooding the card with remote access, technical or restart controls', () => {
@@ -44,7 +46,7 @@ describe('Azure Horizon native device library card — authored, not executed', 
       device={{ id: 'server', name: 'Pocket Lab Server', role: 'server_host', status: 'online',
         connection: 'online', protected_server_host: true }} onOpenDetails={vi.fn()} onRemoveDevice={vi.fn()}
     />);
-    expect(screen.getByText('Protected server host')).toBeTruthy();
+    expect(screen.getAllByText('Protected server host')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: /Remove device/i })).toBeNull();
     expect(screen.getByRole('button', { name: 'Manage Pocket Lab Server' })).toBeTruthy();
   });

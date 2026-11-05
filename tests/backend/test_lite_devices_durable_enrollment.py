@@ -262,9 +262,9 @@ def test_frontend_device_count_and_role_contracts_are_connection_based():
     view_models = (repo / "src/lib/liteViewModels.js").read_text(encoding="utf-8")
     ui = (repo / "src/lite/LiteUi.jsx").read_text(encoding="utf-8")
 
-    assert "const onlineDevices = devices.filter((device) => String(device?.connection || '').toLowerCase() === 'online').length;" in devices
+    assert "const onlineDevices = devices.filter((device) => deviceRelationshipPresentation(device, savedStateOnly || isExpired).state === 'joined').length;" in devices
     assert "const presentation = canonicalDevicePresentation(device);" in card
-    assert "const online = !savedStateOnly && presentation.state === 'online';" in card
+    assert "const entry = deviceLibraryEntry(device, { saved: savedStateOnly, presentation, linkState });" in card
     assert "normalizeDeviceStatus(device.connection) === 'online'" in view_models
     assert "const devices = Array.isArray(payload?.devices) ? payload.devices : [];" in view_models
     assert "if (String(value || '').toLowerCase() === 'server_host') return 'Server host';" in ui

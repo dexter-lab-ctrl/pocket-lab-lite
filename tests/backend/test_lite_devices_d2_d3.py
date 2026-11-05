@@ -295,10 +295,13 @@ def test_d2_d3_frontend_uses_focused_reads_xstate_and_safe_removal_fence():
     assert "assessment_revision" in devices
     assert "useLiteDeviceRemovalFlow" in devices
     assert "liteDeviceRemovalFlow" in machine
-    assert "removal_assessment" in card
+    # The compact library card only opens Manage. The removal assessment is
+    # intentionally owned by the lazy details surface so card rendering stays
+    # focused and cannot expose stale action authorization.
+    assert "removal_assessment" in details
     assert "Device trust" in details
     assert "Device capabilities" in details
-    assert "Device dependencies" in details
+    assert 'aria-label="Device responsibilities"' in details
     assert "DEVICE_DETAILS_HISTORY_IS_LAZY" in details
     assert "lite-device-awareness-grid" in css
     assert "navigator.shell" not in devices

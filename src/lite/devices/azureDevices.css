@@ -626,6 +626,9 @@ html[data-lite-theme] .lite-devices-horizon-summary > button.is-selected {
 html[data-lite-theme] .lite-devices-horizon-summary > button span {
   color:var(--azure-muted);font-size:.79rem;line-height:1.4;
 }
+html[data-lite-theme] .lite-devices-horizon-summary > button.is-selected span {
+  color:var(--azure-text);
+}
 html[data-lite-theme] .lite-devices-horizon-summary > button strong {
   color:var(--azure-text);font-size:clamp(1.25rem,2.5vw,1.75rem);line-height:1.2;
 }
