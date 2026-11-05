@@ -200,6 +200,7 @@ html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-scroll {
   html[data-lite-theme] .lite-rules-overlay-layer {
     height: var(--lite-visual-viewport-height, 100dvh);
     max-height: var(--lite-visual-viewport-height, 100dvh);
+    min-height: 0;
     box-sizing: border-box;
   }
 }
