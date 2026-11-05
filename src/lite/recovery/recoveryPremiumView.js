@@ -27,11 +27,11 @@ export function recoveryPremiumHero({ data = {}, backup = null, preview = null, 
   const dbBlocked = blocked || db.restore_guard?.unresolved === true || db.maintenance?.active === true;
   const operation = record(data?.current_operation || data?.latest_operation || data?.operation || data?.action_progress || data?.active_operation);
   const activeRestore = norm(data?.last_restore?.status || data?.last_restore?.state || data?.last_restore?.phase);
-  const active = Boolean(busy) || data?.live === true || ACTIVE.has(activeRestore) || ACTIVE.has(norm(operation.status || operation.state || operation.phase));
+  const active = data?.live === true || ACTIVE.has(activeRestore) || ACTIVE.has(norm(operation.status || operation.state || operation.phase));
   const restoreState = norm(data?.last_restore?.status);
   let headline = 'Create your first protected backup';
   let summary = 'No verified recovery point has been reported.';
-  if (hasBackup) { headline = verified ? 'A verified recovery point is available' : 'Your backup needs verification'; summary = verified ? 'Preview the selected backup before any restore.' : 'A saved backup is not yet proof that a restore is safe.'; }
+  if (hasBackup) { headline = verified ? 'A verified recovery point is available' : 'Your backup needs verification'; summary = verified ? 'Your latest restore point passed verification. A matching preview is still required before restore.' : 'A saved backup is not yet proof that a restore is safe.'; }
   if (matchingPreview) { headline = 'Restore preview ready for review'; summary = 'A matching preview is available. Restoring still requires confirmation and backend safety checks.'; }
   if (FAILED.has(restoreState)) { headline = 'Restore needs attention'; summary = string(data.last_restore.summary) || 'The last restore did not report a successful result.'; }
   if (repoUnavailable) { headline = 'Backup location unavailable'; summary = 'Pocket Lab cannot currently confirm the backup repository is usable.'; }
