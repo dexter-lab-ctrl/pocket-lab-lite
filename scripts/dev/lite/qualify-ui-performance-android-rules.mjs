@@ -429,7 +429,7 @@ async function selectSection(id, label) {
   if (!row) return false;
   await row.click();
   await dialog.locator('[data-rules-manage-section="' + id + '"]').waitFor({ state: 'visible', timeout: 20_000 }).catch(async () => {
-    await dialog.getByRole('heading', { name: label, exact: false }).waitFor({ state: 'visible', timeout: 20_000 });
+    await dialog.locator('.lite-rules-native-detail-title').filter({ hasText: label }).waitFor({ state: 'visible', timeout: 20_000 });
   });
   return true;
 }
