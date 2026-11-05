@@ -409,9 +409,9 @@ export function LiteSheet({
             </div>
             {headerActions}
             {mobileSheet.active ? <div className="lite-sheet-mobile-snap-actions" role="group" aria-label="Sheet size">
-              {mobileHeaderVariant === 'safety' ? <span className="lite-sheet-safety-snap-status" aria-live="polite">{mobileSheet.state === 'expanded' ? 'Expanded' : mobileSheet.state === 'compact' ? 'Compact' : 'Medium'} · Drag handle to resize</span> : null}
-              <button type="button" onClick={() => { if (snapHaptic) triggerLiteHaptic('accepted'); mobileSheet.contract(); }} disabled={!mobileSheet.canContract}>Compact</button>
-              <button type="button" onClick={() => { if (snapHaptic) triggerLiteHaptic('accepted'); mobileSheet.expand(); }} disabled={!mobileSheet.canExpand}>Expand</button>
+              <span className="sr-only" aria-live="polite">Sheet size: {mobileSheet.state}</span>
+              <button type="button" className={mobileSheet.state === 'compact' ? 'is-active' : ''} aria-pressed={mobileSheet.state === 'compact'} onClick={() => mobileSheet.resizeTo('compact')} disabled={mobileSheet.state === 'compact'}>Compact</button>
+              <button type="button" className={mobileSheet.state === 'expanded' ? 'is-active' : ''} aria-pressed={mobileSheet.state === 'expanded'} onClick={() => mobileSheet.resizeTo('expanded')} disabled={mobileSheet.state === 'expanded'}>Expand</button>
             </div> : null}
             <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={onClose} aria-label={variantClasses.closeLabel} {...closeLabelOverride}>
               <X className="h-4 w-4" />
@@ -445,8 +445,7 @@ export function LiteDetailsPanel({
   children, variant = 'manage', className = '', desktopGeometry, mobileSnap = false,
   desktopToolLabels = false, closeLabel,
 }) {
-  const { panelRef, desktopPanel, panelStyle, announcement, reset,
-    startPanelInteraction, adjustPanelWithKeyboard } = desktopGeometry || {};
+  const { panelRef, desktopPanel, panelStyle } = desktopGeometry || {};
   const tools = desktopPanel ? <LiteDesktopPanelControls title={title}
     desktopToolLabels={desktopToolLabels} geometry={desktopGeometry} /> : null;
   return (
