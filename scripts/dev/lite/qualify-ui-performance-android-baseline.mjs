@@ -123,6 +123,17 @@ async function receivesAnimationFrames(page) {
   return Number(frames) >= 2;
 }
 
+async function activateForegroundPage(context, page) {
+  await page.bringToFront().catch(() => {});
+  try {
+    const session = await context.newCDPSession(page);
+    await session.send('Page.bringToFront');
+    await session.detach().catch(() => {});
+  } catch {
+    // Playwright activation remains the portable fallback for Android Chrome.
+  }
+}
+
 async function acquireScreenWakeLock(page) {
   return page.evaluate(async () => {
     if (!navigator.wakeLock?.request) return false;
@@ -178,12 +189,13 @@ export async function collectAndroidBaseline({
     if (marker !== 1) fail('baseline_control_marker_missing');
     const meta = await page.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content');
     if (meta !== commit) fail('baseline_control_meta_mismatch');
-    await page.bringToFront();
+    await activateForegroundPage(context, page);
     if (!await acquireScreenWakeLock(page)) fail('baseline_screen_wake_lock_unavailable');
     let foregroundFramesReady = await receivesAnimationFrames(page);
     for (let attempt = 0; !foregroundFramesReady && attempt < 2; attempt += 1) {
-      await page.bringToFront().catch(() => {});
+      await activateForegroundPage(context, page);
       await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+      await activateForegroundPage(context, page);
       foregroundFramesReady = await receivesAnimationFrames(page);
     }
     if (!foregroundFramesReady) fail('baseline_foreground_renderer_unavailable');
