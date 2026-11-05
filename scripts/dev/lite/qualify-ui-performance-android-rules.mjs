@@ -425,6 +425,10 @@ async function manageIndex() {
   await dialog.locator('[data-rules-manage-view="index"]').waitFor({ state: 'visible', timeout: 20_000 });
 }
 
+async function waitForSheetSnap(expected) {
+  await page.waitForFunction((value) => document.querySelector('[data-rules-manage-layout]')?.getAttribute('data-lite-sheet-snap') === value, expected, { timeout: 5_000 });
+}
+
 async function selectSection(id, label) {
   await manageIndex();
   const row = await firstVisibleOrNull(dialog.getByRole('button', { name: label, exact: true }));
@@ -662,16 +666,17 @@ async function main() {
       action: async () => {
         await manageIndex();
         (await firstVisible(dialog.getByRole('button', { name: 'Expand', exact: true }), 'Rules sheet Expand')).click();
-        if (await dialog.getAttribute('data-lite-sheet-snap') !== 'expanded') fail('Rules sheet did not reach expanded.');
+        await waitForSheetSnap('expanded');
         (await firstVisible(dialog.getByRole('button', { name: 'Compact', exact: true }), 'Rules sheet Compact')).click();
-        if (await dialog.getAttribute('data-lite-sheet-snap') !== 'medium') fail('Rules sheet did not return to medium.');
+        await waitForSheetSnap('medium');
         const grip = await firstVisible(dialog.getByRole('button', { name: /Resize sheet/i }), 'Rules sheet grip');
         await grip.focus();
         await page.keyboard.press('Home');
-        if (await dialog.getAttribute('data-lite-sheet-snap') !== 'compact') fail('Rules sheet did not reach compact.');
+        await waitForSheetSnap('compact');
         await page.keyboard.press('End');
-        if (await dialog.getAttribute('data-lite-sheet-snap') !== 'expanded') fail('Rules sheet did not return to expanded.');
+        await waitForSheetSnap('expanded');
         await page.keyboard.press('Home');
+        await waitForSheetSnap('compact');
       },
     });
     mark('Compact/Medium/Expanded snaps', 'VERIFIED');
