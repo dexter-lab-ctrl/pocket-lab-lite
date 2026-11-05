@@ -197,7 +197,7 @@ export default function RecoveryManageSheetLazy({
           <SectionHeading eyebrow="Backup" title="Create and manage restore points" description="Create verified restore points for Pocket Lab Lite, its database, and supported apps." />
           <RecoveryActionRow icon={HardDrive} title="Backup locations" description="Review backend-approved backup destinations and their storage health."
             status={backupLocations?.selected_location?.status || 'Not confirmed'} statusTone={backupLocations?.selected_location?.status === 'ready' ? 'healthy' : 'unknown'}
-            onDetails={() => setLocationsOpen((value) => !value)} detailsLabel={locationsOpen ? 'Hide locations' : 'Manage locations'} />
+            onDetails={() => { triggerLiteHaptic('accepted'); setLocationsOpen((value) => !value); }} detailsLabel={locationsOpen ? 'Hide locations' : 'Manage locations'} />
           {locationsOpen ? <RecoveryBackupLocation
             locations={backupLocations}
             disabled={Boolean(busy) || databaseWriteBlocked || savedStateOnly}
@@ -252,7 +252,7 @@ export default function RecoveryManageSheetLazy({
           {appBackups.length ? (
             <div className="lite-recovery-manage-subsection">
               <RecoveryActionRow icon={ShieldCheck} title="App protection" description="Review available application backups and their exclusions."
-                onDetails={() => setAppsOpen((value) => !value)} detailsLabel={appsOpen ? 'Hide apps' : 'View apps'} />
+                onDetails={() => { triggerLiteHaptic('accepted'); setAppsOpen((value) => !value); }} detailsLabel={appsOpen ? 'Hide apps' : 'View apps'} />
               {appsOpen ? <>
               <div className="lite-recovery-manage-app-list">
                 {appBackups.map((app) => {
