@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import { ChevronDown, Settings2 } from 'lucide-react';
 import { friendlyLiteText } from '../../lib/liteUxPresentation.js';
 
@@ -42,6 +42,7 @@ export default function LiteTechnicalDetails({
   presentation = 'default',
 }) {
   const [open, setOpen] = useState(Boolean(defaultOpen));
+  const detailsId = useId();
   const safeRows = useMemo(() => normalizeTechnicalRows(rows), [rows]);
   const safeSummary = toSafeText(summary) || 'Safe operational facts are available when you need them.';
 
@@ -61,7 +62,7 @@ export default function LiteTechnicalDetails({
       </button>
       <p className="lite-progressive-disclosure-summary">{safeSummary}</p>
       {open ? (
-        <dl className="lite-technical-details-list">
+        <dl id={detailsId} className="lite-technical-details-list" role="region" aria-label={`${title} values`}>
           {safeRows.map((row) => (
             <div key={`${row.label}:${row.value}`} className="lite-technical-details-row">
               <dt>{row.label}</dt>
