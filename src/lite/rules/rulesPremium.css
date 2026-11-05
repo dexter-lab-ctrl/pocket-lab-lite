@@ -192,6 +192,17 @@ html[data-lite-theme] .lite-rules-manage-sheet .lite-overlay-scroll {
   display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
   overflow: hidden; padding: 0;
 }
+/* Android Chrome can keep the fixed layout viewport taller than the current
+   visual viewport while its URL/navigation chrome is visible. Pin the Rules
+   portal layer to the measured visual height so the medium sheet never hangs
+   below the physical viewport. */
+@media (max-width: 700px) {
+  html[data-lite-theme] .lite-rules-overlay-layer {
+    height: var(--lite-visual-viewport-height, 100dvh);
+    max-height: var(--lite-visual-viewport-height, 100dvh);
+    box-sizing: border-box;
+  }
+}
 html[data-lite-theme] .lite-rules-native-workspace {
   display: grid; grid-template-columns: minmax(13rem, .75fr) minmax(0, 2fr);
   width: 100%; flex: 1 1 auto; min-height: 0; min-width: 0; overflow: hidden;
