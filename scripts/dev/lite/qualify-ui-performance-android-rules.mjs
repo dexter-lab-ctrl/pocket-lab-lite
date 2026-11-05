@@ -251,7 +251,7 @@ async function touch(locator, label) {
 }
 
 async function assertRulesLoaded() {
-  await page.locator('[data-lite-screen-id="security"]').waitFor({ state: 'visible', timeout: 20_000 });
+  await page.locator('[data-lite-screen-id="rules"]').waitFor({ state: 'visible', timeout: 20_000 });
   await page.locator('[data-rules-protection-state]').waitFor({ state: 'visible', timeout: 20_000 });
   await page.getByRole('heading', { name: 'Safety Rules', level: 1 }).waitFor({ state: 'visible', timeout: 20_000 });
   await page.getByLabel('Protection Center').waitFor({ state: 'visible', timeout: 20_000 });
@@ -505,7 +505,7 @@ async function main() {
   for (const candidatePage of foregroundCandidates) {
     page = candidatePage;
     await activate(page);
-    const rendered = await page.goto(new URL('/?screen=security', base).toString(), { waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => null);
+    const rendered = await page.goto(new URL('/?screen=rules', base).toString(), { waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => null);
     if (!rendered?.ok()) fail('Rules candidate page did not load.');
     if (rendered.headers()['x-pocket-lab-candidate-sha'] !== commit) fail('Rules page response-header SHA mismatch.');
     if (await page.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content') !== commit) fail('Rules page meta SHA mismatch.');
