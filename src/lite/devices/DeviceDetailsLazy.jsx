@@ -872,10 +872,10 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
     refetchOnWindowFocus: false,
   });
   const healthSnapshot = healthQuery.data?.__liteSnapshot || null;
-  const healthAttentionCurrent = !healthSnapshot || !(
+  const healthAttentionCurrent = !actionsBlocked && (!healthSnapshot || !(
     healthSnapshot.stale || healthSnapshot.expired || healthSnapshot.isExpired
     || healthSnapshot.source === 'cache' || healthSnapshot.source === 'saved'
-  );
+  ));
   const proactiveHealth = healthQuery.data?.health || device?.proactive_health || null;
   device = proactiveHealth ? { ...device, proactive_health: proactiveHealth } : device;
   const title = device?.name || device?.hostname || 'Device details';
@@ -972,7 +972,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
             Choosing a friendly model changes display metadata only. Server identity, technical model, and internal codename remain reported by the device.
           </p>
         ) : null}
-        {onChooseModel ? (
+        {onChooseModel && !actionsBlocked ? (
           <LiteButton tone="secondary" onClick={onChooseModel}>
             <Smartphone className="h-4 w-4" />
             Choose model
@@ -985,7 +985,16 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
           </>
         ) : null}
         {activeArea === 'connection' ? (
-          <DeviceAwarenessDetails device={device} area="connection" />
+          <>
+            <DeviceAwarenessDetails device={device} area="connection" />
+            <section className="lite-device-awareness-section" aria-label="Remote connectivity for this device">
+              <span>Remote access</span>
+              <strong>{actionsBlocked ? 'Saved · not confirmed'
+                : device?.remote_access?.ready === true ? 'Remote access ready'
+                  : device?.remote_access?.ready === false ? 'Remote access not ready' : 'Not reported'}</strong>
+              <p>Private network access and a live device-agent connection are separate checks.</p>
+            </section>
+          </>
         ) : null}
         {activeArea === 'health' ? (
           <>
@@ -1113,6 +1122,13 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
         {activeArea === 'services' ? (
           <>
             <DeviceAwarenessDetails device={device} area="services" />
+            <section className="lite-device-awareness-section" aria-label="Agent and supervisor">
+              <span>Device services</span>
+              <dl>
+                <div><dt>Agent</dt><dd>{actionsBlocked ? 'Saved · not confirmed' : device?.agent?.status || device?.agent_status || 'Not reported'}</dd></div>
+                <div><dt>Supervisor</dt><dd>{actionsBlocked ? 'Saved · not confirmed' : device?.supervisor?.status || device?.supervisor_status || 'Not reported'}</dd></div>
+              </dl>
+            </section>
             {!actionsBlocked && canRestartDeviceAgent(device) ? (
               <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy}>
                 {restartBusy ? 'Restart requested…' : 'Restart agent'}
