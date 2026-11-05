@@ -62,7 +62,7 @@ The existing source-backed fixture catalog and view-model tests cover healthy, d
 ## Android CDP and physical qualification
 
 - Windows ADB resolver selected one authorized physical Android target; the serial is intentionally omitted here.
-- Repository-owned CDP bridge was cleaned and re-established through the Windows portproxy/ADB-forward path. WSL-local CDP responded on the configured bridge and identified `com.android.chrome`, Chrome `156.0.8078.79`, Protocol `1.3`.
+- Repository-owned CDP bridge was cleaned and re-established through the Windows portproxy/ADB-forward path. WSL-local CDP responded on the configured bridge and identified `com.android.chrome`, Chrome `156.0.8078.79`, Protocol `1.3`. The final exact ADB forward was removed; a privileged Windows portproxy listener remained after the final cleanup attempt could not surface a usable elevated UAC session.
 - Dev-PC candidate server exposed a sanitized candidate manifest for tested source `fee04eac0ac976f64453a5c0ae9c09828b5af4b6` on loopback port `18765`; the owned ADB reverse was established and removed after each bounded attempt. The later source-qualified commit is `daaa15cb`; no physical result was claimed for it because the keyguard blocked the earlier candidate before interaction.
 - Candidate response-header and page-meta SHA checks were implemented and reached before the foreground frame gate; the phone remained a consumer of the Dev-PC candidate and was never checked out to the feature branch.
 - The Rules-only qualifier is `scripts/dev/lite/qualify-ui-performance-android-rules.mjs`, with wrapper `scripts/dev/lite/run-ui-performance-android-rules.sh` and package entry `test:perf:android:rules`. It does not invoke the broad seven-screen matrix.
@@ -108,8 +108,8 @@ Remaining risks are the blocked physical Android foreground interaction/performa
 - Server Phone source was not edited, installed, restarted, deployed or switched to the feature branch. Its checkout remained clean on `main` at `463ad47de66345955e448e47df346c9525ffd67f`.
 - No Rules activation, policy mutation, approval, access grant, device removal or destructive operation was performed.
 - No synthetic Owner credentials, browser bridge secrets or production cookies were used.
-- Qualification-owned candidate server, ADB reverse, candidate wake-lock and WSL CDP relay were cleaned after the bounded physical attempts; unrelated ADB mappings were untouched.
-- The initial elevated PowerShell preparation used one normal UAC-approved RunAs child invocation. An interactive elevated session could not be retained, so no unrelated privileged work was performed.
+- Qualification-owned candidate server, ADB reverse, candidate wake-lock, WSL CDP relay and the exact ADB `tcp:9222` forward were cleaned after the bounded physical attempts; unrelated ADB mappings were untouched. The Windows portproxy registry mapping `172.19.0.1:19222 -> 127.0.0.1:9222` remains as a qualification-owned cleanup residual because its exact removal requires Administrator elevation.
+- The initial elevated PowerShell preparation used one normal UAC-approved RunAs child invocation. An interactive elevated session could not be retained; the later cleanup prompt was inaccessible, so no unrelated privileged work was performed and the residual is reported rather than force-removed.
 - No branch was merged, no release or tag was created, and no deployment occurred. PR #642 remains open and draft pending the remaining physical gate and separate merge decision.
 
 **Overall status: VERIFIED Dev-PC/mocked Rules qualification; VERIFIED canonical documentation and repository gates; BLOCKED physical Android qualification.**
