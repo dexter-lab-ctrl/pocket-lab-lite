@@ -1,4 +1,5 @@
 // AUTHORED — NOT RUN · implementation-only session. Synthetic MSW only; never operate on live Recovery.
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
@@ -110,3 +111,21 @@ test('Recovery Centre authored source contract: no destructive restore on readin
   await page.getByRole('dialog', { name: /Back Up readiness/i }).getByRole('button', { name: /Close security details/i }).click();
   expect(restorePosts).toBe(0);
 });
+
+for (const theme of ['light', 'dark', 'system']) {
+  test(`Recovery Centre WCAG AA including colour contrast — ${theme}`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openRecovery(page, 'recovery-verified', theme);
+    const overview = await new AxeBuilder({ page }).include('.lite-recovery-premium-screen')
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+    expect(overview.violations.filter(v => ['serious', 'critical'].includes(v.impact || '')),
+      JSON.stringify(overview.violations, null, 2)).toEqual([]);
+    await page.getByRole('button', { name: 'Manage Recovery' }).click();
+    const manage = page.getByRole('dialog', { name: /Manage backups and recovery/ });
+    await manage.getByRole('tab', { name: 'Restore' }).click();
+    const details = await new AxeBuilder({ page }).include('.lite-recovery-manage-sheet')
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+    expect(details.violations.filter(v => ['serious', 'critical'].includes(v.impact || '')),
+      JSON.stringify(details.violations, null, 2)).toEqual([]);
+  });
+}
