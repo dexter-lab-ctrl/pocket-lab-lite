@@ -38,7 +38,7 @@ export default function RecoveryJourney({ stages = {}, saved = false }) {
     </GlassCard>
     <LiteSheet open={Boolean(choice)} onClose={onClose} title={choice ? choice.label + ' readiness' : 'Recovery readiness'}
       eyebrow="Recovery Readiness" description="A guide to safe recovery. Selecting a stage never starts an action."
-      variant="security" className="lite-recovery-readiness-sheet" mobileSnap={mobile}>
+      variant="security" className="lite-recovery-readiness-sheet" mobileSnap={mobile} snapHaptic>
       <section id={region} className="lite-recovery-readiness-explanation" aria-label="Recovery stage explanation">
         {choice ? <><strong>{choice.label} — how it works</strong><p>{choice.description}</p><p>Reported status: {LABELS[stateFor(choice)]}</p>
           {saved ? <p>Saved information cannot authorize recovery changes. Reconnect and refresh.</p> : null}
