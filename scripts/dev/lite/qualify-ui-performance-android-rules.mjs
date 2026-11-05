@@ -441,7 +441,7 @@ async function selectSection(id, label) {
 }
 
 async function closeManage() {
-  await firstVisible(dialog.getByRole('button', { name: 'Close Rules management' }), 'Rules Manage close').click();
+  (await firstVisible(dialog.getByRole('button', { name: 'Close Rules management' }), 'Rules Manage close')).click();
   await dialog.waitFor({ state: 'hidden', timeout: 20_000 });
   mark('Manage close', 'VERIFIED');
 }
@@ -690,7 +690,7 @@ async function main() {
     action: async () => {
       await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 });
       await assertRulesLoaded();
-      await firstVisible(page.getByRole('button', { name: 'Manage Safety Rules', exact: true }), 'reopened Manage Safety Rules').click();
+      (await firstVisible(page.getByRole('button', { name: 'Manage Safety Rules', exact: true }), 'reopened Manage Safety Rules')).click();
       dialog = await firstVisible(page.getByRole('dialog', { name: 'Manage Safety Rules' }), 'reopened Rules Manage');
       await geometry('Rules Manage reopen', true);
     },
