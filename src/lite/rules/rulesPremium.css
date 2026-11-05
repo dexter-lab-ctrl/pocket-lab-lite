@@ -93,9 +93,10 @@ html[data-lite-theme] .lite-rules-premium-screen :is(.lite-rules-premium-journey
   .lite-rules-journey-track li { display: block; }
   .lite-rules-journey-track button { min-height: 54px; display: flex; justify-content: flex-start; gap: .75rem; padding: .75rem; text-align: left; }
   .lite-rules-journey-track button strong { min-width: 2.6rem; }
-  .lite-rules-header-actions { flex-wrap: wrap; min-width: 0; max-width: 100%; }
-  .lite-rules-header-actions .lite-refresh-control { min-width: 0; max-width: 100%; }
-  .lite-rules-header-actions .lite-refresh-button { width: min(10rem, 100%); max-width: 100%; min-width: 0; }
+  .lite-rules-premium-screen .lite-page-header > :last-child { width: 100%; min-width: 0; }
+  .lite-rules-header-actions { flex-wrap: wrap; min-width: 0; max-width: 100%; width: 100%; }
+  .lite-rules-header-actions .lite-refresh-control { width: 10rem; min-width: 0; max-width: 100%; flex: 0 1 10rem; }
+  .lite-rules-header-actions .lite-refresh-button { width: 100%; max-width: 100%; min-width: 0; }
   .lite-rules-premium-hero > button { width: 100%; }
   .lite-rules-premium-latest header > button { width: auto; }
 }
