@@ -68,7 +68,7 @@ export function SafetyStatusHierarchy({ presentation }) {
       <div><strong>{presentation.headline}</strong><p>{presentation.message}</p></div>
       <span className="lite-safety-status-scope">{presentation.scopeLabel}</span>
     </div>
-    <dl className="lite-safety-status-scanners" aria-label="Scanner execution">
+    <dl className="lite-safety-status-scanners" role="group" aria-label="Scanner execution">
       {presentation.scanners.map(({ name, status, tone }) => <div key={name} data-tool-tone={tone}>
         <dt>{name}</dt><dd>{status}</dd>
       </div>)}
