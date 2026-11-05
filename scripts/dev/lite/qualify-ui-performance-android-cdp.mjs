@@ -1371,7 +1371,8 @@ if (recoveryOnly) {
     const state = page.locator(
       '[data-testid="recovery-projection-stale"], .lite-recovery-premium-disabled-reason, .lite-recovery-r1-hero[data-recovery-protection-state="unknown"], .lite-recovery-manage-content [role="status"]',
     ).first();
-    return await state.count() && await state.isVisible().catch(() => false)
+    const unavailableSummary = page.getByText('Current recovery state unavailable', { exact: true }).first();
+    return (await state.count() && await state.isVisible().catch(() => false)) || (await unavailableSummary.count() && await unavailableSummary.isVisible().catch(() => false))
       ? { status: 'COMPLETED' }
       : { status: 'NOT_EXERCISED', reason: 'live_backend_did_not_report_offline_stale_or_blocked_state' };
   });

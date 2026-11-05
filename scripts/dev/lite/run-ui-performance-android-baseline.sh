@@ -96,6 +96,9 @@ for run_index in $(seq 1 "$repetitions"); do
 
   (( evidence_count == expected_interaction_reports )) || fail "${run_name} produced ${evidence_count}/${expected_interaction_reports} physical Android interaction reports after ${qualifier_attempts} attempts."
   cp "${evidence_files[@]}" "$run_root/evidence/"
+  if [[ "$qualification_scope" == recovery ]] && [[ -f .pocketlab-dev/performance/android-recovery-interactions.json ]]; then
+    cp .pocketlab-dev/performance/android-recovery-interactions.json "$run_root/recovery-interactions.json"
+  fi
 
   node scripts/dev/lite/qualify-ui-performance-android-baseline.mjs     --label "${run_name}-after"     --samples 3     --output "$run_root/baseline-after.json"
 
