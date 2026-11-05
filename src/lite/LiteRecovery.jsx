@@ -334,7 +334,7 @@ export default function RecoveryScreen() {
   };
   const activePanel = actionPanelMeta[activeActionPanel] || null;
 
-  const recoveryLive = Boolean(busy) || recoveryFlow.isBusy || serverRecoveryLive;
+  const recoveryLive = serverRecoveryLive;
   useLiteServiceWorkerUpdateBlocker('recovery-workflow', Boolean(recoveryLive || restoreConfirmation));
   const premiumHero = recoveryPremiumHero({
     data, backup: latestBackup, preview: latestPreview, repository, database: databaseProtection,
@@ -708,7 +708,7 @@ export default function RecoveryScreen() {
             ))}
           </ul>
           <div className="lite-recovery-premium-actions">
-            <LiteButton onClick={backup} disabled={premiumHero.disabled || recoveryWriteBlocked || Boolean(busy)} haptic>{busy ? 'Recovery working…' : 'Back Up Now'}</LiteButton>
+            <LiteButton onClick={backup} disabled={premiumHero.disabled || recoveryWriteBlocked || Boolean(busy)} haptic>{busy ? serverRecoveryLive ? 'Recovery in progress…' : 'Checking request…' : 'Back Up Now'}</LiteButton>
             <LiteButton tone="secondary" onClick={() => openRecoveryManage('backup')} ariaLabel="Manage Recovery">Manage Recovery</LiteButton>
           </div>
           {(recoveryWriteBlocked || premiumHero.disabled) && !busy ? (
