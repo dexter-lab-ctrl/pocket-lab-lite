@@ -28,13 +28,13 @@ export default function RecoveryJourney({ stages = {}, saved = false }) {
           const status = stateFor(stage);
           return <li key={stage.id} data-stage-status={status}>
             <button type="button" aria-expanded={selected === stage.id} aria-controls={region}
-              onClick={() => { triggerLiteHaptic('accepted'); setSelected(stage.id); }}>
+              onClick={() => { triggerLiteHaptic('accepted'); setSelected((previous) => previous === stage.id ? null : stage.id); }}>
               <Icon size={18} aria-hidden="true" /><strong>{stage.label}</strong><span>{LABELS[status]}</span><ChevronRight size={15} aria-hidden="true" />
             </button>
           </li>;
         })}
       </ol>
-      <p className="lite-recovery-readiness-note">Status reflects reported Recovery facts, not a live execution trace.</p>
+      <p className="lite-recovery-readiness-note">Illustrative guide, not a live execution trace. Status reflects reported Recovery facts.</p>
     </GlassCard>
     <LiteSheet open={Boolean(choice)} onClose={onClose} title={choice ? choice.label + ' readiness' : 'Recovery readiness'}
       eyebrow="Recovery Readiness" description="A guide to safe recovery. Selecting a stage never starts an action."

@@ -33,7 +33,8 @@ case "$qualification_scope" in
   all) default_expected_interaction_reports=28 ;;
   home) default_expected_interaction_reports=18 ;;
   access) default_expected_interaction_reports=15 ;;
-  *) fail 'LITE_ANDROID_QUALIFICATION_SCOPE must be all, home or access.' ;;
+  recovery) default_expected_interaction_reports=4 ;;
+  *) fail 'LITE_ANDROID_QUALIFICATION_SCOPE must be all, home, access or recovery.' ;;
 esac
 expected_interaction_reports="${LITE_ANDROID_EXPECTED_INTERACTION_REPORTS:-$default_expected_interaction_reports}"
 if ! [[ "$expected_interaction_reports" =~ ^[0-9]+$ ]] || (( expected_interaction_reports < 1 )); then
@@ -65,6 +66,8 @@ for run_index in $(seq 1 "$repetitions"); do
     set +e
     if [[ "$qualification_scope" == access ]]; then
       node scripts/dev/lite/qualify-ui-performance-android-access.mjs
+    elif [[ "$qualification_scope" == recovery ]]; then
+      node scripts/dev/lite/qualify-ui-performance-android-recovery.mjs
     else
       node scripts/dev/lite/qualify-ui-performance-android-cdp.mjs
     fi
@@ -74,6 +77,8 @@ for run_index in $(seq 1 "$repetitions"); do
     shopt -s nullglob
     if [[ "$qualification_scope" == access ]]; then
       evidence_files=(.pocketlab-dev/performance/ui-performance-android-access-*.json)
+    elif [[ "$qualification_scope" == recovery ]]; then
+      evidence_files=(.pocketlab-dev/performance/ui-performance-android-recovery-*.json)
     else
       evidence_files=(.pocketlab-dev/performance/ui-performance-android-cdp-*.json)
     fi

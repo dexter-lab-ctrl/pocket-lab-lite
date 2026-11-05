@@ -11,10 +11,10 @@ test.describe('Premium Recovery Center — mocked UX, safety and accessibility',
   test('has one hero, four-stage journey and bounded timeline', async ({ page }) => {
     await recovery(page);
     await expect(page.locator('.lite-recovery-premium-protection')).toHaveCount(1);
-    await expect(page.locator('.lite-recovery-premium-journey')).toHaveCount(1);
-    await expect(page.locator('.lite-recovery-premium-timeline')).toHaveCount(1);
-    await expect(page.locator('.lite-recovery-premium-stage-grid button')).toHaveCount(4);
-    await expect(page.locator('.lite-recovery-premium-timeline-list li')).not.toHaveCount(4);
+    await expect(page.locator('.lite-recovery-readiness')).toHaveCount(1);
+    await expect(page.locator('.lite-recovery-recent-activity')).toHaveCount(1);
+    await expect(page.locator('.lite-recovery-readiness-steps button')).toHaveCount(4);
+    await expect(page.locator('.lite-recovery-recent-event')).toHaveCount(1);
   });
   test('Journey selection is purely educational and keyboard accessible', async ({ page }) => {
     await recovery(page);
@@ -31,8 +31,9 @@ test.describe('Premium Recovery Center — mocked UX, safety and accessibility',
     const dialog = page.getByRole('dialog',{name:/Manage backups and recovery/i});
     await expect(dialog).toBeVisible();
     await dialog.getByRole('tab',{name:'Restore'}).click();
+    await dialog.getByRole('button', { name: /Step 3: Review safety checks/ }).click();
     await expect(dialog.getByLabel('Restore impact preview')).toBeVisible();
-    await expect(dialog).toContainText(/explicit confirmation/i);
+    await expect(dialog).toContainText(/explicitly confirm/i);
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
     await expect(trigger).toBeFocused();
@@ -49,6 +50,7 @@ test.describe('Premium Recovery Center — mocked UX, safety and accessibility',
     await page.getByRole('button', { name: 'Manage Recovery' }).click();
     const manage = page.getByRole('dialog', { name: /Manage backups and recovery/i });
     await manage.getByRole('tab', { name: 'Restore' }).click();
+    await manage.getByRole('button', { name: /Step 4: Confirm and restore/ }).click();
     const restoreRow = manage.locator('.lite-recovery-manage-action-row').filter({ hasText: 'Restore selected backup' });
     await detailsResponse;
     const restoreButton = restoreRow.getByRole('button', { name: 'Restore', exact: true });
@@ -80,12 +82,12 @@ test.describe('Premium Recovery Center — mocked UX, safety and accessibility',
   test('keeps final Recovery activity reachable above the fixed mobile navigation', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 850 });
     await recovery(page, 'recovery-verified');
-    const finalActivity = page.locator('.lite-recovery-premium-timeline-list li').last();
+    const finalActivity = page.locator('.lite-recovery-recent-event').last();
     await finalActivity.waitFor({ state: 'visible' });
     const metrics = await page.evaluate(() => {
       window.scrollTo(0, document.documentElement.scrollHeight);
       const nav = document.querySelector('.pocket-nav-dock');
-      const activity = document.querySelector('.lite-recovery-premium-timeline-list li:last-child');
+      const activity = document.querySelector('.lite-recovery-recent-event:last-child');
       const navRect = nav?.getBoundingClientRect();
       const activityRect = activity?.getBoundingClientRect();
       return {
@@ -106,7 +108,7 @@ test.describe('Premium Recovery Center — mocked UX, safety and accessibility',
     await recovery(page,'recovery-verified');
     await page.evaluate(() => {document.documentElement.style.fontSize='200%';});
     await expect(page.getByRole('button',{name:'Manage Recovery'})).toBeVisible();
-    const transition = await page.locator('.lite-recovery-premium-stage-grid button').first().evaluate(el=>getComputedStyle(el).transitionDuration);
+    const transition = await page.locator('.lite-recovery-readiness-steps button').first().evaluate(el=>getComputedStyle(el).transitionDuration);
     expect(transition.split(',').every(part=>part.trim()==='0s' || part.trim()==='1e-05s')).toBe(true);
   });
   test('Axe has no serious or critical violations in landing and Manage', async ({ page }) => {
