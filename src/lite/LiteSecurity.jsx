@@ -15,9 +15,6 @@ import {
   FileCheck,
   Fingerprint,
   LayoutGrid,
-  Move,
-  Maximize2,
-  RotateCcw,
   Lock,
   Menu,
   Network,
@@ -58,7 +55,7 @@ import {
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import { acceptSecurityProgressEvent } from '../lib/securityProgressEvents.js';
 import { shouldUseLiteSecurityProgressStream } from '../lib/liteSecurityProgressPolicy.js';
-import { LiteSheet } from './LiteOverlay.jsx';
+import { LiteSheet, LiteDesktopPanelControls } from './LiteOverlay.jsx';
 import { SafetyCenterHero, SafetyDestinations, SafetyManageNavigation } from './security/SafetyNativeCenter.jsx';
 import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
 import { areComparableSafetyRuns, isMeasuredSafetyProgress, safetyCoverageQuality } from './security/safetyAzurePresentation.js';
@@ -3142,12 +3139,10 @@ export default function SecurityScreen() {
         bodyRef={safetyManageScrollRef}
         surfaceStyle={safetyManagePanelStyle}
         surfaceProps={{ 'data-security-phase5-manage-shell': 'true', 'data-security-manage-layout': safetyManageDesktop ? 'desktop-movable' : 'mobile-sheet', 'data-security-react-spring': 'manage-shell' }}
-        headerActions={safetyManageDesktop ? <div className="lite-security-manage-desktop-tools" role="group" aria-label="Desktop Safety panel controls">
-          <button type="button" aria-label="Move Safety panel" title="Drag or use arrow keys; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight" onPointerDown={(event) => startSafetyManageInteraction('move', event)} onKeyDown={(event) => adjustSafetyManageKeyboard('move', event)}><Move size={16} aria-hidden="true" /></button>
-          <button type="button" aria-label="Reset Safety panel position and size" onClick={resetSafetyManagePanel}><RotateCcw size={16} aria-hidden="true" /> Reset</button>
-          <button type="button" aria-label="Resize Safety panel" title="Drag or use arrow keys; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight" onPointerDown={(event) => startSafetyManageInteraction('resize', event)} onKeyDown={(event) => adjustSafetyManageKeyboard('resize', event)}><Maximize2 size={16} aria-hidden="true" /></button>
-          <span className="sr-only" role="status" aria-live="polite">{safetyManageAnnouncement}</span>
-        </div> : null}
+        headerActions={safetyManageDesktop ? <LiteDesktopPanelControls title="Safety" className="lite-security-manage-desktop-tools" geometry={{
+          announcement: safetyManageAnnouncement, reset: resetSafetyManagePanel,
+          startPanelInteraction: startSafetyManageInteraction, adjustPanelWithKeyboard: adjustSafetyManageKeyboard,
+        }} /> : null}
       >
         <ManageMotionDiv style={securityMotionReduced ? undefined : manageScrollSpring} className="lite-security-manage-scroll-frame" data-security-react-spring="manage-scroll-frame">
         <p className="lite-security-horizon-manage-context">Profile: <strong>{activeProfileMeta.label}</strong> · {savedSecurityDetails ? 'Saved result' : lastCheckedLabel} · {evidenceStatusLabel}</p>
