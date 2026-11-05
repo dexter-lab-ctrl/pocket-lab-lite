@@ -59,6 +59,25 @@ export function SafetyCenterHero({
   );
 }
 
+// One primary report, subordinate scanner outcomes, and a separate privacy
+// safeguard. No client-side scanner inference is performed by this component.
+export function SafetyStatusHierarchy({ presentation }) {
+  if (!presentation) return null;
+  return <section className="lite-safety-status-hierarchy" aria-label="Safety check result" data-safety-status-hierarchy="true">
+    <div className="lite-safety-status-primary" data-status-tone={presentation.tone}>
+      <div><strong>{presentation.headline}</strong><p>{presentation.message}</p></div>
+      <span className="lite-safety-status-scope">{presentation.scopeLabel}</span>
+    </div>
+    <dl className="lite-safety-status-scanners" aria-label="Scanner execution">
+      {presentation.scanners.map(({ name, status, tone }) => <div key={name} data-tool-tone={tone}>
+        <dt>{name}</dt><dd>{status}</dd>
+      </div>)}
+    </dl>
+    <p className="lite-safety-status-findings" data-finding-tone={presentation.findingTone}>{presentation.findingLabel}</p>
+    <p className="lite-safety-status-safeguard"><ShieldCheck size={16} aria-hidden="true" /> {presentation.safeguard}</p>
+  </section>;
+}
+
 const DESTINATIONS = [
   { id: 'issues', label: 'Needs Attention', description: 'Review reported findings and recommended next steps', Icon: ShieldAlert },
   { id: 'coverage', label: 'Coverage & Checks', description: 'See checked scope, tool outcomes and exclusions', Icon: ListChecks },
