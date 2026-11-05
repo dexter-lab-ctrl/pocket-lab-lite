@@ -2829,6 +2829,10 @@ export default function SecurityScreen() {
   const hydrateHistoryDetails = securityDetailNeedsHeavyModel(progressiveDetailsType, 'history');
   const hydrateFindingDetails = securityDetailNeedsHeavyModel(progressiveDetailsType, 'findings');
 
+  const profileCoverageReported = Boolean(activeProfileHasRun && (
+    activeProfileView?.coverage_summary || activeProfileRun?.coverage_summary ||
+    (activeProfileIsLatest && data?.coverage_summary)
+  ));
   const securityProgressiveDetailsModel = progressiveDetailsHydrated ? {
     detailsHydrated: true,
     detailsHydration: {
@@ -2869,10 +2873,10 @@ export default function SecurityScreen() {
     scoreTrendView: hydrateHistoryDetails ? scoreTrendView : null,
     scanProgressLabel,
     scanProfile,
-    coverageSummary: hydrateCoverageDetails ? coverageSummary : {},
-    coverageReported: hydrateCoverageDetails && Boolean(activeProfileHasRun && (activeProfileView?.coverage_summary || activeProfileRun?.coverage_summary || (activeProfileIsLatest && data?.coverage_summary))),
-    checkedCoverageTargets: hydrateCoverageDetails ? checkedCoverageTargets : [],
-    skippedCoverageTargets: hydrateCoverageDetails ? skippedCoverageTargets : [],
+    coverageSummary: hydrateCoverageDetails && profileCoverageReported ? coverageSummary : {},
+    coverageReported: hydrateCoverageDetails && profileCoverageReported,
+    checkedCoverageTargets: hydrateCoverageDetails && profileCoverageReported ? checkedCoverageTargets : [],
+    skippedCoverageTargets: hydrateCoverageDetails && profileCoverageReported ? skippedCoverageTargets : [],
     partialCoverageTargets: hydrateCoverageDetails ? partialCoverageTargets : [],
     timedOutCoverageTargets: hydrateCoverageDetails ? timedOutCoverageTargets : [],
     missingCoverageTargets: hydrateCoverageDetails ? missingCoverageTargets : [],
@@ -2909,7 +2913,7 @@ export default function SecurityScreen() {
         ? 'Showing saved state'
         : 'Run Safety Check to begin';
   const evidenceSaved = Boolean(activeProfileHasRun && (latestEvidenceReceipt || evidenceReceipt || currentEvidenceRefs.length || evidenceFileCount));
-  const coverageIsReported = Boolean(activeProfileHasRun && (activeProfileView?.coverage_summary || activeProfileRun?.coverage_summary || (activeProfileIsLatest && data?.coverage_summary)));
+  const coverageIsReported = profileCoverageReported;
   const coverageQuality = safetyCoverageQuality(coverageSummary, coverageIsReported);
   const evidenceStatusLabel = evidenceSaved ? 'Evidence saved' : 'Evidence pending';
   const safetyCenterSummary = safetyStory.headline;
