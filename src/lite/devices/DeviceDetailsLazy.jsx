@@ -5,7 +5,7 @@ import {
   resourceFactValue,
 } from '../../lib/liteDeviceFacts.js';
 import React from 'react';
-import { AlertTriangle, Clock3, HeartPulse, Smartphone, X } from 'lucide-react';
+import { Activity, AlertTriangle, Clock3, HeartPulse, History, Link2, Server, Settings2, ShieldCheck, Smartphone, DatabaseBackup, X } from 'lucide-react';
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
 import { liteEnterpriseApi } from '../../lib/liteEnterpriseApi.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
@@ -33,6 +33,8 @@ import {
   normalizeBackendState,
   roleLabel,
   deviceRoleSummary,
+  canRestartDeviceAgent,
+  canRemoveDevice,
   DEVICE_ROLE_OPTIONS,
 } from '../LiteUi.jsx';
 
@@ -642,7 +644,7 @@ function LiteDeferredDetails({ render, delayFrames = 1 }) {
 const DEVICE_AWARENESS_INITIAL_SECTION_COUNT = 1;
 const DEVICE_AWARENESS_SECTION_BATCH_SIZE = 2;
 
-function DeviceAwarenessDetails({ device }) {
+function DeviceAwarenessDetails({ device, area = 'technical' }) {
   const sections = React.useMemo(() => {
     const capabilities = capabilityRows(device);
     const capabilitySummary = deviceCapabilitySummary(device);
@@ -758,12 +760,20 @@ function DeviceAwarenessDetails({ device }) {
       </section>,
     ];
   }, [device]);
-  const initialSectionCount = Math.min(DEVICE_AWARENESS_INITIAL_SECTION_COUNT, sections.length);
+  const keyGroups = {
+    overview: ['responsibilities'],
+    connection: ['connection', 'trust'],
+    roles: ['role-boundary', 'capabilities', 'responsibilities'],
+    services: ['services', 'responsibilities'],
+    technical: ['trust', 'capabilities', 'removal'],
+  };
+  const visibleSections = sections.filter((element) => (keyGroups[area] || keyGroups.technical).includes(element.key));
+  const initialSectionCount = Math.min(DEVICE_AWARENESS_INITIAL_SECTION_COUNT, visibleSections.length);
   const [visibleSectionCount, setVisibleSectionCount] = React.useState(initialSectionCount);
 
   React.useEffect(() => {
     setVisibleSectionCount(initialSectionCount);
-    if (sections.length <= initialSectionCount) return undefined;
+    if (visibleSections.length <= initialSectionCount) return undefined;
 
     let active = true;
     let frame = null;
@@ -771,9 +781,9 @@ function DeviceAwarenessDetails({ device }) {
     const revealNextBatch = () => {
       frame = window.requestAnimationFrame(() => {
         if (!active) return;
-        nextCount = Math.min(sections.length, nextCount + DEVICE_AWARENESS_SECTION_BATCH_SIZE);
+        nextCount = Math.min(visibleSections.length, nextCount + DEVICE_AWARENESS_SECTION_BATCH_SIZE);
         setVisibleSectionCount(nextCount);
-        if (nextCount < sections.length) revealNextBatch();
+        if (nextCount < visibleSections.length) revealNextBatch();
       });
     };
     revealNextBatch();
@@ -781,9 +791,9 @@ function DeviceAwarenessDetails({ device }) {
       active = false;
       if (frame !== null) window.cancelAnimationFrame(frame);
     };
-  }, [initialSectionCount, sections.length]);
+  }, [initialSectionCount, visibleSections.length]);
 
-  return <div className="lite-device-awareness-grid">{sections.slice(0, visibleSectionCount)}</div>;
+  return <div className="lite-device-awareness-grid">{visibleSections.slice(0, visibleSectionCount)}</div>;
 }
 
 function DeviceHealthHistory({ deviceId }) {
@@ -836,9 +846,10 @@ function DeviceHealthHistory({ deviceId }) {
   );
 }
 
-export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
+export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRestartAgent, onReviewRemoval, restartBusy = false, removeBusy = false, actionsBlocked = false }) {
   if (!device) return null;
   const initialDeviceId = device?.id || '';
+  const [activeArea, setActiveArea] = React.useState('overview');
   const [deviceHistoryOpen, setDeviceHistoryOpen] = React.useState(false);
   const setActiveTab = useLiteUiStore((state) => state.setActiveTab);
   const detailsQuery = useLiteQuery({
@@ -878,7 +889,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
     queryKey: liteQueryKeys.deviceHistory(device?.id || '', 20, ''),
     path: liteQueryPaths.deviceHistory(device?.id || '', 20, ''),
     queryFn: () => liteApi.deviceHistory(device?.id || '', 20, ''),
-    enabled: Boolean(device?.id),
+    enabled: Boolean(device?.id) && activeArea === 'history',
     staleTime: 60_000,
     refetchInterval: false,
     refetchOnWindowFocus: false,
@@ -903,7 +914,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
           <span>Device Manage · {isProtectedServer ? 'Protected server host' : deviceRoleSummary(device)}</span>
           <h3>{title}</h3>
           <div className="lite-device-details-head-facts" aria-label="Device connection and freshness">
-            <strong>{canonicalDevicePresentation(device).label}</strong>
+            <strong>{actionsBlocked ? 'Saved · connection not confirmed' : canonicalDevicePresentation(device).label}</strong>
             <small>{device?.last_seen_state?.last_seen_at || device?.last_seen
               ? `Last reported ${formatLiteTime(device?.last_seen_state?.last_seen_at || device?.last_seen)}`
               : 'No recent heartbeat reported'}</small>
@@ -915,6 +926,36 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
         </button>
       </div>
 
+      <nav className="lite-device-manage-navigation" aria-label="Device management sections">
+        {[
+          { id: 'overview', label: 'Overview', Icon: Server },
+          { id: 'connection', label: 'Connection', Icon: Link2 },
+          { id: 'health', label: 'Health', Icon: HeartPulse },
+          ...(!isProtectedServer ? [{ id: 'roles', label: 'Roles', Icon: ShieldCheck }] : []),
+          { id: 'services', label: 'Services', Icon: Activity },
+          ...(!isProtectedServer ? [{ id: 'backup', label: 'Backup', Icon: DatabaseBackup }] : []),
+          { id: 'history', label: 'History', Icon: History },
+          { id: 'technical', label: 'Technical', Icon: Settings2 },
+        ].map(({ id, label, Icon }) => (
+          <button type="button" key={id} className={activeArea === id ? 'is-current' : ''}
+            aria-current={activeArea === id ? 'page' : undefined}
+            onClick={() => { triggerLiteTactileFeedback('selection'); setActiveArea(id); }}>
+            <Icon size={16} aria-hidden="true" />{label}
+          </button>
+        ))}
+      </nav>
+      <div className="lite-device-manage-content" data-active-device-section={activeArea}>
+        {activeArea === 'overview' ? (
+          <>
+            <div className="lite-device-native-overview">
+              <dl>
+                <div><dt>Connection</dt><dd>{actionsBlocked ? 'Saved · not confirmed' : canonicalDevicePresentation(device).label}</dd></div>
+                <div><dt>Health</dt><dd>{!actionsBlocked && healthAttentionCurrent ? proactiveHealthLabel(proactiveHealth?.status) : 'Not confirmed'}</dd></div>
+                <div><dt>Identity</dt><dd>{device?.identity?.status || device?.identity_status || 'Not reported'}</dd></div>
+                <div><dt>Responsibility</dt><dd>{deviceRoleSummary(device)}</dd></div>
+              </dl>
+              <p>{deviceSummary(device)}</p>
+            </div>
       <section id="lite-device-manage-overview" className="lite-device-system-summary" aria-label="Overview · system identity and health">
         <div>
           <span>System</span>
@@ -939,17 +980,15 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
         ) : null}
       </section>
 
-      {!isProtectedServer ? (
-        <>
-          <div className="lite-device-manage-group" aria-label="Device responsibilities">
-            <DeviceRoleManager device={device} onChanged={() => detailsQuery.refetch?.()} />
-          </div>
-          <div className="lite-device-manage-group" aria-label="Device photo backup">
-            <DevicePhotoBackup deviceId={initialDeviceId} />
-          </div>
-        </>
-      ) : null}
 
+            <DeviceAwarenessDetails device={device} area="overview" />
+          </>
+        ) : null}
+        {activeArea === 'connection' ? (
+          <DeviceAwarenessDetails device={device} area="connection" />
+        ) : null}
+        {activeArea === 'health' ? (
+          <>
       <LiteDeferredDetails delayFrames={DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES} render={() => {
         const healthResources = proactiveHealth ? healthResourceRows(proactiveHealth, device) : [];
         const deviceFacts = normalizeDeviceFacts(
@@ -1060,90 +1099,75 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
       </section>);
       }} />
 
-      <LiteDeferredDetails delayFrames={DEVICE_AWARENESS_NONCRITICAL_DELAY_FRAMES} render={() => <DeviceAwarenessDetails device={device} />} />
 
-      <details className="lite-device-advanced-details">
-        <summary>
-          <span>Connection, health and history</span>
-          <small>Safe operational facts, recent health changes, and troubleshooting context</small>
-        </summary>
-        <LiteDeferredDetails delayFrames={DEVICE_DETAILS_NONCRITICAL_DELAY_FRAMES} render={() => {
-          const historyItems = Array.isArray(historyQuery.data?.items) && historyQuery.data.items.length
-            ? historyQuery.data.items
-            : deviceHistoryItems({ ...device, recent_events: device?.recent_lifecycle });
-          const restartAssessment = deviceRestartAssessment(device) || {};
-          const attention = deviceAttention(device);
-          const timelineItems = deviceHistoryTimelineItems(historyItems);
-          const latestActivity = device?.last_seen_state?.last_seen_at || device?.last_seen_at || device?.last_seen;
-          return (
-            <div className="lite-device-connection-health-story">
-              <section className="lite-device-operational-now" aria-label="Current connection and health">
-                <div>
-                  <span>Connection now</span>
-                  <strong>{deviceConnectionLabel(device)}</strong>
-                  <small>{latestActivity ? `Last activity ${formatLiteTime(latestActivity)}` : 'No recent activity timestamp reported'}</small>
-                </div>
-                <div>
-                  <span>Health now</span>
-                  <strong>{proactiveHealthLabel(proactiveHealth?.status)}</strong>
-                  <small>{proactiveHealth?.summary || 'Current health summary is not available yet.'}</small>
-                </div>
-              </section>
-
-              <section className={`lite-device-history-timeline-card ${deviceHistoryOpen ? 'is-open' : 'is-collapsed'}`} aria-label="Device history timeline">
-                <div className="lite-device-history-timeline-head">
-                  <div>
-                    <span>Recent changes</span>
-                    <strong>Device history</strong>
-                    <p>{historyQuery.loading ? 'Loading recent device activity…' : timelineItems.length ? `${timelineItems.length} recent event${timelineItems.length === 1 ? '' : 's'}` : 'No device history has been reported yet.'}</p>
-                  </div>
-                  <div className="lite-device-history-timeline-actions">
-                    {timelineItems[0]?.time ? <time>{timelineItems[0].time}</time> : null}
-                    <LiteButton
-                      tone="secondary"
-                      onClick={() => setDeviceHistoryOpen((open) => !open)}
-                      aria-expanded={deviceHistoryOpen}
-                      aria-controls={`device-history-timeline-${initialDeviceId}`}
-                    >
-                      {deviceHistoryOpen ? 'Collapse history' : 'Show history'}
-                    </LiteButton>
-                  </div>
-                </div>
-                {deviceHistoryOpen ? (
-                  <div id={`device-history-timeline-${initialDeviceId}`} className="lite-device-history-timeline-body">
-                    {historyQuery.loading ? <p className="lite-device-timeline-loading">Loading recent device activity…</p> : (
-                      <LiteHistoryTimeline
-                        className="lite-device-timeline is-device-history"
-                        items={timelineItems}
-                        emptyTitle="No device history yet"
-                        emptyDescription="Connection, recovery, and lifecycle changes will appear here when Pocket Lab reports them."
-                      />
-                    )}
-                  </div>
-                ) : null}
-              </section>
-
-              <LiteProgressiveDetails
-              title={title}
-              status={status}
-              statusLabel={deviceStatusLabel(effectiveStatus)}
-              summary={deviceSummary(device)}
-              what_happened={deviceWhatHappened(device)}
-              what_changed={deviceWhatChanged(device)}
-              what_needs_attention={attention}
-              what_did_not_happen={deviceWhatDidNotHappen()}
-              saved_for_troubleshooting={{
-                saved: Boolean(device?.last_seen || device?.id),
-                backend_only: true,
-                summary: 'Device events and troubleshooting records stay protected by Pocket Lab.',
-              }}
-              next_step={attention.length ? (restartAssessment.allowed ? 'Restart the device service through Pocket Lab.' : restartAssessment.summary || 'Check power, private network access, and the device recovery service.') : 'No action is needed right now.'}
-              technicalDetails={technicalRows(device)}
-            />
+          </>
+        ) : null}
+        {activeArea === 'roles' && !isProtectedServer ? (
+          <>
+            <div className="lite-device-manage-group" aria-label="Device responsibilities">
+              <DeviceRoleManager device={device} onChanged={() => detailsQuery.refetch?.()} />
             </div>
-          );
-        }} />
-      </details>
+            <DeviceAwarenessDetails device={device} area="roles" />
+          </>
+        ) : null}
+        {activeArea === 'services' ? (
+          <>
+            <DeviceAwarenessDetails device={device} area="services" />
+            {!actionsBlocked && canRestartDeviceAgent(device) ? (
+              <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy}>
+                {restartBusy ? 'Restart requested…' : 'Restart agent'}
+              </LiteButton>
+            ) : <p>Restart remains unavailable unless Pocket Lab confirms a safe recovery action.</p>}
+          </>
+        ) : null}
+        {activeArea === 'backup' && !isProtectedServer ? (
+          <section className="lite-device-manage-group" aria-label="Device photo backup">
+            <DevicePhotoBackup deviceId={initialDeviceId} />
+          </section>
+        ) : null}
+        {activeArea === 'history' ? (
+          <section className="lite-device-history-timeline-card" aria-label="Device history timeline">
+            <h4>Recent device activity</h4>
+            {historyQuery.loading ? <p>Loading recent activity…</p> : (
+              <LiteHistoryTimeline
+                items={deviceHistoryTimelineItems(Array.isArray(historyQuery.data?.items) && historyQuery.data.items.length
+                  ? historyQuery.data.items : deviceHistoryItems({ ...device, recent_events: device?.recent_lifecycle }))}
+                emptyTitle="No device history yet"
+                emptyDescription="Changes appear here when Pocket Lab reports them."
+              />
+            )}
+          </section>
+        ) : null}
+        {activeArea === 'technical' ? (
+          <>
+            <DeviceAwarenessDetails device={device} area="technical" />
+            <details className="lite-device-advanced-details">
+              <summary>Technical and troubleshooting details</summary>
+              <LiteProgressiveDetails
+                title={title} status={status} statusLabel={deviceStatusLabel(effectiveStatus)}
+                summary={deviceSummary(device)}
+                what_happened={deviceWhatHappened(device)}
+                what_changed={deviceWhatChanged(device)}
+                what_needs_attention={deviceAttention(device)}
+                what_did_not_happen={deviceWhatDidNotHappen()}
+                saved_for_troubleshooting={{
+                  saved: Boolean(device?.last_seen || device?.id),
+                  backend_only: true,
+                  summary: 'Device troubleshooting records stay protected by Pocket Lab.',
+                }}
+                next_step="Use the applicable backend-authorized device operation."
+                technicalDetails={technicalRows(device)}
+              />
+            </details>
+            {!isProtectedServer && !actionsBlocked && canRemoveDevice(device) ? (
+              <LiteButton tone="danger" onClick={onReviewRemoval} disabled={removeBusy}>
+                {removeBusy ? 'Reviewing removal…' : 'Review device removal'}
+              </LiteButton>
+            ) : null}
+          </>
+        ) : null}
+      </div>
+
     </section>
   );
 }
