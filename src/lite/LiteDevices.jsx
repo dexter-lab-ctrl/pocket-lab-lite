@@ -22,6 +22,7 @@ import {
   Server,
   ShieldCheck,
   Smartphone,
+  Search,
   Trash2,
   WifiOff,
   X,
@@ -42,6 +43,7 @@ import {
   DEVICE_ROLE_OPTIONS,
   NAV_ITEMS,
   roleLabel,
+  deviceRoleSummary,
   deviceConnectionLabel,
   canRestartDeviceAgent,
   canRemoveDevice,
@@ -106,6 +108,8 @@ import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 import LiteNextSteps from './components/LiteNextSteps.jsx';
 import './devices/azureDevices.css';
 import { deviceHorizonConnection } from './devices/deviceHorizonPresentation.js';
+import { deviceLibraryEntry, deviceLibrarySummary, filterDeviceLibrary, DEVICE_LIBRARY_FILTERS } from './devices/deviceLibraryPresentation.js';
+import { useMobileSheetSnap } from './components/useMobileSheetSnap.js';
 
 const MemoLiteVirtualList = React.memo(LiteVirtualList);
 const DeviceCardLazy = React.lazy(loadDeviceCard);
@@ -174,7 +178,7 @@ export function deviceRelationshipPresentation(device, savedStateOnly = false) {
         : ['unknown', 'stale'].includes(view.kind) ? 'unknown' : 'disconnected' };
 }
 
-function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
+function DeviceRelationshipMap({ devices = [], savedStateOnly = false, onOpenDevice }) {
   const server = devices.find((device) => deviceLinkState(device) === 'server') || null;
   const peers = devices.filter((device) => device !== server);
   const serverName = server?.name || server?.hostname || 'Server Host';
@@ -224,7 +228,7 @@ function DeviceRelationshipMap({ devices = [], savedStateOnly = false }) {
           return (
             <div className={`lite-device-relationship-peer is-${state}`} key={deviceListKey(device)} role="listitem">
               <span className={`lite-device-relationship-link is-${state}`} aria-hidden="true"><i /></span>
-              <div className={`lite-device-relationship-node is-${state}`} data-relationship-state={state} aria-label={`${device.name || device.hostname || 'Device'}: ${stateLabel}`}>
+              <div className={`lite-device-relationship-node is-${state}`} data-relationship-state={state} aria-label={`${device.name || device.hostname || 'Device'}: ${stateLabel}`} onClick={() => { triggerLiteHaptic('tap'); onOpenDevice?.(device); }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); triggerLiteHaptic('tap'); onOpenDevice?.(device); } }}>
                 {icon === 'connected' ? <Smartphone className="h-4 w-4" aria-hidden="true" /> : icon === 'repairing' ? <RefreshCw className="h-4 w-4" aria-hidden="true" /> : <WifiOff className="h-4 w-4" aria-hidden="true" />}
                 <span>{device.name || device.hostname || 'Device'}</span>
                 <small>{stateLabel}</small>
@@ -287,7 +291,7 @@ function toggleDeviceDetails(deviceKey) {
   store.setActiveDeviceDetailsId(store.activeDeviceDetailsId === deviceKey ? '' : deviceKey);
 }
 
-function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
+function DeviceDetailsPortal({ devices, detailsButtonRefs, deviceActionHandlersRef, restartBusy, removeBusy, savedStateOnly }) {
   const detailsDeviceId = useLiteUiStore((state) => state.activeDeviceDetailsId);
   const setDeviceModelPickerId = useLiteUiStore((state) => state.setDeviceModelPickerId);
   const [detailsBodyReady, setDetailsBodyReady] = useState(false);
@@ -297,6 +301,7 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
   );
   const { panelRef: detailsPanelRef, desktopPanel, panelStyle, announcement, reset: resetPanelGeometry,
     startPanelInteraction, adjustPanelWithKeyboard } = useDesktopManageGeometry({ open: Boolean(activeDetailsDevice) });
+  const mobileSnap = useMobileSheetSnap({ open: Boolean(activeDetailsDevice), enabled: !desktopPanel, surfaceRef: detailsPanelRef, initialState: 'medium' });
 
   useEffect(() => {
     if (!activeDetailsDevice) {
@@ -315,6 +320,7 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
 
   const closeDeviceDetails = useCallback(() => {
     const trigger = detailsButtonRefs.current.get(detailsDeviceId);
+    triggerLiteHaptic('tap');
     useLiteUiStore.getState().setActiveDeviceDetailsId('');
     window.requestAnimationFrame(() => trigger?.focus?.({ preventScroll: true }));
   }, [detailsButtonRefs, detailsDeviceId]);
@@ -368,8 +374,18 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
             event.preventDefault(); first.focus();
           }
         }}
-        style={panelStyle}
+        style={desktopPanel ? panelStyle : mobileSnap.style}
       >
+        {mobileSnap.active ? (
+          <div className="lite-device-mobile-snap" aria-label="Device Manage sheet size">
+            <button type="button" className="lite-device-mobile-grip" {...mobileSnap.gripProps} aria-label={`Resize device Manage sheet · ${mobileSnap.state}`} />
+            <div className="lite-device-mobile-snap-actions">
+              <button type="button" onClick={() => { triggerLiteHaptic('tap'); mobileSnap.contract(); }} disabled={!mobileSnap.canContract} aria-label="Make device sheet smaller">Smaller</button>
+              <span aria-live="polite">{mobileSnap.state}</span>
+              <button type="button" onClick={() => { triggerLiteHaptic('tap'); mobileSnap.expand(); }} disabled={!mobileSnap.canExpand} aria-label="Expand device sheet">Expand</button>
+            </div>
+          </div>
+        ) : null}
         {desktopPanel ? (
           <div className="lite-device-details-panel-tools" aria-label="Desktop device details panel controls">
             <button
@@ -384,7 +400,7 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
               <Move className="h-4 w-4" aria-hidden="true" />
             </button>
             <span>Desktop panel</span>
-            <button type="button" className="lite-device-details-panel-tool" aria-label="Reset device details panel position and size" onClick={resetPanelGeometry}>Reset</button>
+            <button type="button" className="lite-device-details-panel-tool" aria-label="Reset device details panel position and size" onClick={() => { triggerLiteHaptic('tap'); resetPanelGeometry(); }}>Reset</button>
             <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
             <button
               type="button"
@@ -405,6 +421,11 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs }) {
               device={activeDetailsDevice}
               onClose={closeDeviceDetails}
               onChooseModel={chooseDeviceModel}
+               onRestartAgent={() => deviceActionHandlersRef.current.restartAgent?.(activeDetailsDevice)}
+               onReviewRemoval={() => deviceActionHandlersRef.current.loadRemovalAssessment?.(activeDetailsDevice)}
+               restartBusy={restartBusy === activeDetailsDevice.id}
+               removeBusy={removeBusy}
+               actionsBlocked={savedStateOnly}
             />
           </Suspense>
         ) : (
