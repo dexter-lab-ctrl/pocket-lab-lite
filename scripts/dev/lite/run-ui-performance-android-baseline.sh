@@ -67,7 +67,8 @@ for run_index in $(seq 1 "$repetitions"); do
     if [[ "$qualification_scope" == access ]]; then
       node scripts/dev/lite/qualify-ui-performance-android-access.mjs
     elif [[ "$qualification_scope" == recovery ]]; then
-      node scripts/dev/lite/qualify-ui-performance-android-recovery.mjs
+      LITE_ANDROID_KEEP_CANDIDATE_PAGE=1 \
+        node scripts/dev/lite/qualify-ui-performance-android-recovery.mjs
     else
       node scripts/dev/lite/qualify-ui-performance-android-cdp.mjs
     fi

@@ -1550,7 +1550,12 @@ if (recoveryOnly) {
   }, null, 2) + '\n', 'utf8');
 }
 
-await page.close();
+// The paired baseline runner reuses the ADB-opened candidate tab for its
+// after-control sample.  Keep that physical foreground page alive only for
+// that bounded handoff; ordinary direct qualification retains its cleanup.
+if (process.env.LITE_ANDROID_KEEP_CANDIDATE_PAGE !== '1') {
+  await page.close();
+}
 
 if (failures || targetMisses) {
   if (failures) console.error(`[ui-performance-android] ${failures} evidence sample(s) exceeded the hard render gate.`);
