@@ -1,5 +1,6 @@
 // P6 mocked-only browser qualification assets. AUTHORED, NOT EXECUTED.
 // Do not update or approve visual baselines in this implementation session.
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
@@ -133,5 +134,51 @@ test.describe('Safety unification screenshots — baseline approval deferred', (
       const dialog = await manageSection(page, 'Checks');
       await expect(dialog).toHaveScreenshot(`safety-unified-${theme}-checks-${width}.png`, { animations: 'disabled' });
     });
+  }
+});
+
+
+test.describe('Safety accessibility and nested visual evidence — qualification deferred', () => {
+  for (const theme of ['light', 'dark'] as const) {
+    test(`WCAG AA candidate: ${theme} 390px Manage and nested Technical details`, async ({ page }) => {
+      await openSafety(page, 'security-quick-healthy', theme, 390);
+      const dialog = await manageSection(page, 'Technical details');
+      await expect(dialog).toBeVisible();
+      const candidate = await new AxeBuilder({ page }).include('[data-lite-overlay-portal="true"]').analyze();
+      const blocking = candidate.violations.filter(item => ['serious', 'critical'].includes(item.impact || ''));
+      expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
+      const controls = dialog.locator('.lite-overlay-close, .lite-sheet-mobile-snap-actions button');
+      const count = await controls.count();
+      for (let i = 0; i < count; i += 1) {
+        const box = await controls.nth(i).boundingBox();
+        expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
+        expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+      }
+    });
+  }
+
+  test('System mode re-resolves surface tokens while a portalled Safety sheet remains open', async ({ page }) => {
+    await openSafety(page, 'security-quick-healthy', 'system', 390);
+    const dialog = await manageSection(page, 'Checks');
+    await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+    const dark = await dialog.evaluate(element => getComputedStyle(element).backgroundColor);
+    await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
+    await expect.poll(async () => dialog.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(dark);
+  });
+
+  for (const theme of themes) for (const width of [320, 390, 1280] as const) {
+    for (const section of ['History', 'Coverage', 'Technical details'] as const) {
+      test(`nested ${section} visual state: ${theme} ${width}px`, async ({ page }) => {
+        await openSafety(page, 'security-quick-healthy', theme, width);
+        const manage = await manageSection(page, section);
+        const actionName = section === 'History' ? 'Open Security history details'
+          : section === 'Coverage' ? 'Open Security coverage details'
+            : 'Open safe Security technical details';
+        await manage.getByRole('button', { name: actionName }).click();
+        const detail = page.getByRole('dialog').last();
+        await expect(detail).toBeVisible();
+        await expect(detail).toHaveScreenshot(`safety-unified-${theme}-${section.toLowerCase().replace(' ', '-')}-${width}.png`, { animations: 'disabled' });
+      });
+    }
   }
 });
