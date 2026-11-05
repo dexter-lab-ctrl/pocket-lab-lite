@@ -335,7 +335,7 @@ export default function RecoveryScreen() {
   const activePanel = actionPanelMeta[activeActionPanel] || null;
 
   const recoveryLive = serverRecoveryLive;
-  useLiteServiceWorkerUpdateBlocker('recovery-workflow', Boolean(recoveryLive || restoreConfirmation));
+  useLiteServiceWorkerUpdateBlocker('recovery-workflow', Boolean(recoveryLive || busy || recoveryFlow.isBusy || restoreConfirmation));
   const premiumHero = recoveryPremiumHero({
     data, backup: latestBackup, preview: latestPreview, repository, database: databaseProtection,
     busy, saved: savedStateOnly, stale: projectionStale || isExpired, reachable: backendReachable,
