@@ -606,7 +606,7 @@ async function main() {
   if (!mobile) notes.push('The Android renderer exposed the desktop-movable Rules layout; mobile snap evidence was not applicable.');
 
   if (await selectSection('journey', 'How Protection Works')) {
-    await measure({ interaction: 'section-switch', scope: 'rules-manage-journey', surface: 'Rules Manage / How Protection Works', action: async () => journey(dialog.locator('[data-rules-manage-section="journey"]')) });
+    await measure({ interaction: 'section-switch', scope: 'rules-manage-journey', surface: 'Rules Manage / How Protection Works', action: async () => journey(dialog.locator('.lite-rules-premium-journey')) });
     mark('How Protection Works', 'VERIFIED');
   } else mark('How Protection Works', 'UNAVAILABLE_ROLE_OR_PROJECTION');
 
