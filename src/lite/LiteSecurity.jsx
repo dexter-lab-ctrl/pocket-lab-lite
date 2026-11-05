@@ -56,7 +56,8 @@ import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy
 import { acceptSecurityProgressEvent } from '../lib/securityProgressEvents.js';
 import { shouldUseLiteSecurityProgressStream } from '../lib/liteSecurityProgressPolicy.js';
 import { LiteSheet, LiteDesktopPanelControls } from './LiteOverlay.jsx';
-import { SafetyCenterHero, SafetyDestinations, SafetyManageNavigation } from './security/SafetyNativeCenter.jsx';
+import { SafetyCenterHero, SafetyDestinations, SafetyManageNavigation, SafetyStatusHierarchy } from './security/SafetyNativeCenter.jsx';
+import { deriveSafetyStatusPresentation } from './security/safetyStatusPresentation.js';
 import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
 import { areComparableSafetyRuns, isMeasuredSafetyProgress, safetyCoverageQuality } from './security/safetyAzurePresentation.js';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
@@ -470,33 +471,6 @@ function profileChangeSummary(snapshot = {}) {
   return 'No new changes';
 }
 
-
-function securityToolChip(toolKey, toolLabel, toolResult = {}, context = {}) {
-  const runStatus = String(context.runStatus || '').toLowerCase();
-  const terminal = ['succeeded', 'success', 'healthy', 'degraded', 'partial', 'completed', 'done'].some((status) => runStatus.includes(status));
-  const tools = Array.isArray(context.tools) ? context.tools.map((tool) => String(tool).toLowerCase()) : [];
-  const stepText = (Array.isArray(context.executionSteps) ? context.executionSteps : [])
-    .map((step) => `${step?.key || ''} ${step?.title || ''} ${step?.detail || ''} ${step?.state || ''}`.toLowerCase())
-    .join(' ');
-  const profile = normalizeSecurityProfileId(context.profile || 'quick');
-  const toolWasExpected = tools.includes(toolKey) || stepText.includes(toolKey) || (profile !== 'app' && ['lynis', 'trivy'].includes(toolKey)) || (profile === 'app' && toolKey === 'trivy');
-  if (securityToolCompleted(toolResult) || (terminal && toolWasExpected && !runStatus.includes('failed') && !runStatus.includes('error'))) {
-    return { key: toolKey, label: `${toolLabel} checked`, tone: 'ready' };
-  }
-  if (terminal && !toolWasExpected) {
-    return { key: toolKey, label: `${toolLabel} not used`, tone: 'neutral' };
-  }
-  const rawLabel = securityToolStatusLabel(toolResult);
-  const normalized = String(rawLabel || '').trim().toLowerCase();
-  const readableStatus = rawLabel && normalized !== 'pending'
-    ? rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1)
-    : 'pending';
-  return {
-    key: toolKey,
-    label: `${toolLabel} ${readableStatus}`,
-    tone: securityToolPartial(toolResult) || securityToolMissing(toolResult) ? 'review' : 'checking',
-  };
-}
 
 const SECURITY_SCORE_RING_GREEN_SPRING_GUARDS = [
   'lite-security-score-ring-green-fill',
@@ -2945,20 +2919,18 @@ export default function SecurityScreen() {
       : freshJustNow
         ? 'Fresh just now'
         : '';
-  const toolChipContext = { runStatus, tools: toolNames, executionSteps, profile: scanProfile };
-  const safetyCenterChips = scanProfile === 'app'
-    ? [
-      { key: 'route', label: activeProfileHasRun ? 'Route checked' : 'Route pending', tone: activeProfileHasRun ? 'ready' : 'checking' },
-      securityToolChip('trivy', 'Trivy', toolResults?.trivy, toolChipContext),
-      { key: 'media', label: 'Photos skipped', tone: 'ready' },
-      { key: 'critical', label: criticalIssues.length ? `${criticalIssues.length} critical` : 'No critical issues', tone: criticalIssues.length ? 'danger' : 'ready' },
-    ]
-    : [
-      securityToolChip('lynis', 'Lynis', toolResults?.lynis, toolChipContext),
-      securityToolChip('trivy', 'Trivy', toolResults?.trivy, toolChipContext),
-      { key: 'secrets', label: 'Secrets hidden', tone: 'ready' },
-      { key: 'critical', label: criticalIssues.length ? `${criticalIssues.length} critical` : 'No critical issues', tone: criticalIssues.length ? 'danger' : 'ready' },
-    ];
+  const safetyStatusPresentation = deriveSafetyStatusPresentation({
+    status: runStatus,
+    hasRun: activeProfileHasRun,
+    running: scanInProgress,
+    profile: scanProfile,
+    toolResults,
+    executionSteps,
+    criticalCount: criticalIssues.length,
+    coverageReported: coverageIsReported,
+    saved: savedSecurityDetails || savedStateOnly,
+    offline: !effectiveBackendReachable,
+  });
   const manageOverviewStats = [
     { label: 'Profile', value: activeProfileMeta.label },
     { label: 'Assessment', value: safetyScoreReported ? `${Math.round(safetyScore)} reported by Pocket Lab` : 'Not reported' },
@@ -3213,9 +3185,7 @@ export default function SecurityScreen() {
                   </div>
                 ))}
               </div>
-              <div className="lite-security-safety-center-chips">
-                {safetyCenterChips.map((chip) => <span key={chip.key} className={`lite-security-safety-chip lite-security-safety-chip-${chip.tone}`}>{chip.label}</span>)}
-              </div>
+              <SafetyStatusHierarchy presentation={safetyStatusPresentation} />
               <div className="lite-security-profile-run-cards" aria-label="Run Security scan profile">
                 {SECURITY_SCAN_PROFILES.map((profile) => (
                   <div key={profile.id} className={`lite-security-profile-run-card ${scanProfile === profile.id ? 'is-active' : ''}`.trim()}>
