@@ -441,7 +441,7 @@ async function selectSection(id, label) {
 }
 
 async function closeManage() {
-  (await firstVisible(dialog.getByRole('button', { name: 'Close Rules management' }), 'Rules Manage close')).click();
+  await (await firstVisible(dialog.getByRole('button', { name: 'Close Rules management' }), 'Rules Manage close')).click();
   await dialog.waitFor({ state: 'hidden', timeout: 20_000 });
   mark('Manage close', 'VERIFIED');
 }
@@ -665,9 +665,9 @@ async function main() {
       surface: 'Rules Manage mobile sheet snap controls',
       action: async () => {
         await manageIndex();
-        (await firstVisible(dialog.getByRole('button', { name: 'Expand', exact: true }), 'Rules sheet Expand')).click();
+        await (await firstVisible(dialog.getByRole('button', { name: 'Expand', exact: true }), 'Rules sheet Expand')).click();
         await waitForSheetSnap('expanded');
-        (await firstVisible(dialog.getByRole('button', { name: 'Compact', exact: true }), 'Rules sheet Compact')).click();
+        await (await firstVisible(dialog.getByRole('button', { name: 'Compact', exact: true }), 'Rules sheet Compact')).click();
         await waitForSheetSnap('medium');
         const grip = await firstVisible(dialog.getByRole('button', { name: /Resize sheet/i }), 'Rules sheet grip');
         await grip.focus();
@@ -690,7 +690,7 @@ async function main() {
     action: async () => {
       await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 });
       await assertRulesLoaded();
-      (await firstVisible(page.getByRole('button', { name: 'Manage Safety Rules', exact: true }), 'reopened Manage Safety Rules')).click();
+      await (await firstVisible(page.getByRole('button', { name: 'Manage Safety Rules', exact: true }), 'reopened Manage Safety Rules')).click();
       dialog = await firstVisible(page.getByRole('dialog', { name: 'Manage Safety Rules' }), 'reopened Rules Manage');
       await geometry('Rules Manage reopen', true);
     },
