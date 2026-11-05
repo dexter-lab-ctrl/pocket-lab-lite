@@ -708,7 +708,7 @@ export default function RecoveryScreen() {
             ))}
           </ul>
           <div className="lite-recovery-premium-actions">
-            <LiteButton onClick={backup} disabled={premiumHero.disabled || recoveryWriteBlocked || Boolean(busy)} haptic>{busy ? serverRecoveryLive ? 'Recovery in progress…' : 'Checking request…' : 'Back Up Now'}</LiteButton>
+            <LiteButton onClick={backup} disabled={premiumHero.disabled || recoveryWriteBlocked || Boolean(busy)}>{busy ? serverRecoveryLive ? 'Recovery in progress…' : 'Checking request…' : 'Back Up Now'}</LiteButton>
             <LiteButton tone="secondary" onClick={() => openRecoveryManage('backup')} ariaLabel="Manage Recovery">Manage Recovery</LiteButton>
           </div>
           {(recoveryWriteBlocked || premiumHero.disabled) && !busy ? (
@@ -740,6 +740,7 @@ export default function RecoveryScreen() {
         description="Create and verify backups, preview restores, and review protection history in one focused workspace."
         variant="manage"
         mobileSnap={mobileRecoverySheet && !desktopManagePanel}
+        snapHaptic
         className={`lite-recovery-manage-sheet ${desktopManagePanel ? 'is-movable' : ''}`.trim()}
         bodyClassName="lite-recovery-manage-scroll"
         surfaceRef={managePanelRef}
@@ -790,7 +791,7 @@ export default function RecoveryScreen() {
             onPreview={previewLatestRestore}
             onRestore={restoreLatestBackup}
             onDatabaseBackup={backUpDatabase}
-            onOpenDatabaseDetails={() => setDatabaseDetailsOpen(true)}
+            onOpenDatabaseDetails={() => { triggerLiteHaptic('accepted'); setDatabaseDetailsOpen(true); }}
             onBackUpApp={backUpApp}
             onOpenActionDetails={openActionPanel}
             onOpenEvidence={() => setEvidenceOpen(true)}
@@ -814,6 +815,7 @@ export default function RecoveryScreen() {
         description={activePanel?.subtitle || 'Verified backup and restore details with recorded outcomes.'}
         variant="security"
         mobileSnap={mobileRecoverySheet}
+        snapHaptic
         className="lite-recovery-action-details-sheet"
         bodyClassName="lite-recovery-action-details-scroll"
       >
@@ -847,6 +849,7 @@ export default function RecoveryScreen() {
         description="Verified backup, restore preview, safety guard, and protected diagnostics."
         variant="security"
         mobileSnap={mobileRecoverySheet}
+        snapHaptic
         className="lite-recovery-database-manage-sheet"
         bodyClassName="lite-recovery-database-manage-scroll"
       >
@@ -877,6 +880,7 @@ export default function RecoveryScreen() {
         description="Review the protected action before local state changes."
         variant="security"
         mobileSnap={mobileRecoverySheet}
+        snapHaptic
         className="lite-recovery-confirm-sheet"
         bodyClassName="lite-recovery-confirm-scroll"
       >
@@ -901,6 +905,7 @@ export default function RecoveryScreen() {
         description="Protected reference values for support and recovery review."
         variant="security"
         mobileSnap={mobileRecoverySheet}
+        snapHaptic
         className="lite-recovery-evidence-sheet"
         bodyClassName="lite-recovery-evidence-list"
       >
