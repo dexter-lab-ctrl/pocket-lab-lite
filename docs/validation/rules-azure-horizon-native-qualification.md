@@ -7,6 +7,7 @@
 - Repo: `dexter-lab-ctrl/pocket-lab-lite`.
 - Baseline `main`: `463ad47de66345955e448e47df346c9525ffd67f`.
 - Starting PR #642 / exact source candidate during this qualification: `fee04eac0ac976f64453a5c0ae9c09828b5af4b6`.
+- Source-qualified Dev-PC/mocked commit: `daaa15cb` (full SHA is recorded in the final PR provenance).
 - Feature branch: `feat/azure-horizon-rules-center-revamp`.
 - PR #641 was confirmed merged into the baseline.
 - Server Phone backend SHA: `463ad47de66345955e448e47df346c9525ffd67f`; its checkout remained clean on `main` throughout.
@@ -62,7 +63,7 @@ The existing source-backed fixture catalog and view-model tests cover healthy, d
 
 - Windows ADB resolver selected one authorized physical Android target; the serial is intentionally omitted here.
 - Repository-owned CDP bridge was cleaned and re-established through the Windows portproxy/ADB-forward path. WSL-local CDP responded on the configured bridge and identified `com.android.chrome`, Chrome `156.0.8078.79`, Protocol `1.3`.
-- Dev-PC candidate server exposed a sanitized candidate manifest for source `fee04eac0ac976f64453a5c0ae9c09828b5af4b6` on loopback port `18765`; the owned ADB reverse was established and removed after each bounded attempt.
+- Dev-PC candidate server exposed a sanitized candidate manifest for tested source `fee04eac0ac976f64453a5c0ae9c09828b5af4b6` on loopback port `18765`; the owned ADB reverse was established and removed after each bounded attempt. The later source-qualified commit is `daaa15cb`; no physical result was claimed for it because the keyguard blocked the earlier candidate before interaction.
 - Candidate response-header and page-meta SHA checks were implemented and reached before the foreground frame gate; the phone remained a consumer of the Dev-PC candidate and was never checked out to the feature branch.
 - The Rules-only qualifier is `scripts/dev/lite/qualify-ui-performance-android-rules.mjs`, with wrapper `scripts/dev/lite/run-ui-performance-android-rules.sh` and package entry `test:perf:android:rules`. It does not invoke the broad seven-screen matrix.
 - The physical interaction matrix was **not executed** because the device remained behind a secure `Bouncer`/keyguard after the permitted `wm dismiss-keyguard` request. Physical interaction count: **0**. This is **BLOCKED**, not PASS, and no Owner session was fabricated.

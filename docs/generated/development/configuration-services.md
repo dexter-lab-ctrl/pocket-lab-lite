@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: b12ff5d572221b2454322bd84eb42f435f4bd8ac1fb3340770b04867320f94ea
+source_fingerprint: 3fc4f22d43696680aaad9932b0b070cb565f16df3de7c9eb52587cbd08e9c7a7
 schema_revision: 1
 validation_status: generated
 ---
@@ -40,6 +40,8 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `LITE_ANDROID_EXPECTED_INTERACTION_REPORTS`
 - `LITE_ANDROID_GATE`
 - `LITE_ANDROID_QUALIFICATION_SCOPE`
+- `LITE_ANDROID_RULES_ANONYMOUS_READ_ONLY`
+- `LITE_ANDROID_RULES_OUTPUT_DIR`
 - `LITE_ANDROID_SAFETY_BASELINE_REPETITIONS`
 - `LITE_ANDROID_SAFETY_OUTPUT_DIR`
 - `LITE_API_DIRECT_URL`
@@ -271,8 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_LONG_GATE_REPORT_LIMIT_MB`
 - `POCKETLAB_LONG_GATE_REQUIRE_LIVE_BASELINE`
 - `POCKETLAB_LONG_GATE_RESPONSE_DELAY_MS`
-- `POCKETLAB_LONG_GATE_RUN_TIMEOUT_SECONDS`
-- `POCKETLAB_LONG_GATE_SELF_TEST_INTERRUPT_AT_STAGE`
 
 ## Process roles
 

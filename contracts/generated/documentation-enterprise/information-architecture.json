@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 521,
+  "page_count": 522,
   "page_types": [
     "overview",
     "guide",
@@ -17700,6 +17700,29 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "validation/rules-azure-horizon-native-qualification.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "rules",
+      "generated": false,
+      "id": "page:validation/rules-azure-horizon-native-qualification",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "validation/rules-azure-horizon-native-qualification.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "validation/rules-azure-horizon-native-qualification.md",
+      "title": "Azure Horizon Rules Center — P0–P7 qualification handoff",
+      "url": "/validation/rules-azure-horizon-native-qualification/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "validation/runtime-security-assurance-harness.md"
       ],
       "confidence": "source-derived",
@@ -18344,7 +18367,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "037361be1589834619c5acfa9bd9a5b9b0719017def17c631eaf1a5182ea93dd",
+  "source_fingerprint": "d7daaae0eb5f048dbc23fc895aa33243f9d754f353daddc42543a43281760881",
   "top_level": [
     "start-here",
     "use",
