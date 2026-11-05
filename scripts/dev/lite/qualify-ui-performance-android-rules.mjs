@@ -661,9 +661,9 @@ async function main() {
       surface: 'Rules Manage mobile sheet snap controls',
       action: async () => {
         await manageIndex();
-        await firstVisible(dialog.getByRole('button', { name: 'Expand', exact: true }), 'Rules sheet Expand').click();
+        (await firstVisible(dialog.getByRole('button', { name: 'Expand', exact: true }), 'Rules sheet Expand')).click();
         if (await dialog.getAttribute('data-lite-sheet-snap') !== 'expanded') fail('Rules sheet did not reach expanded.');
-        await firstVisible(dialog.getByRole('button', { name: 'Compact', exact: true }), 'Rules sheet Compact').click();
+        (await firstVisible(dialog.getByRole('button', { name: 'Compact', exact: true }), 'Rules sheet Compact')).click();
         if (await dialog.getAttribute('data-lite-sheet-snap') !== 'medium') fail('Rules sheet did not return to medium.');
         const grip = await firstVisible(dialog.getByRole('button', { name: /Resize sheet/i }), 'Rules sheet grip');
         await grip.focus();
