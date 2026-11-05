@@ -1,3 +1,4 @@
+// NOT RUN — implementation-only session; historical visual baselines require later recapture and approval.
 import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
@@ -85,6 +86,7 @@ test('Recovery protected confirmation visual — synthetic preview, no restore d
   await page.getByRole('button', { name: 'Manage Recovery' }).click();
   const panel = page.getByRole('dialog', { name: /Manage backups and recovery/i });
   await panel.getByRole('tab', { name: 'Restore' }).click();
+  await panel.getByRole('button', { name: /Step 4: Confirm and restore/ }).click();
   const button = panel.locator('.lite-recovery-manage-action-row').filter({ hasText: 'Restore selected backup' })
     .getByRole('button', { name: 'Restore', exact: true });
   await expect(button).toBeEnabled();
