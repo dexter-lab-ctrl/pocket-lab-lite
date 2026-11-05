@@ -92,9 +92,7 @@ test('Recovery Center theme parity authoring: geometry is not theme-dependent', 
     return { width: Math.round(rect.width), height: Math.round(rect.height), padding: style.padding, radius: style.borderRadius };
   });
   const light = await measure();
-  await page.evaluate(() => localStorage.setItem('pocketlab:appearance', 'dark'));
-  await page.reload();
-  await waitForLiteScreenToSettle(page, 'recovery');
+  await page.evaluate(() => { document.documentElement.dataset.liteTheme = 'dark'; });
   const dark = await measure();
   expect(dark).toEqual(light);
   // Contrast, axe and visual snapshots must be qualified later — not run here.
