@@ -773,9 +773,14 @@ html[data-lite-theme] .lite-device-relationship-node[role="button"]:focus-visibl
     border-bottom:1px solid var(--azure-border);background:var(--azure-surface);
   }
   html[data-lite-theme] .lite-device-mobile-grip {
-    display:block;width:5rem;height:.45rem;min-height:.45rem;margin:.25rem auto;
-    padding:0;border:0;border-radius:999px;touch-action:none;cursor:ns-resize;
-    background:var(--azure-strong-border);
+    position:relative;display:block;width:6rem;height:2.75rem;min-height:2.75rem;
+    margin:0 auto;padding:0;border:0;border-radius:999px;touch-action:none;
+    cursor:ns-resize;background:transparent;
+  }
+  html[data-lite-theme] .lite-device-mobile-grip::before {
+    content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:3rem;height:.36rem;background:var(--azure-strong-border);
+    border-radius:999px;pointer-events:none;
   }
   html[data-lite-theme] .lite-device-mobile-snap-actions {
     display:flex;align-items:center;justify-content:space-between;gap:.5rem;
