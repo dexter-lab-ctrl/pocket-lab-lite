@@ -19638,9 +19638,9 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 [data-lite-overlay-portal="true"] .lite-security-finding-premium-content .lite-progressive-detail-section:hover,
 .lite-security-phase3-details-shell .lite-security-details-premium-content .lite-progressive-detail-section:hover,
 .lite-security-phase3-finding-shell .lite-security-finding-premium-content .lite-progressive-detail-section:hover {
-  transform: translateY(-1px) !important;
-  border-color: var(--azure-success) !important;
-  box-shadow: var(--azure-shadow) !important;
+  transform: none !important;
+  border-color: var(--azure-border) !important;
+  box-shadow: none !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-security-details-premium-content .lite-progressive-detail-section.is-attention::before,
@@ -19656,13 +19656,8 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 [data-lite-overlay-portal="true"] .lite-security-finding-premium-content .lite-progressive-detail-section.is-saved::before,
 .lite-security-phase3-details-shell .lite-security-details-premium-content .lite-progressive-detail-section.is-saved::before,
 .lite-security-phase3-finding-shell .lite-security-finding-premium-content .lite-progressive-detail-section.is-saved::before {
-  content: "✓";
-  display: grid;
-  place-items: center;
-  color: var(--azure-success);
-  font-size: 0.78rem;
-  font-weight: 950;
-  background: var(--azure-success-subtle);
+  content: none;
+  display: none;
 }
 
 [data-lite-overlay-portal="true"] .lite-security-details-premium-content .lite-progressive-detail-section.is-next-step::before,
@@ -26187,4 +26182,22 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
   margin: 0;
   text-align: right;
   overflow-wrap: anywhere;
+}
+
+/* One shared disclosure affordance, reused by Apps, Safety and Recovery. */
+.lite-progressive-disclosure-toggle .lite-shared-disclosure-chevron {
+  flex: 0 0 auto;
+  color: var(--azure-muted);
+  transform: rotate(0deg);
+  transition: transform 140ms ease;
+}
+.lite-progressive-disclosure-toggle[aria-expanded="true"] .lite-shared-disclosure-chevron {
+  transform: rotate(180deg);
+}
+.lite-progressive-disclosure-toggle:focus-visible {
+  outline: 2px solid var(--azure-focus);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lite-progressive-disclosure-toggle .lite-shared-disclosure-chevron { transition: none; }
 }
