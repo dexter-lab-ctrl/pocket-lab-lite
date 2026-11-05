@@ -1320,11 +1320,14 @@ if (recoveryOnly) {
     const databaseDetails = await firstVisibleOrNull(recoveryManage.getByRole('button', { name: 'Protection details', exact: true }));
     if (!databaseDetails) return { status: 'NOT_EXERCISED', reason: 'database_protection_details_not_reported' };
     await databaseDetails.click();
-    const detailSheet = await firstVisibleOrNull(page.locator('[data-recovery-s8-lazy-details="true"]'));
-    if (!detailSheet) return { status: 'NOT_EXERCISED', reason: 'database_protection_details_not_opened' };
-    await page.keyboard.press('Escape');
-    await detailSheet.waitFor({ state: 'hidden', timeout: 10_000 }).catch(() => {});
-    return { status: 'COMPLETED' };
+    const detailSheet = page.locator('[data-recovery-s8-lazy-details="true"]');
+    try {
+      await detailSheet.waitFor({ state: 'visible', timeout: 10_000 });
+      return { status: 'COMPLETED' };
+    } finally {
+      await page.keyboard.press('Escape').catch(() => {});
+      await detailSheet.waitFor({ state: 'hidden', timeout: 10_000 }).catch(() => {});
+    }
   });
   await recordRecoveryInteraction('R21', 'Manage History scrolling and pagination', async () => {
     await recoveryHistoryTab.click();
@@ -1366,7 +1369,7 @@ if (recoveryOnly) {
   });
   await recordRecoveryInteraction('R27', 'Offline, stale or blocked Recovery state rendering', async () => {
     const state = page.locator(
-      '[data-testid="recovery-projection-stale"], .lite-recovery-premium-disabled-reason, .lite-recovery-manage-content [role="status"]',
+      '[data-testid="recovery-projection-stale"], .lite-recovery-premium-disabled-reason, .lite-recovery-r1-hero[data-recovery-protection-state="unknown"], .lite-recovery-manage-content [role="status"]',
     ).first();
     return await state.count() && await state.isVisible().catch(() => false)
       ? { status: 'COMPLETED' }
