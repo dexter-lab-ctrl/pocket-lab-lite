@@ -243,8 +243,10 @@ async function touch(locator, label) {
   if (!box || box.width <= 0 || box.height <= 0) fail(label + ' is not touchable.');
   const session = await page.context().newCDPSession(page);
   try {
-    await session.send('Input.dispatchTouchEvent', { type: 'touchStart', modifiers: 0, touchPoints: [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }] });
-    await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', modifiers: 0, touchPoints: [] });
+    await Promise.all([
+      session.send('Input.dispatchTouchEvent', { type: 'touchStart', modifiers: 0, touchPoints: [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }] }),
+      session.send('Input.dispatchTouchEvent', { type: 'touchEnd', modifiers: 0, touchPoints: [] }),
+    ]);
   } finally {
     await session.detach().catch(() => {});
   }
