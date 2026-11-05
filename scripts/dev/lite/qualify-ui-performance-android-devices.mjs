@@ -251,13 +251,14 @@ async function touch(locator, label) {
   try {
     const x = box.x + box.width / 2;
     const y = box.y + box.height / 2;
-    await session.send('Input.dispatchTouchEvent', {
-      type: 'touchStart', modifiers: 0, touchPoints: [{ x, y, id: 0 }],
-    });
-    await new Promise((resolveTouch) => setTimeout(resolveTouch, 50));
-    await session.send('Input.dispatchTouchEvent', {
-      type: 'touchEnd', modifiers: 0, touchPoints: [],
-    });
+    await Promise.all([
+      session.send('Input.dispatchTouchEvent', {
+        type: 'touchStart', modifiers: 0, touchPoints: [{ x, y }],
+      }),
+      session.send('Input.dispatchTouchEvent', {
+        type: 'touchEnd', modifiers: 0, touchPoints: [],
+      }),
+    ]);
   } finally {
     await session.detach().catch(() => {});
   }
@@ -334,10 +335,15 @@ async function assertNoOverflow(label) {
   return geometry;
 }
 
-async function measure({ interaction, scope, surface, action, settleMs = 450, evidenceId = null }) {
+async function measure({ interaction, scope, surface, action, settleMs = 450, evidenceId = null, restartSamplerAfterAction = false }) {
   if (!LITE_PERFORMANCE_INTERACTIONS.includes(interaction)) fail('Unknown Devices interaction id: ' + interaction);
-  await page.evaluate((name) => window.__POCKETLAB_ANDROID_DEVICES_SAMPLER__?.start(name), 'android-cdp:devices:' + interaction + ':' + scope);
+  const samplerName = 'android-cdp:devices:' + interaction + ':' + scope;
+  await page.evaluate((name) => window.__POCKETLAB_ANDROID_DEVICES_SAMPLER__?.start(name), samplerName);
   await action();
+  if (restartSamplerAfterAction) {
+    await page.evaluate(samplerBootstrap);
+    await page.evaluate((name) => window.__POCKETLAB_ANDROID_DEVICES_SAMPLER__?.start(name), samplerName);
+  }
   if (settleMs > 0) await page.waitForTimeout(settleMs);
   const deadline = Date.now() + MAX_MINIMUM_FRAME_EXTENSION_MS;
   while (Date.now() < deadline) {
@@ -411,6 +417,7 @@ async function capture(name, target = page) {
   const path = resolve(outputDir, 'android-devices-' + sanitizeLitePerformanceName(name) + '.png');
   const masks = [
     target.locator('.lite-device-library-name h3'),
+    target.locator('.lite-device-details-panel-head h3'),
     target.locator('.lite-device-relationship-node span'),
     target.locator('.lite-remote-access-facts'),
   ];
@@ -422,7 +429,8 @@ async function openManage() {
   const manage = await firstVisibleOrNull(page.locator('.lite-device-card-peer .lite-device-library-manage'))
     || await firstVisible(page.locator('.lite-device-library-manage'), 'Devices Manage action');
   await touch(manage, 'Devices Manage action');
-  const dialog = await firstVisible(page.getByRole('dialog', { name: /Manage / }), 'Devices Manage dialog');
+  const dialog = page.getByRole('dialog', { name: /Manage / }).first();
+  await dialog.waitFor({ state: 'visible', timeout: 20_000 });
   await dialog.locator('.lite-device-details-panel').waitFor({ state: 'visible', timeout: 20_000 }).catch(() => {});
   return { dialog, manage };
 }
@@ -531,7 +539,10 @@ async function main() {
   if (!contexts.length) fail('Android Chrome did not expose a browser context over CDP.');
   context = contexts[0];
   if (browserBridge) await context.setExtraHTTPHeaders({ 'X-Pocket-Lab-Qualification-Bridge': browserBridge });
-  page = await context.newPage();
+  const candidateOrigin = base.origin;
+  const existingCandidatePages = context.pages().filter((candidatePage) => candidatePage.url().startsWith(candidateOrigin));
+  page = existingCandidatePages[existingCandidatePages.length - 1] || await context.newPage();
+  const candidatePages = [...new Set([...existingCandidatePages, page])];
   page.on('requestfailed', (request) => {
     if (!request.url().includes('/api/lite/')) return;
     try {
@@ -545,22 +556,29 @@ async function main() {
     }
   });
 
-  await activate(page);
-  await proveCandidate();
+  let foregroundReady = false;
+  const foregroundCandidates = [page, ...candidatePages.filter((candidatePage) => candidatePage !== page)];
+  for (const candidatePage of foregroundCandidates) {
+    page = candidatePage;
+    await activate(page);
+    await proveCandidate();
+    foregroundReady = await receivesAnimationFrames(page);
+    for (let attempt = 0; !foregroundReady && attempt < 2; attempt += 1) {
+      await activate(page);
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
+      await requireScreenWakeLock();
+      await activate(page);
+      foregroundReady = await receivesAnimationFrames(page);
+    }
+    if (foregroundReady) break;
+  }
+  if (!foregroundReady) fail('Android Devices candidate did not deliver foreground animation frames.');
+  await Promise.all(candidatePages.filter((candidatePage) => candidatePage !== page).map((candidatePage) => candidatePage.close().catch(() => {})));
   await page.addInitScript(samplerBootstrap);
   await page.addInitScript(hapticProbeBootstrap);
   await page.evaluate(samplerBootstrap);
   await page.evaluate(hapticProbeBootstrap);
   await requireScreenWakeLock();
-  const candidatePages = context.pages().filter((candidatePage) => candidatePage !== page && candidatePage.url().startsWith(base.origin));
-  let foregroundReady = await receivesAnimationFrames(page);
-  for (let attempt = 0; !foregroundReady && attempt < 2; attempt += 1) {
-    await activate(page);
-    await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => {});
-    foregroundReady = await receivesAnimationFrames(page);
-  }
-  if (!foregroundReady) fail('Android Devices candidate did not deliver foreground animation frames.');
-  await Promise.all(candidatePages.map((candidatePage) => candidatePage.close().catch(() => {})));
 
   await waitForDevices();
   await assertNoOverflow('Devices initial render');
@@ -574,6 +592,7 @@ async function main() {
       await waitForDevices();
     },
     settleMs: 620,
+    restartSamplerAfterAction: true,
   });
   await measure({
     interaction: 'screen-steady',

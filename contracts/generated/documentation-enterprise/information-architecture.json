@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 522,
+  "page_count": 523,
   "page_types": [
     "overview",
     "guide",
@@ -4959,6 +4959,29 @@
       "source_or_generator": "development/lite-azure-horizon-design-system.md",
       "title": "Azure Horizon — Lite appearance and premium Home",
       "url": "/development/lite-azure-horizon-design-system/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-devices-native-workspace.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "devices",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-devices-native-workspace",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-devices-native-workspace.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-devices-native-workspace.md",
+      "title": "Azure Horizon Devices Experience Revamp — Implementation and Qualification Handoff",
+      "url": "/development/lite-azure-horizon-devices-native-workspace/"
     },
     {
       "additional_audiences": [],
@@ -18367,7 +18390,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "d7daaae0eb5f048dbc23fc895aa33243f9d754f353daddc42543a43281760881",
+  "source_fingerprint": "3dc9503fc6506f179037bdf9735bc3cce962cb430103e93c57f7722a574b711c",
   "top_level": [
     "start-here",
     "use",

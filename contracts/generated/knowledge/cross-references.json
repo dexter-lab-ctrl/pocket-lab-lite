@@ -16897,6 +16897,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-devices-native-workspace-qualification.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-home-command-visual.spec.ts": [
         {
           "source": "reason:disabled",
@@ -32409,6 +32415,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-devices-native-workspace-qualification.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-home-command-visual.spec.ts",
           "type": "verified_by"
         },
@@ -36689,6 +36699,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "524d32c62fdb11ffabd0805911482354e320e48e3eedd923c887fe1c7a292522"
+    "source_fingerprint": "b1bdb959220d799a5b39488a4690a6568ae33e4eee0cd6df00a6c473cae3d705"
   }
 }

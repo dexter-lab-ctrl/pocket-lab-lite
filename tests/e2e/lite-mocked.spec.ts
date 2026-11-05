@@ -631,16 +631,18 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       await page.goto('/?screen=devices');
       const devices = await waitForLiveDevices(page);
       await expect(devices).toBeVisible();
-      await expect(devices).toContainText(/Remote access\s*(Ready|not ready)/i);
       await expect(devices).toContainText('Devices');
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 
+      const topology = devices.locator('.lite-devices-topology-workspace');
+      await topology.locator('summary').click();
+      await expect(topology.locator('.lite-device-relationship-map')).toBeVisible();
+      await expect(topology.locator('.lite-remote-access-panel')).toContainText(/Remote access( not ready)?|Ready/i);
+
       const serverCard = devices.locator('.lite-device-card-server');
-      await expect(serverCard).toContainText('Server host');
-      await expect(serverCard).toContainText('Protected host for this self-hosted workspace');
+      await expect(serverCard).toContainText('Protected server host');
       await expect(serverCard.getByRole('button', { name: /remove|review/i })).toHaveCount(0);
-      await expect(serverCard.locator('.lite-device-protected-host')).toContainText(/Pocket Lab Server.*Protected/i);
-      await expect(serverCard.locator('.lite-device-flow-track')).toHaveCount(0);
+      await expect(serverCard.getByRole('img', { name: 'Protected server host' })).toBeVisible();
 
       const addDisclosure = devices.locator('.lite-devices-add-disclosure');
       await addDisclosure.locator('summary').click();
@@ -675,26 +677,20 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     const serverCard = devices.locator('.lite-device-card-server');
 
     await expect(healthyCard.locator('[data-connection-state="connected"]')).toBeVisible();
-    await expect(healthyCard.locator('.lite-device-flow-server')).toContainText('Server');
-    await expect(healthyCard.locator('.lite-device-flow-device')).toContainText('Test-Phone-4');
-    await expect(healthyCard.locator('.lite-device-card-disclosure')).not.toHaveAttribute('open', '');
-    await expect(healthyCard.locator('.lite-device-trust-strip')).toBeHidden();
+    await expect(healthyCard.locator('.lite-device-library-status')).toContainText('Connected');
+    await expect(healthyCard.locator('.lite-device-library-name p')).toContainText('Compute + Storage');
+    await expect(healthyCard.locator('.lite-device-card-disclosure')).toHaveCount(0);
     await expect(
       healthyCard.getByRole('button', { name: 'Manage Test-Phone-4' }),
     ).toBeVisible();
     await expect(healthyCard.getByRole('button', { name: /restart agent|review removal|remove device/i })).toHaveCount(0);
 
-    const more = healthyCard.locator('.lite-device-card-disclosure > summary');
-    await more.press('Enter');
-    await expect(healthyCard.locator('.lite-device-card-disclosure')).toHaveAttribute('open', '');
-    await expect(healthyCard.locator('.lite-device-trust-strip')).toContainText(/identity|capabilities/i);
-
     await expect(serverCard.locator('[data-connection-state="server"]')).toBeVisible();
-    await expect(serverCard.locator('.lite-device-protected-host')).toBeVisible();
-    await expect(serverCard.locator('.lite-device-flow-track')).toHaveCount(0);
-    await expect(serverCard).toContainText('Protected host for this self-hosted workspace');
+    await expect(serverCard.getByRole('img', { name: 'Protected server host' })).toBeVisible();
+    await expect(serverCard).toContainText('Protected server host');
     await expect(serverCard.getByRole('button', { name: /remove|review removal/i })).toHaveCount(0);
 
+    await devices.locator('.lite-devices-topology-workspace > summary').click();
     const remote = devices.locator('.lite-remote-access-not-ready');
     await expect(remote).toContainText('Remote access not ready');
   });
@@ -704,53 +700,38 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/?screen=devices');
     const devices = await waitForLiveDevices(page);
+    await devices.locator('.lite-devices-topology-workspace > summary').click();
     await expect(devices.locator('.lite-remote-access-not-ready')).toContainText('Remote access not ready');
 
-    const connectedSignal = devices.locator('[data-connection-state="connected"] .lite-device-flow-signal').first();
-    await expect(connectedSignal).toHaveCSS('animation-name', 'none');
-    const disconnected = devices.locator('[data-connection-state="disconnected"]').first();
-    await expect(disconnected).toBeVisible();
-    await expect(disconnected).toHaveAttribute('aria-label', /joining/i);
-    expect(await disconnected.locator('.lite-device-flow-break').evaluate((element) => {
-      const marker = element.getBoundingClientRect();
-      const surface = element.closest('.lite-device-connection-flow')?.getBoundingClientRect();
-      return Boolean(surface && marker.left >= surface.left && marker.right <= surface.right && marker.top >= surface.top && marker.bottom <= surface.bottom);
-    })).toBe(true);
+    const connectedLink = devices.locator('.lite-device-relationship-peer.is-joined .lite-device-relationship-link').first();
+    await expect(connectedLink).toBeVisible();
+    await expect(connectedLink.locator('i')).toHaveCSS('animation-name', 'none');
+    const waiting = devices.locator('.lite-device-relationship-node.is-waiting').first();
+    await expect(waiting).toBeVisible();
+    await expect(waiting).toHaveAttribute('aria-label', /joining|waiting/i);
   });
 
-  test('Devices moves connection packets across their desktop and mobile tracks while keeping static states still', async ({ page }, testInfo) => {
+  test('Devices keeps topology rails responsive and state-labelled across desktop and mobile', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mocked-desktop', 'The deterministic connection geometry contract is covered once in Chromium.');
-
-    const freezePacketAt = async (signal: ReturnType<typeof page.locator>, animationName: string, elapsedSeconds: number) => {
-      return signal.evaluate((element, { name, elapsed }) => {
-        const signal = element as HTMLElement;
-        signal.style.animation = `${name} 2.5s linear ${-elapsed}s paused both`;
-        const track = signal.parentElement?.getBoundingClientRect();
-        const packet = signal.getBoundingClientRect();
-        if (!track) throw new Error('Connection packet has no track.');
-        return { track: { x: track.x, y: track.y, width: track.width, height: track.height }, packet: { x: packet.x, y: packet.y, width: packet.width, height: packet.height } };
-      }, { name: animationName, elapsed: elapsedSeconds });
-    };
 
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto('/?screen=devices');
     const devices = await waitForLiveDevices(page);
-    const connectedSignal = devices.locator('[data-connection-state="connected"] .lite-device-flow-signal').first();
-    await expect(connectedSignal).toHaveCSS('animation-name', 'lite-device-flow-packet-horizontal');
-    const desktopStart = await freezePacketAt(connectedSignal, 'lite-device-flow-packet-horizontal', .6);
-    const desktopEnd = await freezePacketAt(connectedSignal, 'lite-device-flow-packet-horizontal', 1.8);
-    expect(desktopEnd.packet.x - desktopStart.packet.x).toBeGreaterThan(desktopStart.track.width * .4);
-    await connectedSignal.evaluate((element) => { (element as HTMLElement).style.animation = ''; });
+    await devices.locator('.lite-devices-topology-workspace > summary').click();
+    const connectedLink = devices.locator('.lite-device-relationship-peer.is-joined .lite-device-relationship-link').first();
+    await expect(connectedLink).toBeVisible();
+    const desktopBox = await connectedLink.boundingBox();
+    expect(desktopBox).not.toBeNull();
+    expect(desktopBox!.width).toBeGreaterThan(desktopBox!.height);
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await expect(connectedSignal).toHaveCSS('animation-name', 'lite-device-flow-packet-vertical');
-    const mobileStart = await freezePacketAt(connectedSignal, 'lite-device-flow-packet-vertical', .6);
-    const mobileEnd = await freezePacketAt(connectedSignal, 'lite-device-flow-packet-vertical', 1.8);
-    expect(mobileEnd.packet.y - mobileStart.packet.y).toBeGreaterThan(mobileStart.track.height * .4);
+    const mobileBox = await connectedLink.boundingBox();
+    expect(mobileBox).not.toBeNull();
+    expect(mobileBox!.height).toBeGreaterThan(mobileBox!.width);
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await expect(connectedSignal).toHaveCSS('animation-name', 'none');
+    await expect(connectedLink.locator('i')).toHaveCSS('animation-name', 'none');
 
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     const fleetPayload = await page.evaluate(async () => {
@@ -784,16 +765,11 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
       };
     }, repairingFleetPayload);
     await page.goto('/?screen=devices');
-    const repairingSignal = page.locator('[data-connection-state="repairing"] .lite-device-flow-signal').first();
-    await expect(repairingSignal).toHaveCSS('animation-name', 'lite-device-flow-packet-vertical');
-    await expect(repairingSignal).toHaveCSS('background-color', 'rgb(217, 119, 6)');
-    await expect(page.locator('[data-connection-state="repairing"] .lite-device-connection-copy')).toContainText('Repairing connection');
-    const repairingStart = await freezePacketAt(repairingSignal, 'lite-device-flow-packet-vertical', .6);
-    const repairingEnd = await freezePacketAt(repairingSignal, 'lite-device-flow-packet-vertical', 1.8);
-    expect(repairingEnd.packet.y - repairingStart.packet.y).toBeGreaterThan(repairingStart.track.height * .4);
-    await expect(page.locator('[data-connection-state="disconnected"] .lite-device-flow-signal')).toHaveCSS('animation-name', 'none');
-    await expect(page.locator('[data-connection-state="server"] .lite-device-protected-host')).toBeVisible();
-    await expect(page.locator('[data-connection-state="server"] .lite-device-flow-signal')).toHaveCount(0);
+    await page.getByText('Connections & Topology').click();
+    const repairingNode = page.locator('.lite-device-relationship-node.is-repairing').first();
+    await expect(repairingNode).toBeVisible();
+    await expect(repairingNode).toHaveAttribute('aria-label', /repairing/i);
+    await expect(page.locator('.lite-device-relationship-node.is-server')).toBeVisible();
   });
 
   test('Devices retains the backend-owned Add Device invite flow', async ({ page }, testInfo) => {
@@ -808,6 +784,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await installScenario(page, 'devices-add-ready');
     await page.goto('/?screen=devices');
     const devices = page.locator('[data-lite-screen-id="devices"]');
+    await devices.locator('.lite-devices-topology-workspace > summary').click();
     await expect(devices.locator('.lite-remote-access-ready')).toContainText('Ready');
     await expect(devices.locator('.lite-remote-access-details')).not.toHaveAttribute('open', '');
     await devices.locator('.lite-remote-access-details > summary').click();

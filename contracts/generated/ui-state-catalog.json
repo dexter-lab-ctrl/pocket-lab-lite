@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "2069ba6bc741d6be7c6f2403df365d6607fe18adc772c88d6f27fae759903682",
+    "aggregate_fingerprint": "ab108815e4c419dd8440936566ae55d50aae8f13cadd9dc80dc89c9bcf7ac660",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -14,7 +14,7 @@
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a",
       "src/lite/LiteAzureHorizon.stories.jsx": "a2ee55a0c896d4e6047164e8d08979241fe08c2a382992c87247cfd823811bf4",
       "src/lite/LiteCatalog.stories.jsx": "8e0f8e0a2a4964187ec27a466152bf74b39d2e36184c31801dfc418793e492c8",
-      "src/lite/LiteDevices.stories.jsx": "a7a5332db1f1b64a1da6beedbd30891ac3ad83c123dadb749ee909e8d5236d33",
+      "src/lite/LiteDevices.stories.jsx": "1c65d09941343fb754748f57fcb9fb5200037f22f60741727f39d7a9a3d8bcab",
       "src/lite/LiteHome.stories.jsx": "916195b76f04efa10012627c17786d1b09d916c6581916c4bc6fd4bc95b859ae",
       "src/lite/LiteIdentity.stories.jsx": "dad0885ea10bbc9a7e1dc6fae3da3c310e668dcbea3349b1959d05761455d31a",
       "src/lite/LiteP2.stories.jsx": "f66e0f95c35fb98e41958542676821d9dfd89331e5ebfc3ba7de6a575ea47577",

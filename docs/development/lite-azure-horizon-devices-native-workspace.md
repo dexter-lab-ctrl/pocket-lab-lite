@@ -1,8 +1,8 @@
 # Azure Horizon Devices Experience Revamp — Implementation and Qualification Handoff
 
-> **SOURCE AUTHORED · NOT EXECUTED · UNVALIDATED**
+> **QUALIFIED WITH DOCUMENTED RESIDUALS · DEV-PC AND ANDROID EVIDENCE RECORDED**
 >
-> This is a source implementation and qualification handoff, not a passing test report or production approval. The implementation-only brief explicitly prohibited unit tests, builds, Storybook, Playwright, accessibility scanners, CI remediation, browser inspection, physical-device qualification and runtime diagnostics. None of those were run in this session.
+> This handoff now records the executed qualification for PR #643. Dev-PC build, unit, mocked browser, Storybook, accessibility, visual, documentation and repository gates passed. Physical Android Devices functional/CDP qualification passed for the available read-only surfaces, while the 60 FPS target and hard-gate results remain misses with baseline-normalized `MIXED` / `PLATFORM_DOMINATED` attribution. This is not a production approval; the PR remains Draft.
 
 ## 1. Executive summary
 
@@ -18,8 +18,10 @@ The project remains an edge-first React/Vite PWA backed by Caddy, FastAPI `/api/
 | Authoritative base | `main` at `cfe34e6a5d36b7503469f3e79a08c1a90eb49d46` |
 | Implementation branch | `feat/azure-horizon-devices-experience-revamp` |
 | First implementation commit | `e672c0046e4b425a194f439c3bb9d9d6939ee899` |
-| Final branch head | Resolve from GitHub after final documentation commit; this document intentionally does not predict a future SHA |
-| PR | Draft PR to be opened against `main`; no merge, release, deployment or CI remediation |
+| Final branch head | Verify from GitHub after the final documentation commit; this handoff is regenerated from the stabilized branch |
+| PR | [#643](https://github.com/dexter-lab-ctrl/pocket-lab-lite/pull/643), open Draft against `main`; no merge, release or deployment |
+| Server Phone runtime | `main` at `cfe34e6a5d36b7503469f3e79a08c1a90eb49d46`, read-only verified |
+| Physical candidate checkpoint | `fe201f5183b17fc7c9bf833b54148745e8403a65` before documentation/test-only changes |
 
 The uploaded project handovers explain history; current GitHub source was inspected as the authority before edits. Prior Azure Horizon PRs #606, #622–#623, #629, #634–#642 and #588 were checked for merge status and relevant source entry points.
 
@@ -114,7 +116,7 @@ The Daylight/Dark/System theme runtime and shared token values were not modified
 
 ## 14. Light/Dark/System parity contract
 
-**Authored, not validated:** the new Playwright test compares padding, margins, gaps, typography, border width, min-height and bounding geometry for corresponding Devices nodes across Light, Dark and System at **320 / 360 / 375 / 390 / 430 / 768 / 1024 / 1280 / 1440** pixel widths. Overflow and Axe critical/serious WCAG checks are also authored. Actual parity, contrast and 200% font scaling require independent qualification; a stylesheet using tokens alone is not proof of parity.
+The Playwright Devices suite compares padding, margins, gaps, typography, border width, min-height and bounding geometry for corresponding Devices nodes across Light, Dark and System at **320 / 360 / 375 / 390 / 430 / 768 / 1024 / 1280 / 1440** pixel widths. Mocked desktop/mobile geometry, overflow, reduced-motion and Axe checks passed. The physical phone rendered Light/Dark/System candidate states and the available touch geometry successfully; 200% text scaling and health-timeline data were unavailable in the selected runtime and remain residuals.
 
 ## 15. Haptic feedback integration
 
@@ -136,18 +138,18 @@ Nested photo-backup and individual role-manager actions already use existing sha
 
 Visible textual connection states supplement decorative colors; Manage/nav/snap controls are actual buttons with labels; the topology node has a keyboard activation path. Existing body portal is dialog-labelled and traps Tab focus; Escape and button close return focus to opener. Responsive layouts use small-screen wrapping and restrained CSS transitions; reduced motion disables newly added motion. No color-only truth indicators were introduced.
 
-These are *implementation intentions observed in source*, not an accessibility certification. The authored automated Axe checks and real keyboard/VoiceOver/TalkBack qualification must be run later.
+Automated Axe checks passed for mocked desktop and mobile. Keyboard, focus return, desktop move/resize/reset, mobile sheet controls and topology activation passed in the mocked qualification. This is not a VoiceOver/TalkBack certification; platform assistive-technology review remains outside the captured evidence.
 
 ## 18. Responsive and overflow hardening
 
-The Devices CSS uses bounded grid columns, `min-width:0`, flexible labels and semantic status text. Normal device names wrap at words; numeric/technical values may break as needed. Bottom-sheet grip touch area is at least 44px tall; metric and Manage controls are similarly finger-friendly. Modal safe-area padding and layout containment reuse existing shared foundations. Actual mobile landscape, 200%-text and visual-overflow results are **unvalidated**.
+The Devices CSS uses bounded grid columns, `min-width:0`, flexible labels and semantic status text. Normal device names wrap at words; numeric/technical values may break as needed. Bottom-sheet grip touch area is at least 44px tall; metric and Manage controls are similarly finger-friendly. Mocked required widths and physical Android touch/overflow inspection passed. Mobile landscape and 200%-text results remain **UNVALIDATED**.
 
 ## 19. Source files affected
 
 **New**
 - `src/lite/devices/deviceLibraryPresentation.js` — display-only inventory selectors.
 - `src/lite/devices/deviceLibraryPresentation.test.js` — source tests.
-- `tests/e2e/lite-devices-native-workspace-qualification.spec.ts` — deferred Playwright qualification.
+- `tests/e2e/lite-devices-native-workspace-qualification.spec.ts` — executed mocked Devices qualification.
 - `docs/development/lite-azure-horizon-devices-native-workspace.md` — this handoff.
 
 **Modified**
@@ -161,7 +163,7 @@ The Devices CSS uses bounded grid columns, `min-width:0`, flexible labels and se
 - `src/lite/devices/AzureDevices.stories.jsx` — new native library states.
 - `tests/e2e/lite-azure-horizon-devices.spec.ts` — existing topology checks adapted for disclosure.
 
-All paths above refer to authored source; no code-quality task ran.
+All paths above refer to authored source. The targeted and repository-wide validation results are recorded below; generated contracts and documentation were regenerated after stabilization.
 
 ## 20. Reuse traceability matrix (source-backed)
 
@@ -184,21 +186,45 @@ All paths above refer to authored source; no code-quality task ran.
 
 The exact PR/file association was informed by merged PR metadata and the inspected current source; individual historical changes within each PR were not re-proven line by line. This is a source reuse inventory, **not a validated performance claim**.
 
-## 21. Qualification source authored (not executed)
+## 21. Qualification results (executed)
 
 - `src/lite/devices/deviceLibraryPresentation.test.js`: connected, blocked, stale, saved, attention, query/filter and empty states.
 - `src/lite/devices/DeviceCardScreen.test.jsx`: concise card, protected server, saved status, Manage affordance and long names.
 - Existing `src/lite/devices/DeviceCard.test.jsx` preserved for connection helpers.
 - `src/lite/LiteDevices.stories.jsx` existing role/backup/health stories retargeted to focused Manage sections.
 - `src/lite/devices/AzureDevices.stories.jsx`: light/dark/system and scenario-based native stories.
-- `tests/e2e/lite-azure-horizon-devices.spec.ts` adjusted to open topology before legacy assertions.
-- `tests/e2e/lite-devices-native-workspace-qualification.spec.ts`: mocks, states, search, navigation, mobile snaps, desktop panel, accessibility, dark/light/system geometry, haptic and screenshot **candidate**. Snapshot approval/reference generation has not occurred.
+- `tests/e2e/lite-azure-horizon-devices.spec.ts` adjusted to open topology before legacy assertions; the Devices matrix passed.
+- `tests/e2e/lite-devices-native-workspace-qualification.spec.ts`: mocked states, search, navigation, mobile snaps, desktop panel, accessibility, dark/light/system geometry, haptics and screenshot assertions passed.
+
+Executed evidence:
+
+- `npm run build`: **PASS**.
+- Focused Devices Vitest: **13 tests passed**; full `npm run test:unit`: **91 files / 560 tests passed**.
+- Devices mocked qualification and related operations/performance sources: **86 passed** across mocked desktop/mobile.
+- Storybook: **581 canonical stories documented**, build passed and **17 representative renders passed**.
+- Accessibility: Devices Axe suite **36 passed**; repository Axe gate **2 passed** for mocked desktop/mobile.
+- Visual snapshots: initial comparisons were inspected, intended differences were approved, then the canonical Devices visual suite passed **192/192** without the update flag. The 189 changed PNG references are intentional PR #643 canonical baselines.
+- Geometry/theme: **8 passed** targeted geometry checks; required mocked viewport matrix and Light/Dark/System coverage passed.
+- Backend/contract regression: focused device backend tests **38 passed**; repository backend gate **416 passed** with one existing deprecation warning.
+- `task lite:docs:generate`: **PASS**; `task lite:docs:check`: **PASS**; `task lite:check`: **PASS**.
+
+Physical Android CDP evidence:
+
+- The repository-owned Windows ADB → WSL bridge was cleaned and freshly established; Chrome package was verified as `com.android.chrome`, CDP attach succeeded, and the exact candidate manifest/header/document/meta SHA boundaries agreed at the physical candidate checkpoint.
+- Devices-only CDP qualification ran **13 planned interaction samples**: navigation, inventory render/scroll, search/filter, Manage open, all eight Manage sections, Manage scroll, mobile sheet states, topology expansion/selection, theme states and close/focus return.
+- The selected runtime exposed all eight Manage areas. Health timeline data was not projected by the selected runtime and is recorded as unavailable, not invented.
+- The candidate was read-only; no destructive action, Server Phone source change, deployment or synthetic Owner credential was required. The only observed request failure was an aborted polling GET for `/api/lite/events` during navigation.
+- Physical screenshots are sanitized locally under `.pocketlab-dev/performance/android-devices-fe201f5183b17fc7c9bf833b54148745e8403a65/` and are not treated as canonical Playwright baselines.
+
+Pink screenshot finding:
+
+- Bright pink blocks in physical evidence are deterministic Playwright mask overlays. The Devices-only sanitizer masks dynamic names/facts without specifying a custom mask color, so Playwright renders its default `#FF00FF`. The blocks align exactly with the masked Manage heading, topology name and remote-access fact regions; the underlying UI is normal. This is **not transient rendering** and **not an application visual defect**. Canonical visual snapshots contain no such mask overlay and passed.
 
 Existing CI workflows and performance thresholds were not changed.
 
-## 22. Deferred qualification commands — DO NOT RUN during implementation-only session
+## 22. Qualification commands and boundaries
 
-Run only in a separately authorized qualification session, on a dedicated environment:
+The following commands were run on the feature branch after inspection of the actual repository scripts:
 
 ```bash
 cd ~/pocket-lab-lite
@@ -207,42 +233,42 @@ git switch feat/azure-horizon-devices-experience-revamp
 
 npm run build
 npx vitest run src/lite/devices/deviceLibraryPresentation.test.js src/lite/devices/DeviceCard.test.jsx src/lite/devices/DeviceCardScreen.test.jsx
-npx playwright test tests/e2e/lite-azure-horizon-devices.spec.ts tests/e2e/lite-devices-native-workspace-qualification.spec.ts --project=mocked-desktop --project=mocked-mobile
-npm run test:a11y:states
+npm run test:devices:azure:qualification
+task lite:docs:generate
+task lite:docs:check
+task lite:check
 ```
 
-Check the actual `package.json` / project names before executing; listed commands are an intended qualification checklist, not verified scripts for this branch. Storybook interactions, screenshot candidate review and baseline approval should be performed independently. Preserve existing 60 FPS performance thresholds; do not blindly generate/approve screenshots.
+The physical run used only `npm run test:perf:android:devices` and its bounded baseline variant. The generic seven-screen Android matrix (`test:perf:android-cdp` / `test:perf:android-baseline`) was not run. Existing 60 FPS thresholds were preserved; no threshold or analyzer weakening was introduced.
 
 ## 23. Known risks and incomplete requirements
 
-1. **No validation**: syntax/build, unit behavior, CI status, type safety, accessibility and browser layout remain unconfirmed.
-2. **P5 onboarding design gap**: Add Device remains an existing inline progressive disclosure rather than a new native sheet, intentionally retaining sensitive invite/identity logic. The user-facing stages and backend guards remain; parity with a three-snap Add Device overlay is incomplete.
-3. **Nested action surfaces**: restart progress and destructive confirmation retain their original presentation; their mobile density and touch flows need device-level qualification.
-4. **CSS cascade**: legacy styles may still override some new selectors, requiring browser computed-style review after authorization.
-5. **Existing tests/stories**: other historical tests may expect inline topology or former card controls. They were not executed or globally rewritten; those assumptions must be reconciled in qualification without weakening tests.
-6. **Screenreader/keyboard**: semantic intent exists, but long overlays, focus loop, topology keyboard behavior and 200% text need human testing.
-7. **Time/power**: rendering improvements were designed for low-power ARM64; no CPU/FPS/battery measurements were taken.
-8. **Preview baselines**: a screenshot candidate assertion was authored without creating or approving any baseline.
-9. **Haptics**: full nested backup/action haptic coverage is not certified; all existing platform restrictions remain.
+1. **Physical performance residual**: the final three-run Devices baseline-normalized report had `0/13` absolute target passes and `2/13` absolute hard-gate passes. Classifications were `1 PLATFORM_DOMINATED`, `12 MIXED`, `0 APP_INCREMENTAL_COST`; no reproducible Devices-only regression was isolated, so no speculative optimization or threshold weakening was applied.
+2. **P5 onboarding design residual**: Add Device remains the existing protected inline progressive disclosure rather than a new native three-snap overlay, preserving invite and identity safeguards.
+3. **Health timeline unavailable**: the selected Server Phone projection did not expose this read surface; it is recorded as unavailable rather than synthesized.
+4. **Assistive technology / text scaling**: mocked Axe and keyboard checks passed, but TalkBack/VoiceOver and 200% text scaling were not directly validated.
+5. **CI**: GitHub CI status must be read from the final pushed PR head; it is not claimed as PASS by local execution.
+6. **Pink masks**: physical evidence contains intentional magenta sanitizer masks; this is a capture annotation, not a product defect.
 
 ## 24. Follow-up qualification checklist
 
-- [ ] Resolve exact current branch SHA and ensure the PR diff is reviewable.
-- [ ] Run targeted Vitest, existing Devices suite, TypeScript/build checks and no-change backend API regression.
-- [ ] Run E2E across 320/360/375/390/430/768/1024/1280/1440 and 200% text.
-- [ ] Check actual Dark/Daylight/System computed geometry, contrast, focus and nested panel backgrounds.
-- [ ] Inspect card/role/state truth with simulated online, joining, waiting, repairing, offline, blocked, agent stopped, saved and partial health.
-- [ ] Check connection diagram desktop horizontal/mobile vertical and keyboard target selection.
-- [ ] Confirm all eight Manage tabs show real information and guarded operations; unavailable areas do not imply authorization.
-- [ ] Review invite duplicate/identity mismatch and protected host removal safeguards.
-- [ ] Confirm non-draggable destructive dialogs, remote access readiness truth and Tailnet IP suppression.
-- [ ] Exercise Android/Termux installed PWA on physical phone, including rotation, safe areas, snap gesture and return focus.
-- [ ] Check no secrets are retained by frontend storage and no browser direct NATS/shell access.
-- [ ] Review existing Storybook stories and approve reference screenshots only in a qualification session.
-- [ ] Record passing/failing evidence and remediate under a *separately authorized* task before promoting the PR from draft.
+- [x] Resolve exact current branch SHA and ensure the PR diff is reviewable.
+- [x] Run targeted Vitest, existing Devices suites, build checks and backend API regression.
+- [x] Run mocked E2E across 320/360/375/390/430/768/1024/1280/1440; 200% text remains UNVALIDATED.
+- [x] Check Light/Dark/System computed geometry, contrast, focus and nested panel backgrounds in mocked qualification.
+- [x] Inspect projected online, joining, waiting, repairing, offline/saved, blocked, agent-stopped and protected-server states using deterministic fixtures.
+- [x] Check desktop horizontal/mobile vertical topology and keyboard target selection.
+- [x] Confirm all eight Manage sections expose real information and preserve guarded operations.
+- [x] Review invite duplicate/identity mismatch and protected-host removal safeguards through mocked fixtures.
+- [x] Confirm non-draggable destructive dialogs, remote-access readiness truth and Tailnet IP suppression.
+- [x] Exercise the exact Dev-PC candidate on the physical Android browser through bounded CDP; no feature branch was installed on the phone.
+- [x] Check no secrets are retained by frontend storage and no browser direct NATS/shell access.
+- [x] Review Storybook stories and inspect/approve canonical visual references.
+- [x] Record performance misses and baseline attribution without weakening thresholds.
+- [ ] Promote the PR from Draft: intentionally not done while the performance residual and other documented limits remain.
 
 ## 25. Rollback
 
 Do not change `main` during this implementation. If qualification identifies regressions, keep the PR draft and revert scoped commits **on the feature branch** using reviewed Git history, or close the unmerged draft PR. Because no backend migrations/contracts or runtime deployment occurred, rollback is a frontend-source and test/documentation operation, not a database, NATS, device-agent or bootstrap rollback. Keep local WSL/Termux worktrees clean and never force push `main`.
 
-**Final declared state:** implementation source and qualification coverage were authored and committed. The task's no-validation restriction was followed. UI operation and production readiness remain **UNVALIDATED** until independent qualification.
+**Final declared state:** the implementation, qualification coverage and generated documentation are committed on the feature branch. Dev-PC and functional Android evidence are **VERIFIED**; physical performance is **VALIDATED WITH RESIDUALS** and not a target PASS. The PR remains **DRAFT / DO NOT MERGE**. No merge, release, deployment, Server Phone mutation or main-branch change was performed.

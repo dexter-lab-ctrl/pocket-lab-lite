@@ -5531,7 +5531,8 @@ def test_lite_devices_tab_uses_lazy_progressive_details_foundation():
     assert "if (!activeDetailsDevice) return null;" in devices
     assert "detailsBodyReady ? (" in devices
     assert "React.memo(DeviceCard" in card
-    assert "DEVICES_CARD_ACTIONS_OWN_CLICKS" in card
+    assert "onClick={handleManage}" in card
+    assert "aria-label={`Manage ${name}`}" in card
     assert "LiteProgressiveDetails" in details
     assert "DEVICE_DETAILS_USES_PROGRESSIVE_FOUNDATION" in details
     assert "DEVICE_DETAILS_HISTORY_IS_LAZY" in details
@@ -5545,15 +5546,14 @@ def test_lite_devices_details_keep_history_lazy_and_technical_collapsed():
     technical = Path("src/lite/components/LiteTechnicalDetails.jsx").read_text()
 
     assert "history={{" not in details
-    assert "Device history" in details
-    assert "const [deviceHistoryOpen, setDeviceHistoryOpen] = React.useState(false)" in details
+    assert "Recent device activity" in details
+    assert "activeArea === 'history'" in details
+    assert "liteQueryKeys.deviceHistory" in details
     assert "lite-device-history-timeline-card" in details
-    assert "aria-expanded={deviceHistoryOpen}" in details
-    assert "aria-controls={`device-history-timeline-${initialDeviceId}`}" in details
-    assert "{deviceHistoryOpen ? (" in details
-    assert "Show history" in details
-    assert "Collapse history" in details
+    assert "Changes appear here when Pocket Lab reports them." in details
     assert "technicalDetails={technicalRows(device)}" in details
+    assert "<details className=\"lite-device-advanced-details\">" in details
+    assert "Technical and troubleshooting details" in details
     assert "const [isOpen, setIsOpen] = useState(false)" in history
     assert "const shouldMountHistory = Boolean(isOpen && enabled)" in history
     assert "{shouldMountHistory ? (" in history
@@ -5572,8 +5572,9 @@ def test_lite_devices_details_preserve_backend_only_evidence_boundary():
 
     assert "DEVICE_DETAILS_BACKEND_EVIDENCE_BOUNDARY" in details
     assert "normal Devices details do not fetch backend evidence endpoints" in details
-    assert "Device events and troubleshooting records stay protected by Pocket Lab." in details
-    assert "No secrets, raw logs, or private paths were loaded into this view." in details
+    assert "backend_only: true" in details
+    assert "Device troubleshooting records stay protected by Pocket Lab." in details
+    assert "SENSITIVE_DETAIL_PATTERN" in technical
     assert "liteApi.appEvidence" not in devices
     assert "/api/lite/apps/{app_id}/evidence" not in devices
     assert "raw evidence" not in devices.lower()
@@ -5594,8 +5595,8 @@ def test_lite_devices_render_reduction_preserves_polling_and_click_boundaries():
     assert "onClickCapture" not in card
     assert "onPointerDownCapture" not in card
     assert "onOpenDetails" in card
-    assert "onRestartAgent" in card
-    assert "onRemoveDevice" in card
+    assert "onClick={handleManage}" in card
+    assert "onPreloadDetails" in card
 
 
 def test_lite_recovery_render_reduction_components_exist():
