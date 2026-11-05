@@ -240,6 +240,8 @@ test('[interaction] Devices nested details and health history stay inside the re
   const panel = page.getByRole('region', { name: /Pocket Lab Lite Server details/i });
   await expect(panel).toBeVisible();
 
+  await panel.getByRole('button', { name: 'Technical', exact: true }).click();
+  await expect(panel.locator('[data-active-device-section="technical"]')).toBeVisible();
   const advanced = panel.locator('details.lite-device-advanced-details');
   const detailReport = await measureLiteInteraction(
     page,
@@ -258,6 +260,7 @@ test('[interaction] Devices nested details and health history stay inside the re
   expectLitePerformanceBudget(detailReport);
   await writeLitePerformanceEvidence(testInfo, detailReport);
 
+  await panel.getByRole('button', { name: 'Health', exact: true }).click();
   const healthHistory = panel.getByRole('button', { name: 'Show health history' });
   await expect(healthHistory).toBeVisible();
   const historyReport = await measureLiteInteraction(
