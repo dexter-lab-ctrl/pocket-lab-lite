@@ -41140,7 +41140,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 525,
+      "page_count": 526,
       "top_level": [
         "start-here",
         "use",
@@ -49024,7 +49024,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "cd5e0974b51fbb3d18295e9e6b4c6149582848008d3ccd530eeaf2ea57f93faf",
-        "documentation": "eaad5d5aa9788ad48504b446652ea4bb9d628ec18a9c57e9673f5ad0c9e3fa27",
+        "documentation": "c591c696bfc66ffb933fa04953d67cf5d58c4f1b46dfddb5005cc803f4a7504c",
         "openapi": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
         "operational_health": "c758d7d653b42f1860a89c2ab10d285eea8d8f477df13804b883c3b2e3255f8e"
       },
@@ -50960,7 +50960,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "23f40f82588d8597bb76379919fd4288cd5dfd63b215b0346c543fcb0e938134"
+          "sha256": "3576375120e5e7cb46c8d253bdf2778f5d00596ab83e0454825b33c05dc4864c"
         },
         {
           "path": "requirements-dev.txt",
@@ -124402,5 +124402,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "5890cb5f5f5344ce26dc8917aba43ec25d18e5d2bb3248e85638952d619f71a7"
+  "source_fingerprint": "3af4b80e6a9f32ec7282752edb4df0c234dbc55aec195237a9d797e7f08f6ec7"
 }

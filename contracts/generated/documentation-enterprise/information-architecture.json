@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 525,
+  "page_count": 526,
   "page_types": [
     "overview",
     "guide",
@@ -5028,6 +5028,29 @@
       "source_or_generator": "development/lite-azure-horizon-devices-refinement.md",
       "title": "Azure Horizon Devices — source implementation and deferred qualification",
       "url": "/development/lite-azure-horizon-devices-refinement/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-home-premium-refinement.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-home-premium-refinement",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-home-premium-refinement.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-home-premium-refinement.md",
+      "title": "Pocket Lab Lite — Azure Horizon Home Premium Refinement (P0–P6)",
+      "url": "/development/lite-azure-horizon-home-premium-refinement/"
     },
     {
       "additional_audiences": [],
@@ -18436,7 +18459,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "c76cf514377baa2c2b70ebb381340efbb2e727112750f145065d881460a2512e",
+  "source_fingerprint": "c85f738b288edc7a75d5dddd2ab24e808975affb2538531a3044e610721b29e8",
   "top_level": [
     "start-here",
     "use",

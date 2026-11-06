@@ -1,6 +1,6 @@
 # Pocket Lab Lite — Azure Horizon Home Premium Refinement (P0–P6)
 
-> **Status: SOURCE AUTHORED — NOT QUALIFIED.** Tests, builds, linters, accessibility scans, visual snapshots, performance runs, documentation gates, CI repair and physical Android checks were **not** executed in this source-only session.
+> **Status: PARTIALLY QUALIFIED.** DEV-PC functional, accessibility, visual and build gates pass on the final application commit. Strict Home performance remains `PARTIAL`, and physical Android qualification is `BLOCKED` by the unprivileged WSL CDP transport boundary. Documentation generation is run after this application qualification record.
 
 ## 1. Objective and exact provenance
 
@@ -8,10 +8,15 @@
 - Authoritative starting branch: `main`
 - Resolved baseline SHA: `1b249be9fbb2f3bf7a1d898d8c8f282c4bfbe25a`
 - Implementation branch: `feat/azure-horizon-home-premium-refinement`
+- Initial PR #646 HEAD: `f36cda18d96c5b49df239e6f1dfdf8cd835bd542`
+- Qualified application commit: `e7892e2f` (`fix(lite-home): qualify premium Home interactions and shared snap controls`)
+- Final PR HEAD: **pending documentation-generation commit**
+- Main SHA observed during qualification: `1b249be9fbb2f3bf7a1d898d8c8f282c4bfbe25a`
 - Scope: P0–P6, desktop, mobile, installed-PWA-compatible layout.
-- PR status: draft and unmerged until a separate qualification/finalization session.
+- Qualification environment: native WSL2 Ubuntu on the Windows DEV-PC, Node `24.16.0`, Chromium/Playwright mocked desktop and mobile projects, Storybook production build, standard-user Windows PowerShell/ADB preflight.
+- PR status: open, draft and unmerged; no Ready-for-Review transition is made while mandatory Android and strict performance gates remain incomplete.
 - PR #645: **merged into main before this branch was created**. Its shared controls are on the authoritative baseline.
-- No merge, release, `dist.zip` creation, production deployment or runtime mutation was authorized.
+- The qualified application commit was pushed to GitHub. No merge, release, `dist.zip` publication, production deployment or runtime mutation was authorized.
 
 This is a refinement of PR #638's Command Home, not an information-architecture redesign. The landing view still has one health hero, four destinations (Apps, Devices, Safety, Backups), conditional attention and one recent activity preview. Workspace details and Recent Activity remain separate `LiteDetailsPanel` portals with native grouped navigation.
 
@@ -45,7 +50,7 @@ The read/control path remains React/Vite PWA → Caddy same-origin → FastAPI `
 
 ## 4. P0 — audited component and CSS ownership inventory
 
-The following are source-inspected, not runtime-validated:
+The following provenance matrix is source-inspected; runtime results are recorded in §11:
 
 | Element | Source owner | Status / decision |
 |---|---|---|
@@ -57,7 +62,7 @@ The following are source-inspected, not runtime-validated:
 | `HomeGroupedSections` | `src/lite/components/HomeGroupedSections.jsx` | Refined focus and accessible region |
 | `HomeActivityDetails` | `src/lite/components/HomeActivityDetails.jsx` | Refined timeline icons and confirmed review |
 | `LiteNextSteps` | `src/lite/components/LiteNextSteps.jsx` | Backward-compatible optional chevron |
-| `LiteDetailsPanel`, `LiteSheet`, `LiteDesktopPanelControls` | `src/lite/LiteOverlay.jsx` | Reused unchanged |
+| `LiteDetailsPanel`, `LiteSheet`, `LiteDesktopPanelControls` | `src/lite/LiteOverlay.jsx` | Reused; shared mobile snap control wiring was corrected to use the existing incremental contract |
 | `useMobileSheetSnap` | `src/lite/components/useMobileSheetSnap.js` | Reused unchanged |
 | `useDesktopManageGeometry` | `src/lite/components/useDesktopManageGeometry.js` | Reused unchanged |
 | `useLitePanelSectionNavigation` | `src/lite/hooks/useLitePanelSectionNavigation.js` | Reused unchanged |
@@ -69,7 +74,7 @@ The following are source-inspected, not runtime-validated:
 | Home import order | `homePremium.css` → `azureHome.css` → `homeActivityEvidence.css` → `homePanelRefinement.css` → `homeCommand.css` → **`homePremiumRefinement.css`** | New final scoped ownership for active Home refinements |
 | Shared overlay and Apps premium CSS | Existing imports outside Home | No wholesale copy or change to Apps |
 
-**CSS cascade decision:** old Home CSS contains legacy palette fallbacks and presentation rules. Deleting those wholesale could break other screens or historical variants. The new `homePremiumRefinement.css` is imported last and targets `.lite-home-refined` and `.lite-home-panel-layer` only. No broad theme-specific padding, new hardcoded color, new global `!important` or duplicate theme provider was added. Consolidation of proven-dead legacy selectors is deferred until source and screenshot qualification.
+**CSS cascade decision:** old Home CSS contains legacy palette fallbacks and presentation rules. Deleting those wholesale could break other screens or historical variants. The new `homePremiumRefinement.css` is imported last and targets `.lite-home-refined` and `.lite-home-panel-layer` only. No broad theme-specific padding, new hardcoded color, new global `!important` or duplicate theme provider was added. Consolidation of proven-dead legacy selectors remains deferred because the current qualification proves the scoped behavior, not the safety of deleting shared historical rules.
 
 ## 5. Shared-component / reference PR provenance
 
@@ -91,7 +96,7 @@ All reference PRs were confirmed **merged** on 2026-11-06 before branch creation
 | #642 | Rules `LiteDetailsPanel` interaction precedent | Existing shared primitive already consumed | No Rules-specific module imported | No direct Rules code change |
 | #643 | Devices authoritative state/navigation boundary | Existing handoff | Home navigates to `devices`; no Home-only device action | Preserved, no Devices module imported |
 | #644 | Recovery native panel interaction precedent | Existing shared primitive already consumed | Home navigates to `recovery`; no Recovery workflow duplicated | Preserved |
-| #645 | `LiteDesktopPanelControls`, `LiteSheet` mobile controls; shared `LiteTechnicalDetails` / `LiteHistorySection` chevrons | Direct shared overlay; disclosure reference | Home already inherits desktop/snap controls; Home attention now uses matching chevron | Small compatible Home disclosure extension |
+| #645 | `LiteDesktopPanelControls`, `LiteSheet` mobile controls; shared `LiteTechnicalDetails` / `LiteHistorySection` chevrons | Direct shared overlay; disclosure reference | Home inherits desktop/snap controls; Home attention uses matching chevron; shared Expand now advances Compact → Medium → Expanded | Small compatible Home disclosure extension plus shared snap wiring correction |
 
 **No direct imported reuse is claimed** for unrelated Rules/Devices/Recovery-specific presentation modules, or for `LiteTechnicalDetails` and `LiteHistorySection` in Home's current composition. They were inspected as compatibility and disclosure references.
 
@@ -138,52 +143,76 @@ All Home controls remain actual semantic buttons. `main.jsx` already installs `i
 - Mobile uses shared 35%/72%/94% Compact/Medium/Expanded ratios, dedicated grip interaction, visual viewport and safe areas.
 - Semantic buttons, visible focus, detail regions, disclosure associations, reduced motion and CSS-only transitions are retained/extended.
 - On-demand activity history and nested content remain lazy or panel-gated; no new polling or heavy dependency is added.
-- Responsive layout and accessibility compliance are **not yet validated**.
+- DEV-PC responsive and accessibility qualification passed: the final mocked matrix covered 320, 360, 390, 430, 768, 1024, 1280, 1440 and 1600px representative widths, 200% text, reduced motion, keyboard/focus, mobile scroll containment, System theme resolution and serious/critical Axe checks. Physical Android Chrome touch/safe-area/haptic behavior remains unvalidated because CDP transport could not be safely exposed to WSL without the repository helper's prohibited Administrator path.
 
-## 11. P6 — authored qualification assets (NONE EXECUTED)
+## 11. P6 — qualification assets and results
 
-| Asset | File | Coverage | Status |
+The following results are from the final application commit `e7892e2f0b704265bd859d4924042d87d2d25af5` unless noted otherwise. A green result means the command actually completed; authored comments and source inspection are not treated as execution evidence.
+
+| Gate | File / command | Result | Evidence |
 |---|---|---|---|
-| Flow node authority unit tests | `src/lite/components/HomeWorkspaceFlow.test.jsx` | Node truth, unknown, saved, checking | AUTHORED — NOT EXECUTED |
-| New component contracts | `src/lite/LiteHomePremiumRefinement.test.jsx` | Destinations, attention, chevron, focus return, review, haptic delegation | AUTHORED — NOT EXECUTED |
-| Mocked Playwright | `tests/e2e/lite-home-premium-refinement.spec.ts` | 320/390/768/1280/1440, themes, overlays, keyboard, Axe, stale/offline | AUTHORED — NOT EXECUTED |
-| Performance interaction | `tests/e2e/lite-home-command-performance.spec.ts` | Mobile snap against **existing** budget helper | AUTHORED — NOT EXECUTED |
-| Storybook state fixtures | `src/lite/LiteHome.stories.jsx` | Ready, attention, critical, running, partial, offline/saved, unknown, loading, nested panels, large text | AUTHORED — NOT EXECUTED |
-| Visual baseline candidates | Playwright `test.skip` placeholder | Light/Dark Home candidate screenshots | **NOT CAPTURED — NOT VALIDATED** |
-| Physical Android/PWA | Separate planned operator session | Frame smoothness, safe areas, IME, battery/RAM, haptic capability | NOT QUALIFIED |
+| Focused Vitest | `HomeWorkspaceFlow`, `LiteHomePremiumRefinement`, `LiteHomeScreen`, `LiteHomeAzure`, `LiteHome`, `LiteOverlayUnified`, `useMobileSheetSnap` | **PASS — 7 files / 35 tests** | DEV-PC Vitest output |
+| Home functional mocked E2E | `lite-home-premium-refinement`, `lite-home-command`, `lite-home-panel-flow-scroll`, `lite-home-panel-snap` | **PASS — 106 / 106** | `tests/e2e/*.spec.ts` |
+| Premium Home mocked E2E | `npm run test:azure:home:premium:mocked` | **PASS — 56 / 56** | `tests/e2e/lite-home-panel-premium.spec.ts` |
+| Flow accessibility | `npm run test:azure:home:flow:a11y` | **PASS — 4 / 4** | Black-panel Axe cases in `lite-home-panel-flow-scroll.spec.ts` |
+| Shared overlay/haptics and snap | `lite-native-dock-and-haptics.spec.ts` plus `lite-home-panel-snap.spec.ts` | **PASS — 32 / 32** | Shared regression output |
+| Premium visual baselines | `npm run test:azure:home:premium:visual` | **PASS — 40 / 40** | `tests/e2e/lite-home-panel-premium-visual.spec.ts-snapshots/` |
+| Command visual baselines | `lite-home-command-visual.spec.ts` | **PASS after isolated retry** — initial 61 / 62, exact mobile offline-saved retry 1 / 1 | `tests/e2e/lite-home-command-visual.spec.ts-snapshots/` |
+| Production application build | `npm run build` | **PASS — 2,262 modules** | Vite output; existing chunk-size warnings only |
+| Storybook production build | `npm run build-storybook` | **PASS** | `storybook-static/` build output (ignored artifact) |
+| Strict Home performance | `lite-home-panel-premium-performance.spec.ts`, `lite-home-command-performance.spec.ts` | **PARTIAL** — premium 10 / 12 and command 5 / 6; workspace open/switch cases recorded `long_animation_frame_ms` misses | `.pocketlab-dev/test-results/` and performance evidence output |
+| Physical Android Chrome | Home-only candidate runner | **BLOCKED** before candidate load; safe WSL CDP transport unavailable without prohibited elevated bridge | Standard-user PowerShell/ADB preflight record below |
+| Documentation and contracts | `task lite:docs:generate`, `task lite:docs:check`, `task lite:check` | **PASS** — generation completed; docs check passed with existing Redocly warnings; full Lite check passed | Generated contracts/docs plus Taskfile output |
 
-**No builds, tests, syntax checks, lint, accessibility scans, visual checks, performance measurements, contract checks, docs gates or physical device qualification commands were executed.** GitHub Actions may run naturally after push/PR; no manual reruns or CI repairs are authorized here.
+The original stale Home unit expectation, an unregistered PR-authored Playwright file, an Axe grep that matched no tests, invalid broad region assertions, the shared snap button's direct Compact/Expanded jump, a Light-theme contrast miss and pointer/legacy-typography visual drift were corrected and covered by the gates above.
 
-## 12. Later qualification: commands (NOT RUN IN THIS SESSION)
+## 12. Qualification detail, performance attribution and Android boundary
 
-From a **separate** developer-PC session, with the branch checked out and dependencies installed:
+### DEV-PC commands actually executed
+
+The final application commit was checked with Node `24.16.0` and the following commands:
 
 ```bash
-git status --short
-git diff --check origin/main...HEAD
-npx vitest run src/lite/components/HomeWorkspaceFlow.test.jsx src/lite/LiteHomePremiumRefinement.test.jsx
-npx vitest run src/lite/LiteHomeScreen.test.jsx src/lite/LiteHomeAzure.test.jsx
+npx vitest run src/lite/components/HomeWorkspaceFlow.test.jsx src/lite/LiteHomePremiumRefinement.test.jsx src/lite/LiteHomeScreen.test.jsx src/lite/LiteHomeAzure.test.jsx src/lite/LiteHome.test.jsx src/lite/LiteOverlayUnified.test.jsx src/lite/components/useMobileSheetSnap.test.jsx
 npm run build
-VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-home-premium-refinement.spec.ts --project=mocked-desktop --project=mocked-mobile
-VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-home-command.spec.ts tests/e2e/lite-home-panel-flow-scroll.spec.ts --project=mocked-desktop --project=mocked-mobile
-VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-home-command-performance.spec.ts --project=mocked-mobile
+npm run build-storybook
+VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-home-premium-refinement.spec.ts tests/e2e/lite-home-command.spec.ts tests/e2e/lite-home-panel-flow-scroll.spec.ts tests/e2e/lite-home-panel-snap.spec.ts --project=mocked-desktop --project=mocked-mobile --workers=2
+npm run test:azure:home:premium:mocked
+npm run test:azure:home:flow:a11y
+npm run test:azure:home:premium:visual
+VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-home-command-visual.spec.ts --project=mocked-desktop --project=mocked-mobile --workers=2
+VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-native-dock-and-haptics.spec.ts tests/e2e/lite-home-panel-snap.spec.ts --project=mocked-desktop --project=mocked-mobile --workers=2
+VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-home-panel-premium-performance.spec.ts --project=mocked-desktop --project=mocked-mobile --workers=1
+VITE_POCKETLAB_PERF_TEST=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-home-command-performance.spec.ts --project=mocked-desktop --project=mocked-mobile --workers=1
+npm run check:render-budgets
 ```
 
-Storybook manual scenario review must examine the new Premium stories under both themes; inspect panel width at 380px and 660px, Compact/Medium/Expanded, touch targets at 320px, keyboard/focus on nested Back and close, safe-area/keyboard/IME, history and empty states. Take separate **candidate** screenshots only in qualification; compare and explicitly approve baselines, not blindly promote them.
+All required performance thresholds from PRs #588/#589 remain unchanged. The direct final premium run was `10 / 12`: both workspace grouped open/switch/close cases failed the absolute `long_animation_frame_ms` gate, while activity, move/resize, native scroll and the remaining Home interactions passed. The direct command run was `5 / 6`: only the mocked-desktop workspace grouped interaction failed. Representative failures were `p95=16.8ms`, `gate_smooth=0.9623`, `long_task=0ms`, `loaf=104.3ms` for premium desktop and `p95=16.8ms`, `gate_smooth=0.9683`, `long_task=0ms`, `loaf=98.7ms` for command desktop. A 3-repeat targeted run remained variable (`2 / 3` pass), so this is not a stable green result.
 
-Performance work must separately capture cold/warm Home first paint, Refresh, opening workspace/activity panels, section switch, moving/resizing a desktop panel, Compact/Expand, bounded activity rendering, memory and low-power Android frame times. Retain PR #588/#589 thresholds and environmental assumptions. Real Android/Termux validation and source provenance must be separately authorized, safe and non-destructive.
+The aggregate `npm run check:render-budgets` result was **FAIL** (`evidence=131`, `gate_failures=7`, `target_misses=41`). It includes pre-existing records for Recovery, Identity, Security and other screens, so it is not used as a Home-only verdict. Current relevant Home records include `mocked-desktop azure-home-workspace-section-switch`, `mocked-desktop command-workspace-open` and `mocked-mobile azure-home-workspace-close` failures or target misses. No performance budget, minimum sample count or suppression rule was changed.
+
+For attribution, clean detached runs of the original PR head `f36cda18d96c5b49df239e6f1dfdf8cd835bd542` and `origin/main` passed the focused workspace interaction and repeated clean runs, while the current WSL candidate is variable across first/cold invocations. This supports an **INFERRED measurement/environment contribution** (the session also had multiple Playwright/MCP browser processes), but it does not remove the absolute gate failure. No PR-specific optimization is claimed and no unrelated screen was changed. Android A/B/A attribution was not possible because the candidate could not be loaded into WSL-reachable Chrome CDP.
+
+### Standard-user Android CDP preflight
+
+- One authorized device was verified: serial `RZCW71C09GX`, model `SM-S911B`, ADB state `device`; Chrome package `com.android.chrome` was foregrounded and the test screen was woken with the permitted non-privileged ADB key event.
+- Repository-supported ADB was `/mnt/c/Android/platform-tools/adb.exe`, version `1.0.41` / `37.0.1-15733141`.
+- The required initial `http://127.0.0.1:9222/json/version` check failed in both WSL and standard-user Windows PowerShell. A temporary standard-user ADB forward to `localabstract:chrome_devtools_remote` made the Windows endpoint report Chrome `156.0.8078.79`, CDP Protocol `1.3`, Android package `com.android.chrome` and a localhost WebSocket endpoint. WSL could not reach that Windows-only loopback listener.
+- A standard-user PowerShell listener attempt on the WSL host address and the repository's expected `19222` bridge path timed out from WSL. No firewall, UAC, portproxy, protected service or driver change was attempted.
+- The repository helper `scripts/dev/lite/prepare-ui-performance-android-cdp.ps1` was inspected and not invoked because its setup path requires Administrator privileges and privileged `netsh`/firewall operations. No UAC escalation occurred.
+- The temporary owned forward was removed; `adb forward --list` and `adb reverse --list` were empty afterward. No candidate server, Android runner, synthetic harness or physical Home interaction was started.
+
+Therefore the exact candidate SHA was not served to Android, foreground requestAnimationFrame evidence was not collected for the candidate, the Home-only matrix was **BLOCKED before execution**, and no physical screenshots are approved. The broad seven-screen matrix was not run.
 
 ## 13. Risks, intentionally preserved behavior and deferred work
 
-- **Unvalidated CSS specificity:** Legacy `src/index.css` and historical Home layers remain. Source inspection identifies the new final scoped layer as owner, but visual geometry needs real browser review before it can be considered proven.
-- **Shared component regression risk:** The optional chevron extends a shared component backward compatibly; qualification must confirm other tabs' behavior is unchanged.
-- **Panel focus/scroll:** New focus-to-last-selected behavior requires mobile browser and screen-reader testing; portal scroll locks and IME are not runtime-qualified.
-- **Source truth:** The generic Services diagram node is deliberately unknown. If future backend models publish an authoritative aggregate service health record, it can be wired in a separate contract-backed change.
-- **Haptic capability:** Delegated haptics are optional and browser dependent. No vibration was tested on a real device.
-- **Storybook and tests:** All are authored fixtures, not evidence of passing.
-- **Visual baselines:** None generated, accepted or updated; skipped placeholder remains pending.
-- **Generated documentation and CI:** No docs generation, CI correction or green status asserted.
-- **Performance:** No before/after measurement and no Android profile; reported benefit is an expected design outcome, not a verified improvement.
-- **PWA offline:** Home remains read-only on saved/offline states; no browser write queue is added.
+- **Android qualification blocker:** Windows Chrome CDP is healthy when inspected from Windows with a temporary ADB forward, but the endpoint is not reachable from WSL without the repository's Administrator-only bridge path. A safe standard-user transport change was not invented. Physical Android state remains `BLOCKED`.
+- **Strict performance:** Home workspace grouped open/switch interactions fail the absolute long-animation-frame gate on this WSL/Chromium run. Main and the clean original PR head passed focused comparison runs, so the observed cause is currently an `INFERRED` environment/cold-start contribution, not a proven PR-only regression; the gate remains unresolved and is not downgraded.
+- **Visual retry:** The command visual suite had one first-run 298-pixel mobile offline-saved mismatch; the exact case passed on isolated retry. Premium canonical visual coverage is stable at 40 / 40. This is recorded as a retry-qualified visual result, not a blanket update of unrelated snapshots.
+- **Unvalidated physical behavior:** Android safe areas, touch gestures, real haptics, IME interaction, installed PWA behavior, thermal/power frame timing and physical screenshots were not executed.
+- **Server Phone:** Read-only SSH verification found the phone on clean `main` at `1b249be9fbb2f3bf7a1d898d8c8f282c4bfbe25a`, with existing services unchanged. It was not used as a development workspace.
+- **Source truth:** The generic Services diagram node remains deliberately unknown without an authoritative aggregate service-health projection. Home does not invent connectivity, repair, restart, recovery, uptime, scan or review success.
+- **PWA offline:** Home remains read-only on saved/offline states; no browser write queue or secret storage was added.
+- **Documentation/CI:** Canonical docs generation, `task lite:docs:check` and full `task lite:check` passed after the application commit. GitHub checks remain external CI evidence and the PR remains Draft while Android and strict performance are incomplete.
 
-**Final disposition: SOURCE IMPLEMENTATION AUTHORED — QUALIFICATION DEFERRED — DRAFT PR OPEN — NO MERGE OR RELEASE AUTHORIZED.**
+**Final disposition at this document revision: DEV-PC APPLICATION QUALIFIED — STRICT PERFORMANCE PARTIAL — PHYSICAL ANDROID BLOCKED — DRAFT PR OPEN — NO MERGE, RELEASE OR DEPLOYMENT.**
