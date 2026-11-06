@@ -428,12 +428,12 @@ export function LiteSheet({
 
 // Shared Apps-derived desktop panel affordance. Position/size policy stays in
 // useDesktopManageGeometry; this component owns only accessible presentation.
-export function LiteDesktopPanelControls({ title = 'Details', geometry, desktopToolLabels = false, className = '' }) {
+export function LiteDesktopPanelControls({ title = 'Details', geometry, desktopToolLabels = false, showResetLabel = false, className = '' }) {
   const { announcement, reset, startPanelInteraction, adjustPanelWithKeyboard } = geometry || {};
   return <div className={`lite-overlay-desktop-panel-tools lite-home-desktop-panel-tools ${desktopToolLabels ? 'has-labels' : ''} ${className}`.trim()} data-lite-overlay-panel-tools="desktop" role="group" aria-label={`Desktop ${title} panel controls`}>
     <button type="button" aria-label={`Move ${title} panel`} title="Drag or use arrow keys to move; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
       onPointerDown={(event) => startPanelInteraction?.('move', event)} onKeyDown={(event) => adjustPanelWithKeyboard?.('move', event)}><Move size={16} aria-hidden="true" />{desktopToolLabels ? 'Move' : null}</button>
-    <button type="button" aria-label={`Reset ${title} position and size`} title="Reset panel position and size" onClick={reset}><RotateCcw size={16} aria-hidden="true" />{desktopToolLabels ? 'Reset' : null}</button>
+    <button type="button" aria-label={showResetLabel ? `Reset ${title} panel position and size` : `Reset ${title} position and size`} title="Reset panel position and size" onClick={reset}><RotateCcw size={16} aria-hidden="true" />{desktopToolLabels || showResetLabel ? 'Reset' : null}</button>
     <button type="button" aria-label={`Resize ${title} panel`} title="Drag or use arrow keys to resize; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
       onPointerDown={(event) => startPanelInteraction?.('resize', event)} onKeyDown={(event) => adjustPanelWithKeyboard?.('resize', event)}><Maximize2 size={16} aria-hidden="true" />{desktopToolLabels ? 'Resize' : null}</button>
     <span className="sr-only" role="status" aria-live="polite">{announcement}</span>

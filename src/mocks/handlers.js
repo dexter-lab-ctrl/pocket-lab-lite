@@ -780,6 +780,7 @@ const mockLiteSecurityPayload = () => {
     scan_profile: 'quick',
     summary: 'No urgent safety issues found.',
     score: 100,
+    coverage_summary: quickCoverage,
     last_run: baseRun,
     scan_progress: {
       status: 'succeeded',

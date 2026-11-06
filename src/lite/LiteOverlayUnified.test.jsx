@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// AUTHORED ONLY: overlay geometry, snap and focus tests are for a later qualification session.
+// Executed shared overlay geometry, snap and focus regression coverage.
 import React from 'react';
 import '@testing-library/jest-dom/vitest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -8,7 +8,7 @@ import { LiteDesktopPanelControls, LiteSheet } from './LiteOverlay.jsx';
 
 afterEach(cleanup);
 
-describe('Shared LiteSheet / Apps geometry reuse — unexecuted', () => {
+describe('Shared LiteSheet / Apps geometry reuse', () => {
   it('uses one accessible desktop Move/Reset/Resize control implementation', () => {
     const reset = vi.fn();
     const move = vi.fn();

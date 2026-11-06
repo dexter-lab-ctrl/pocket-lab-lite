@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { deriveSafetyStatusPresentation, safetyToolPresentation } from './safetyStatusPresentation.js';
 
-// AUTHORED ONLY — no unit, component, or scanner checks executed in this session.
+// Unit coverage for scanner-state presentation; fixtures remain synthetic and read-only.
 // Inputs model sanitized FastAPI data; they are not synthetic production results.
 const checked = {
   lynis: { status: 'completed' },
   trivy: { status: 'completed' },
 };
 
-describe('Safety scanner authority — qualification deferred', () => {
+describe('Safety scanner authority', () => {
   it('never presents an unscanned profile as a completed clean check', () => {
     const view = deriveSafetyStatusPresentation({ hasRun: false, coverageReported: false });
     expect(view.headline).toBe('Not checked');

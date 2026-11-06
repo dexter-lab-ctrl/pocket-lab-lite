@@ -59,7 +59,7 @@ import { LiteSheet, LiteDesktopPanelControls } from './LiteOverlay.jsx';
 import { SafetyCenterHero, SafetyDestinations, SafetyManageNavigation, SafetyStatusHierarchy } from './security/SafetyNativeCenter.jsx';
 import { deriveSafetyStatusPresentation } from './security/safetyStatusPresentation.js';
 import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
-import { areComparableSafetyRuns, isMeasuredSafetyProgress, safetyCoverageQuality } from './security/safetyAzurePresentation.js';
+import { areComparableSafetyRuns, isMeasuredSafetyProgress, isSafetyCoverageReported, safetyCoverageQuality } from './security/safetyAzurePresentation.js';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 import {
   GlassCard,
@@ -2268,12 +2268,22 @@ export default function SecurityScreen() {
   const evidenceRun = evidence?.run || null;
   const toolResults = (activeProfileIsLatest ? evidenceRun?.tool_results : null) || activeProfileView?.tool_results || activeProfileRun?.tool_results || {};
   const coverageFallback = profileFallbackCoverage(scanProfile);
-  const coverageSummary = activeProfileView?.coverage_summary || activeProfileRun?.coverage_summary || (activeProfileIsLatest ? data?.coverage_summary || evidence?.coverage_summary : null) || coverageFallback;
-  const checkedCoverageTargets = quickCoverageList(coverageSummary.checked_targets, coverageFallback.checked_targets);
-  const skippedCoverageTargets = quickCoverageList(coverageSummary.skipped_targets, coverageFallback.skipped_targets);
-  const partialCoverageTargets = quickCoverageList(coverageSummary.partial_targets);
-  const timedOutCoverageTargets = quickCoverageList(coverageSummary.timed_out_targets);
-  const missingCoverageTargets = quickCoverageList(coverageSummary.missing_targets);
+  const coverageCandidates = [
+    activeProfileView?.coverage_summary,
+    activeProfileRun?.coverage_summary,
+    activeProfileIsLatest ? data?.coverage_summary : null,
+    activeProfileIsLatest ? evidence?.coverage_summary : null,
+  ];
+  const reportedCoverageSummary = coverageCandidates.find((coverage) => (
+    coverage?.coverage_reported !== false && isSafetyCoverageReported(coverage, activeProfileHasRun)
+  )) || null;
+  const profileCoverageReported = Boolean(reportedCoverageSummary);
+  const coverageSummary = reportedCoverageSummary || coverageFallback;
+  const checkedCoverageTargets = profileCoverageReported ? quickCoverageList(coverageSummary.checked_targets) : [];
+  const skippedCoverageTargets = profileCoverageReported ? quickCoverageList(coverageSummary.skipped_targets) : [];
+  const partialCoverageTargets = profileCoverageReported ? quickCoverageList(coverageSummary.partial_targets) : [];
+  const timedOutCoverageTargets = profileCoverageReported ? quickCoverageList(coverageSummary.timed_out_targets) : [];
+  const missingCoverageTargets = profileCoverageReported ? quickCoverageList(coverageSummary.missing_targets) : [];
   const targetCoverageStatuses = Array.isArray(coverageSummary.target_statuses) ? coverageSummary.target_statuses : [];
   const currentEvidenceRefs = Array.from(new Set([
     ...evidenceRefs,
@@ -2829,10 +2839,6 @@ export default function SecurityScreen() {
   const hydrateHistoryDetails = securityDetailNeedsHeavyModel(progressiveDetailsType, 'history');
   const hydrateFindingDetails = securityDetailNeedsHeavyModel(progressiveDetailsType, 'findings');
 
-  const profileCoverageReported = Boolean(activeProfileHasRun && (
-    activeProfileView?.coverage_summary || activeProfileRun?.coverage_summary ||
-    (activeProfileIsLatest && data?.coverage_summary)
-  ));
   const securityProgressiveDetailsModel = progressiveDetailsHydrated ? {
     detailsHydrated: true,
     detailsHydration: {
@@ -3116,7 +3122,7 @@ export default function SecurityScreen() {
         bodyRef={safetyManageScrollRef}
         surfaceStyle={safetyManagePanelStyle}
         surfaceProps={{ 'data-security-phase5-manage-shell': 'true', 'data-security-manage-layout': safetyManageDesktop ? 'desktop-movable' : 'mobile-sheet', 'data-security-react-spring': 'manage-shell' }}
-        headerActions={safetyManageDesktop ? <LiteDesktopPanelControls title="Safety" className="lite-security-manage-desktop-tools" geometry={{
+        headerActions={safetyManageDesktop ? <LiteDesktopPanelControls title="Safety" showResetLabel className="lite-security-manage-desktop-tools" geometry={{
           announcement: safetyManageAnnouncement, reset: resetSafetyManagePanel,
           startPanelInteraction: startSafetyManageInteraction, adjustPanelWithKeyboard: adjustSafetyManageKeyboard,
         }} /> : null}

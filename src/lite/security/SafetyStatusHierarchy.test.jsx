@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// AUTHORED / UNEXECUTED — semantic hierarchy is a frontend projection, not scan authority.
+// Semantic hierarchy is a frontend projection, not scan authority.
 import React from 'react';
 import '@testing-library/jest-dom/vitest';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -9,7 +9,7 @@ import { deriveSafetyStatusPresentation } from './safetyStatusPresentation.js';
 
 afterEach(cleanup);
 
-describe('Safety status hierarchy — source authored, qualification deferred', () => {
+describe('Safety status hierarchy — source projection', () => {
   it('separates status, scanner execution, findings and safeguard copy', () => {
     const presentation = deriveSafetyStatusPresentation({
       status: 'running', hasRun: true, running: true, coverageReported: true,

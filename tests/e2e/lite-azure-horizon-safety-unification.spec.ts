@@ -1,5 +1,5 @@
-// P6 mocked-only browser qualification assets. AUTHORED, NOT EXECUTED.
-// Do not update or approve visual baselines in this implementation session.
+// P6 mocked-only browser qualification assets. They use synthetic read-only
+// fixtures and are kept separate from physical Android evidence.
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
@@ -24,7 +24,7 @@ async function manageSection(page: Page, section = 'Checks') {
   return dialog;
 }
 
-test.describe('Safety Azure Horizon global overlay — mocked only, qualification deferred', () => {
+test.describe('Safety Azure Horizon global overlay — mocked qualification', () => {
   for (const theme of themes) for (const width of viewportMatrix) {
     test(`token-backed overlay, viewport containment and theme geometry: ${theme}, ${width}px`, async ({ page }) => {
       await openSafety(page, 'security-quick-healthy', theme, width);
@@ -66,10 +66,10 @@ test.describe('Safety Azure Horizon global overlay — mocked only, qualificatio
     const dialog = await manageSection(page, 'Checks');
     await dialog.getByRole('button', { name: 'Compact' }).click();
     await expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'compact');
-    await expect(dialog.getByRole('button', { name: 'Compact' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(dialog.getByRole('button', { name: 'Compact', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await dialog.getByRole('button', { name: 'Expand' }).click();
     await expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'expanded');
-    await expect(dialog.getByRole('button', { name: 'Expand' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(dialog.getByRole('button', { name: 'Expand', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect(dialog).not.toContainText('DRAG HANDLE TO RESIZE');
   });
 
@@ -125,9 +125,9 @@ test.describe('Safety Azure Horizon global overlay — mocked only, qualificatio
   });
 });
 
-// New visual states are authored to require a separate explicit baseline review.
-// If no approved baseline exists, these checks must NOT be reported as passing.
-test.describe('Safety unification screenshots — baseline approval deferred', () => {
+// These visual states are reviewed mocked baselines, separate from physical
+// Android appearance evidence.
+test.describe('Safety unification screenshots — reviewed mocked baselines', () => {
   for (const theme of themes) for (const width of [320, 390, 768, 1280] as const) {
     test(`shared Safety Manage state: ${theme}, ${width}px`, async ({ page }) => {
       await openSafety(page, 'security-quick-healthy', theme, width);
@@ -138,7 +138,7 @@ test.describe('Safety unification screenshots — baseline approval deferred', (
 });
 
 
-test.describe('Safety accessibility and nested visual evidence — qualification deferred', () => {
+test.describe('Safety accessibility and nested visual evidence — qualification', () => {
   for (const theme of ['light', 'dark'] as const) {
     test(`WCAG AA candidate: ${theme} 390px Manage and nested Technical details`, async ({ page }) => {
       await openSafety(page, 'security-quick-healthy', theme, 390);
@@ -177,6 +177,7 @@ test.describe('Safety accessibility and nested visual evidence — qualification
         await manage.getByRole('button', { name: actionName }).click();
         const detail = page.getByRole('dialog').last();
         await expect(detail).toBeVisible();
+        await expect(detail.locator('[data-security-phase2-progressive-details="true"]')).toBeVisible();
         await expect(detail).toHaveScreenshot(`safety-unified-${theme}-${section.toLowerCase().replace(' ', '-')}-${width}.png`, { animations: 'disabled' });
       });
     }

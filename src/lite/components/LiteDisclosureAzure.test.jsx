@@ -9,7 +9,7 @@ import LiteHistorySection from './LiteHistorySection.jsx';
 
 afterEach(cleanup);
 
-describe('Shared Azure disclosure presentation — qualification deferred', () => {
+describe('Shared Azure disclosure presentation', () => {
   it('uses one accessible chevron with associated sanitized technical facts', () => {
     const { container } = render(<LiteTechnicalDetails presentation="safety" rows={[
       { label: 'Run by', value: 'Pocket Lab' },

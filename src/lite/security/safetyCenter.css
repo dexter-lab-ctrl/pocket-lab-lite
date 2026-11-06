@@ -727,6 +727,12 @@ html[data-lite-theme] [data-lite-overlay-portal="true"]:is(.lite-security-manage
   background-color: var(--azure-surface);
 }
 html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer
+  .lite-security-details-premium-content .lite-progressive-details {
+  /* A legacy phase-3 rule sets a light background shorthand with !important. */
+  background: var(--azure-surface) !important;
+  background-image: none !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer
   :is(.lite-progressive-details-grid, .lite-security-history-lazy, .lite-history-section-body) {
   box-shadow: none;
 }
