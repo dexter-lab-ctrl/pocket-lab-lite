@@ -160,6 +160,10 @@ html[data-lite-theme] .lite-home-panel-layer :is(button,[role="button"]):focus-v
   outline: 3px solid var(--azure-focus);
   outline-offset: 2px;
 }
+html[data-lite-theme] .lite-home-panel-layer {
+  --home-density-gap: clamp(.8rem, 1.7vw, 1.2rem);
+  --home-control-height: 44px;
+}
 html[data-lite-theme] .lite-home-panel-layer .lite-home-panel-scroll {
   min-width: 0;
   padding: var(--azure-spacing-card);
