@@ -42,3 +42,27 @@ for (const kind of ['workspace','activity'] as const) {
     await writeLitePerformanceEvidence(info,close);
   });
 }
+
+
+// P6: shared PR #634 mobile snap performance. Source AUTHORED — NOT EXECUTED.
+// Existing PR #588/#589 budget helpers remain unchanged; physical ARM64 qualification deferred.
+test('[interaction] Command Home mobile Compact → Expand snap interaction', async ({ page }, info) => {
+  await page.setViewportSize({ width: 390, height: 800 });
+  await installScenario(page, 'healthy');
+  await page.goto('/?screen=home');
+  await waitForLiteScreenToSettle(page, 'home');
+  await page.getByRole('button', { name: 'Workspace details' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Workspace details' });
+  const compact = await measureLiteInteraction(page, info, 'home-premium-mobile-compact', async () => {
+    await dialog.getByRole('button', { name: 'Compact' }).click();
+    await expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'compact');
+  }, { settleMs: 900, mode: 'mocked' });
+  expectLitePerformanceBudget(compact);
+  await writeLitePerformanceEvidence(info, compact);
+  const expanded = await measureLiteInteraction(page, info, 'home-premium-mobile-expanded', async () => {
+    await dialog.getByRole('button', { name: 'Expand' }).click();
+    await expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'expanded');
+  }, { settleMs: 900, mode: 'mocked' });
+  expectLitePerformanceBudget(expanded);
+  await writeLitePerformanceEvidence(info, expanded);
+});
