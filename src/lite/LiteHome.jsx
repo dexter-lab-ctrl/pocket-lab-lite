@@ -51,8 +51,8 @@ export function homeWorkflowPresentation({ overallTone, attentionCount, savedSta
       title: 'Checking your workspace flow',
       summary: 'Refreshing the latest signals from your Pocket Lab.',
       badge: 'Checking',
-      activeNodes: ['services', 'apps'],
-      doneNodes: ['device'],
+      activeNodes: [],
+      doneNodes: [],
     };
   }
   if (savedStateOnly) {
@@ -87,19 +87,19 @@ export function homeWorkflowPresentation({ overallTone, attentionCount, savedSta
       title: 'Some workspace services need attention',
       summary: `${attentionCount || 'Some'} ${attentionCount === 1 ? 'area needs' : 'areas need'} a review before everything is ready.`,
       badge: 'Review',
-      activeNodes: ['services'],
-      doneNodes: ['device'],
+      activeNodes: [],
+      doneNodes: [],
     };
   }
   return {
     state: 'ready',
-    motion: 'live',
+    motion: 'rest',
     eyebrow: 'Workspace status',
     title: 'Reported workspace checks are ready',
     summary: 'Review individual areas for their latest confirmed state.',
     badge: 'Live',
-    activeNodes: ['device', 'services', 'apps', 'safety'],
-    doneNodes: ['device', 'services', 'apps', 'safety'],
+    activeNodes: [],
+    doneNodes: [],
   };
 }
 
@@ -138,7 +138,7 @@ export function HomeWorkspaceFlow({ overallTone, attentionCount, savedStateOnly,
           const nodeStatus = { ready: 'Reported ready', critical: 'Needs attention', attention: 'Review recommended', unknown: 'Status not confirmed' }[nodeState];
           return (
             <React.Fragment key={step.id}>
-              {index > 0 ? <span aria-hidden="true" className="lite-home-workflow-line" style={{ '--lite-home-workflow-delay': `${(index - 1) * 180}ms` }}><i /></span> : null}
+              {index > 0 ? <span aria-hidden="true" className="lite-home-workflow-line"><i /></span> : null}
               <span role="listitem" aria-label={`${step.label} workspace flow step: ${nodeStatus}`} data-home-node-state={nodeState} className={`lite-home-workflow-node is-${step.id} ${nodeState === 'ready' ? 'is-done' : ''}`}>
                 <Icon className="h-4 w-4" aria-hidden="true" />
                 <small>{step.label}</small>
