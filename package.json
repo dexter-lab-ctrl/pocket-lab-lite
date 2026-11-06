@@ -140,7 +140,7 @@
     "test:azure:home:flow:unit": "vitest run src/lite/hooks/useLitePanelSectionNavigation.test.jsx src/lite/components/HomeWorkspaceFlow.test.jsx src/lite/components/HomeActivityDetailsPremium.test.jsx",
     "test:azure:home:flow:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-home-panel-flow-scroll.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:azure:home:flow:visual:candidates": "LITE_HOME_VISUAL_CANDIDATES=1 VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-home-panel-flow-visual-candidates.spec.ts --project=mocked-desktop --project=mocked-mobile",
-    "test:azure:home:flow:a11y": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-home-panel-flow-scroll.spec.ts --grep Axe --project=mocked-desktop --project=mocked-mobile",
+    "test:azure:home:flow:a11y": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-home-panel-flow-scroll.spec.ts --grep 'accessible Black panel' --project=mocked-desktop --project=mocked-mobile",
     "test:azure:home:premium:unit": "vitest run src/lite/hooks/useLitePanelSectionNavigation.test.jsx src/lite/components/HomeActivityDetailsPremium.test.jsx src/lite/homeActivityEvidence.test.js src/lite/LiteHomeScreen.test.jsx src/lite/catalog/useDesktopManageGeometry.test.jsx",
     "test:azure:home:premium:mocked": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-home-panel-premium.spec.ts --project=mocked-desktop --project=mocked-mobile",
     "test:azure:home:premium:visual": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-home-panel-premium-visual.spec.ts --project=mocked-desktop --project=mocked-mobile",

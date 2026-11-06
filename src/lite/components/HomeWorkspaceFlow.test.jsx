@@ -40,7 +40,7 @@ describe('Home Workspace Status Flow P0/P1 presentation', () => {
   });
 });
 
-describe('P0–P6 node authority and saved-state contract — AUTHORED, NOT EXECUTED', () => {
+describe('P0–P6 node authority and saved-state contract', () => {
   const projected = [
     { key: 'device_fleet', tone: 'ready' },
     { key: 'app_catalog', tone: 'review' },

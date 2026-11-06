@@ -5,8 +5,8 @@ import {
   measureLiteInteraction, writeLitePerformanceEvidence,
 } from './lite-performance-helpers';
 
-// PR #588 performance thresholds are unchanged. AUTHORED — NOT RUN.
-// Candidate Android device, A/B/A attribution and physical frame budget remain deferred.
+// PR #588 performance thresholds are unchanged. DEV-PC mocked qualification is executed.
+// Candidate Android device, A/B/A attribution and physical frame budget remain blocked by CDP transport.
 test.beforeEach(async ({page}) => { await installLiteFrameSampler(page); });
 for (const kind of ['workspace','activity'] as const) {
   test('[interaction] Command Home '+kind+' grouped settings open, navigate and return',async ({page},info)=>{
@@ -44,8 +44,8 @@ for (const kind of ['workspace','activity'] as const) {
 }
 
 
-// P6: shared PR #634 mobile snap performance. Source AUTHORED — NOT EXECUTED.
-// Existing PR #588/#589 budget helpers remain unchanged; physical ARM64 qualification deferred.
+// P6: shared PR #634 mobile snap performance. DEV-PC mocked qualification is executed.
+// Existing PR #588/#589 budget helpers remain unchanged; physical ARM64 qualification is blocked.
 test('[interaction] Command Home mobile Compact → Expand snap interaction', async ({ page }, info) => {
   await page.setViewportSize({ width: 390, height: 800 });
   await installScenario(page, 'healthy');
@@ -60,6 +60,8 @@ test('[interaction] Command Home mobile Compact → Expand snap interaction', as
   expectLitePerformanceBudget(compact);
   await writeLitePerformanceEvidence(info, compact);
   const expanded = await measureLiteInteraction(page, info, 'home-premium-mobile-expanded', async () => {
+    await dialog.getByRole('button', { name: 'Expand' }).click();
+    await expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'medium');
     await dialog.getByRole('button', { name: 'Expand' }).click();
     await expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'expanded');
   }, { settleMs: 900, mode: 'mocked' });

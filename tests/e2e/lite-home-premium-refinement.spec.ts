@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// P6: AUTHORED — NOT EXECUTED. Mocked only; no Server Phone involved.
+// P6: DEV-PC mocked qualification; physical Android qualification is tracked separately.
 async function openHome(page: Page, scenario = 'healthy', theme = 'light') {
   await page.addInitScript((appearance) => localStorage.setItem('pocketlab:appearance', appearance), theme);
   await installScenario(page, scenario);
@@ -19,7 +19,7 @@ async function dimensions(page: Page, selectors: string[]) {
   }), selectors);
 }
 
-test.describe('Azure Horizon Home premium refinement — mocked qualification deferred', () => {
+test.describe('Azure Horizon Home premium refinement — mocked qualification', () => {
   for (const width of [320, 390, 768, 1280, 1440]) {
     test(`Home geometry is readable at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 820 });
@@ -53,15 +53,18 @@ test.describe('Azure Horizon Home premium refinement — mocked qualification de
     });
     await page.getByRole('button', { name: 'Workspace details' }).click();
     const panel = page.getByRole('dialog', { name: 'Workspace details' });
+    await expect(panel).toBeVisible();
+    await page.waitForTimeout(350);
     const panelSelectors = ['.lite-home-details-panel', '.lite-home-settings-row',
       '.lite-home-settings-detail', '.lite-home-panel-scroll'];
     const darkPanel = await dimensions(page, panelSelectors);
     await page.emulateMedia({ colorScheme: 'light' });
     await expect(page.locator('html')).toHaveAttribute('data-lite-theme', 'light');
+    await page.waitForTimeout(350);
     const lightPanel = await dimensions(page, panelSelectors);
     darkPanel.forEach((item, index) => {
       for (const key of ['width','height'] as const)
-        expect(Math.abs(item[key] - lightPanel[index][key])).toBeLessThanOrEqual(1.5);
+        expect(Math.abs(item[key] - lightPanel[index][key]), `${panelSelectors[index]} ${key}`).toBeLessThanOrEqual(1.5);
     });
   });
 
@@ -84,9 +87,11 @@ test.describe('Azure Horizon Home premium refinement — mocked qualification de
     await panel.getByRole('button', { name: 'Compact' }).click();
     await expect(panel).toHaveAttribute('data-lite-sheet-snap', 'compact');
     await panel.getByRole('button', { name: 'Expand' }).click();
+    await expect(panel).toHaveAttribute('data-lite-sheet-snap', 'medium');
+    await panel.getByRole('button', { name: 'Expand' }).click();
     await expect(panel).toHaveAttribute('data-lite-sheet-snap', 'expanded');
     await panel.getByRole('button', { name: 'Diagnostics' }).click();
-    await expect(panel.getByRole('region', { name: 'Diagnostics' })).toBeVisible();
+    await expect(panel.locator('.lite-home-workspace-section[aria-label="Diagnostics"]')).toBeVisible();
     await panel.getByRole('button', { name: /All workspace details sections/ }).click();
     await expect(panel.getByRole('button', { name: 'Diagnostics' })).toBeFocused();
     await page.keyboard.press('Escape');
@@ -104,7 +109,7 @@ test.describe('Azure Horizon Home premium refinement — mocked qualification de
     await page.keyboard.press('ArrowLeft');
     await panel.getByRole('button', { name: /Reset Workspace details position and size/ }).click();
     await panel.getByRole('button', { name: 'Service health' }).click();
-    await expect(panel.getByRole('region', { name: 'Service health' })).toBeVisible();
+    await expect(panel.locator('.lite-home-workspace-section[aria-label="Service health"]')).toBeVisible();
     expect(await panel.evaluate((node) => node.scrollWidth > node.clientWidth + 2)).toBe(false);
   });
 
@@ -133,12 +138,7 @@ test.describe('Azure Horizon Home premium refinement — mocked qualification de
     }
   });
 
-  // Baselines will be captured and reviewed in the separate qualification session.
-  for (const theme of ['light','dark'] as const) {
-    test.skip(`PENDING baseline: Home hero, four cards, workspace/activity nested views — ${theme}`, async ({ page }) => {
-      await page.setViewportSize({ width: 390, height: 800 });
-      await openHome(page, 'healthy', theme);
-      await expect(page.locator('.lite-home-refined')).toHaveScreenshot(`home-premium-${theme}.png`);
-    });
-  }
+  // Canonical Home screenshots are active in
+  // lite-home-panel-premium-visual.spec.ts, where each deterministic state
+  // has an inspected repository-owned baseline.
 });

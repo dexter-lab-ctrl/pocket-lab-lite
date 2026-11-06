@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// P6 qualification asset — AUTHORED, NOT EXECUTED.
+// P6 qualification asset — executed in the focused Home Vitest gate.
 import React, { useRef, useState } from 'react';
 import '@testing-library/jest-dom/vitest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -39,7 +39,7 @@ function NavigationFixture() {
   </HomeGroupedSections>;
 }
 
-describe('Azure Horizon Home premium refinement P0–P6 (unqualified)', () => {
+describe('Azure Horizon Home premium refinement P0–P6', () => {
   it('preserves four destination cards and makes all delegated haptic targets native buttons', () => {
     const navigate = vi.fn();
     render(<HomeScreen status={status} onNavigate={navigate} refresh={vi.fn()} />);

@@ -2,7 +2,8 @@
  * Azure Horizon Home P0–P5: final Home-owned geometry layer.
  * Loaded after legacy Home files; never changes Apps, Safety, Devices or Recovery.
  * Layout values are theme-independent. Colors exclusively use shared semantic tokens.
- * AUTHORED — NOT EXECUTED; visual qualification is intentionally deferred.
+ * DEV-PC mocked qualification is executed in the Home suites; physical Android
+ * qualification remains separately tracked because the WSL CDP transport is blocked.
  */
 html[data-lite-theme] .lite-home-refined.lite-home-premium-shell {
   --home-density-gap: clamp(.8rem, 1.7vw, 1.2rem);
@@ -179,6 +180,9 @@ html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row {
   gap: .75rem;
   padding: .7rem .85rem;
 }
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row[aria-current="page"] {
+  color: var(--azure-focus);
+}
 html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-back {
   min-height: var(--home-control-height);
 }
@@ -188,6 +192,34 @@ html[data-lite-theme] .lite-home-panel-layer .lite-home-workspace-section .lite-
   border-radius: 0;
   padding: .85rem .1rem;
   background: transparent;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workspace-section .lite-action-row > div:first-child {
+  min-width: 0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workspace-section .lite-action-row strong {
+  color: var(--azure-text);
+  font-size: .87rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workspace-section .lite-action-row p {
+  margin: .28rem 0 0;
+  color: var(--azure-muted);
+  font-size: .82rem;
+  line-height: 1.45;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workspace-section .lite-action-row small {
+  display: block;
+  margin-top: .45rem;
+  color: var(--azure-warning);
+  font-size: .74rem;
+  line-height: 1.35;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workspace-section .lite-action-row-trailing > span {
+  color: var(--azure-muted);
+  font-size: .78rem;
+  font-weight: 650;
+  line-height: 1.4;
 }
 html[data-lite-theme] .lite-home-panel-layer .lite-home-workspace-section .lite-action-row.is-attention {
   border-inline-start: 3px solid var(--azure-warning);

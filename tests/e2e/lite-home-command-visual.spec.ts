@@ -13,6 +13,8 @@ async function setup(page: Page, theme: 'light' | 'dark', scenario: string, widt
   await installScenario(page,scenario);
   await page.goto('/?screen=home');
   await waitForLiteScreenToSettle(page,'home');
+  // Keep pointer-dependent hover styling out of canonical state snapshots.
+  await page.mouse.move(1, 1);
 }
 async function waitForMobilePanelHeaderLayout(dialog: Locator) {
   const title = dialog.locator('.lite-overlay-head > div').first();
@@ -45,9 +47,11 @@ for (const theme of ['light','dark'] as const) {
         const title=kind==='workspace'?'Workspace details':'Recent activity';
         const dialog=page.getByRole('dialog',{name:title});
         if (width <= 430) await waitForMobilePanelHeaderLayout(dialog);
+        await page.mouse.move(1, 1);
         await expect(dialog).toHaveScreenshot('home-command-'+kind+'-'+theme+'-'+width+'-index.png',
           {animations:'disabled'});
         await dialog.getByRole('button',{name:kind==='workspace'?'Service health':'History'}).click();
+        await page.mouse.move(1, 1);
         await expect(dialog).toHaveScreenshot('home-command-'+kind+'-'+theme+'-'+width+'-nested.png',
           {animations:'disabled'});
       });
@@ -60,6 +64,7 @@ test('Command Home desktop resized panel candidate',async ({page})=>{
   const dialog=page.getByRole('dialog',{name:'Workspace details'});
   await dialog.getByRole('button',{name:'Resize Workspace details panel'}).focus();
   for(let i=0;i<6;i++) await page.keyboard.press('ArrowLeft');
+  await page.mouse.move(1, 1);
   await expect(dialog).toHaveScreenshot('home-command-dark-resized-panel.png',{animations:'disabled'});
 });
 
@@ -77,6 +82,7 @@ for (const theme of ['light', 'dark'] as const) {
           await dialog.getByRole('button', { name: 'Expand', exact: true }).click();
         }
         await expect(dialog).toHaveAttribute('data-lite-sheet-snap', snap);
+        await page.mouse.move(1, 1);
         await expect(dialog).toHaveScreenshot(`home-command-${kind}-${theme}-snap-${snap}.png`, { animations: 'disabled' });
       });
     }
