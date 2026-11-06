@@ -1,0 +1,302 @@
+/*
+ * Azure Horizon Home P0–P5: final Home-owned geometry layer.
+ * Loaded after legacy Home files; never changes Apps, Safety, Devices or Recovery.
+ * Layout values are theme-independent. Colors exclusively use shared semantic tokens.
+ * AUTHORED — NOT EXECUTED; visual qualification is intentionally deferred.
+ */
+html[data-lite-theme] .lite-home-refined.lite-home-premium-shell {
+  --home-density-gap: clamp(.8rem, 1.7vw, 1.2rem);
+  --home-control-height: 44px;
+  gap: var(--home-density-gap);
+  font-family: var(--azure-font-ui);
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-home-refined .lite-page-header {
+  padding-block: .35rem .6rem;
+  margin: 0;
+}
+html[data-lite-theme] .lite-home-refined .lite-page-title {
+  color: var(--azure-text);
+  letter-spacing: -.025em;
+  line-height: 1.2;
+}
+html[data-lite-theme] .lite-home-refined .lite-page-description,
+html[data-lite-theme] .lite-home-refined .lite-page-eyebrow {
+  color: var(--azure-muted);
+  line-height: 1.5;
+}
+html[data-lite-theme] .lite-home-refined :is(.lite-home-command-details,.lite-home-text-action) {
+  min-height: var(--home-control-height);
+  padding-inline: .85rem;
+  border-radius: var(--azure-radius-control);
+  touch-action: manipulation;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+html[data-lite-theme] .lite-home-refined .lite-home-text-action {
+  color: var(--azure-accent);
+  background: transparent;
+  border: 1px solid transparent;
+}
+html[data-lite-theme] .lite-home-refined :is(.lite-home-text-action,.lite-home-command-details):hover {
+  background: var(--azure-hover);
+  border-color: var(--azure-strong-border);
+}
+html[data-lite-theme] .lite-home-refined :is(.lite-home-text-action,.lite-home-command-details):active {
+  background: var(--azure-pressed);
+}
+html[data-lite-theme] .lite-home-command-hero.pocket-card {
+  gap: .7rem;
+  padding: var(--azure-spacing-card);
+  box-shadow: var(--azure-shadow);
+}
+html[data-lite-theme] .lite-home-command-status {
+  gap: .6rem;
+}
+html[data-lite-theme] .lite-home-command-status svg {
+  width: 20px;
+  height: 20px;
+}
+html[data-lite-theme] .lite-home-command-hero-footer {
+  margin-top: .2rem;
+  gap: .6rem 1rem;
+}
+html[data-lite-theme] .lite-home-overview-grid {
+  gap: .75rem;
+}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card {
+  min-height: 132px;
+  padding: var(--azure-spacing-card);
+  gap: .7rem;
+  border-radius: var(--azure-radius-card);
+  box-shadow: var(--azure-shadow);
+  touch-action: manipulation;
+}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card > svg:first-child {
+  border-radius: var(--azure-radius-control);
+}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card > span {
+  align-content: start;
+  gap: .3rem;
+}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card strong {
+  line-height: 1.35;
+}
+html[data-lite-theme] .lite-home-overview-tile.pocket-card small {
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-home-lower-grid {
+  gap: var(--home-density-gap);
+}
+html[data-lite-theme] .lite-home-activity-preview {
+  padding: var(--azure-spacing-card);
+  gap: .7rem;
+}
+html[data-lite-theme] .lite-home-activity-latest {
+  gap: .75rem;
+  padding: .75rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--azure-border);
+  border-radius: 0;
+  background: transparent;
+}
+html[data-lite-theme] .lite-home-activity-latest > span {
+  min-width: 0;
+}
+html[data-lite-theme] .lite-home-attention-list.lite-p1-next-steps {
+  margin: 0;
+  padding: var(--azure-spacing-card);
+  gap: .7rem;
+  border-radius: var(--azure-radius-card);
+  background: var(--azure-surface);
+  border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-home-attention-list .lite-p1-next-steps-list {
+  gap: 0;
+}
+html[data-lite-theme] .lite-home-attention-list .lite-p1-next-steps-list li {
+  padding: .85rem 0;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--azure-border);
+}
+html[data-lite-theme] .lite-home-attention-list .lite-p1-next-steps-list li:last-child {
+  border-bottom: 0;
+}
+html[data-lite-theme] .lite-home-attention-list .lite-p1-next-steps-copy p {
+  color: var(--azure-muted);
+  opacity: 1;
+}
+html[data-lite-theme] .lite-home-attention-list .lite-p1-next-steps-list button,
+html[data-lite-theme] .lite-home-attention-list .lite-p1-next-steps-more {
+  min-height: var(--home-control-height);
+  padding: .55rem .85rem;
+  background: var(--azure-raised);
+  color: var(--azure-accent);
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  transition: background-color 140ms ease;
+}
+html[data-lite-theme] .lite-home-attention-list .lite-p1-next-steps-list button:hover,
+html[data-lite-theme] .lite-home-attention-list .lite-p1-next-steps-more:hover {
+  background: var(--azure-hover);
+}
+html[data-lite-theme] .lite-home-attention-list .lite-p1-next-steps-more {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  justify-self: start;
+}
+html[data-lite-theme] .lite-home-attention-list .lite-shared-disclosure-chevron {
+  width: 17px;
+  height: 17px;
+  transition: transform 140ms ease;
+}
+html[data-lite-theme] .lite-home-attention-list [aria-expanded="true"] .lite-shared-disclosure-chevron {
+  transform: rotate(180deg);
+}
+html[data-lite-theme] .lite-home-refined :is(button,[role="button"]):focus-visible,
+html[data-lite-theme] .lite-home-panel-layer :is(button,[role="button"]):focus-visible {
+  outline: 3px solid var(--azure-focus);
+  outline-offset: 2px;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-panel-scroll {
+  min-width: 0;
+  padding: var(--azure-spacing-card);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-workspace {
+  gap: var(--home-density-gap);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-rows {
+  border-radius: var(--azure-radius-control);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row {
+  min-height: 56px;
+  gap: .75rem;
+  padding: .7rem .85rem;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-back {
+  min-height: var(--home-control-height);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workspace-section .lite-action-row {
+  border: 0;
+  border-bottom: 1px solid var(--azure-border);
+  border-radius: 0;
+  padding: .85rem .1rem;
+  background: transparent;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workspace-section .lite-action-row.is-attention {
+  border-inline-start: 3px solid var(--azure-warning);
+  padding-inline-start: .65rem;
+  background: var(--azure-warning-subtle);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow {
+  box-shadow: none;
+  background: var(--azure-raised);
+  border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-visual .lite-home-workflow-line,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-visual .lite-home-workflow-line i {
+  background: var(--azure-border);
+  opacity: 1;
+  animation: none;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node {
+  background: var(--azure-surface);
+  border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node[data-home-node-state="ready"] {
+  border-color: var(--azure-success);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node[data-home-node-state="attention"] {
+  border-color: var(--azure-warning);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node[data-home-node-state="critical"] {
+  border-color: var(--azure-danger);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-workflow-node[data-home-node-state="unknown"] > svg {
+  color: var(--azure-neutral);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline > li {
+  border: 0;
+  border-inline-start: 2px solid var(--azure-border);
+  border-radius: 0;
+  background: transparent;
+  padding: .85rem .4rem .85rem 1rem;
+  gap: .75rem;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline .lite-home-event-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-accent-subtle);
+  color: var(--azure-accent);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-event-copy {
+  min-width: 0;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-event-copy :is(strong,span,time) {
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline button,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-personal-review button {
+  min-height: var(--home-control-height);
+  border: 1px solid var(--azure-border);
+  color: var(--azure-accent);
+  background: var(--azure-raised);
+  border-radius: var(--azure-radius-control);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-timeline button:active,
+html[data-lite-theme] .lite-home-panel-layer .lite-home-personal-review button:active {
+  background: var(--azure-pressed);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-activity-counts > div {
+  border-color: var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  padding: .85rem;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-personal-review {
+  border-top-color: var(--azure-border);
+}
+@media (max-width: 850px) {
+  html[data-lite-theme] .lite-home-refined .lite-home-overview-grid {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+}
+@media (max-width: 767px) {
+  html[data-lite-theme] .lite-home-refined.lite-home-premium-shell {
+    gap: .8rem;
+  }
+  html[data-lite-theme] .lite-home-command-hero.pocket-card {
+    padding: var(--azure-spacing-card);
+    gap: .6rem;
+  }
+  html[data-lite-theme] .lite-home-overview-tile.pocket-card {
+    min-height: 114px;
+    padding: .8rem;
+  }
+}
+@media (max-width: 355px) {
+  html[data-lite-theme] .lite-home-refined .lite-home-overview-grid {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+  html[data-lite-theme] .lite-home-overview-tile.pocket-card {
+    min-height: 124px;
+    padding: .7rem;
+  }
+}
+@container home-panel (min-width: 600px) {
+  html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-workspace {
+    grid-template-columns: minmax(170px, 210px) minmax(0,1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-lite-theme] .lite-home-refined :is(.lite-home-overview-tile,.lite-home-command-details,.lite-home-text-action,.lite-shared-disclosure-chevron),
+  html[data-lite-theme] .lite-home-panel-layer :is(.lite-home-settings-row,.lite-home-workflow-node,.lite-home-event-icon) {
+    animation: none;
+    transition: none;
+  }
+}
