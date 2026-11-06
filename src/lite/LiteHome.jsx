@@ -33,6 +33,7 @@ import './components/azureHome.css';
 import './components/homeActivityEvidence.css';
 import './components/homePanelRefinement.css';
 import './components/homeCommand.css';
+import './components/homePremiumRefinement.css';
 
 const HOME_WORKFLOW_STEPS = Object.freeze([
   { id: 'device', label: 'Device', icon: Smartphone },
@@ -102,8 +103,23 @@ export function homeWorkflowPresentation({ overallTone, attentionCount, savedSta
   };
 }
 
-export function HomeWorkspaceFlow({ overallTone, attentionCount, savedStateOnly, checking }) {
+// The sequence is orientation, not a verified network path. Individual nodes
+// use explicit FastAPI-projected area facts; connectors never imply connectivity.
+export function homeWorkflowNodeStates(services, { savedStateOnly = false, checking = false } = {}) {
+  const byKey = new Map((Array.isArray(services) ? services : [])
+    .filter((item) => item && typeof item.key === 'string')
+    .map((item) => [item.key, item.tone]));
+  const keys = { device: 'device_fleet', apps: 'app_catalog', safety: 'security' };
+  return HOME_WORKFLOW_STEPS.map(({ id }) => {
+    const observed = !savedStateOnly && !checking && keys[id] ? byKey.get(keys[id]) : null;
+    return { id, state: observed === 'ready' ? 'ready'
+      : observed === 'danger' ? 'critical' : observed === 'review' ? 'attention' : 'unknown' };
+  });
+}
+
+export function HomeWorkspaceFlow({ overallTone, attentionCount, savedStateOnly, checking, services }) {
   const flow = homeWorkflowPresentation({ overallTone, attentionCount, savedStateOnly, checking });
+  const nodeStates = homeWorkflowNodeStates(services, { savedStateOnly, checking });
   return (
     <section
       className={`lite-home-workflow is-${flow.state} motion-${flow.motion}`}
@@ -118,10 +134,12 @@ export function HomeWorkspaceFlow({ overallTone, attentionCount, savedStateOnly,
       <div className="lite-home-workflow-visual" role="list" aria-label="Workspace flow areas">
         {HOME_WORKFLOW_STEPS.map((step, index) => {
           const Icon = step.icon;
+          const nodeState = nodeStates[index].state;
+          const nodeStatus = { ready: 'Reported ready', critical: 'Needs attention', attention: 'Review recommended', unknown: 'Status not confirmed' }[nodeState];
           return (
             <React.Fragment key={step.id}>
               {index > 0 ? <span aria-hidden="true" className="lite-home-workflow-line" style={{ '--lite-home-workflow-delay': `${(index - 1) * 180}ms` }}><i /></span> : null}
-              <span role="listitem" aria-label={`${step.label} workspace flow step`} className={`lite-home-workflow-node is-${step.id} ${flow.activeNodes.includes(step.id) ? 'is-active' : ''} ${flow.doneNodes.includes(step.id) ? 'is-done' : ''}`}>
+              <span role="listitem" aria-label={`${step.label} workspace flow step: ${nodeStatus}`} data-home-node-state={nodeState} className={`lite-home-workflow-node is-${step.id} ${nodeState === 'ready' ? 'is-done' : ''}`}>
                 <Icon className="h-4 w-4" aria-hidden="true" />
                 <small>{step.label}</small>
               </span>
@@ -200,7 +218,7 @@ export function HomeHealthHero({ overview, loading, refreshing, saved, reachable
   const Icon = hero.icon;
   return <GlassCard as="section" className={'lite-home-command-hero is-' + hero.state}
     data-home-hero-state={hero.state} aria-label="Workspace health">
-    <div className="lite-home-command-status"><Icon size={19} aria-hidden="true" /><span>{hero.eyebrow}</span></div>
+    <div className="lite-home-command-status" role="status" aria-live="polite"><Icon size={19} aria-hidden="true" /><span>{hero.eyebrow}</span></div>
     <h2>{hero.title}</h2>
     <p>{hero.summary}</p>
     <div className="lite-home-command-hero-footer">
@@ -237,7 +255,8 @@ function HomeOverviewGrid({ services, status, onNavigate, saved }) {
           if (id === 'security' && summary.security_findings === 0) description = 'No urgent issues reported';
         }
         return <GlassCard as="button" interactive key={id} type="button" className={'lite-home-overview-tile is-' + tone}
-          onClick={() => onNavigate(screen)} aria-label={'Open ' + label}>
+          data-home-destination={screen} data-home-information={saved ? 'saved' : 'reported'}
+           onClick={() => onNavigate(screen)} aria-label={'Open ' + label}>
           <Icon size={20} aria-hidden="true" />
           <span><strong>{label}</strong><small>{description}</small></span>
           <ArrowUpRight size={17} aria-hidden="true" />
@@ -356,7 +375,7 @@ export default function HomeScreen({
       {!effectiveSavedStateOnly && overview.overallTone !== 'unknown' && attentionItems.some((item) => item.screen && item.screen !== 'home') ?
         <LiteNextSteps title="Needs your attention"
           description="Reported areas to review, in priority order."
-          saved={false} initialCount={3}
+          saved={false} initialCount={3} disclosureChevron
           items={attentionItems.filter((item) => item.screen && item.screen !== 'home').map((item) => ({
             id: item.key, label: item.label, description: item.summary,
             actionLabel: 'Review ' + item.label, onClick: () => goTo(item.screen),
@@ -380,7 +399,7 @@ export default function HomeScreen({
         </section> : null}
         {selectedWorkspaceSection === 'service-health' ? <section className="lite-home-workspace-section" aria-label="Service health">
           <HomeWorkspaceFlow overallTone={overview.overallTone} attentionCount={overview.attentionCount}
-            savedStateOnly={effectiveSavedStateOnly} checking={loading || refreshing || status.refresh_pending === true} />
+            services={overview.services} savedStateOnly={effectiveSavedStateOnly} checking={loading || refreshing || status.refresh_pending === true} />
           {overview.services.map((item) => <LiteActionRow key={item.key} label={item.label}
             value={effectiveSavedStateOnly ? 'Saved' : item.statusLabel}
             attention={item.tone === 'danger' || item.tone === 'review'}
