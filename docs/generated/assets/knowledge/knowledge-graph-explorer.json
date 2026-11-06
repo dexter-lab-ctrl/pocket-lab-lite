@@ -15542,6 +15542,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-safety-unification.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-safety-unification.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-safety-unification.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
       "name": "tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
       "source_refs": [
@@ -30296,6 +30307,20 @@
       "source": "component:api-guards",
       "target": "table:device_identity_guards",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-safety-unification.spec.ts"
+      ],
+      "id": "rel:37f7f86ed772ed03",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-azure-horizon-safety-unification.spec.ts",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -52968,6 +52993,20 @@
       "id": "rel:9cd2f927cc9e1384",
       "source": "component:security-coordinator",
       "target": "test:tests/backend/test_lite_workload_admission.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-safety-unification.spec.ts"
+      ],
+      "id": "rel:9cdbc3eeb325e7dd",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-azure-horizon-safety-unification.spec.ts",
       "type": "verified_by"
     },
     {

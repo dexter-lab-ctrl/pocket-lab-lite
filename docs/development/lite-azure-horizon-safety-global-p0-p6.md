@@ -1,11 +1,12 @@
 # Pocket Lab Lite — Azure Horizon Safety Center Global UI Hardening (P0–P6)
 
-**Status:** SOURCE-AUTHORED / QUALIFICATION DEFERRED  
+**Status:** VALIDATED WHERE EVIDENCE PERMITS / PHYSICAL ANDROID BLOCKED
 **Repository:** `dexter-lab-ctrl/pocket-lab-lite`  
 **Source base:** `main` at `3b0d8ecfd92f65f2ed81569e1dc1a974017736cb`  
 **Branch:** `feat/azure-horizon-safety-global-ui-hardening`
+**Candidate:** `94cd16356c33fddc20362945588045d7d1dceb37`
 
-> This document records source inspection and targeted implementation, **not** an executed validation report. No tests, builds, Storybook, Playwright, snapshots, accessibility scans, docs generation, runtime checks, physical-device qualification or CI remediation were performed during this implementation session. Preserve the draft PR until separately qualified.
+> This document is the qualification record for the exact candidate above. Dev-PC source, mocked UI, Storybook, visual review and shared consumer checks were executed. The Safety-only Android workflow reached the repository candidate foreground gate but remained blocked because Android Chrome's `NotificationShade` stayed foreground after the bounded collapse path. No physical Safety UI, haptic or performance result is claimed. The PR remains open and draft.
 
 ## Objective and non-goals
 
@@ -89,28 +90,51 @@ The shared `LiteSheet` layer resolves `html[data-lite-theme]` dynamically, even 
 - Existing `tests/e2e/lite-azure-horizon-safety-visual.spec.ts` and its previous baselines are preserved, not regenerated.
 - Existing `src/lite/security/SafetyNativeCenter.test.jsx` and `src/lite/components/LiteProgressiveDetails.safety.test.jsx` remain available to future qualification.
 
-## Follow-up qualification — instructions only, not executed
+## Qualification evidence — exact candidate
 
-| Target | Qualification scope | Evidence to capture |
+The following results were executed from `94cd16356c33fddc20362945588045d7d1dceb37` on the native WSL Dev-PC checkout. Frontend commands used Node `24.16.0`.
+
+| Area | Command / evidence | Result |
 |---|---|---|
-| Dev-PC mocked | Focused Vitest component/state tests, React Testing Library, Storybook controls, existing Safety/Apps/Recovery regression suites | Test output at exact candidate SHA; no fabricated passes |
-| Desktop browsers (1280/1440) | Light/Dark/System open theme switch, CSS computed surfaces, drag/resize/keyboard, focus restore, nested overlays, history cursor | Playwright traces + reviewed visual diffs |
-| Responsive tablet (768) | Drawer width, header composition, group density, token parity | Screenshot review and no overflow |
-| Mobile 320/360/375/390/430 | 44px touch targets, orientation, virtual keyboard, safe areas, snap states, text zoom, reduced motion | Mocked screenshots and accessibility checks |
-| Android Chrome | Physical tap/drag/snap, visual viewport changes, no unexpected haptics | Device screenshots, interaction notes, measured Safety-only render profile |
-| Installed Android PWA | Resumed saved/offline state, system theme change in open portal, haptics capability | Installed PWA observation and sanitized evidence |
-| Accessibility | WCAG AA contrast, role/name/state, keyboard, live region, focus trap/return, screen-reader check | Axe/Playwright and manual screen-reader evidence |
-| Performance | Safety-only open/close/scroll/drag budget on low-power ARM64; compare to preserved product thresholds | Repeatable measurements; do not weaken prior gates |
+| Build | `npm run build` | **PASS** — Vite production build completed; only existing browser-support and chunk-size warnings were emitted. |
+| Focused source tests | `npx vitest run src/lib/liteViewModels.test.js` plus the authored Safety/overlay/disclosure/haptics and relevant Safety component files | **PASS** — 13 files, 75 tests; the authored five-file set was 28/28 and the existing relevant set was 45/45. |
+| Storybook | `npm run build-storybook` | **PASS** — Storybook 8.6.18 built `storybook-static`; no tracked output was left behind. |
+| Safety mocked visual matrix | `npx playwright test tests/e2e/lite-azure-horizon-safety-visual.spec.ts --project=mocked-desktop --project=mocked-mobile --workers=2` | **PASS** — 278/278. |
+| Safety unification | `tests/e2e/lite-azure-horizon-safety-unification.spec.ts` targeted functional/accessibility run | **PASS** — 66/66; exact desktop geometry repair rerun was 2/2. |
+| Safety unification visual capture | targeted `--update-snapshots` run for shared and nested states | **PASS** — 84/84; reviewed 78 new unification images plus the corrected existing Safety baselines. |
+| Accessibility and responsive states | `tests/e2e/lite-accessibility-states.spec.ts` and the Safety combined mocked state suite | **PASS** — 36/36 independent accessibility-state checks; no color rule was disabled. Contrast was checked through the mocked token/computed-style assertions, not a physical screen reader session. |
+| Apps shared regression | `npm run test:apps:azure:unit`; `npm run test:apps:azure:mocked` | **PASS** — 19/19 unit and 64/64 mocked checks. |
+| Recovery shared regression | `npm run test:recovery:azure:unit`; `npm run test:recovery:azure:mocked` | **PASS** — 52/52 unit and 90/90 mocked checks. |
+| Visual review | `tests/e2e/lite-azure-horizon-safety-visual.spec.ts-snapshots/` and `tests/e2e/lite-azure-horizon-safety-unification.spec.ts-snapshots/` | **VALIDATED** — Light, Dark and System representative images were inspected; 54 corrected Safety Manage images, 2 full-scan confirmation images and 78 new unification images are scoped to Safety. |
+| Canonical documentation | `task lite:docs:generate`; `task lite:docs:check` | **PASS** — deterministic contracts, Codebase Map, architecture, enterprise/development/production pages, strict MkDocs, backend documentation tests and runtime-network fencing passed; browser projection is 9,951,690 bytes. |
+| Repository gate | `task lite:check` | **PASS** — full checked-in gate completed after the late source-contract test repair; 416 backend tests, 590 Vitest tests, mocked E2E, Axe, docs browser tests, build, Storybook, redaction and architecture checks passed. |
+| Static tooling | `npm run typecheck`; `npx eslint ...` | **UNVALIDATED / BLOCKED** — the repository typecheck script only prints TypeScript help and exits successfully without a project; ESLint has no discoverable configuration. No threshold or configuration was weakened. |
+| Windows Android CDP | `Invoke-RestMethod http://127.0.0.1:9222/json/version`; standard-user `adb devices -l`; `adb forward` | **VERIFIED transport only** — device `RZCW71C09GX`, model `SM-S911B`, Chrome package `com.android.chrome`, Chrome `156.0.8078.79`, protocol `1.3`; the forward was session-owned and removed. |
+| Candidate identity | `prepare-ui-performance-android-candidate.ps1` manifest and candidate server | **VERIFIED before navigation** — source SHA, sanitized manifest `source_commit` and candidate server were `94cd16356c33fddc20362945588045d7d1dceb37`; rendered-page identity was not reached. |
+| Physical Safety-only UI/performance | `run-ui-performance-android-safety.sh` prerequisite/candidate path | **BLOCKED** — the helper reported `android_notification_shade_open`; `mCurrentFocus` and `mFocusedWindow` remained `NotificationShade` after the bounded collapse attempt. No UI, haptic or frame-budget PASS is claimed. |
+| Synthetic Owner | repository qualification harness | **NOT USED** — mocked fixtures were sufficient for the Dev-PC suites; the physical candidate did not reach an authenticated UI. |
+| Server phone | read-only SSH Git and PM2 diagnostics | **VERIFIED unchanged for this session** — checkout clean on `main` at `3b0d8ecfd92f65f2ed81569e1dc1a974017736cb`; no source, runtime, PM2 or production data mutation was performed. |
 
-**For a separate, authorized qualification session only**, typical commands from an isolated Dev-PC checkout might include:
+### Scanner truth matrix
 
-```bash
-npm run build
-npx vitest run src/lite/security/safetyStatusPresentation.test.js src/lite/security/SafetyStatusHierarchy.test.jsx src/lite/LiteOverlayUnified.test.jsx src/lite/components/LiteDisclosureAzure.test.jsx src/lib/liteGlobalHaptics.test.js
-VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-azure-horizon-safety-unification.spec.ts --project=mocked-desktop --project=mocked-mobile
-```
+The UI now distinguishes not checked, pending, in progress, incomplete, completed, needs review, unavailable/not reported, failed, cancelled, saved/offline and stale states. A partial or unreported result cannot fall through to a fabricated clean conclusion. Coverage is rendered only when the backend projection reports coverage arrays; otherwise the UI states that coverage was not reported.
 
-These commands are **not** executed by this implementation session. Before approving screenshots, manually compare new expected baselines against existing PR #640/#641 Safety and PR #636 Apps parity examples; do not update snapshots automatically. Maintain all quality gates and inspect any later CI failures in their own qualification session.
+### Defects found and exact fixes
+
+- `src/lite/LiteSecurity.jsx` now separates backend-reported coverage from profile fallback labels and only renders checked targets from authoritative coverage. `src/lib/liteViewModels.js` exposes explicit `coverage_reported` authority, with regression tests in `src/lib/liteViewModels.test.js`.
+- `src/lite/LiteOverlay.jsx` now shares desktop controls while preserving existing consumers' compact reset contract; Safety receives the panel-specific reset name required by its geometry qualification.
+- `src/lite/security/safetyCenter.css` scopes the nested dark technical-details surface over the legacy light `!important` declaration.
+- `tests/e2e/lite-azure-horizon-safety-unification.spec.ts` is included by the repository Playwright projects, waits for lazy nested content before capture, and uses semantic Compact/Expand controls. The intended Safety baselines were reviewed and updated; unrelated snapshots were not regenerated.
+
+### Physical qualification and performance disposition
+
+The CDP endpoint proves only transport. The candidate server and manifest proved the exact source SHA, but the physical browser could not pass the foreground gate. Therefore:
+
+1. Safety functional qualification: **BLOCKED** for physical Android; Dev-PC mocked functional qualification is **PASS**.
+2. Safety physical performance contract: **BLOCKED / NO MEASUREMENT**; no target or hard-gate metric was collected.
+3. PR #645 performance regression attribution: **INSUFFICIENT EVIDENCE**; no PR-vs-baseline comparison is claimed.
+
+The notification-shade blocker is an external Android foreground condition, not a source failure demonstrated by the mocked or desktop evidence. It remains a **RESIDUAL / BLOCKER** for full physical qualification. Existing PR #588/#589 thresholds were preserved.
 
 ## Risks and boundaries
 
@@ -118,7 +142,7 @@ These commands are **not** executed by this implementation session. Before appro
 2. **CSS precedence:** historical rules and `!important` ownership remain extensive. This targeted patch updates confirmed legacy owners and token-backed Safety descendants, not a wholesale index.css rewrite.
 3. **Tool-state authority:** a terminal run status does not mean Lynis/Trivy completed. New display intentionally marks missing per-tool results as unreported until evidence is present.
 4. **Coverage truth:** only reported skipped lists appear; some profiles may have zero reported scope and must say coverage not reported.
-5. **Source-only state:** tests, Storybook, Playwright, a11y, visual snapshots, performance, production-device behavior and CI are **UNVALIDATED**. Shared focus/gesture/viewport changes warrant explicit manual review.
+5. **Qualification boundary:** mocked source, Storybook, Playwright, accessibility-state checks, visual baselines and shared consumers are **VALIDATED**; physical Android rendering, haptic behavior, performance metrics, installed-PWA resume behavior and any missing static-tool configuration remain **BLOCKED** or **UNVALIDATED** as stated above.
 6. **Backend invariant:** unchanged scanner execution, FastAPI contracts, authorization, NATS/JetStream, SQLite retention, evidence redaction, Tailscale, agent/supervisor and ARM64/Termux runtime.
 
-**Handoff state:** IMPLEMENTATION SOURCE AUTHORED / QUALIFICATION DEFERRED. The draft PR is the review entry point. Do not merge, release or deploy before an independent qualification decision.
+**Handoff state:** EXACT-HEAD DEV-PC QUALIFICATION COMPLETE WHERE EVIDENCE PERMITS / PHYSICAL ANDROID BLOCKED. PR #645 remains open and draft. No merge, release, deployment, server-phone source change or server-phone runtime change occurred.

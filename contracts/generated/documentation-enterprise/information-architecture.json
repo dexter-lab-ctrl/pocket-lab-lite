@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 524,
+  "page_count": 525,
   "page_types": [
     "overview",
     "guide",
@@ -5097,6 +5097,29 @@
       "source_or_generator": "development/lite-azure-horizon-rules-refinement.md",
       "title": "Azure Horizon — Safety Rules refinement",
       "url": "/development/lite-azure-horizon-rules-refinement/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-safety-global-p0-p6.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-safety-global-p0-p6",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-safety-global-p0-p6.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-safety-global-p0-p6.md",
+      "title": "Pocket Lab Lite — Azure Horizon Safety Center Global UI Hardening (P0–P6)",
+      "url": "/development/lite-azure-horizon-safety-global-p0-p6/"
     },
     {
       "additional_audiences": [],
@@ -18413,7 +18436,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "af4f7a50b2fa894d9272aebb89e2c7ab6ba50ccf2bba8cd3ba42ec8e0e594398",
+  "source_fingerprint": "c76cf514377baa2c2b70ebb381340efbb2e727112750f145065d881460a2512e",
   "top_level": [
     "start-here",
     "use",
