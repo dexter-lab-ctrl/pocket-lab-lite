@@ -152,6 +152,7 @@ function buildDetails({ type, model = {} }) {
     timedOutCoverageTargets = [],
     missingCoverageTargets = [],
     targetCoverageStatuses = [],
+    coverageReported = false,
     detailsHydrated = false,
     detailsHydration = {},
   } = model;
@@ -226,8 +227,8 @@ function buildDetails({ type, model = {} }) {
     const profile = safeText(scanProfile, 'quick').toLowerCase();
     const fullProfile = profile === 'full';
     const appProfile = profile === 'app';
-    const checked = safeList(checkedCoverageTargets, appProfile ? ['PhotoPrism route', 'App files', 'App settings', 'Backup records', 'Action state'] : fullProfile ? ['System safety settings', 'Pocket Lab Lite', 'Pocket Lab settings', 'App environment', 'PhotoPrism', 'Backup records'] : ['System safety settings', 'Pocket Lab Lite files', 'Secure web access', 'Private device connection', 'Pocket Lab services', 'Protected check records']);
-    const skipped = safeList(skippedCoverageTargets, appProfile ? ['Photos and originals', 'Import media', 'Thumbnails and sidecars', 'PhotoPrism database', 'Backup payloads', 'Logs and caches'] : fullProfile ? ['Photo library/media', 'Android shared storage', 'Backup payloads', 'Backup storage contents', 'Service logs', 'Tool caches'] : ['Photo library/media', 'Backup payloads', 'PROot Ubuntu full filesystem', 'Go/npm/cache folders', 'Old PWA builds', 'Large runtime histories']);
+    const checked = safeList(checkedCoverageTargets);
+    const skipped = safeList(skippedCoverageTargets);
     const partial = safeList(partialCoverageTargets);
     const timedOut = safeList(timedOutCoverageTargets);
     const missing = safeList(missingCoverageTargets);
@@ -236,13 +237,11 @@ function buildDetails({ type, model = {} }) {
       : [];
     return {
       title: appProfile ? 'App Check coverage' : fullProfile ? 'Full Local Check coverage' : 'Quick safety coverage',
-      status: partial.length || timedOut.length ? 'review' : 'ready',
+      status: !coverageReported || partial.length || timedOut.length || missing.length ? 'review' : 'ready',
       statusLabel: `Profile: ${safeText(scanProfile, 'quick')}`,
-      summary: appProfile
-        ? 'App Check focuses on PhotoPrism route, app metadata, settings, backup metadata, and action state while skipping photos and media.'
-        : fullProfile
-          ? 'Full Local Check checks this device more deeply while still skipping photos, backup payloads, logs, Android shared storage, and large caches.'
-          : 'Quick Safety Check checks Pocket Lab basics and skips huge or private areas by default.',
+      summary: !coverageReported
+        ? 'Coverage has not been reported. Open a completed result to review actual checked and excluded areas.'
+        : 'Checked, excluded and incomplete targets below come from the reported scan scope.',
       what_happened: [
         appProfile ? 'Pocket Lab used the app scan profile.' : fullProfile ? 'Pocket Lab used the full local scan profile.' : 'Pocket Lab used the quick scan profile.',
         ...checked.map((item) => `Checked: ${item}`),
@@ -250,21 +249,11 @@ function buildDetails({ type, model = {} }) {
       ],
       what_changed: ['Opening this coverage view did not start a scan or change the device.'],
       what_needs_attention: [...partial.map((item) => `Partial: ${item}`), ...timedOut.map((item) => `Timed out: ${item}`), ...missing.map((item) => `Missing optional target: ${item}`)],
-      what_did_not_happen: appProfile ? [
-        'Photos, originals, imports, thumbnails, sidecars, and media files were not scanned.',
-        'PhotoPrism media indexing was not started.',
-        'Backup payloads and raw logs were not scanned.',
-        'The browser did not access PhotoPrism internals.',
-      ] : fullProfile ? [
-        'Photo libraries and user media were not scanned.',
-        'Backup contents were not scanned.',
-        'Android shared storage was not scanned.',
-        'Logs, caches, thumbnails, sidecars, and old PWA builds were skipped.',
-      ] : [
-        'Photo libraries and user media were not scanned by the quick profile.',
-        'Backup payloads and restore checkpoints were not scanned by the quick profile.',
-        'The full PROot Ubuntu filesystem was not scanned by the quick profile.',
-        'Large cache folders and old PWA builds were skipped.',
+      what_did_not_happen: [
+        'Opening this view did not trigger a new scan or change any device.',
+        !coverageReported ? 'Coverage and exclusions have not been reported for this profile.'
+          : skipped.length ? 'Review the grouped skipped-target list below for reported exclusions.'
+            : 'No exclusion rows were reported for this check.',
       ],
       saved_for_troubleshooting: {
         saved: Boolean(lastRun?.run_id),
@@ -280,8 +269,8 @@ function buildDetails({ type, model = {} }) {
       ],
       history: {
         title: appProfile ? 'Skipped by App Check' : fullProfile ? 'Skipped by Full Local Check' : 'Skipped by Quick Safety Check',
-        summary: appProfile ? 'These areas are intentionally skipped so App Check stays private, fast, and app-focused.' : fullProfile ? 'These areas are intentionally skipped to protect private data and keep the deeper check bounded.' : 'These areas are intentionally skipped to keep daily checks bounded on mobile devices.',
-        items: skipped.map((title, index) => ({ id: `coverage-skip-${index}`, title, meta: appProfile ? 'skipped by app profile' : fullProfile ? 'skipped by full profile' : 'skipped by quick profile' })),
+        summary: !coverageReported ? 'Coverage has not been reported for this profile.' : appProfile ? 'Excluded to keep App Check focused and private.' : fullProfile ? 'Excluded to keep the deeper check bounded and private.' : 'Excluded to keep daily checks lightweight.',
+        items: coverageReported ? skipped.map((title, index) => ({ id: `coverage-skip-${index}`, title })) : [],
         enabled: true,
         emptyMessage: 'No skipped targets were reported.',
       },

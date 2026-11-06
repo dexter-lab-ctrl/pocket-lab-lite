@@ -15,9 +15,6 @@ import {
   FileCheck,
   Fingerprint,
   LayoutGrid,
-  Move,
-  Maximize2,
-  RotateCcw,
   Lock,
   Menu,
   Network,
@@ -58,10 +55,11 @@ import {
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import { acceptSecurityProgressEvent } from '../lib/securityProgressEvents.js';
 import { shouldUseLiteSecurityProgressStream } from '../lib/liteSecurityProgressPolicy.js';
-import { LiteSheet } from './LiteOverlay.jsx';
-import { SafetyCenterHero, SafetyDestinations, SafetyManageNavigation } from './security/SafetyNativeCenter.jsx';
+import { LiteSheet, LiteDesktopPanelControls } from './LiteOverlay.jsx';
+import { SafetyCenterHero, SafetyDestinations, SafetyManageNavigation, SafetyStatusHierarchy } from './security/SafetyNativeCenter.jsx';
+import { deriveSafetyStatusPresentation } from './security/safetyStatusPresentation.js';
 import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
-import { areComparableSafetyRuns, isMeasuredSafetyProgress, safetyCoverageQuality } from './security/safetyAzurePresentation.js';
+import { areComparableSafetyRuns, isMeasuredSafetyProgress, isSafetyCoverageReported, safetyCoverageQuality } from './security/safetyAzurePresentation.js';
 import { isLitePerformanceMode } from './liteNavigationRuntime.js';
 import {
   GlassCard,
@@ -473,33 +471,6 @@ function profileChangeSummary(snapshot = {}) {
   return 'No new changes';
 }
 
-
-function securityToolChip(toolKey, toolLabel, toolResult = {}, context = {}) {
-  const runStatus = String(context.runStatus || '').toLowerCase();
-  const terminal = ['succeeded', 'success', 'healthy', 'degraded', 'partial', 'completed', 'done'].some((status) => runStatus.includes(status));
-  const tools = Array.isArray(context.tools) ? context.tools.map((tool) => String(tool).toLowerCase()) : [];
-  const stepText = (Array.isArray(context.executionSteps) ? context.executionSteps : [])
-    .map((step) => `${step?.key || ''} ${step?.title || ''} ${step?.detail || ''} ${step?.state || ''}`.toLowerCase())
-    .join(' ');
-  const profile = normalizeSecurityProfileId(context.profile || 'quick');
-  const toolWasExpected = tools.includes(toolKey) || stepText.includes(toolKey) || (profile !== 'app' && ['lynis', 'trivy'].includes(toolKey)) || (profile === 'app' && toolKey === 'trivy');
-  if (securityToolCompleted(toolResult) || (terminal && toolWasExpected && !runStatus.includes('failed') && !runStatus.includes('error'))) {
-    return { key: toolKey, label: `${toolLabel} checked`, tone: 'ready' };
-  }
-  if (terminal && !toolWasExpected) {
-    return { key: toolKey, label: `${toolLabel} not used`, tone: 'neutral' };
-  }
-  const rawLabel = securityToolStatusLabel(toolResult);
-  const normalized = String(rawLabel || '').trim().toLowerCase();
-  const readableStatus = rawLabel && normalized !== 'pending'
-    ? rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1)
-    : 'pending';
-  return {
-    key: toolKey,
-    label: `${toolLabel} ${readableStatus}`,
-    tone: securityToolPartial(toolResult) || securityToolMissing(toolResult) ? 'review' : 'checking',
-  };
-}
 
 const SECURITY_SCORE_RING_GREEN_SPRING_GUARDS = [
   'lite-security-score-ring-green-fill',
@@ -2297,12 +2268,22 @@ export default function SecurityScreen() {
   const evidenceRun = evidence?.run || null;
   const toolResults = (activeProfileIsLatest ? evidenceRun?.tool_results : null) || activeProfileView?.tool_results || activeProfileRun?.tool_results || {};
   const coverageFallback = profileFallbackCoverage(scanProfile);
-  const coverageSummary = activeProfileView?.coverage_summary || activeProfileRun?.coverage_summary || (activeProfileIsLatest ? data?.coverage_summary || evidence?.coverage_summary : null) || coverageFallback;
-  const checkedCoverageTargets = quickCoverageList(coverageSummary.checked_targets, coverageFallback.checked_targets);
-  const skippedCoverageTargets = quickCoverageList(coverageSummary.skipped_targets, coverageFallback.skipped_targets);
-  const partialCoverageTargets = quickCoverageList(coverageSummary.partial_targets);
-  const timedOutCoverageTargets = quickCoverageList(coverageSummary.timed_out_targets);
-  const missingCoverageTargets = quickCoverageList(coverageSummary.missing_targets);
+  const coverageCandidates = [
+    activeProfileView?.coverage_summary,
+    activeProfileRun?.coverage_summary,
+    activeProfileIsLatest ? data?.coverage_summary : null,
+    activeProfileIsLatest ? evidence?.coverage_summary : null,
+  ];
+  const reportedCoverageSummary = coverageCandidates.find((coverage) => (
+    coverage?.coverage_reported !== false && isSafetyCoverageReported(coverage, activeProfileHasRun)
+  )) || null;
+  const profileCoverageReported = Boolean(reportedCoverageSummary);
+  const coverageSummary = reportedCoverageSummary || coverageFallback;
+  const checkedCoverageTargets = profileCoverageReported ? quickCoverageList(coverageSummary.checked_targets) : [];
+  const skippedCoverageTargets = profileCoverageReported ? quickCoverageList(coverageSummary.skipped_targets) : [];
+  const partialCoverageTargets = profileCoverageReported ? quickCoverageList(coverageSummary.partial_targets) : [];
+  const timedOutCoverageTargets = profileCoverageReported ? quickCoverageList(coverageSummary.timed_out_targets) : [];
+  const missingCoverageTargets = profileCoverageReported ? quickCoverageList(coverageSummary.missing_targets) : [];
   const targetCoverageStatuses = Array.isArray(coverageSummary.target_statuses) ? coverageSummary.target_statuses : [];
   const currentEvidenceRefs = Array.from(new Set([
     ...evidenceRefs,
@@ -2898,9 +2879,10 @@ export default function SecurityScreen() {
     scoreTrendView: hydrateHistoryDetails ? scoreTrendView : null,
     scanProgressLabel,
     scanProfile,
-    coverageSummary: hydrateCoverageDetails ? coverageSummary : {},
-    checkedCoverageTargets: hydrateCoverageDetails ? checkedCoverageTargets : [],
-    skippedCoverageTargets: hydrateCoverageDetails ? skippedCoverageTargets : [],
+    coverageSummary: hydrateCoverageDetails && profileCoverageReported ? coverageSummary : {},
+    coverageReported: hydrateCoverageDetails && profileCoverageReported,
+    checkedCoverageTargets: hydrateCoverageDetails && profileCoverageReported ? checkedCoverageTargets : [],
+    skippedCoverageTargets: hydrateCoverageDetails && profileCoverageReported ? skippedCoverageTargets : [],
     partialCoverageTargets: hydrateCoverageDetails ? partialCoverageTargets : [],
     timedOutCoverageTargets: hydrateCoverageDetails ? timedOutCoverageTargets : [],
     missingCoverageTargets: hydrateCoverageDetails ? missingCoverageTargets : [],
@@ -2937,7 +2919,7 @@ export default function SecurityScreen() {
         ? 'Showing saved state'
         : 'Run Safety Check to begin';
   const evidenceSaved = Boolean(activeProfileHasRun && (latestEvidenceReceipt || evidenceReceipt || currentEvidenceRefs.length || evidenceFileCount));
-  const coverageIsReported = Boolean(activeProfileHasRun && (activeProfileView?.coverage_summary || activeProfileRun?.coverage_summary || (activeProfileIsLatest && data?.coverage_summary)));
+  const coverageIsReported = profileCoverageReported;
   const coverageQuality = safetyCoverageQuality(coverageSummary, coverageIsReported);
   const evidenceStatusLabel = evidenceSaved ? 'Evidence saved' : 'Evidence pending';
   const safetyCenterSummary = safetyStory.headline;
@@ -2948,20 +2930,18 @@ export default function SecurityScreen() {
       : freshJustNow
         ? 'Fresh just now'
         : '';
-  const toolChipContext = { runStatus, tools: toolNames, executionSteps, profile: scanProfile };
-  const safetyCenterChips = scanProfile === 'app'
-    ? [
-      { key: 'route', label: activeProfileHasRun ? 'Route checked' : 'Route pending', tone: activeProfileHasRun ? 'ready' : 'checking' },
-      securityToolChip('trivy', 'Trivy', toolResults?.trivy, toolChipContext),
-      { key: 'media', label: 'Photos skipped', tone: 'ready' },
-      { key: 'critical', label: criticalIssues.length ? `${criticalIssues.length} critical` : 'No critical issues', tone: criticalIssues.length ? 'danger' : 'ready' },
-    ]
-    : [
-      securityToolChip('lynis', 'Lynis', toolResults?.lynis, toolChipContext),
-      securityToolChip('trivy', 'Trivy', toolResults?.trivy, toolChipContext),
-      { key: 'secrets', label: 'Secrets hidden', tone: 'ready' },
-      { key: 'critical', label: criticalIssues.length ? `${criticalIssues.length} critical` : 'No critical issues', tone: criticalIssues.length ? 'danger' : 'ready' },
-    ];
+  const safetyStatusPresentation = deriveSafetyStatusPresentation({
+    status: runStatus,
+    hasRun: activeProfileHasRun,
+    running: scanInProgress,
+    profile: scanProfile,
+    toolResults,
+    executionSteps,
+    criticalCount: criticalIssues.length,
+    coverageReported: coverageIsReported,
+    saved: savedSecurityDetails || savedStateOnly,
+    offline: !effectiveBackendReachable,
+  });
   const manageOverviewStats = [
     { label: 'Profile', value: activeProfileMeta.label },
     { label: 'Assessment', value: safetyScoreReported ? `${Math.round(safetyScore)} reported by Pocket Lab` : 'Not reported' },
@@ -3142,12 +3122,10 @@ export default function SecurityScreen() {
         bodyRef={safetyManageScrollRef}
         surfaceStyle={safetyManagePanelStyle}
         surfaceProps={{ 'data-security-phase5-manage-shell': 'true', 'data-security-manage-layout': safetyManageDesktop ? 'desktop-movable' : 'mobile-sheet', 'data-security-react-spring': 'manage-shell' }}
-        headerActions={safetyManageDesktop ? <div className="lite-security-manage-desktop-tools" role="group" aria-label="Desktop Safety panel controls">
-          <button type="button" aria-label="Move Safety panel" title="Drag or use arrow keys; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight" onPointerDown={(event) => startSafetyManageInteraction('move', event)} onKeyDown={(event) => adjustSafetyManageKeyboard('move', event)}><Move size={16} aria-hidden="true" /></button>
-          <button type="button" aria-label="Reset Safety panel position and size" onClick={resetSafetyManagePanel}><RotateCcw size={16} aria-hidden="true" /> Reset</button>
-          <button type="button" aria-label="Resize Safety panel" title="Drag or use arrow keys; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight" onPointerDown={(event) => startSafetyManageInteraction('resize', event)} onKeyDown={(event) => adjustSafetyManageKeyboard('resize', event)}><Maximize2 size={16} aria-hidden="true" /></button>
-          <span className="sr-only" role="status" aria-live="polite">{safetyManageAnnouncement}</span>
-        </div> : null}
+        headerActions={safetyManageDesktop ? <LiteDesktopPanelControls title="Safety" showResetLabel className="lite-security-manage-desktop-tools" geometry={{
+          announcement: safetyManageAnnouncement, reset: resetSafetyManagePanel,
+          startPanelInteraction: startSafetyManageInteraction, adjustPanelWithKeyboard: adjustSafetyManageKeyboard,
+        }} /> : null}
       >
         <ManageMotionDiv style={securityMotionReduced ? undefined : manageScrollSpring} className="lite-security-manage-scroll-frame" data-security-react-spring="manage-scroll-frame">
         <p className="lite-security-horizon-manage-context">Profile: <strong>{activeProfileMeta.label}</strong> · {savedSecurityDetails ? 'Saved result' : lastCheckedLabel} · {evidenceStatusLabel}</p>
@@ -3218,9 +3196,7 @@ export default function SecurityScreen() {
                   </div>
                 ))}
               </div>
-              <div className="lite-security-safety-center-chips">
-                {safetyCenterChips.map((chip) => <span key={chip.key} className={`lite-security-safety-chip lite-security-safety-chip-${chip.tone}`}>{chip.label}</span>)}
-              </div>
+              <SafetyStatusHierarchy presentation={safetyStatusPresentation} />
               <div className="lite-security-profile-run-cards" aria-label="Run Security scan profile">
                 {SECURITY_SCAN_PROFILES.map((profile) => (
                   <div key={profile.id} className={`lite-security-profile-run-card ${scanProfile === profile.id ? 'is-active' : ''}`.trim()}>

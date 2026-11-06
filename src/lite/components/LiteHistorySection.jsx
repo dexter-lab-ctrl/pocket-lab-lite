@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { History } from 'lucide-react';
+import React, { useId, useMemo, useState } from 'react';
+import { ChevronDown, History } from 'lucide-react';
 import LiteVirtualList from './LiteVirtualList.jsx';
 import { friendlyLiteText } from '../../lib/liteUxPresentation.js';
 
@@ -46,6 +46,7 @@ export default function LiteHistorySection({
   initiallyOpen = false,
 }) {
   const [isOpen, setIsOpen] = useState(Boolean(initiallyOpen));
+  const contentId = useId();
   const safeItems = useMemo(() => safeHistoryItems(items), [items]);
   const sourceCount = Array.isArray(items) ? items.filter(Boolean).length : 0;
   const count = safeItems.length;
@@ -63,19 +64,20 @@ export default function LiteHistorySection({
   };
 
   return (
-    <section className="lite-history-section lite-ux-history-language" data-lazy-history="true" data-history-open={isOpen} data-lite-detail-presentation={presentation}>
+    <section className="lite-history-section lite-ux-history-language" data-lazy-history="true" data-history-open={isOpen} data-lite-detail-presentation={presentation} data-lite-safety-coverage-list={presentation === 'safety' && title.startsWith('Skipped by') ? 'true' : undefined}>
       <button
         type="button"
         className="lite-progressive-disclosure-toggle"
         aria-expanded={isOpen}
+        aria-controls={contentId}
         onClick={toggle}
       >
         <span className={presentation === 'safety' ? 'lite-safety-detail-title' : undefined}>{presentation === 'safety' ? <span className="lite-safety-detail-icon" aria-hidden="true"><History size={18} strokeWidth={1.9} /></span> : null}{title}</span>
-        <small>{isOpen ? 'Hide' : count ? `${count} saved` : 'Open'}</small>
+        <ChevronDown className="lite-shared-disclosure-chevron" size={18} aria-hidden="true" />
       </button>
       <p className="lite-progressive-disclosure-summary">{collapsedSummary}</p>
       {shouldMountHistory ? (
-        <div className="lite-history-section-body">
+        <div className="lite-history-section-body" id={contentId} role="region" aria-label={`${title} details`}>
           {loading ? <p>Loading history…</p> : null}
           {error ? <p role="alert">History is temporarily unavailable. Try again when Pocket Lab is reachable.</p> : null}
           {savedState ? <p>Showing saved information.</p> : null}

@@ -7154,9 +7154,13 @@ def test_lite_security_score_ring_uses_green_react_spring_fill_and_truthful_tool
     css = Path("src/index.css").read_text()
 
     assert "SECURITY_SCORE_RING_GREEN_SPRING_GUARDS" in security
-    assert "function securityToolChip" in security
-    assert "Lynis checked" in security
-    assert "Trivy checked" in security
+    assert "function deriveScanQuality" in security
+    assert "function SecurityScanQualityCard" in security
+    assert "securityToolCompleted" in security
+    assert "securityToolPartial" in security
+    assert "securityToolMissing" in security
+    assert "Lynis completed" in security
+    assert "Trivy completed" in security
     assert "Lynis pending" not in security
     assert "Trivy pending" not in security
     assert "const scoreRingStyle" in security
@@ -7514,7 +7518,9 @@ def test_lite_security_quick_safety_ui_and_view_model_contract_source():
     assert "profile: 'quick'" in security
     assert "liteApi.runSecurityScan('local', { profile: 'quick'" in security
     assert "type === 'coverage'" in details
-    assert "Photo libraries and user media were not scanned by the quick profile." in details
+    assert "coverageReported = false" in details
+    assert "Coverage has not been reported. Open a completed result" in details
+    assert "No skipped targets were reported." in details
     assert "runSecurityScan: (scope = 'local', options = {}) => postJson('/api/lite/security/check', { scope, profile: 'quick', ...options })" in api
     assert "profile: 'full'" in security
     assert "selectSecurityCoverageSummaryView" in view_models
@@ -7549,8 +7555,10 @@ def test_lite_security_profile_polish_controls_and_chips_contract():
     assert "profileRunsById" in security
     assert "activeProfileRun" in security
     assert "activeProfileMeta" in security
-    assert "`${toolLabel} checked`" in security
-    assert "terminal && toolWasExpected" in security
+    assert "securityToolStatusLabel" in security
+    assert "securityToolCompleted" in security
+    assert "securityToolPartial" in security
+    assert "securityToolMissing" in security
     assert "Lynis pending" not in security
     assert "Trivy pending" not in security
     assert "lite-security-profile-action-grid" in css

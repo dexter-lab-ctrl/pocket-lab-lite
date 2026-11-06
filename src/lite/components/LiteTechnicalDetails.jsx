@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Settings2 } from 'lucide-react';
+import React, { useId, useMemo, useState } from 'react';
+import { ChevronDown, Settings2 } from 'lucide-react';
 import { friendlyLiteText } from '../../lib/liteUxPresentation.js';
 
 const TECHNICAL_DETAILS_COLLAPSED_BY_DEFAULT = true;
@@ -42,6 +42,7 @@ export default function LiteTechnicalDetails({
   presentation = 'default',
 }) {
   const [open, setOpen] = useState(Boolean(defaultOpen));
+  const detailsId = useId();
   const safeRows = useMemo(() => normalizeTechnicalRows(rows), [rows]);
   const safeSummary = toSafeText(summary) || 'Safe operational facts are available when you need them.';
 
@@ -53,14 +54,15 @@ export default function LiteTechnicalDetails({
         type="button"
         className="lite-progressive-disclosure-toggle"
         aria-expanded={open}
+        aria-controls={detailsId}
         onClick={() => setOpen((current) => !current)}
       >
         <span className={presentation === 'safety' ? 'lite-safety-detail-title' : undefined}>{presentation === 'safety' ? <span className="lite-safety-detail-icon" aria-hidden="true"><Settings2 size={18} strokeWidth={1.9} /></span> : null}{title}</span>
-        <small>{open ? 'Hide' : 'Show'}</small>
+        <ChevronDown className="lite-shared-disclosure-chevron" size={18} aria-hidden="true" />
       </button>
       <p className="lite-progressive-disclosure-summary">{safeSummary}</p>
       {open ? (
-        <dl className="lite-technical-details-list">
+        <dl id={detailsId} className="lite-technical-details-list" role="region" aria-label={`${title} values`}>
           {safeRows.map((row) => (
             <div key={`${row.label}:${row.value}`} className="lite-technical-details-row">
               <dt>{row.label}</dt>

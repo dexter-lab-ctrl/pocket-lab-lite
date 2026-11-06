@@ -709,3 +709,222 @@ html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-lay
 html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer .lite-progressive-disclosure-summary {
   color: var(--azure-muted) !important;
 }
+
+/* Azure Horizon Safety global hardening P2–P5.
+ * Layout dimensions stay independent of resolved Light/Dark/System tokens.
+ * Do not introduce a Safety-only palette or alternate layout per theme. */
+html[data-lite-theme] [data-lite-overlay-portal="true"]:is(.lite-security-manage-layer, .lite-security-phase3-layer) {
+  --lite-safety-panel-inset: var(--azure-spacing-card);
+  --lite-safety-row-gap: .65rem;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"]:is(.lite-security-manage-layer, .lite-security-phase3-layer)
+  :is(.lite-security-manage-scroll-frame, .lite-security-details-premium-panel,
+      .lite-security-details-premium-content, .lite-progressive-details,
+      .lite-progressive-details-grid, .lite-history-section-body,
+      .lite-technical-details-list, .lite-security-history-lazy) {
+  min-width: 0;
+  color: var(--azure-text);
+  background-color: var(--azure-surface);
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer
+  .lite-security-details-premium-content .lite-progressive-details {
+  /* A legacy phase-3 rule sets a light background shorthand with !important. */
+  background: var(--azure-surface) !important;
+  background-image: none !important;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer
+  :is(.lite-progressive-details-grid, .lite-security-history-lazy, .lite-history-section-body) {
+  box-shadow: none;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer
+  .lite-progressive-details[data-lite-detail-presentation="safety"] .lite-progressive-detail-section {
+  min-height: 0;
+  border-radius: var(--azure-radius-control);
+  box-shadow: none;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer
+  .lite-technical-details-row {
+  background: var(--azure-raised);
+  color: var(--azure-text);
+  border-color: var(--azure-border);
+  box-shadow: none;
+}
+html[data-lite-theme] [data-lite-overlay-portal="true"].lite-security-phase3-layer
+  .lite-technical-details dd {
+  color: var(--azure-muted);
+}
+
+/* Existing Apps LiteSheet uses identical two-position mode buttons. */
+html[data-lite-theme] .lite-security-manage-layer .lite-sheet-mobile-snap-actions button[aria-pressed="true"],
+html[data-lite-theme] .lite-security-phase3-layer .lite-sheet-mobile-snap-actions button[aria-pressed="true"] {
+  background: var(--azure-selected);
+  border-color: var(--azure-strong-border);
+  color: var(--azure-accent);
+  font-weight: 750;
+}
+html[data-lite-theme] .lite-security-manage-layer .lite-sheet-mobile-snap-actions button:focus-visible,
+html[data-lite-theme] .lite-security-phase3-layer .lite-sheet-mobile-snap-actions button:focus-visible {
+  outline: 2px solid var(--azure-focus);
+  outline-offset: 2px;
+}
+
+/* Scanner execution is not equivalent to findings or privacy safeguards. */
+html[data-lite-theme] .lite-security-manage-layer .lite-safety-status-hierarchy {
+  display: grid;
+  gap: var(--lite-safety-row-gap);
+  min-width: 0;
+  padding: var(--lite-safety-panel-inset);
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-card);
+  background: var(--azure-surface);
+  color: var(--azure-text);
+}
+.lite-safety-status-primary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .5rem .85rem;
+  min-width: 0;
+}
+.lite-safety-status-primary > div { flex: 1 1 14rem; min-width: 0; }
+.lite-safety-status-primary strong { display: block; line-height: 1.35; font-weight: 750; }
+.lite-safety-status-primary p {
+  margin: .2rem 0 0;
+  color: var(--azure-muted);
+  font-size: .88rem;
+  line-height: 1.5;
+}
+.lite-safety-status-scope {
+  font-size: .77rem;
+  color: var(--azure-muted);
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  padding: .35rem .55rem;
+}
+.lite-safety-status-scanners {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  gap: .5rem;
+}
+.lite-safety-status-scanners > div {
+  display: flex;
+  justify-content: space-between;
+  gap: .5rem;
+  min-width: 0;
+  padding: .55rem .7rem;
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-raised);
+}
+.lite-safety-status-scanners dt { color: var(--azure-text); font-weight: 650; }
+.lite-safety-status-scanners dd { margin: 0; color: var(--azure-muted); }
+.lite-safety-status-scanners [data-tool-tone="warning"] dd { color: var(--azure-warning); }
+.lite-safety-status-scanners [data-tool-tone="danger"] dd { color: var(--azure-danger); }
+.lite-safety-status-findings {
+  margin: 0;
+  font-weight: 650;
+  font-size: .87rem;
+  color: var(--azure-muted);
+}
+.lite-safety-status-findings[data-finding-tone="danger"] { color: var(--azure-danger); }
+.lite-safety-status-safeguard {
+  display: flex;
+  align-items: flex-start;
+  gap: .45rem;
+  margin: 0;
+  padding-top: .65rem;
+  border-top: 1px solid var(--azure-border);
+  font-size: .78rem;
+  line-height: 1.45;
+  color: var(--azure-muted);
+}
+.lite-safety-status-safeguard svg { flex: 0 0 auto; color: var(--azure-neutral); }
+
+/* Single grouped coverage list; only backend-reported exclusions appear. */
+html[data-lite-theme] .lite-security-phase3-layer [data-lite-safety-coverage-list="true"] {
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-surface);
+}
+html[data-lite-theme] .lite-security-phase3-layer [data-lite-safety-coverage-list="true"] .lite-history-section-list {
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+html[data-lite-theme] .lite-security-phase3-layer [data-lite-safety-coverage-list="true"] :is(.lite-history-section-list li, .lite-history-section-row) {
+  min-height: 2.6rem;
+  padding: .7rem .85rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--azure-border);
+  background: var(--azure-surface);
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-security-phase3-layer [data-lite-safety-coverage-list="true"] :is(.lite-history-section-list li, .lite-history-section-row):last-child { border-bottom: 0; }
+
+/* Timeline status is textual and also indicated by a subdued marker. */
+html[data-lite-theme] .lite-security-phase3-layer .lite-security-history-timeline {
+  min-width: 0;
+  background: var(--azure-surface);
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-security-phase3-layer .lite-security-s7-history-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .5rem 1.2rem;
+  min-width: 0;
+  padding: .85rem .85rem .85rem 2rem;
+  border: 0;
+  border-bottom: 1px solid var(--azure-border);
+  border-radius: 0;
+  background: var(--azure-surface);
+  color: var(--azure-text);
+  box-shadow: none;
+}
+html[data-lite-theme] .lite-security-phase3-layer .lite-security-s7-history-row::before {
+  content: '';
+  position: absolute;
+  top: 1.1rem;
+  left: .65rem;
+  width: .55rem;
+  height: .55rem;
+  border-radius: 50%;
+  background: var(--azure-neutral);
+}
+html[data-lite-theme] .lite-security-phase3-layer .lite-security-s7-history-row[data-history-status="completed"]::before { background: var(--azure-success); }
+html[data-lite-theme] .lite-security-phase3-layer .lite-security-s7-history-row[data-history-status="attention"]::before { background: var(--azure-warning); }
+html[data-lite-theme] .lite-security-phase3-layer .lite-security-history-entry {
+  display: grid;
+  gap: .3rem;
+  min-width: 0;
+}
+html[data-lite-theme] .lite-security-phase3-layer .lite-security-history-entry strong {
+  color: var(--azure-text);
+  font-size: .88rem;
+  line-height: 1.45;
+}
+html[data-lite-theme] .lite-security-phase3-layer .lite-security-history-entry :is(span,small),
+html[data-lite-theme] .lite-security-phase3-layer .lite-security-s7-history-row time {
+  color: var(--azure-muted);
+  opacity: 1;
+  font-size: .78rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-security-phase3-layer .lite-security-s7-history-row time {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 700px) {
+  html[data-lite-theme] .lite-security-phase3-layer .lite-security-s7-history-row { grid-template-columns: minmax(0,1fr); }
+  html[data-lite-theme] .lite-security-phase3-layer .lite-security-s7-history-row time { text-align: left; }
+  .lite-safety-status-scanners { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lite-security-phase3-layer .lite-security-s7-history-row,
+  .lite-security-manage-layer .lite-safety-status-hierarchy { animation: none; transition: none; }
+}

@@ -29,6 +29,17 @@ function safeToolLabels(toolStatus = []) {
   });
 }
 
+export function safetyHistoryStatus(status = '') {
+  const key = String(status || '').trim().toLowerCase();
+  if (['completed', 'succeeded', 'success', 'healthy'].includes(key)) return 'Completed';
+  if (['degraded', 'partial', 'review'].includes(key)) return 'Needs review';
+  if (['queued', 'accepted', 'pending'].includes(key)) return 'Pending';
+  if (['running', 'working', 'in_progress'].includes(key)) return 'Running';
+  if (['cancelled', 'canceled'].includes(key)) return 'Cancelled';
+  if (['failed', 'error', 'failure'].includes(key)) return 'Failed';
+  return 'Status not reported';
+}
+
 function initialHistoryPage(initialPage, history) {
   if (initialPage && typeof initialPage === 'object' && Array.isArray(initialPage.history)) return initialPage;
   return { view_model: SECURITY_HISTORY_CURSOR_V2, history: Array.isArray(history) ? history.slice(0, 20) : [], has_more: false, next_cursor: null, sanitized: true };
@@ -54,7 +65,7 @@ export default function SecurityHistoryLazy({ history = [], initialPage = null, 
   const latestPage = pages[pages.length - 1] || firstPage;
   const hasOlder = Boolean(rows.length < SECURITY_HISTORY_BROWSER_ROW_LIMIT && latestPage?.has_more && latestPage?.next_cursor);
   return (
-    <div className="lite-security-history-lazy" data-security-history-lazy="true" data-security-history-cursor-v2="true">
+    <div className="lite-security-history-lazy lite-security-history-timeline" data-security-history-lazy="true" data-security-history-cursor-v2="true">
       <div className="lite-security-trend-summary">
         <div><span>Latest assessment</span><strong>{latestScore === null || latestScore === undefined ? 'Not reported' : `${latestScore} reported`}</strong></div>
         <div><span>Trend</span><strong>{trendLabel || 'Not enough history'}</strong>{trendDetail ? <small>{trendDetail}</small> : null}</div>
@@ -85,19 +96,23 @@ export default function SecurityHistoryLazy({ history = [], initialPage = null, 
           const counts = entry?.finding_counts || {};
           const reviewCount = Number(counts.critical || 0) + Number(counts.high || 0);
           const tools = safeToolLabels(entry?.tool_status);
-          const completedAt = entry?.completed_at || entry?.updated_at || '';
+          const completedAt = entry?.completed_at || entry?.updated_at || entry?.requested_at || '';
+          const statusLabel = safetyHistoryStatus(entry?.status);
+          const statusTone = ['Failed', 'Needs review'].includes(statusLabel) ? 'attention'
+            : statusLabel === 'Completed' ? 'completed' : 'neutral';
           return (
-            <div className="lite-security-s7-history-row">
-              <div>
-                <strong>{entry?.summary || (reviewCount ? `${reviewCount} item${reviewCount === 1 ? '' : 's'} need attention` : 'No review items reported')}</strong>
-                <span>{entry?.label || String(entry?.profile || 'quick')} · {entry?.score === null || entry?.score === undefined ? 'Assessment not reported' : `${entry.score} reported`} · {formatDuration(entry?.duration_ms, entry?.duration_seconds)}</span>
+            <article className="lite-security-s7-history-row" data-history-status={statusTone}>
+              <div className="lite-security-history-entry">
+                <strong>{entry?.label || String(entry?.profile || 'Safety check')} · {statusLabel}</strong>
+                <span>{entry?.summary || (reviewCount ? `${reviewCount} review item${reviewCount === 1 ? '' : 's'} reported` : 'Result summary not reported')}</span>
+                <small>{entry?.score === null || entry?.score === undefined ? 'Assessment not reported' : `Reported score: ${entry.score}`} · {formatDuration(entry?.duration_ms, entry?.duration_seconds)}</small>
                 {tools.length ? <small>{tools.join(' · ')}</small> : null}
                 {entry?.timeout?.summary ? <small>{entry.timeout.summary}</small> : null}
                 {!entry?.timeout?.summary && entry?.status === 'failed' ? <small>{entry?.failure_message || 'The safety check did not finish.'}</small> : null}
                 {entry?.evidence_saved ? <small>Protected result saved</small> : null}
               </div>
               <time dateTime={completedAt || undefined} title={completedAt ? formatLiteTime(completedAt) : 'Time unavailable'}>{completedAt ? formatLiteTime(completedAt) : 'Time unavailable'}</time>
-            </div>
+            </article>
           );
         }}
       />

@@ -14,7 +14,7 @@
     "scenario": "security-urgent",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "09269b450427268dabaf7a5490c8a6ac4db8892e44db8611c7f31fc40eb3cb81",
+    "source_fingerprint": "e7c3fb31e54945aa8c021cfac57e3bcf16e3b1953f044a555c36ea66bedd0b59",
     "validation_status": "generated"
   }
 }

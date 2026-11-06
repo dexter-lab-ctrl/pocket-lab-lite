@@ -15714,7 +15714,7 @@ html[data-lite-theme] .pocket-nav-dock[data-lite-workspace="true"] {
   margin: 0;
   min-width: 0;
   overflow-wrap: anywhere;
-  color: #475569;
+  color: var(--azure-muted);
 }
 
 .theme-pocket-lite-daylight .lite-history-section-body,
@@ -18885,14 +18885,14 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
    finding details, and remediation sheets remain skinned inside the portal. */
 [data-lite-overlay-portal="true"].lite-security-overlay-layer,
 .lite-security-overlay-layer[data-lite-overlay-portal="true"] {
-  color: #0f172a;
-  --lite-security-v4-ink: #0f172a;
-  --lite-security-v4-muted: #64748b;
-  --lite-security-v4-soft: #f8fafc;
-  --lite-security-v4-line: rgba(148, 163, 184, 0.24);
-  --lite-security-v4-blue: #2563eb;
-  --lite-security-v4-cyan: #0891b2;
-  --lite-security-v4-shadow: 0 24px 72px rgba(15, 23, 42, 0.16);
+  color: var(--azure-text);
+  --lite-security-v4-ink: var(--azure-text);
+  --lite-security-v4-muted: var(--azure-muted);
+  --lite-security-v4-soft: var(--azure-surface);
+  --lite-security-v4-line: var(--azure-border);
+  --lite-security-v4-blue: var(--azure-accent);
+  --lite-security-v4-cyan: var(--azure-info);
+  --lite-security-v4-shadow: var(--azure-panel-shadow);
 }
 
 [data-lite-overlay-portal="true"] .lite-overlay-surface.lite-security-overlay-surface,
@@ -18901,16 +18901,11 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 .lite-overlay-surface.lite-security-overlay-surface.lite-security-phase3-finding-shell,
 .lite-overlay-surface.lite-security-overlay-surface.lite-security-remediation-panel {
   overflow: hidden !important;
-  border: 1px solid rgba(226, 232, 240, 0.9) !important;
-  border-radius: 1.65rem !important;
-  background:
-    radial-gradient(circle at 50% 0%, rgba(147, 197, 253, 0.34), transparent 13rem),
-    radial-gradient(circle at 100% 12%, rgba(14, 165, 233, 0.12), transparent 16rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(248, 250, 252, 0.98)) !important;
-  box-shadow:
-    var(--lite-security-v4-shadow, 0 24px 72px rgba(15, 23, 42, 0.16)),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
-  color: var(--lite-security-v4-ink, #0f172a) !important;
+  border: 1px solid var(--azure-border) !important;
+  border-radius: var(--azure-radius-card) !important;
+  background: var(--azure-surface) !important;
+  box-shadow: var(--azure-panel-shadow) !important;
+  color: var(--azure-text) !important;
   isolation: isolate;
 }
 
@@ -18918,13 +18913,7 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 .lite-security-phase3-panel.lite-security-phase3-details-shell::before,
 .lite-security-phase3-panel.lite-security-phase3-finding-shell::before,
 .lite-security-remediation-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 0.42rem;
-  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.32), rgba(14, 165, 233, 0.26), transparent);
-  pointer-events: none;
-  z-index: 1;
+  content: none;
 }
 
 [data-lite-overlay-portal="true"] .lite-security-overlay-grip,
@@ -18933,7 +18922,7 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
   height: 1.55rem !important;
   display: grid !important;
   place-items: center !important;
-  background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.56)) !important;
+  background: var(--azure-surface) !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-security-overlay-grip span,
@@ -18942,8 +18931,8 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
   width: 2.75rem !important;
   height: 0.32rem !important;
   border-radius: 999px !important;
-  background: linear-gradient(90deg, rgba(147, 197, 253, 0.78), rgba(59, 130, 246, 0.48)) !important;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.95), 0 8px 20px rgba(59, 130, 246, 0.18) !important;
+  background: var(--azure-strong-border) !important;
+  box-shadow: none !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-overlay-head,
@@ -18953,17 +18942,16 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
   align-items: flex-start !important;
   gap: 1rem !important;
   padding: 0.35rem clamp(1rem, 3vw, 1.35rem) 1rem !important;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.78) !important;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.82)) !important;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.04) !important;
+  border-bottom: 1px solid var(--azure-border) !important;
+  background: var(--azure-surface) !important;
+  box-shadow: none !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-overlay-head span,
 [data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-phase3-head span,
 [data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-manage-head span,
 .lite-security-phase2-details-head span {
-  color: #2563eb !important;
+  color: var(--azure-accent) !important;
   font-size: 0.72rem !important;
   font-weight: 900 !important;
   letter-spacing: 0.105em !important;
@@ -18975,7 +18963,7 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 [data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-manage-head strong {
   display: block !important;
   margin-top: 0.15rem !important;
-  color: #0f172a !important;
+  color: var(--azure-text) !important;
   font-size: clamp(1.15rem, 3.5vw, 1.45rem) !important;
   line-height: 1.05 !important;
   letter-spacing: -0.035em !important;
@@ -18986,7 +18974,7 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 [data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-manage-head p {
   max-width: 38rem !important;
   margin: 0.35rem 0 0 !important;
-  color: #64748b !important;
+  color: var(--azure-muted) !important;
   line-height: 1.5 !important;
 }
 
@@ -19003,8 +18991,8 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
   place-items: center !important;
   border: 1px solid rgba(203, 213, 225, 0.78) !important;
   border-radius: 999px !important;
-  background: rgba(255, 255, 255, 0.82) !important;
-  color: #334155 !important;
+  background: var(--azure-raised) !important;
+  color: var(--azure-text) !important;
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08) !important;
 }
 
@@ -19026,14 +19014,9 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
   -webkit-overflow-scrolling: touch !important;
   scrollbar-gutter: stable both-edges !important;
   padding: clamp(1rem, 2.8vw, 1.35rem) !important;
-  background:
-    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.09), transparent 15rem),
-    radial-gradient(circle at 100% 10%, rgba(14, 165, 233, 0.08), transparent 15rem),
-    linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.96)) !important;
-  color: #0f172a !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.88),
-    inset 0 22px 42px rgba(255, 255, 255, 0.36) !important;
+  background: var(--azure-surface) !important;
+  color: var(--azure-text) !important;
+  box-shadow: none !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-phase3-scroll > *,
@@ -19089,7 +19072,7 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
-  color: #0f172a !important;
+  color: var(--azure-text) !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-security-phase2-details-head,
@@ -19100,18 +19083,16 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
   justify-content: space-between !important;
   gap: 1rem !important;
   padding: 0.95rem !important;
-  border: 1px solid rgba(191, 219, 254, 0.82) !important;
-  border-radius: 1.25rem !important;
-  background:
-    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.12), transparent 12rem),
-    rgba(255, 255, 255, 0.84) !important;
-  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06) !important;
+  border: 1px solid var(--azure-border) !important;
+  border-radius: var(--azure-radius-card) !important;
+  background: var(--azure-surface) !important;
+  box-shadow: none !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-security-phase2-details-head h2,
 .lite-security-phase3-details-shell .lite-security-phase2-details-head h2 {
   margin: 0.12rem 0 0.35rem !important;
-  color: #0f172a !important;
+  color: var(--azure-text) !important;
   font-size: clamp(1.25rem, 4vw, 1.7rem) !important;
   line-height: 1.05 !important;
   letter-spacing: -0.035em !important;
@@ -19120,7 +19101,7 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 [data-lite-overlay-portal="true"] .lite-security-phase2-details-head p,
 .lite-security-phase3-details-shell .lite-security-phase2-details-head p {
   margin: 0 !important;
-  color: #64748b !important;
+  color: var(--azure-muted) !important;
   line-height: 1.5 !important;
 }
 
@@ -19131,7 +19112,7 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
   gap: 1rem !important;
   margin: 0 !important;
   padding: 0 !important;
-  color: #0f172a !important;
+  color: var(--azure-text) !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-progressive-details-summary,
@@ -19148,7 +19129,7 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 
 [data-lite-overlay-portal="true"] .lite-progressive-details-summary > span,
 .lite-security-phase3-details-shell .lite-progressive-details-summary > span {
-  color: #2563eb !important;
+  color: var(--azure-accent) !important;
   font-size: 0.72rem !important;
   font-weight: 900 !important;
   letter-spacing: 0.105em !important;
@@ -19158,7 +19139,7 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 [data-lite-overlay-portal="true"] .lite-progressive-details-summary h3,
 .lite-security-phase3-details-shell .lite-progressive-details-summary h3 {
   margin: 0 !important;
-  color: #0f172a !important;
+  color: var(--azure-text) !important;
   font-size: clamp(1.05rem, 3vw, 1.3rem) !important;
   line-height: 1.12 !important;
   letter-spacing: -0.025em !important;
@@ -19167,7 +19148,7 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 [data-lite-overlay-portal="true"] .lite-progressive-details-summary p,
 .lite-security-phase3-details-shell .lite-progressive-details-summary p {
   margin: 0 !important;
-  color: #64748b !important;
+  color: var(--azure-muted) !important;
   line-height: 1.55 !important;
 }
 
@@ -19200,16 +19181,15 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
   gap: 0.32rem !important;
   min-width: 0 !important;
   padding: 0.9rem 0.95rem !important;
-  border: 1px solid rgba(226, 232, 240, 0.88) !important;
-  border-radius: 1.05rem !important;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.88)) !important;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.045) !important;
+  border: 1px solid var(--azure-border) !important;
+  border-radius: var(--azure-radius-control) !important;
+  background: var(--azure-raised) !important;
+  box-shadow: none !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-progressive-detail-section strong,
 .lite-security-phase3-details-shell .lite-progressive-detail-section strong {
-  color: #0f172a !important;
+  color: var(--azure-text) !important;
   font-weight: 900 !important;
   letter-spacing: -0.012em !important;
 }
@@ -19217,27 +19197,27 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 [data-lite-overlay-portal="true"] .lite-progressive-detail-section p,
 .lite-security-phase3-details-shell .lite-progressive-detail-section p {
   margin: 0 !important;
-  color: #475569 !important;
+  color: var(--azure-muted) !important;
   line-height: 1.55 !important;
   overflow-wrap: anywhere !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-progressive-detail-section.is-saved,
 .lite-security-phase3-details-shell .lite-progressive-detail-section.is-saved {
-  border-color: rgba(16, 185, 129, 0.24) !important;
-  background: linear-gradient(180deg, rgba(236, 253, 245, 0.9), rgba(255, 255, 255, 0.88)) !important;
+  border-color: var(--azure-border) !important;
+  background: var(--azure-raised) !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-progressive-detail-section.is-attention,
 .lite-security-phase3-details-shell .lite-progressive-detail-section.is-attention {
-  border-color: rgba(245, 158, 11, 0.3) !important;
-  background: linear-gradient(180deg, rgba(255, 251, 235, 0.94), rgba(255, 255, 255, 0.88)) !important;
+  border-color: var(--azure-warning) !important;
+  background: var(--azure-raised) !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-progressive-detail-section.is-next-step,
 .lite-security-phase3-details-shell .lite-progressive-detail-section.is-next-step {
-  border-color: rgba(59, 130, 246, 0.24) !important;
-  background: linear-gradient(180deg, rgba(239, 246, 255, 0.92), rgba(255, 255, 255, 0.88)) !important;
+  border-color: var(--azure-border) !important;
+  background: var(--azure-raised) !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-technical-details,
@@ -19246,11 +19226,11 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 .lite-security-phase3-details-shell .lite-history-section {
   margin-top: 0 !important;
   padding: 0.9rem 0.95rem !important;
-  border: 1px solid rgba(226, 232, 240, 0.86) !important;
-  border-radius: 1.05rem !important;
-  background: rgba(255, 255, 255, 0.82) !important;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.04) !important;
-  color: #0f172a !important;
+  border: 1px solid var(--azure-border) !important;
+  border-radius: var(--azure-radius-control) !important;
+  background: var(--azure-raised) !important;
+  box-shadow: none !important;
+  color: var(--azure-text) !important;
 }
 
 @media (min-width: 760px) {
@@ -19412,7 +19392,7 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 
 .theme-pocket-lite-daylight .lite-security-execution-waiting > span:first-child,
 .lite-security-execution-waiting > span:first-child {
-  color: #64748b !important;
+  color: var(--azure-muted) !important;
   background: linear-gradient(135deg, #f8fafc, #e2e8f0) !important;
   border: 1px solid rgba(148, 163, 184, 0.28) !important;
   box-shadow:
@@ -19441,7 +19421,7 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
   gap: 1rem !important;
   min-width: 0 !important;
   padding: 0 !important;
-  color: #0f172a !important;
+  color: var(--azure-text) !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-security-details-premium-panel::before,
@@ -19630,7 +19610,7 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
   position: relative !important;
   overflow: hidden !important;
   min-height: 6rem !important;
-  padding: 0.95rem 0.95rem 0.95rem 2.85rem !important;
+  padding: 0.95rem !important;
   border-color: var(--azure-border) !important;
   border-radius: 1.16rem !important;
   background: var(--azure-raised) !important;
@@ -19642,25 +19622,17 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 [data-lite-overlay-portal="true"] .lite-security-finding-premium-content .lite-progressive-detail-section::before,
 .lite-security-phase3-details-shell .lite-security-details-premium-content .lite-progressive-detail-section::before,
 .lite-security-phase3-finding-shell .lite-security-finding-premium-content .lite-progressive-detail-section::before {
-  content: "";
-  position: absolute;
-  top: 1rem;
-  left: 0.95rem;
-  width: 1.2rem;
-  height: 1.2rem;
-  border: 1px solid var(--azure-border);
-  border-radius: 999px;
-  background: var(--azure-raised);
-  box-shadow: var(--azure-shadow);
+  content: none;
+  display: none;
 }
 
 [data-lite-overlay-portal="true"] .lite-security-details-premium-content .lite-progressive-detail-section:hover,
 [data-lite-overlay-portal="true"] .lite-security-finding-premium-content .lite-progressive-detail-section:hover,
 .lite-security-phase3-details-shell .lite-security-details-premium-content .lite-progressive-detail-section:hover,
 .lite-security-phase3-finding-shell .lite-security-finding-premium-content .lite-progressive-detail-section:hover {
-  transform: translateY(-1px) !important;
-  border-color: var(--azure-success) !important;
-  box-shadow: var(--azure-shadow) !important;
+  transform: none !important;
+  border-color: var(--azure-border) !important;
+  box-shadow: none !important;
 }
 
 [data-lite-overlay-portal="true"] .lite-security-details-premium-content .lite-progressive-detail-section.is-attention::before,
@@ -19676,13 +19648,8 @@ html:not([data-lite-perf-mode='true']) .theme-pocket-lite-daylight main .is-repa
 [data-lite-overlay-portal="true"] .lite-security-finding-premium-content .lite-progressive-detail-section.is-saved::before,
 .lite-security-phase3-details-shell .lite-security-details-premium-content .lite-progressive-detail-section.is-saved::before,
 .lite-security-phase3-finding-shell .lite-security-finding-premium-content .lite-progressive-detail-section.is-saved::before {
-  content: "✓";
-  display: grid;
-  place-items: center;
-  color: var(--azure-success);
-  font-size: 0.78rem;
-  font-weight: 950;
-  background: var(--azure-success-subtle);
+  content: none;
+  display: none;
 }
 
 [data-lite-overlay-portal="true"] .lite-security-details-premium-content .lite-progressive-detail-section.is-next-step::before,
@@ -26207,4 +26174,22 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
   margin: 0;
   text-align: right;
   overflow-wrap: anywhere;
+}
+
+/* One shared disclosure affordance, reused by Apps, Safety and Recovery. */
+.lite-progressive-disclosure-toggle .lite-shared-disclosure-chevron {
+  flex: 0 0 auto;
+  color: var(--azure-muted);
+  transform: rotate(0deg);
+  transition: transform 140ms ease;
+}
+.lite-progressive-disclosure-toggle[aria-expanded="true"] .lite-shared-disclosure-chevron {
+  transform: rotate(180deg);
+}
+.lite-progressive-disclosure-toggle:focus-visible {
+  outline: 2px solid var(--azure-focus);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lite-progressive-disclosure-toggle .lite-shared-disclosure-chevron { transition: none; }
 }

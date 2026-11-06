@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Move, Maximize2, RotateCcw } from 'lucide-react';
 import { useMobileSheetSnap } from './components/useMobileSheetSnap.js';
-import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import './components/mobileSheetSnap.css';
 import { animated, useSpring } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
@@ -274,7 +273,6 @@ export function LiteSheet({
   variant = 'manage',
   motion = 'none',
   mobileSnap = false,
-  snapHaptic = false,
   mobileHeaderVariant = 'default',
 }) {
   const generatedId = useId();
@@ -400,7 +398,7 @@ export function LiteSheet({
           data-lite-perf-motion-active={safeMotionEnabled ? 'true' : 'false'}
           {...surfaceProps}
         >
-          <button type="button" className={`lite-overlay-grip ${variantClasses.grip} ${gripClassName}`.trim()} aria-label={variantClasses.gripLabel} {...mergedGripProps}>
+          <button type="button" className={`lite-overlay-grip ${variantClasses.grip} ${gripClassName}`.trim()} aria-label={variantClasses.gripLabel} data-lite-haptic="off" {...mergedGripProps}>
             <span aria-hidden="true" />
           </button>
           <div className={`lite-overlay-head ${variantClasses.head} ${headerClassName}`.trim()}>
@@ -411,9 +409,9 @@ export function LiteSheet({
             </div>
             {headerActions}
             {mobileSheet.active ? <div className="lite-sheet-mobile-snap-actions" role="group" aria-label="Sheet size">
-              {mobileHeaderVariant === 'safety' ? <span className="lite-sheet-safety-snap-status" aria-live="polite">{mobileSheet.state === 'expanded' ? 'Expanded' : mobileSheet.state === 'compact' ? 'Compact' : 'Medium'} · Drag handle to resize</span> : null}
-              <button type="button" onClick={() => { if (snapHaptic) triggerLiteHaptic('accepted'); mobileSheet.contract(); }} disabled={!mobileSheet.canContract}>Compact</button>
-              <button type="button" onClick={() => { if (snapHaptic) triggerLiteHaptic('accepted'); mobileSheet.expand(); }} disabled={!mobileSheet.canExpand}>Expand</button>
+              <span className="sr-only" aria-live="polite">Sheet size: {mobileSheet.state}</span>
+              <button type="button" className={mobileSheet.state === 'compact' ? 'is-active' : ''} aria-pressed={mobileSheet.state === 'compact'} onClick={() => mobileSheet.resizeTo('compact')} disabled={mobileSheet.state === 'compact'}>Compact</button>
+              <button type="button" className={mobileSheet.state === 'expanded' ? 'is-active' : ''} aria-pressed={mobileSheet.state === 'expanded'} onClick={() => mobileSheet.resizeTo('expanded')} disabled={mobileSheet.state === 'expanded'}>Expand</button>
             </div> : null}
             <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={onClose} aria-label={variantClasses.closeLabel} {...closeLabelOverride}>
               <X className="h-4 w-4" />
@@ -428,23 +426,28 @@ export function LiteSheet({
   );
 }
 
+// Shared Apps-derived desktop panel affordance. Position/size policy stays in
+// useDesktopManageGeometry; this component owns only accessible presentation.
+export function LiteDesktopPanelControls({ title = 'Details', geometry, desktopToolLabels = false, showResetLabel = false, className = '' }) {
+  const { announcement, reset, startPanelInteraction, adjustPanelWithKeyboard } = geometry || {};
+  return <div className={`lite-overlay-desktop-panel-tools lite-home-desktop-panel-tools ${desktopToolLabels ? 'has-labels' : ''} ${className}`.trim()} data-lite-overlay-panel-tools="desktop" role="group" aria-label={`Desktop ${title} panel controls`}>
+    <button type="button" aria-label={`Move ${title} panel`} title="Drag or use arrow keys to move; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
+      onPointerDown={(event) => startPanelInteraction?.('move', event)} onKeyDown={(event) => adjustPanelWithKeyboard?.('move', event)}><Move size={16} aria-hidden="true" />{desktopToolLabels ? 'Move' : null}</button>
+    <button type="button" aria-label={showResetLabel ? `Reset ${title} panel position and size` : `Reset ${title} position and size`} title="Reset panel position and size" onClick={reset}><RotateCcw size={16} aria-hidden="true" />{desktopToolLabels || showResetLabel ? 'Reset' : null}</button>
+    <button type="button" aria-label={`Resize ${title} panel`} title="Drag or use arrow keys to resize; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
+      onPointerDown={(event) => startPanelInteraction?.('resize', event)} onKeyDown={(event) => adjustPanelWithKeyboard?.('resize', event)}><Maximize2 size={16} aria-hidden="true" />{desktopToolLabels ? 'Resize' : null}</button>
+    <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
+  </div>;
+}
+
 export function LiteDetailsPanel({
   open, onClose, title = 'Details', description = '', bodyRef, bodyClassName = '',
   children, variant = 'manage', className = '', desktopGeometry, mobileSnap = false,
   desktopToolLabels = false, closeLabel,
 }) {
-  const { panelRef, desktopPanel, panelStyle, announcement, reset,
-    startPanelInteraction, adjustPanelWithKeyboard } = desktopGeometry || {};
-  const tools = desktopPanel ? <div className={`lite-overlay-desktop-panel-tools lite-home-desktop-panel-tools ${desktopToolLabels ? 'has-labels' : ''}`.trim()} data-lite-overlay-panel-tools="desktop" role="group" aria-label={`Desktop ${title} panel controls`}>
-    <button type="button" aria-label={`Move ${title} panel`} title="Drag or use arrow keys to move; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
-      onPointerDown={(event) => startPanelInteraction?.('move', event)}
-      onKeyDown={(event) => adjustPanelWithKeyboard?.('move', event)}><Move size={16} aria-hidden="true" />{desktopToolLabels ? 'Move' : null}</button>
-    <button type="button" aria-label={`Reset ${title} position and size`} title="Reset panel position and size" onClick={reset}><RotateCcw size={16} aria-hidden="true" />{desktopToolLabels ? 'Reset' : null}</button>
-    <button type="button" aria-label={`Resize ${title} panel`} title="Drag or use arrow keys to resize; Home resets" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
-      onPointerDown={(event) => startPanelInteraction?.('resize', event)}
-      onKeyDown={(event) => adjustPanelWithKeyboard?.('resize', event)}><Maximize2 size={16} aria-hidden="true" />{desktopToolLabels ? 'Resize' : null}</button>
-    <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
-  </div> : null;
+  const { panelRef, desktopPanel, panelStyle } = desktopGeometry || {};
+  const tools = desktopPanel ? <LiteDesktopPanelControls title={title}
+    desktopToolLabels={desktopToolLabels} geometry={desktopGeometry} /> : null;
   return (
     <LiteSheet open={open} onClose={onClose} title={title} eyebrow="Action Details"
       description={description} variant={variant} headerActions={tools} mobileSnap={mobileSnap && !desktopPanel}

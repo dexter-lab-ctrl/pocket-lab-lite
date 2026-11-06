@@ -272,3 +272,65 @@ export const RefinementRemediation = {
     }
   },
 };
+
+
+/* Azure Horizon global unification P6 — fixtures only; no story/test run.
+   The actual first-run/pending/completed status derives from mocked FastAPI records. */
+export const GlobalUnifiedLightDesktop = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'daylight', viewport: 'desktop', status: 'authored' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Checks'),
+};
+export const GlobalUnifiedDarkDesktop = {
+  ...createLiteStory('security', 'security-scanner-unavailable', { theme: 'dark', viewport: 'desktop', status: 'authored' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Checks'),
+};
+export const GlobalUnifiedSystemMobile = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'system', viewport: 'mobile390', status: 'authored' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Checks'),
+};
+export const GlobalUnifiedPendingScanners = {
+  ...createLiteStory('security', 'security-full-running', { theme: 'dark', viewport: 'mobile390', status: 'authored' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Checks'),
+};
+export const GlobalUnifiedNeedsReview = {
+  ...createLiteStory('security', 'security-urgent', { theme: 'daylight', viewport: 'desktop', status: 'authored' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Issues'),
+};
+export const GlobalUnifiedFailedOrUnavailable = {
+  ...createLiteStory('security', 'security-scanner-unavailable', { theme: 'dark', viewport: 'mobile320', status: 'authored' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Checks'),
+};
+export const GlobalUnifiedEmptyHistory = {
+  ...createLiteStory('security', 'security-first-run', { theme: 'daylight', viewport: 'mobile390', status: 'authored' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'History'),
+};
+export const GlobalUnifiedPopulatedHistory = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'desktop', status: 'authored' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'History'),
+};
+export const GlobalUnifiedCoverage320 = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'mobile320', status: 'authored' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Coverage'),
+};
+export const GlobalUnifiedTechnicalDetails = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'daylight', viewport: 'desktop', status: 'authored' }),
+  play: async ({ canvasElement }) => openManageSection(canvasElement, 'Technical details'),
+};
+export const GlobalUnifiedCompactMobile = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'dark', viewport: 'mobile390', status: 'authored' }),
+  play: async ({ canvasElement }) => {
+    await openManageSection(canvasElement, 'Checks');
+    const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', { name: 'Manage Safety' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Compact' }));
+    await expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'compact');
+  },
+};
+export const GlobalUnifiedExpandedMobile = {
+  ...createLiteStory('security', 'security-quick-healthy', { theme: 'daylight', viewport: 'mobile390', status: 'authored' }),
+  play: async ({ canvasElement }) => {
+    await openManageSection(canvasElement, 'Checks');
+    const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', { name: 'Manage Safety' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Expand' }));
+    await expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'expanded');
+  },
+};

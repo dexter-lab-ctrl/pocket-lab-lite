@@ -31382,6 +31382,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-azure-horizon-safety-unification.spec.ts",
+      "name": "tests/e2e/lite-azure-horizon-safety-unification.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-azure-horizon-safety-unification.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
       "name": "tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
       "source_refs": [
@@ -35286,6 +35296,7 @@
         "test:tests/e2e/lite-azure-horizon-rules-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-rules.spec.ts",
         "test:tests/e2e/lite-azure-horizon-safety-performance.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-safety-unification.spec.ts",
         "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-safety.spec.ts",
         "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
@@ -36842,6 +36853,7 @@
         "test:tests/e2e/lite-azure-horizon-rules-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-rules.spec.ts",
         "test:tests/e2e/lite-azure-horizon-safety-performance.spec.ts",
+        "test:tests/e2e/lite-azure-horizon-safety-unification.spec.ts",
         "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
         "test:tests/e2e/lite-azure-horizon-safety.spec.ts",
         "test:tests/e2e/lite-azure-horizon-visual.spec.ts",
@@ -53853,6 +53865,16 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-azure-horizon-safety-unification.spec.ts": [
+        {
+          "source": "domain:security",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts": [
         {
           "source": "component:photoprism",
@@ -66597,6 +66619,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-azure-horizon-safety-unification.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-azure-horizon-safety-visual.spec.ts",
           "type": "verified_by"
         },
@@ -69418,6 +69444,10 @@
         },
         {
           "target": "test:tests/e2e/lite-azure-horizon-rules-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-azure-horizon-safety-unification.spec.ts",
           "type": "verified_by"
         },
         {
@@ -82135,6 +82165,15 @@
       "source": "component:api-guards",
       "target": "table:device_identity_guards",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-azure-horizon-safety-unification.spec.ts"
+      ],
+      "id": "rel:37f7f86ed772ed03",
+      "source": "domain:security",
+      "target": "test:tests/e2e/lite-azure-horizon-safety-unification.spec.ts",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -96751,6 +96790,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-azure-horizon-safety-unification.spec.ts"
+      ],
+      "id": "rel:9cdbc3eeb325e7dd",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-azure-horizon-safety-unification.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:9cfb5aaa96ef794f",
@@ -111013,9 +111061,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "2f901f99531b6215e2b6a643ec64046990a4e4141679b1fc5010861de7c81f22",
+  "source_fingerprint": "9ec1b9295d9ae8083319e09ea29effd21f99b2fa2f07019f018c291e513fcf5f",
   "statistics": {
-    "entity_count": 1474,
+    "entity_count": 1475,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -111032,14 +111080,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 326,
+      "test": 327,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4114,
-    "source_count": 363
+    "relation_count": 4116,
+    "source_count": 364
   }
 }

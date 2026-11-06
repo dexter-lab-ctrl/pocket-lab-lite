@@ -1914,10 +1914,13 @@ export function selectSecurityCoverageSummaryView(payload = {}) {
     : isObject(payload?.last_run?.coverage_summary)
       ? payload.last_run.coverage_summary
       : EMPTY_OBJECT;
+  const coverageReported = ['checked_targets', 'partial_targets', 'timed_out_targets', 'skipped_targets', 'missing_targets', 'target_statuses']
+    .some((key) => Array.isArray(coverage[key]));
   return memoizeSecuritySelector(payload, 'coverage-summary', securityCacheKey([securityProfileRevision(payload, coverage.profile || payload?.scan_profile || payload?.last_run?.scan_profile || 'quick'), coverage.updated_at, coverage.checked_at, Array.isArray(coverage.target_statuses) ? coverage.target_statuses.length : 0]), () => ({
     profile: safeString(coverage.profile || payload?.scan_profile || payload?.last_run?.scan_profile || 'quick', 'quick'),
     app_id: safeString(coverage.app_id || payload?.app_id || payload?.last_run?.app_id || ''),
     app_label: safeString(coverage.app_label || payload?.app_label || payload?.last_run?.app_label || ''),
+    coverage_reported: coverageReported,
     checked_targets: safeList(coverage.checked_targets, [
       'Termux host posture',
       'Pocket Lab Lite files',
