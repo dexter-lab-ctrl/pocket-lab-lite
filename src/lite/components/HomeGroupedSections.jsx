@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 
 /**
@@ -15,6 +15,8 @@ export default function HomeGroupedSections({
   const items = groups.flatMap((group) => group.items);
   const activeItem = items.find((item) => item.id === selected) || items[0];
   const detailTitleRef = useRef(null);
+  const detailRegionId = useId();
+  const lastSelectedId = useRef(null);
   const returnToIndexRef = useRef(false);
   const enteredSectionRef = useRef(false);
 
@@ -24,12 +26,15 @@ export default function HomeGroupedSections({
       enteredSectionRef.current = false;
     }
     if (returnToIndexRef.current && !section) {
-      navigation?.navRef?.current?.querySelector('button')?.focus({ preventScroll: true });
+      const rows = Array.from(navigation?.navRef?.current?.querySelectorAll('[data-home-section-id]') || []);
+      (rows.find((row) => row.dataset.homeSectionId === lastSelectedId.current) || rows[0])
+        ?.focus({ preventScroll: true });
       returnToIndexRef.current = false;
     }
   }, [section, navigation]);
 
   function selectSection(id) {
+    lastSelectedId.current = id;
     enteredSectionRef.current = true;
     navigation?.reveal?.(true);
     onSectionChange(id);
@@ -54,7 +59,7 @@ export default function HomeGroupedSections({
                   const Icon = item.icon;
                   return (
                     <button key={item.id} type="button" className="lite-home-settings-row"
-                      aria-label={item.label}
+                      aria-label={item.label} data-home-section-id={item.id} aria-controls={detailRegionId}
                       aria-current={selected === item.id ? 'page' : undefined}
                       onClick={() => selectSection(item.id)}>
                       <Icon size={19} aria-hidden="true" />
@@ -68,7 +73,7 @@ export default function HomeGroupedSections({
           ))}
         </nav>
       </div>
-      <div className="lite-home-settings-detail">
+      <div id={detailRegionId} className="lite-home-settings-detail" role="region" aria-label={activeItem?.label || title}>
         <button type="button" className="lite-home-settings-back" onClick={backToIndex}>
           <ArrowLeft size={17} aria-hidden="true" /> All {title.toLowerCase()} sections
         </button>

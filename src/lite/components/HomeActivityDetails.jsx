@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, Clock3, Info, History, CheckCircle2, Activity } from 'lucide-react';
+import { AlertCircle, Clock3, Info, History, CheckCircle2, Activity, LayoutGrid, Smartphone, ShieldCheck, HardDrive } from 'lucide-react';
 import { StateSurface } from '../../components/ui.jsx';
 import { formatActivityCount } from '../homeActivityEvidence.js';
 import HomeGroupedSections from './HomeGroupedSections.jsx';
@@ -15,6 +15,7 @@ const ACTIVITY_GROUPS = [{ label: 'Activity', items: [
 ] }];
 const running = new Set(['running', 'working', 'in_progress']);
 const destination = { security: 'Safety', apps: 'Apps', devices: 'Devices', recovery: 'Recovery' };
+const eventIcons = { security: ShieldCheck, apps: LayoutGrid, devices: Smartphone, recovery: HardDrive };
 
 function ActivityNotice({ title, children, tone = 'info', icon: Icon = Info }) {
   return <aside className={`lite-home-activity-notice is-${tone}`} aria-label={title}>
@@ -34,7 +35,10 @@ function ActivityEvents({ events, label, onNavigate }) {
     description="Only the bounded recent sample is shown. Other operations may exist outside this window."
     className="lite-home-activity-state" />;
   return <ol className="lite-home-activity-timeline" aria-label={`${label} events`}>
-    {events.map((event, index) => <li key={`${event.domain}-${event.at}-${index}`}>
+    {events.map((event, index) => {
+      const Icon = eventIcons[event.domain] || Activity;
+      return <li key={`${event.domain}-${event.at}-${index}`} data-home-event-domain={event.domain || 'unknown'}>
+        <span className="lite-home-event-icon" aria-hidden="true"><Icon size={17} /></span>
       <div className="lite-home-event-copy">
         <strong>{event.label}</strong>
         <span className="lite-home-event-status">{event.statusLabel}</span>
@@ -43,7 +47,8 @@ function ActivityEvents({ events, label, onNavigate }) {
       {destination[event.domain] ? <button type="button"
         aria-label={`Open ${destination[event.domain]} for ${event.label}`}
         onClick={() => onNavigate?.(event.domain)}>Open {destination[event.domain]}</button> : null}
-    </li>)}
+    </li>;
+    })}
   </ol>;
 }
 
@@ -53,7 +58,7 @@ function PersonalActivityReview({ cursor, cursorBusy, cursorError, saved, onMark
       <CheckCircle2 size={20} aria-hidden="true" />
       <div><h3>Personal activity review</h3><p>Private review position and status</p></div>
     </div>
-    {cursor?.last_reviewed_at ? <p>Last reviewed: <ActivityTime value={cursor.last_reviewed_at} /></p> : null}
+    {cursor?.last_reviewed_at ? <p role="status" aria-live="polite">Review confirmed at <ActivityTime value={cursor.last_reviewed_at} /></p> : null}
     {cursor?.changed_since_review ? <p className="lite-home-review-changed">Something changed since your last review.</p> : null}
     {!cursor?.changed_since_review && cursor ? <p>Nothing new reported since your last review.</p> : null}
     <p>Marking history reviewed changes only your private review position. It does not resolve an issue, approve work, clear audit history or retry an action.</p>

@@ -2518,7 +2518,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "scripts/dev/lite/run-ui-performance-android-baseline.sh"
+          "scripts/dev/lite/run-ui-performance-android-baseline.sh",
+          "tests/backend/test_lite_android_performance_baseline.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -8151,7 +8152,6 @@
         "secret": false,
         "source": [
           "scripts/dev/lite/run-ui-performance-android-apps.sh",
-          "scripts/dev/lite/run-ui-performance-android-cdp.sh",
           "scripts/dev/lite/run-ui-performance-android-devices.sh",
           "scripts/dev/lite/run-ui-performance-android-rules.sh",
           "scripts/dev/lite/run-ui-performance-android-safety.sh"
@@ -8201,7 +8201,6 @@
         "secret": false,
         "source": [
           "scripts/dev/lite/run-ui-performance-android-apps.sh",
-          "scripts/dev/lite/run-ui-performance-android-cdp.sh",
           "scripts/dev/lite/run-ui-performance-android-devices.sh",
           "scripts/dev/lite/run-ui-performance-android-rules.sh",
           "scripts/dev/lite/run-ui-performance-android-safety.sh"
@@ -41140,7 +41139,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 525,
+      "page_count": 526,
       "top_level": [
         "start-here",
         "use",
@@ -49024,7 +49023,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "cd5e0974b51fbb3d18295e9e6b4c6149582848008d3ccd530eeaf2ea57f93faf",
-        "documentation": "eaad5d5aa9788ad48504b446652ea4bb9d628ec18a9c57e9673f5ad0c9e3fa27",
+        "documentation": "9c743ad70e4db2c31f2a5d31507e05303ab779f019d9f999aba2db770af49735",
         "openapi": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
         "operational_health": "c758d7d653b42f1860a89c2ab10d285eea8d8f477df13804b883c3b2e3255f8e"
       },
@@ -50960,7 +50959,7 @@
         },
         {
           "path": "package.json",
-          "sha256": "23f40f82588d8597bb76379919fd4288cd5dfd63b215b0346c543fcb0e938134"
+          "sha256": "3576375120e5e7cb46c8d253bdf2778f5d00596ab83e0454825b33c05dc4864c"
         },
         {
           "path": "requirements-dev.txt",
@@ -124402,5 +124401,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "5890cb5f5f5344ce26dc8917aba43ec25d18e5d2bb3248e85638952d619f71a7"
+  "source_fingerprint": "e0bc1fca3cb27ddd3d1a764154a6df8de57004d960fc15f0b4d8b244a4f29b85"
 }

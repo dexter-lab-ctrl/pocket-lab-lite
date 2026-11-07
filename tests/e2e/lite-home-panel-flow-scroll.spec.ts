@@ -3,7 +3,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
 // PR #606 Home activity and PR #623 portal scroll ownership, adapted to
-// PR #637 native grouped-navigation treatment. AUTHORED — NOT RUN.
+// PR #637 native grouped-navigation treatment. DEV-PC mocked qualification.
 type Panel='workspace'|'activity';
 async function openPanel(page:Page, kind:Panel,appearance='dark',scenario='healthy') {
   await page.addInitScript((value)=>localStorage.setItem('pocketlab:appearance',value),appearance);

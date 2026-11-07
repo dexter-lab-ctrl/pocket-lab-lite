@@ -169,6 +169,12 @@ def test_android_runner_loads_node_toolchain_for_noninteractive_controller_child
     assert 'source "$nvm_dir/nvm.sh"' in source
     assert 'nvm use "${POCKETLAB_NODE_VERSION:-24.16.0}"' in source
     assert 'need node' in source
+    assert "Invoke-RestMethod -Uri \"http://127.0.0.1:9222/json/version\"" in source
+    assert "Protocol-Version" in source
+    assert "wsl-cdp-reverse-relay.py" in source
+    assert "windows-cdp-wsl-relay.ps1" in source
+    assert "relay_owned=1" in source
+    assert "elevated Windows PowerShell" not in source
     assert source.count("await browser.close().catch(() => {});") >= 2
 
 

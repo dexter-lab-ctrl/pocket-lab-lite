@@ -110,3 +110,22 @@ def test_android_candidate_server_is_ready_before_chrome_is_opened():
     server_probe = source.index("candidate server did not expose its exact-SHA manifest")
     chrome_open = source.index("prepare-ui-performance-android-candidate.ps1 -OpenCandidate")
     assert server_start < server_probe < chrome_open
+
+
+def test_android_home_only_qualifier_stops_before_recovery_flow():
+    source = ANDROID_QUALIFIER.read_text(encoding="utf-8")
+    home_only_guard = source.index("if (!homeOnly) {\nawait gotoScreen('recovery');")
+    recovery_landing = source.index("captureRecoveryScreenshot('landing'", home_only_guard)
+    assert home_only_guard < recovery_landing
+    assert "Home-only" in source
+    assert "unrelated Recovery flow" in source
+
+
+def test_android_home_qualifier_records_sanitized_physical_visual_evidence():
+    source = ANDROID_QUALIFIER.read_text(encoding="utf-8")
+
+    assert "physical-home-screenshots-" in source
+    assert "captureHomeScreenshot('landing'" in source
+    assert "android-home-visual-evidence.json" in source
+    assert "candidate_manifest_response_header_verified" in source
+    assert "sanitized: true" in source

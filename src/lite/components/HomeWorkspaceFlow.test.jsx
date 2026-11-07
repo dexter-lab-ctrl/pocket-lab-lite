@@ -3,7 +3,7 @@ import React from 'react';
 import '@testing-library/jest-dom/vitest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen, within } from '@testing-library/react';
-import { HomeWorkspaceFlow, homeWorkflowPresentation } from '../LiteHome.jsx';
+import { HomeWorkspaceFlow, homeWorkflowPresentation, homeWorkflowNodeStates } from '../LiteHome.jsx';
 
 afterEach(cleanup);
 const cases = [
@@ -25,8 +25,8 @@ describe('Home Workspace Status Flow P0/P1 presentation', () => {
       const steps = within(flow).getAllByRole('listitem');
       expect(steps).toHaveLength(4);
       expect(steps.map((el) => el.getAttribute('aria-label'))).toEqual([
-        'Device workspace flow step', 'Services workspace flow step',
-        'Apps workspace flow step', 'Safety workspace flow step',
+        'Device workspace flow step: Status not confirmed', 'Services workspace flow step: Status not confirmed',
+        'Apps workspace flow step: Status not confirmed', 'Safety workspace flow step: Status not confirmed',
       ]);
       expect(flow.querySelectorAll('.lite-home-workflow-line[aria-hidden="true"]')).toHaveLength(3);
       expect(flow.querySelectorAll('.lite-home-workflow-node > svg[aria-hidden="true"]')).toHaveLength(4);
@@ -37,5 +37,29 @@ describe('Home Workspace Status Flow P0/P1 presentation', () => {
     expect(props.state).toBe('saved');
     expect(props.activeNodes).toHaveLength(0);
     expect(props.doneNodes).toHaveLength(0);
+  });
+});
+
+describe('P0–P6 node authority and saved-state contract', () => {
+  const projected = [
+    { key: 'device_fleet', tone: 'ready' },
+    { key: 'app_catalog', tone: 'review' },
+    { key: 'security', tone: 'danger' },
+  ];
+  it('uses only projected domain-specific statuses; connector and services remain unknown', () => {
+    expect(homeWorkflowNodeStates(projected).map((item) => item.state)).toEqual([
+      'ready', 'unknown', 'attention', 'critical',
+    ]);
+    const { container } = render(<HomeWorkspaceFlow overallTone="review" attentionCount={2} services={projected} />);
+    expect(container.querySelectorAll('[data-home-node-state="ready"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-home-node-state="unknown"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-home-node-state="attention"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-home-node-state="critical"]')).toHaveLength(1);
+    expect(screen.getByRole('listitem', { name: /Safety workspace flow step: Needs attention/ })).toBeInTheDocument();
+  });
+  it('does not show ready nodes when viewing saved information or checking', () => {
+    for (const options of [{ savedStateOnly: true }, { checking: true }]) {
+      expect(homeWorkflowNodeStates(projected, options).every((item) => item.state === 'unknown')).toBe(true);
+    }
   });
 });

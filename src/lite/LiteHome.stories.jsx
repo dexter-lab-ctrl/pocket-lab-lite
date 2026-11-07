@@ -282,3 +282,41 @@ export const CommandChecking = isolatedHeroStory({refreshing:true},'daylight');
 export const CommandInitialLoading = isolatedHeroStory({loading:true,overview:{overallTone:'unknown',services:[]}},'dark');
 export const CommandPartialProjection = isolatedHeroStory({partial:true},'daylight');
 export const CommandUnknown = isolatedHeroStory({error:true},'dark');
+
+
+/*
+ * Premium P0–P6 source fixtures — AUTHORED, NOT EXECUTED.
+ * Existing PR #638 layout and mock authority remain unchanged. No visual
+ * baselines or Storybook qualifications are approved in this session.
+ */
+const premiumOpts = { status: 'unvalidated',
+  notes: 'P0–P6 Home source-only visual reference; later visual/a11y qualification required.' };
+export const PremiumReadyDaylight390 = createLiteStory('home', 'healthy',
+  { theme: 'daylight', viewport: 'mobile390', ...premiumOpts });
+export const PremiumReadyDarkDesktop = createLiteStory('home', 'healthy',
+  { theme: 'dark', viewport: 'desktop', ...premiumOpts });
+export const PremiumAttentionDark390 = createLiteStory('home', 'lifecycle-attention',
+  { theme: 'dark', viewport: 'mobile390', ...premiumOpts });
+export const PremiumOfflineSavedSystem = createLiteStory('home', 'offline-saved',
+  { theme: 'system', viewport: 'mobile390', ...premiumOpts });
+export const PremiumUnavailableDaylight = createLiteStory('home', 'api-unavailable',
+  { theme: 'daylight', viewport: 'mobile360', ...premiumOpts });
+export const PremiumLongTextDark = createLiteStory('home', 'lifecycle-attention',
+  { theme: 'dark', viewport: 'mobile360', textScale: 2, ...premiumOpts });
+export const PremiumCriticalHero = isolatedHeroStory({
+  overview: { overallTone: 'danger', services: [{ key: 'security', tone: 'danger' }] },
+}, 'dark');
+export const PremiumPartialHero = isolatedHeroStory({ partial: true }, 'daylight');
+export const PremiumLoadingHero = isolatedHeroStory({
+  loading: true, overview: { overallTone: 'unknown', services: [] },
+}, 'daylight');
+export const PremiumRunningHero = isolatedHeroStory({ running: true }, 'dark');
+export const PremiumUnknownHero = isolatedHeroStory({ error: true }, 'dark');
+export const PremiumWorkspaceDetailDark = homePanelStory({
+  panel: 'workspace', theme: 'dark', viewport: 'mobile390', section: 'Service health',
+  notes: 'Native grouped detail, haptic/delegation and semantic node statuses; unqualified.',
+});
+export const PremiumActivityHistoryDaylight = homePanelStory({
+  panel: 'activity', theme: 'daylight', viewport: 'mobile390', section: 'History',
+  notes: 'Backend-derived activity and review cursor, visible only after navigation; unqualified.',
+});

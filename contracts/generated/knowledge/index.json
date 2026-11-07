@@ -31552,6 +31552,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-home-premium-refinement.spec.ts",
+      "name": "tests/e2e/lite-home-premium-refinement.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-home-premium-refinement.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
       "name": "tests/e2e/lite-identity-premium-refinement.spec.ts",
       "source_refs": [
@@ -35313,6 +35323,7 @@
         "test:tests/e2e/lite-home-panel-premium-visual.spec.ts",
         "test:tests/e2e/lite-home-panel-premium.spec.ts",
         "test:tests/e2e/lite-home-panel-snap.spec.ts",
+        "test:tests/e2e/lite-home-premium-refinement.spec.ts",
         "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
         "test:tests/e2e/lite-identity-premium-visual.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
@@ -36870,6 +36881,7 @@
         "test:tests/e2e/lite-home-panel-premium-visual.spec.ts",
         "test:tests/e2e/lite-home-panel-premium.spec.ts",
         "test:tests/e2e/lite-home-panel-snap.spec.ts",
+        "test:tests/e2e/lite-home-premium-refinement.spec.ts",
         "test:tests/e2e/lite-identity-premium-refinement.spec.ts",
         "test:tests/e2e/lite-identity-premium-visual.spec.ts",
         "test:tests/e2e/lite-live.spec.ts",
@@ -111061,9 +111073,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "9ec1b9295d9ae8083319e09ea29effd21f99b2fa2f07019f018c291e513fcf5f",
+  "source_fingerprint": "5407a38b6c8fed76c0468a04f0ace833393e61d10ae02524282c97953ac16a40",
   "statistics": {
-    "entity_count": 1475,
+    "entity_count": 1476,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -111080,7 +111092,7 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 327,
+      "test": 328,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
@@ -111088,6 +111100,6 @@
       "vocabulary": 39
     },
     "relation_count": 4116,
-    "source_count": 364
+    "source_count": 365
   }
 }

@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { homeWorkflowPresentation } from './LiteHome.jsx';
 
 describe('homeWorkflowPresentation', () => {
-  it('uses a live pulse only for current, ready workspace information', () => {
+  it('does not imply a live flow without explicit domain projections', () => {
     expect(homeWorkflowPresentation({ overallTone: 'ready', attentionCount: 0, savedStateOnly: false, checking: false })).toMatchObject({
       state: 'ready',
-      motion: 'live',
+      motion: 'rest',
       badge: 'Live',
-      activeNodes: ['device', 'services', 'apps', 'safety'],
+      activeNodes: [],
+      doneNodes: [],
     });
     expect(homeWorkflowPresentation({ overallTone: 'ready', attentionCount: 0, savedStateOnly: true, checking: false })).toMatchObject({
       state: 'saved',

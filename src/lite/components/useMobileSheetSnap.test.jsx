@@ -91,6 +91,18 @@ describe('opt-in mobile sheet geometry — authored, not executed', () => {
     expect(before).toMatch(/px$/);
     expect(hook.result.current.gripProps.onPointerDown).toBeTypeOf('function');
   });
+  it('refreshes the settled visual viewport when a mounted sheet opens', () => {
+    const originalHeight = window.innerHeight;
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 732 });
+    const surfaceRef = { current: document.createElement('section') };
+    const hook = renderHook(({ open }) => useMobileSheetSnap({ open, enabled: true, surfaceRef }), {
+      initialProps: { open: false },
+    });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 691 });
+    act(() => hook.rerender({ open: true }));
+    expect(hook.result.current.style.height).toBe('498px');
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: originalHeight });
+  });
   it('resets the snap state across close and reopen', () => {
     const surface = document.createElement('section');
     const surfaceRef = { current: surface };

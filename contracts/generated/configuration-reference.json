@@ -2103,7 +2103,6 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
-        "scripts/dev/lite/run-ui-performance-android-cdp.sh",
         "scripts/dev/lite/run-ui-performance-android-devices.sh",
         "scripts/dev/lite/run-ui-performance-android-rules.sh",
         "scripts/dev/lite/run-ui-performance-android-safety.sh"
@@ -2125,7 +2124,6 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
-        "scripts/dev/lite/run-ui-performance-android-cdp.sh",
         "scripts/dev/lite/run-ui-performance-android-devices.sh",
         "scripts/dev/lite/run-ui-performance-android-rules.sh",
         "scripts/dev/lite/run-ui-performance-android-safety.sh"
@@ -19175,7 +19173,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "1555c9d9e664611f03f9691b7d297f4a288fc8f0790d9694962a440870c01dcb",
+    "aggregate_fingerprint": "cd2fc374166f19f51b197df4a4b012dd2ea7d09c9a0b0ec6781535d564d0c1ef",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -19446,9 +19444,9 @@
       "scripts/dev/lite/run-gate.sh": "81b2d42dbbb265fbc31dc28ec7f87c77a863a4d3bfa9586a9875a4aeb30e7ee1",
       "scripts/dev/lite/run-playwright-mocked.sh": "9293ca6becf155ebefd5348901302e694eae8cca478ed0012b91e3a0dc68fd16",
       "scripts/dev/lite/run-ui-performance-android-apps.sh": "56e046b340ff162c7467b580d38707073d5b461530c7e283ae4bf7bec16eb0db",
-      "scripts/dev/lite/run-ui-performance-android-baseline.sh": "cec51b52c07c1526ca1718a91fa892fe83ebc5519aa920d39ff2648b3866c575",
+      "scripts/dev/lite/run-ui-performance-android-baseline.sh": "db1dea8499d9a8146dcfb2b8d3ef9f949b2c7652d4048daa3c50cbf267c67971",
       "scripts/dev/lite/run-ui-performance-android-candidate.sh": "ef39603cfe0a185b9c62dd25d5808b11ec26a69e3d5cf7984914bc22aa08f6fa",
-      "scripts/dev/lite/run-ui-performance-android-cdp.sh": "562f077c2719c4375b68f099b198fd78a4520f19fa82dd14b1f932a6ca624241",
+      "scripts/dev/lite/run-ui-performance-android-cdp.sh": "505db2d3f1a0304a2ee89b96a98c5716189bc33f4f5ae0cc2e2a97e699784416",
       "scripts/dev/lite/run-ui-performance-android-devices.sh": "601a3f03d6bcab4dbe657f648427fc8a82dc5943b0d83b7cbd831169392b7334",
       "scripts/dev/lite/run-ui-performance-android-recovery.sh": "5a6e9f76d97122fa8cac6c9e0bd0ae7bb4ee85bb1822455d1d2a390101f16f26",
       "scripts/dev/lite/run-ui-performance-android-rules.sh": "dd254a923b042d40c0887354dde44c358ade7dd9c5895e230d8333fcebfc045f",

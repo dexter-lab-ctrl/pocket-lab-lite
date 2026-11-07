@@ -42,6 +42,8 @@ describe('Shared LiteSheet / Apps geometry reuse', () => {
     expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'compact');
     expect(compact).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(expand);
+    expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'medium');
+    fireEvent.click(expand);
     expect(dialog).toHaveAttribute('data-lite-sheet-snap', 'expanded');
     expect(expand).toHaveAttribute('aria-pressed', 'true');
     expect(dialog).toHaveTextContent('Persisted Safety summary');

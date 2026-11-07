@@ -70,7 +70,11 @@ for run_index in $(seq 1 "$repetitions"); do
       LITE_ANDROID_KEEP_CANDIDATE_PAGE=1 \
         node scripts/dev/lite/qualify-ui-performance-android-recovery.mjs
     else
-      node scripts/dev/lite/qualify-ui-performance-android-cdp.mjs
+      # The paired after-control sample must reuse the same Android Chrome
+      # foreground target. Home/all CDP qualification otherwise closes the
+      # candidate tab before the after-control probe can attach to it.
+      LITE_ANDROID_KEEP_CANDIDATE_PAGE=1 \
+        node scripts/dev/lite/qualify-ui-performance-android-cdp.mjs
     fi
     qualifier_status=$?
     set -e

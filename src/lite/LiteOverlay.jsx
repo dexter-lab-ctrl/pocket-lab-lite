@@ -410,8 +410,8 @@ export function LiteSheet({
             {headerActions}
             {mobileSheet.active ? <div className="lite-sheet-mobile-snap-actions" role="group" aria-label="Sheet size">
               <span className="sr-only" aria-live="polite">Sheet size: {mobileSheet.state}</span>
-              <button type="button" className={mobileSheet.state === 'compact' ? 'is-active' : ''} aria-pressed={mobileSheet.state === 'compact'} onClick={() => mobileSheet.resizeTo('compact')} disabled={mobileSheet.state === 'compact'}>Compact</button>
-              <button type="button" className={mobileSheet.state === 'expanded' ? 'is-active' : ''} aria-pressed={mobileSheet.state === 'expanded'} onClick={() => mobileSheet.resizeTo('expanded')} disabled={mobileSheet.state === 'expanded'}>Expand</button>
+              <button type="button" className={mobileSheet.state === 'compact' ? 'is-active' : ''} aria-pressed={mobileSheet.state === 'compact'} onClick={mobileSheet.contract} disabled={!mobileSheet.canContract}>Compact</button>
+              <button type="button" className={mobileSheet.state === 'expanded' ? 'is-active' : ''} aria-pressed={mobileSheet.state === 'expanded'} onClick={mobileSheet.expand} disabled={!mobileSheet.canExpand}>Expand</button>
             </div> : null}
             <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={onClose} aria-label={variantClasses.closeLabel} {...closeLabelOverride}>
               <X className="h-4 w-4" />

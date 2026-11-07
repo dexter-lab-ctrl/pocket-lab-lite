@@ -22,6 +22,8 @@ for (const state of states) for (const width of [390, 1440]) {
       await waitForLiteScreenToSettle(page, 'home');
       await page.getByRole('button', { name: kind === 'workspace' ? 'Workspace details' : 'View all activity' }).click();
       const dialog = page.getByRole('dialog', { name: kind === 'workspace' ? 'Workspace details' : 'Recent activity' });
+      // Keep pointer-dependent hover styling out of canonical state snapshots.
+      await page.mouse.move(1, 1);
       await expect(dialog).toHaveScreenshot(`home-premium-${state.name}-${kind}-${width}.png`, {
         animations: 'disabled', caret: 'hide', maxDiffPixelRatio: .02,
       });

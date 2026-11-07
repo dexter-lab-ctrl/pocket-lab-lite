@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: ab6e365fe11c7e06be3f835affea47f59d60adabdd75d91345d32b0ac3ed2056
+source_fingerprint: 7f11eaa80fee42068aea390f4352aa0cb13d69404e207cdd5ec6524a1ccb2b7b
 schema_revision: 1
 validation_status: generated
 ---
@@ -126,6 +126,12 @@ validation_status: generated
 | `pocket-lab-lite-home-commandnarrow` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commandnarrow-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-home-commandreducedmotion` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commandreducedmotion-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-home-commandsystem` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-commandsystem-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-premiumreadydaylight390` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-premiumreadydaylight390-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-premiumreadydarkdesktop` | home | `healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-premiumreadydarkdesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-premiumattentiondark390` | home | `lifecycle-attention` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-premiumattentiondark390-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-premiumofflinesavedsystem` | home | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-premiumofflinesavedsystem-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-premiumunavailabledaylight` | home | `api-unavailable` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-premiumunavailabledaylight-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-home-premiumlongtextdark` | home | `lifecycle-attention` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-home-premiumlongtextdark-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-ownerready` | identity | `identity-summary` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-ownerready-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-passwordconfigured` | identity | `identity-password-configured` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-passwordconfigured-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-identity-identityloading` | identity | `slow-response` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-identity-identityloading-{viewport}.png` | fixture-dependent |
