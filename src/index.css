@@ -24699,8 +24699,10 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
   color:rgb(226 232 240);
 }
 .lite-ux-technical-facts > summary::-webkit-details-marker { display:none; }
-.lite-ux-technical-facts > summary::after { content:"+"; float:right; color:rgb(103 232 249); }
-.lite-ux-technical-facts[open] > summary::after { content:"−"; }
+.lite-ux-technical-facts > summary { display:flex; align-items:center; justify-content:space-between; gap:.65rem; min-height:44px; }
+.lite-ux-technical-facts > summary > span { min-width:0; overflow-wrap:anywhere; }
+.lite-ux-technical-facts > summary .lite-shared-disclosure-chevron { color:var(--azure-muted); flex:0 0 auto; transition:transform .16s ease; }
+.lite-ux-technical-facts[open] > summary .lite-shared-disclosure-chevron { transform:rotate(180deg); }
 .lite-ux-technical-facts-body { border-top:1px solid rgba(148,163,184,.12); padding:1rem; }
 .lite-ux-technical-facts-body > p { margin:0 0 .8rem; color:rgb(148 163 184); font-size:.8rem; }
 .lite-ux-technical-facts dl { margin:0; display:grid; gap:.5rem; }
@@ -24724,7 +24726,6 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 .theme-pocket-lite-daylight .lite-ux-technical-facts > summary {
   color: #334155;
 }
-.theme-pocket-lite-daylight .lite-ux-technical-facts > summary::after { color: #0369a1; }
 .theme-pocket-lite-daylight .lite-ux-technical-facts-body { border-top-color: #e2e8f0; }
 .theme-pocket-lite-daylight .lite-ux-technical-facts-body > p,
 .theme-pocket-lite-daylight .lite-ux-technical-facts dt,
