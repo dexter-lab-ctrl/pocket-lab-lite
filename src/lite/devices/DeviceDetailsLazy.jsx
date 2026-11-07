@@ -1085,7 +1085,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
                 <LiteButton
                   tone="secondary"
                   onClick={() => {
-                    triggerLiteTactileFeedback('selection');
+                    triggerLiteHaptic('tap');
                     healthReviewFlow.routeTo(recommendationTargetScreen, (screenId) => {
                       setActiveTab(screenId);
                       if (screenId === 'devices') onClose?.();
