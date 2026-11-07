@@ -54,6 +54,10 @@ export default defineConfig({
     ['json', { outputFile: '.pocketlab-dev/validation/playwright-results.json' }],
     ['junit', { outputFile: '.pocketlab-dev/validation/playwright-junit.xml' }],
   ],
+  // Keep exact commit provenance in reports, but do not embed the full PR diff
+  // in generated evidence. The diff can contain benign source identifiers that
+  // look like secret-bearing headers to the repository redaction gate.
+  captureGitInfo: { commit: true, diff: false },
   metadata: {
     pocketlab_lite_mode: mode,
     browser_name: browser.browser,
