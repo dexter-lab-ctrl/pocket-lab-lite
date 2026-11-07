@@ -2,7 +2,7 @@ import { LiteProtectedConfirmation } from './components/LiteSafeForms.jsx';
 import './identityRules.css';
 import './identityRulesGovernance.css';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Fingerprint, KeyRound, LogIn, UserCheck, Move, Maximize2, RotateCcw, ArrowLeft } from 'lucide-react';
+import { Fingerprint, KeyRound, LogIn, UserCheck, Move, Maximize2, RotateCcw, ArrowLeft, BookOpenText, ChevronRight } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { clearLiteIdentityCsrf, liteApi } from '../lib/liteApi.js';
 import { liteEnterpriseApi } from '../lib/liteEnterpriseApi.js';
@@ -17,6 +17,7 @@ import LiteHelp, { LiteHelpHeading } from './LiteHelp.jsx';
 import { LiteSheet, LiteDetailsPanel } from './LiteOverlay.jsx';
 import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
 import AccessCenterSummary from './identity/AccessCenterSummary.jsx';
+import AccessHowItWorks from './identity/AccessHowItWorks.jsx';
 import IdentityManageContent from './identity/IdentityManageContent.jsx';
 import IdentityDetailsContent from './identity/IdentityDetailsContent.jsx';
 import OwnerOperationApprovals from './identity/OwnerOperationApprovals.jsx';
@@ -68,6 +69,7 @@ export default function IdentityScreen() {
   const [showRecovery, setShowRecovery] = useState(false);
   const [advancedSetup, setAdvancedSetup] = useState(false);
   const [advancedSignIn, setAdvancedSignIn] = useState(false);
+  const [signedOutGuideOpen, setSignedOutGuideOpen] = useState(false);
   const [showEnterpriseOptIn, setShowEnterpriseOptIn] = useState(false);
   const [ownerClaim, setOwnerClaim] = useState({ checked: false, active: false, status: '' });
   const [personClaim, setPersonClaim] = useState({ checked: false, active: false, status: '', person: null });
@@ -418,10 +420,10 @@ export default function IdentityScreen() {
   const attentionOperations = ownerOperations.filter((operation) => ['pending_approval', 'failed', 'blocked'].includes(operation?.status));
 
   return (
-    <>
+    <div className="lite-access-page" data-access-auth-state={data?.authenticated ? 'signed-in' : 'signed-out'}>
       <PageHeader
-        eyebrow="Account"
-        title="Access"
+        eyebrow="Account & Access"
+        title="Your access"
         description="Your identity and protection"
         actions={<div className="lite-governance-inline-actions"><LiteHelp helpKey="identity.overview" /><LiteRefreshButton scope="identity" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} /></div>}
       />
@@ -485,12 +487,22 @@ export default function IdentityScreen() {
           </GlassCard>
         </div>
       ) : null}
+      {!data?.authenticated && !loading ? (
+        <section className="lite-access-signed-out-guidance" aria-label="Access guidance">
+          <button type="button" className="lite-access-education-link" onClick={() => setSignedOutGuideOpen(true)}>
+            <span className="lite-access-row-icon"><BookOpenText size={19} aria-hidden="true" /></span>
+            <span className="lite-access-row-copy"><strong>How Access works</strong><small>Learn about sign-in, protection and server-authorized changes.</small></span>
+            <ChevronRight size={18} aria-hidden="true" />
+          </button>
+        </section>
+      ) : null}
 
       {data?.authenticated ? (
         <>
           <AccessCenterSummary view={premiumView} data={data} onManage={openManage}
             onActivity={() => openManage('activity')}
-            onActivityDetails={(event) => openDetails('activity', event)}>
+            onActivityDetails={(event) => openDetails('activity', event)}
+             onExplain={() => openDetails('explain', {})}>
             <OwnerOperationApprovals operations={attentionOperations} fresh={ownerOperationsFresh} busy={busy} compact
               onApprove={approveOwnerOperation} onReject={rejectOwnerOperation} />
           </AccessCenterSummary>
@@ -534,9 +546,15 @@ export default function IdentityScreen() {
 
       <ActionNotice notice={notice} actionStage={actionStage} />
 
+      <LiteSheet variant="identity" mobileSnap open={signedOutGuideOpen} onClose={() => setSignedOutGuideOpen(false)}
+        title="How Access works" eyebrow="Account & Access" description="A quick guide to sign-in and protected changes."
+        className="lite-access-education-sheet">
+        <AccessHowItWorks view={premiumView} signedIn={false} />
+      </LiteSheet>
+
       <LiteSheet variant="identity" open={Boolean(renameTarget)} onClose={() => setRenameTarget(null)} title="Rename passkey" eyebrow="Passkey" description="Choose a friendly name. The credential identifier stays hidden from normal UI." className="lite-identity-sheet"><form className="lite-identity-form" onSubmit={confirmRenamePasskey}><IdentityField label="Passkey name" value={renameName} onChange={(event) => setRenameName(event.target.value)} autoFocus maxLength="80" /><div className="lite-identity-sheet-actions"><LiteButton type="button" variant="secondary" onClick={() => setRenameTarget(null)}>Cancel</LiteButton><LiteButton type="submit" disabled={!renameName.trim()}>Save Name</LiteButton></div></form></LiteSheet>
 
       <LiteSheet variant="identity" open={Boolean(confirmation)} onClose={() => setConfirmation(null)} title={confirmation?.title || 'Confirm change'} eyebrow="Confirm" description={confirmation?.description || ''} className="lite-identity-sheet"><div className="lite-identity-confirmation"><LiteProtectedConfirmation value={{ title: confirmation?.title, summary: confirmation?.description, will: confirmation?.will?.length ? confirmation.will : ['Apply only the access change shown here.'], willNot: confirmation?.willNot?.length ? confirmation.willNot : ['Show the change as completed until Pocket Lab confirms it.'], reversible: confirmation?.reversible || 'You can review the resulting access state after the change.', availability: confirmation?.availability || 'Your current access stays available unless this confirmation explicitly says otherwise.' }} /><div className="lite-identity-sheet-actions"><LiteButton variant="secondary" onClick={() => setConfirmation(null)}>Cancel</LiteButton><LiteButton onClick={confirmRequestedAction}>{confirmation?.confirmLabel || 'Confirm'}</LiteButton></div></div></LiteSheet>
-    </>
+    </div>
   );
 }
