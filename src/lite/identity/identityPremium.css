@@ -43,7 +43,6 @@ html[data-lite-theme] .lite-id-explain-entry button { min-height: 44px; backgrou
 html[data-lite-theme] .lite-id-explain-entry button { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
 html[data-lite-theme] .lite-id-explain-entry button span { font-size: .82rem; }
 html[data-lite-theme] .lite-id-overview-action { display: flex; justify-content: flex-end; }
-html[data-lite-theme] .lite-id-manage { display: grid; gap: 1rem; min-width: 0; }
 html[data-lite-theme] .lite-id-manage-nav { display: flex; flex-wrap: wrap; gap: .4rem; border-bottom: 1px solid var(--azure-border); padding-bottom: .8rem; }
 html[data-lite-theme] .lite-id-manage-nav button,
 html[data-lite-theme] .lite-id-activity-filters button { min-height: 44px; border: 1px solid var(--azure-border); background: transparent; color: inherit; padding: .55rem .7rem; border-radius: .65rem; cursor: pointer; }
@@ -54,12 +53,10 @@ html[data-lite-theme] .lite-id-manage-body > header span { font-size: .82rem; ov
 html[data-lite-theme] .lite-id-manage-body > header h2 { margin: .3rem 0 1rem; }
 html[data-lite-theme] .lite-id-manage-counts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .75rem; }
 html[data-lite-theme] .lite-id-manage-counts > div { padding: .7rem; border-radius: .7rem; border: 1px solid var(--azure-border); min-width: 0; }
-html[data-lite-theme] .lite-id-manage-list { display: grid; gap: .85rem; min-width: 0; }
 html[data-lite-theme] .lite-id-item-row { justify-content: space-between; align-items: center; gap: 1rem; width: 100%; }
 html[data-lite-theme] .lite-id-item-row > span:first-child { display: grid; min-width: 0; }
 html[data-lite-theme] .lite-id-item-row strong,
 html[data-lite-theme] .lite-id-item-row small { overflow-wrap: anywhere; }
-html[data-lite-theme] .lite-id-detail-heading,
 html[data-lite-theme] .lite-id-detail-group { padding-bottom: .9rem; border-bottom: 1px solid var(--azure-border); margin-bottom: .95rem; }
 html[data-lite-theme] .lite-id-detail-facts { display: grid; gap: .55rem; }
 html[data-lite-theme] .lite-id-detail-fact { display: grid; grid-template-columns: minmax(7rem,.55fr) minmax(0,1fr); gap: .65rem; }
@@ -77,7 +74,6 @@ html[data-lite-theme] .lite-id-timeline time { font-size: .82rem; overflow-wrap:
 html[data-lite-theme] .lite-id-timeline button { color: inherit; background: none; border: 0; text-decoration: underline; cursor: pointer; min-height: 44px; }
 html[data-lite-theme] .lite-id-activity-filters { display: flex; flex-wrap: wrap; gap: .4rem; }
 html[data-lite-theme] .lite-id-activity * { min-width: 0; overflow-wrap: anywhere; }
-html[data-lite-theme] .lite-identity-manage-sheet { width: min(96vw, 46rem); }
 html[data-lite-theme] .lite-id-manage button:focus-visible,
 html[data-lite-theme] .lite-id-overview button:focus-visible,
 html[data-lite-theme] .lite-id-journey button:focus-visible,
@@ -210,7 +206,7 @@ html[data-lite-theme] .lite-id-hero-mobile-action .pocket-button {width:100%;}
   html[data-lite-theme] .lite-id-action-card {gap:.5rem;}
   html[data-lite-theme] .lite-id-manage-nav {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
   html[data-lite-theme] .lite-id-manage-body,html[data-lite-theme] .lite-id-manage-nav {min-width:0;}
-  html[data-lite-theme] .lite-identity-manage-sheet {width:min(100%,46rem);max-height:calc(var(--lite-visual-viewport-height,100dvh) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 1rem);}
+  html[data-lite-theme] .lite-identity-manage-sheet {max-height:calc(var(--lite-visual-viewport-height,100dvh) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 1rem);}
   html[data-lite-theme] .lite-id-desktop-panel-tools {display:none;}
   html[data-lite-theme] .lite-identity-enterprise :is(.lite-governance-form,.lite-governance-role-grid,.lite-governance-grid) {grid-template-columns:minmax(0,1fr);}
 }
