@@ -456,7 +456,7 @@ test.describe('Pocket Lab Lite mocked contract path', () => {
     await page.goto('/?screen=identity');
     const identity = page.locator('[data-lite-screen-id="identity"]');
     await expect(identity).toBeVisible();
-    await expect(identity.getByRole('heading', { name: 'Access', exact: true })).toBeVisible();
+    await expect(identity.getByRole('heading', { name: 'Your access', exact: true })).toBeVisible();
     await expect(identity.getByLabel('Access profile')).toBeVisible();
     await expect(identity).toContainText('Passkeys');
     await expect(identity).toContainText('Sessions');
