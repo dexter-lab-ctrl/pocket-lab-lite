@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 3342180cf542b32b874d90164490eb8d4e1fe0d4e5e70ebc766d2a80a02a7df1
+source_fingerprint: 69831c18152ed4a9cddb3a257f7742dc8330302fcc4b0deffb1a1b8894fe9296
 schema_revision: 1
 validation_status: generated
 ---
@@ -134,8 +134,8 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_ALLOW_REMOTE_ACCESS_FAULT` | configuration | 0 | yes | component-dependent | scripts/dev/check-lite-runtime-resilience-server-phone.sh |
 | `POCKETLAB_ALLOW_SIMULATED_ZTP` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/core/control_plane_core.py |
 | `POCKETLAB_ALLOW_TAILSCALE_API` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/core/control_plane_core.py |
-| `POCKETLAB_ANDROID_CDP_BRIDGE_PORT` | configuration | 19222 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/run-ui-performance-android-devices.sh, scripts/dev/lite/run-ui-performance-android-rules.sh, scripts/dev/lite/run-ui-performance-android-safety.sh |
-| `POCKETLAB_ANDROID_CDP_LOCAL_PORT` | configuration | 9222 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh, scripts/dev/lite/run-ui-performance-android-devices.sh, scripts/dev/lite/run-ui-performance-android-rules.sh, scripts/dev/lite/run-ui-performance-android-safety.sh |
+| `POCKETLAB_ANDROID_CDP_BRIDGE_PORT` | configuration | 19222 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-devices.sh, scripts/dev/lite/run-ui-performance-android-rules.sh, scripts/dev/lite/run-ui-performance-android-safety.sh |
+| `POCKETLAB_ANDROID_CDP_LOCAL_PORT` | configuration | 9222 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-devices.sh, scripts/dev/lite/run-ui-performance-android-rules.sh, scripts/dev/lite/run-ui-performance-android-safety.sh |
 | `POCKETLAB_ANDROID_WAKE_BEFORE_QUALIFICATION` | configuration | 0 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-candidate.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh |
 | `POCKETLAB_API_BIND` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_API_DIR` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/core/control_plane_core.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
