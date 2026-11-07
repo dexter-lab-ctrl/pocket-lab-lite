@@ -823,7 +823,7 @@ function DeviceHealthHistory({ deviceId }) {
         </div>
         <LiteButton
           tone="secondary"
-          onClick={() => setDeviceHealthHistoryOpenId(healthHistoryOpen ? '' : deviceId)}
+          onClick={() => { triggerLiteHaptic('tap'); setDeviceHealthHistoryOpenId(healthHistoryOpen ? '' : deviceId); }}
           aria-expanded={healthHistoryOpen}
         >
           {healthHistoryOpen ? 'Hide health history' : 'Show health history'}
@@ -935,7 +935,10 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
           <span>Device Manage · {isProtectedServer ? 'Protected server host' : deviceRoleSummary(device)}</span>
           <h3>{title}</h3>
           <div className="lite-device-details-head-facts" aria-label="Device connection and freshness">
-            <strong>{actionsBlocked ? 'Saved · connection not confirmed' : canonicalDevicePresentation(device).label}</strong>
+            <span className="lite-device-details-state-icon" aria-hidden="true">
+               {actionsBlocked ? <Clock3 size={17} /> : effectiveStatus === 'online' ? <CheckCircle2 size={17} /> : <AlertTriangle size={17} />}
+             </span>
+             <strong>{actionsBlocked ? 'Saved · connection not confirmed' : canonicalDevicePresentation(device).label}</strong>
             <small>{device?.last_seen_state?.last_seen_at || device?.last_seen
               ? `Last reported ${formatLiteTime(device?.last_seen_state?.last_seen_at || device?.last_seen)}`
               : 'No recent heartbeat reported'}</small>
