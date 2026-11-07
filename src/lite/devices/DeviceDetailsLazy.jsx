@@ -825,12 +825,15 @@ function DeviceHealthHistory({ deviceId }) {
           tone="secondary"
           onClick={() => { triggerLiteHaptic('tap'); setDeviceHealthHistoryOpenId(healthHistoryOpen ? '' : deviceId); }}
           aria-expanded={healthHistoryOpen}
+          aria-controls="lite-device-health-history-content"
+          className="lite-progressive-disclosure-toggle lite-device-health-history-toggle"
         >
-          {healthHistoryOpen ? 'Hide health history' : 'Show health history'}
+          <span>{healthHistoryOpen ? 'Hide health history' : 'Show health history'}</span>
+          <ChevronDown className="lite-shared-disclosure-chevron" size={18} aria-hidden="true" />
         </LiteButton>
       </div>
       {healthHistoryOpen ? (
-        <div className="lite-device-health-history" role="region" aria-label="Device health history">
+        <div id="lite-device-health-history-content" className="lite-device-health-history" role="region" aria-label="Device health history">
           {healthHistoryQuery.loading ? <p className="lite-device-timeline-loading">Loading health history…</p> : null}
           {!healthHistoryQuery.loading ? (
             <LiteHistoryTimeline
