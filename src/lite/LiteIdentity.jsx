@@ -2,7 +2,7 @@ import { LiteProtectedConfirmation } from './components/LiteSafeForms.jsx';
 import './identityRules.css';
 import './identityRulesGovernance.css';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Fingerprint, KeyRound, LogIn, UserCheck, Move, Maximize2, RotateCcw, ArrowLeft, BookOpenText, ChevronRight } from 'lucide-react';
+import { Fingerprint, KeyRound, LogIn, UserCheck, ArrowLeft, BookOpenText, ChevronRight } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { clearLiteIdentityCsrf, liteApi } from '../lib/liteApi.js';
 import { liteEnterpriseApi } from '../lib/liteEnterpriseApi.js';
@@ -14,7 +14,7 @@ import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import LiteIdentityEnterprise from './LiteIdentityEnterprise.jsx';
 import LiteHelp, { LiteHelpHeading } from './LiteHelp.jsx';
-import { LiteSheet, LiteDetailsPanel } from './LiteOverlay.jsx';
+import { LiteSheet, LiteDetailsPanel, LiteDesktopPanelControls } from './LiteOverlay.jsx';
 import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
 import AccessCenterSummary from './identity/AccessCenterSummary.jsx';
 import AccessHowItWorks from './identity/AccessHowItWorks.jsx';
@@ -509,12 +509,9 @@ export default function IdentityScreen() {
           <LiteSheet open={manageOpen} onClose={closeManage} onEscape={escapeManage} mobileSnap={!desktopPanel} title="Manage access" eyebrow="Access" description="Account settings and permissions." variant="identity" className={`lite-identity-manage-sheet ${desktopPanel ? 'is-movable' : ''}`}
             surfaceRef={managePanelRef} surfaceStyle={panelStyle}
             surfaceProps={{ 'data-lite-identity-manage-layout': desktopPanel ? 'desktop-movable' : 'mobile-sheet' }}
-            headerActions={desktopPanel ? <div className="lite-id-desktop-panel-tools" role="group" aria-label="Desktop access panel controls">
-              <button type="button" aria-label="Move access panel" title="Drag or use arrow keys to move" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight" onPointerDown={(event) => startPanelInteraction('move', event)} onKeyDown={(event) => adjustPanelWithKeyboard('move', event)}><Move size={16} aria-hidden="true" /></button>
-              <button type="button" aria-label="Reset access panel position and size" onClick={resetManagePanel}><RotateCcw size={16} aria-hidden="true" /> Reset</button>
-              <button type="button" aria-label="Resize access panel" title="Drag or use arrow keys to resize" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight" onPointerDown={(event) => startPanelInteraction('resize', event)} onKeyDown={(event) => adjustPanelWithKeyboard('resize', event)}><Maximize2 size={16} aria-hidden="true" /></button>
-              <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
-            </div> : null}>
+            headerActions={desktopPanel ? <LiteDesktopPanelControls title="Access" desktopToolLabels geometry={{
+              announcement, reset: resetManagePanel, startPanelInteraction, adjustPanelWithKeyboard,
+            }} /> : null}>
             <IdentityManageContent
               data={data} view={premiumView} section={manageSection} setSection={changeManageSection} busy={busy} notice={notice}
               passkeyEligible={passkeyEligible} recoveryCodes={recoveryCodes} onOpenDetails={openDetails}
