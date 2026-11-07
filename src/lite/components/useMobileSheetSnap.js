@@ -50,6 +50,12 @@ export function useMobileSheetSnap({ open, enabled = false, surfaceRef, initialS
     };
     visualViewport?.addEventListener('resize', onViewportChange, { passive: true });
     window.addEventListener('resize', onViewportChange, { passive: true });
+    // The hook can remain mounted while its owner is closed. Android Chrome
+    // may settle its visual viewport between that mount and panel activation
+    // without emitting a resize event to this newly active listener. Refresh
+    // once on activation so the first rendered snap uses the current physical
+    // viewport rather than the stale browser-toolbar height.
+    onViewportChange();
     return () => {
       visualViewport?.removeEventListener('resize', onViewportChange);
       window.removeEventListener('resize', onViewportChange);
