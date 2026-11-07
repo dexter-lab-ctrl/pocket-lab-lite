@@ -299,7 +299,7 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs, deviceActionHandlersR
     [devices, detailsDeviceId],
   );
   const { panelRef: detailsPanelRef, desktopPanel, panelStyle, announcement, reset: resetPanelGeometry,
-    startPanelInteraction, adjustPanelWithKeyboard } = useDesktopManageGeometry({ open: Boolean(activeDetailsDevice) });
+    startPanelInteraction, adjustPanelWithKeyboard } = useDesktopManageGeometry({ open: Boolean(activeDetailsDevice), defaultWidth: 820 });
   const mobileSnap = useMobileSheetSnap({ open: Boolean(activeDetailsDevice), enabled: !desktopPanel, surfaceRef: detailsPanelRef, initialState: 'medium' });
 
   useEffect(() => {
@@ -398,7 +398,7 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs, deviceActionHandlersR
             >
               <Move className="h-4 w-4" aria-hidden="true" />
             </button>
-            <span>Desktop panel</span>
+            <span className="lite-device-manage-toolbar-label">Device workspace <small>Move and resize</small></span>
             <button type="button" className="lite-device-details-panel-tool" aria-label="Reset device details panel position and size" onClick={() => { triggerLiteHaptic('tap'); resetPanelGeometry(); }}>Reset</button>
             <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
             <button
@@ -508,9 +508,9 @@ function remoteAccessDetailRows(remoteAccess = {}, remoteAccessView = {}, savedS
   const checkedAt = remoteAccess.checked_at || remoteAccess.updated_at || remoteAccessView.checked_at || remoteAccessView.updated_at;
   return [
     { label: 'Evidence', value: savedStateOnly ? 'Saved workspace snapshot' : 'Current connection check' },
-    { label: 'Tailscale service', value: running === true ? 'Running' : running === false ? 'Not running' : 'Not reported' },
-    { label: 'Tailscale IP', value: hasAddress ? `Available · ${remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}` : remoteAccessView.tailnet_ip_ready ? 'Ready' : 'Not ready' },
-    { label: 'Private command path', value: natsReachable === true ? 'Reachable' : natsReachable === false ? 'Not reachable' : 'Not reported' },
+    { label: 'Tailscale service', value: savedStateOnly ? 'Saved · not confirmed' : running === true ? 'Running' : running === false ? 'Not running' : 'Not reported' },
+    { label: 'Tailscale IP', value: hasAddress ? `Available · ${remoteAccess.ip || remoteAccess.tailnet_ip || remoteAccessView.ip || remoteAccessView.tailnet_ip}` : !savedStateOnly && remoteAccessView.ready && remoteAccessView.tailnet_ip_ready ? 'Ready' : 'Not ready' },
+    { label: 'Private command path', value: savedStateOnly ? 'Saved · not confirmed' : natsReachable === true ? 'Reachable' : natsReachable === false ? 'Not reachable' : 'Not reported' },
     { label: 'Checked', value: checkedAt ? formatLiteTime(checkedAt) : 'Not reported' },
   ];
 }
@@ -1309,7 +1309,7 @@ export default function DevicesScreen() {
                 </div>
         
                 <details className="lite-remote-access-details" onToggle={(event) => setRemoteAccessDetailsOpen(event.currentTarget.open)}>
-                  <summary onClick={() => triggerLiteHaptic('tap')}>Technical connection details</summary>
+                  <summary onClick={() => triggerLiteHaptic('tap')}><span>Technical connection details</span><ChevronDown className="lite-shared-disclosure-chevron" size={18} aria-hidden="true" /></summary>
                   {remoteAccessDetailsOpen ? (
                     <dl>
                       {remoteAccessDetailRows(remoteAccess, remoteAccessView, savedStateOnly || isExpired).map((item) => (
