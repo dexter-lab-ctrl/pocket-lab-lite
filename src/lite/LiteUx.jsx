@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, ChevronDown, CircleAlert, Clock3, Info, ShieldCheck } from 'lucide-react';
+import { Activity, CheckCircle2, ChevronDown, CircleAlert, Clock3, Info, RotateCcw, ShieldCheck, Wifi, WifiOff } from 'lucide-react';
 import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { LiteButton, StateSurface } from './LiteUi.jsx';
 import {
@@ -75,7 +75,7 @@ export function LiteTechnicalFacts({ title = 'Technical details', description = 
   );
 }
 
-export function LiteHistoryTimeline({ items = [], emptyTitle = 'No history yet', emptyDescription = 'Recent activity will appear here.', className = '' }) {
+export function LiteHistoryTimeline({ items = [], emptyTitle = 'No history yet', emptyDescription = 'Recent activity will appear here.', className = '', variant = 'default' }) {
   const history = normalizeTimelineItems(items);
   if (!history.length) return <LiteEmptyState title={emptyTitle} description={emptyDescription} className={className} />;
   return (
