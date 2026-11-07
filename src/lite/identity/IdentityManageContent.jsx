@@ -1,6 +1,7 @@
 import React from 'react';
 import AccessManageNavigation from './AccessManageNavigation.jsx';
-import { BookOpenText, Fingerprint, LifeBuoy, LogOut } from 'lucide-react';
+import { BookOpenText, ChevronRight, Fingerprint, LifeBuoy, LogOut } from 'lucide-react';
+import { formatAccessTimestamp } from './accessCenterPresentation.js';
 import { LiteButton, StateSurface } from '../LiteUi.jsx';
 import IdentityActivityTimeline from './IdentityActivityTimeline.jsx';
 import OwnerOperationApprovals from './OwnerOperationApprovals.jsx';
@@ -40,21 +41,21 @@ export default function IdentityManageContent({
         <LiteButton onClick={onAddPasskey} disabled={Boolean(busy) || readOnly || !passkeyEligible}><Fingerprint aria-hidden="true" size={16} /> Add Passkey</LiteButton>
         {!Array.isArray(data?.passkeys) ? <StateSurface tone="neutral" title="Passkeys unavailable" description="No current passkey list was reported." /> : data.passkeys.length ? data.passkeys.map((key) =>
           <button key={key.credential_id} type="button" className="lite-id-item-row" onClick={() => onOpenDetails('passkey', key)}>
-            <span><strong>{key.friendly_name || 'Passkey'}</strong><small>{key.active ? 'Active' : 'Revoked'} · Added {key.created_at || 'time unavailable'}</small></span><span>Details</span>
+            <span><strong>{key.friendly_name || 'Passkey'}</strong><small>{key.active === true ? 'Active' : key.active === false ? 'Revoked' : 'State not reported'} · Added {formatAccessTimestamp(key.created_at)}</small></span><span>Details</span>
           </button>) : <StateSurface tone="neutral" title="No passkeys" description="You can add a passkey if your browser supports it." />}
       </div> : null}
       {effectiveSection === 'sessions' ? <div className="lite-id-manage-list">
         <p>Review sessions reported by Pocket Lab. Revoking a session may interrupt work on that device.</p>
         {!Array.isArray(data?.sessions) ? <StateSurface tone="neutral" title="Sessions unavailable" description="No current session list was reported." /> : data.sessions.map((item) =>
           <button key={item.session_id} type="button" className="lite-id-item-row" data-current-session={item.active && item.current ? 'true' : undefined} onClick={() => onOpenDetails('session', item)}>
-            <span><strong>{item.active ? (item.current ? 'Current session' : 'Other session') : 'Inactive session'}</strong><small>{item.auth_method || 'Method not reported'} · Expires {item.absolute_expires_at || 'not reported'}</small></span><span>Details</span>
+            <span><strong>{item.active === true ? (item.current ? 'Current session' : 'Other session') : item.active === false ? 'Inactive session' : 'Session status unavailable'}</strong><small>{item.auth_method || 'Method not reported'} · Expires {formatAccessTimestamp(item.absolute_expires_at)}</small></span><span>Details</span>
           </button>)}
         {view.sessions === 0 ? <StateSurface tone="neutral" title="No active sessions reported" description="Refresh to confirm the latest sign-in state." /> : null}
         {view.sessions > 1 ? <LiteButton variant="secondary" onClick={onSignOutOthers} disabled={readOnly || Boolean(busy)}>Sign Out Other Sessions</LiteButton> : null}
       </div> : null}
       {effectiveSection === 'recovery' ? <div className="lite-id-manage-list">
         <p>{view.recoveryConfigured === true ? 'Recovery is configured.' : 'Recovery is not confirmed.'} {view.remaining == null ? 'Unused code count unavailable.' : view.remaining + ' unused codes reported.'}</p>
-        <button type="button" className="lite-id-item-row" onClick={() => onOpenDetails('recovery', {})}><span><strong>Recovery Details</strong><small>Understand readiness and regeneration consequences.</small></span><span>Details</span></button>
+        <button type="button" className="lite-id-item-row" onClick={() => onOpenDetails('recovery', {})}><span><strong>Recovery Details</strong><small>Understand readiness and regeneration consequences.</small></span><ChevronRight size={18} aria-hidden="true" /></button>
         <LiteButton variant="secondary" onClick={onRegenerate} disabled={Boolean(busy) || readOnly}><LifeBuoy size={16} aria-hidden="true" /> Generate New Codes</LiteButton>
         {recoveryCodes.length ? <div className="lite-identity-recovery-codes" data-private-ephemeral-result="true"><strong>Private recovery codes — shown only once. Store securely and close this panel when finished.</strong><code>{recoveryCodes.join('\n')}</code><LiteButton variant="secondary" onClick={onCopyCodes}>Copy Codes</LiteButton></div> : null}
         {(data?.person?.password_configured || data?.owner?.password_configured) ? <form className="lite-identity-form" onSubmit={onChangePassword}>
