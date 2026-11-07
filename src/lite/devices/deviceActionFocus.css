@@ -18,6 +18,10 @@
   isolation: isolate;
 }
 
+.lite-device-action-backdrop.is-interactive {
+  pointer-events: auto;
+  touch-action: none;
+}
 .lite-device-action-backdrop {
   position: absolute;
   inset: 0;
@@ -30,7 +34,7 @@
   position: fixed !important;
   inset: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) auto auto;
   z-index: 1200;
-  width: min(34rem, calc(100vw - 2rem));
+  width: min(51.25rem, calc(100vw - 2rem));
   max-width: calc(100vw - 2rem);
   max-height: calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   overscroll-behavior: contain;
@@ -211,3 +215,14 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Native device panel controls preserve the shared geometry controller. */
+.lite-device-details-panel-tools .lite-device-manage-toolbar-label {
+  display: grid; flex: 1 1 auto; gap: .08rem; min-width: 0;
+  color: var(--azure-text); font-size: .76rem; font-weight: 750; letter-spacing: 0;
+  text-transform: none;
+}
+.lite-device-details-panel-tools .lite-device-manage-toolbar-label small {
+  color: var(--azure-muted); font-size: .68rem; font-weight: 500;
+}
+.lite-device-details-panel-tools .lite-device-details-panel-tool { min-width: 2.75rem; min-height: 2.75rem; }
