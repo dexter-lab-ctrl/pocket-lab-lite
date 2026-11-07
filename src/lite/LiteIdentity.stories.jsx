@@ -5,7 +5,7 @@ export default { title: 'Pocket Lab Lite/Identity', component: LiteStoryFrame, t
 
 async function expectIdentity(canvasElement) {
   const canvas = within(canvasElement);
-  await expect(await canvas.findByRole('heading', { name: 'Access', level: 1 })).toBeInTheDocument();
+  await expect(await canvas.findByRole('heading', { name: 'Your access', level: 1 })).toBeInTheDocument();
   return canvas;
 }
 
@@ -18,7 +18,7 @@ async function openManageAccess(canvasElement) {
   await expect(dialog).toBeInTheDocument();
   await expect(dialog).toHaveTextContent(/Passkeys/i);
   await expect(dialog).toHaveTextContent(/Sessions/i);
-  await expect(dialog.getByRole('button', { name: 'Recovery', exact: true })).toBeInTheDocument();
+  await expect(within(dialog).getByRole('button', { name: 'Recovery', exact: true })).toBeInTheDocument();
 }
 
 async function expectEnterpriseRole(canvasElement, role) {
@@ -270,3 +270,67 @@ export const NativePasskeyDetails = {
 export const NativeConfirmation = PremiumProtectedConfirmation;
 export const NativePeopleDetails = PremiumPeopleDetails;
 export const NativeSheetCompactMediumExpanded = native('identity-summary', { viewport: 'mobile390', notes: 'Mobile snap states (35%, 72%, 94%) exercised in authored browser candidates; no baseline is approved.' });
+
+
+// Access P0–P7 qualification stories — AUTHORED, NOT EXECUTED.
+export const HardenedSignedOutDark = native('identity-premium-signed-out', { viewport: 'mobile390', theme: 'dark' });
+export const HardenedSignedOutLight = native('identity-premium-signed-out', { viewport: 'mobile390', theme: 'daylight' });
+export const HardenedHowAccessWorks = {
+  ...native('identity-summary', { viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectIdentity(canvasElement);
+    await userEvent.click(await canvas.findByRole('button', { name: /How Access works/i }));
+    const body = within(canvasElement.ownerDocument.body);
+    const detail = await body.findByRole('dialog', { name: /Understand your access/i });
+    await expect(detail).toHaveTextContent(/Sign in/i);
+    await expect(detail).toHaveTextContent(/Protect your access/i);
+    await expect(detail).toHaveTextContent(/Review activity/i);
+  },
+};
+export const HardenedSignedOutEducation = {
+  ...native('identity-premium-signed-out', { viewport: 'mobile390', theme: 'dark' }),
+  play: async ({ canvasElement }) => {
+    const canvas = await expectIdentity(canvasElement);
+    await userEvent.click(await canvas.findByRole('button', { name: /How Access works/i }));
+    const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: /How Access works/i });
+    await expect(dialog).toHaveTextContent(/Sign in to review your account/i);
+  },
+};
+export const HardenedSessionDetails = {
+  ...native('identity-premium-multiple', { viewport: 'mobile390' }),
+  play: async ({ canvasElement }) => {
+    await openManageAccess(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const manage = body.getByRole('dialog', { name: /Manage access/i });
+    await userEvent.click(within(manage).getByRole('button', { name: 'Sessions', exact: true }));
+    await userEvent.click(within(manage).getByRole('button', { name: /^Other session/i }));
+    const detail = await body.findByRole('dialog', { name: /Access Details/i });
+    await expect(detail).toHaveTextContent(/Reported facts/i);
+    await expect(detail).toHaveTextContent(/Protected changes still require server authorization/i);
+  },
+};
+export const HardenedRecoveryDetails = {
+  ...native('identity-premium-recovery-missing', { viewport: 'mobile390', theme: 'daylight' }),
+  play: async ({ canvasElement }) => {
+    await openManageAccess(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const manage = body.getByRole('dialog', { name: /Manage access/i });
+    await userEvent.click(within(manage).getByRole('button', { name: 'Recovery', exact: true }));
+    await userEvent.click(within(manage).getByRole('button', { name: /Recovery Details/i }));
+    await expect(await body.findByRole('dialog', { name: /Access Details/i })).toHaveTextContent(/Unavailable or unconfigured/i);
+  },
+};
+export const HardenedTechnicalChevron = {
+  ...native('identity-premium-multiple', { viewport: 'desktop', theme: 'dark' }),
+  play: async ({ canvasElement }) => {
+    await openManageAccess(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const manage = body.getByRole('dialog', { name: /Manage access/i });
+    await userEvent.click(within(manage).getByRole('button', { name: 'Passkeys', exact: true }));
+    await userEvent.click(within(manage).getByRole('button', { name: /Second passkey/i }));
+    const detail = await body.findByRole('dialog', { name: /Access Details/i });
+    const summary = within(detail).getByText('Technical facts');
+    await userEvent.click(summary);
+    await expect(summary.closest('details')).toHaveAttribute('open');
+  },
+};

@@ -3001,41 +3001,11 @@ textarea {
   font-weight: 950;
 }
 
-.theme-pocket-lite-daylight .lite-identity-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 1rem;
-}
-
-.theme-pocket-lite-daylight .lite-identity-card {
-  min-height: 22rem;
-  animation: lite-soft-rise 360ms ease both;
-}
+/* Current Access layout geometry is theme-independent in
+   src/lite/identity/accessCenter.css. Historical Daylight-only rules removed. */
 
 .theme-pocket-lite-daylight .lite-identity-action-card {
   animation-delay: 55ms;
-}
-
-.theme-pocket-lite-daylight .lite-identity-card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.theme-pocket-lite-daylight .lite-identity-card h2 {
-  color: #0f172a;
-  font-size: 1.45rem;
-  font-weight: 950;
-  letter-spacing: -0.04em;
-}
-
-.theme-pocket-lite-daylight .lite-identity-card p {
-  margin-top: 0.7rem;
-  color: #475569;
-  font-size: 0.96rem;
-  line-height: 1.7;
 }
 
 .theme-pocket-lite-daylight .lite-identity-checklist {
@@ -3120,8 +3090,7 @@ textarea {
 }
 
 @media (max-width: 900px) {
-  .theme-pocket-lite-daylight .lite-identity-hero,
-  .theme-pocket-lite-daylight .lite-identity-grid {
+  .theme-pocket-lite-daylight .lite-identity-hero {
     grid-template-columns: 1fr;
   }
 
@@ -24699,8 +24668,10 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
   color:rgb(226 232 240);
 }
 .lite-ux-technical-facts > summary::-webkit-details-marker { display:none; }
-.lite-ux-technical-facts > summary::after { content:"+"; float:right; color:rgb(103 232 249); }
-.lite-ux-technical-facts[open] > summary::after { content:"−"; }
+.lite-ux-technical-facts > summary { display:flex; align-items:center; justify-content:space-between; gap:.65rem; min-height:44px; }
+.lite-ux-technical-facts > summary > span { min-width:0; overflow-wrap:anywhere; }
+.lite-ux-technical-facts > summary .lite-shared-disclosure-chevron { color:var(--azure-muted); flex:0 0 auto; transition:transform .16s ease; }
+.lite-ux-technical-facts[open] > summary .lite-shared-disclosure-chevron { transform:rotate(180deg); }
 .lite-ux-technical-facts-body { border-top:1px solid rgba(148,163,184,.12); padding:1rem; }
 .lite-ux-technical-facts-body > p { margin:0 0 .8rem; color:rgb(148 163 184); font-size:.8rem; }
 .lite-ux-technical-facts dl { margin:0; display:grid; gap:.5rem; }
@@ -24724,7 +24695,6 @@ html[data-lite-perf-mode='true'] .theme-pocket-lite-daylight .pocket-main *::aft
 .theme-pocket-lite-daylight .lite-ux-technical-facts > summary {
   color: #334155;
 }
-.theme-pocket-lite-daylight .lite-ux-technical-facts > summary::after { color: #0369a1; }
 .theme-pocket-lite-daylight .lite-ux-technical-facts-body { border-top-color: #e2e8f0; }
 .theme-pocket-lite-daylight .lite-ux-technical-facts-body > p,
 .theme-pocket-lite-daylight .lite-ux-technical-facts dt,

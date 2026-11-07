@@ -1,11 +1,11 @@
 import React from 'react';
-import { Activity, ChevronRight, Fingerprint, KeyRound, MonitorSmartphone, ShieldCheck, ShieldUser, ShieldAlert, Clock3 } from 'lucide-react';
+import { Activity, BookOpenText, ChevronRight, Fingerprint, KeyRound, MonitorSmartphone, ShieldCheck, ShieldUser, ShieldAlert, Clock3 } from 'lucide-react';
 import { GlassCard, LiteButton } from '../LiteUi.jsx';
-import { accessCenterLatestActivity, accessCenterProtectionRows, accessCenterReadiness } from './accessCenterPresentation.js';
+import { accessCenterLatestActivity, accessCenterProtectionRows, accessCenterReadiness, formatAccessTimestamp } from './accessCenterPresentation.js';
 
 const protectionIcons = { passkeys: Fingerprint, sessions: MonitorSmartphone, recovery: KeyRound };
 
-export default function AccessCenterSummary({ view, data, onManage, onActivity, onActivityDetails, children }) {
+export default function AccessCenterSummary({ view, data, onManage, onActivity, onActivityDetails, onExplain, children }) {
   const readiness = accessCenterReadiness(view, data);
   const activity = accessCenterLatestActivity(data);
   return (
@@ -52,10 +52,17 @@ export default function AccessCenterSummary({ view, data, onManage, onActivity, 
         <GlassCard className="lite-access-activity-card">
           {activity ? <button type="button" className="lite-access-activity-row" onClick={() => onActivityDetails(activity)}>
             <Activity size={19} aria-hidden="true" />
-            <span><strong>{activity.title}</strong><small>{view.fresh ? 'Latest reported activity' : 'Saved activity'} · {activity.timestamp && Number.isFinite(Date.parse(activity.timestamp)) ? new Date(activity.timestamp).toLocaleString() : 'Time unavailable'}</small></span>
+            <span><strong>{activity.title}</strong><small>{view.fresh ? 'Latest reported activity' : 'Saved activity'} · {formatAccessTimestamp(activity.timestamp)}</small></span>
             <ChevronRight size={18} aria-hidden="true" />
           </button> : <div className="lite-access-activity-empty"><Clock3 size={19} aria-hidden="true" /><p>No recent access activity was reported.</p></div>}
         </GlassCard>
+      </section>
+      <section className="lite-access-section lite-access-learning-entry" aria-label="Access guidance">
+        <button className="lite-access-education-link" type="button" onClick={onExplain}>
+          <span className="lite-access-row-icon"><BookOpenText size={19} aria-hidden="true" /></span>
+          <span className="lite-access-row-copy"><strong>How Access works</strong><small>Understand how your identity, protection and account changes work together.</small></span>
+          <ChevronRight size={18} aria-hidden="true" />
+        </button>
       </section>
     </main>
   );

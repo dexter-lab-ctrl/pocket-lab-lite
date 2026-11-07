@@ -46,7 +46,7 @@ html[data-lite-theme] .lite-access-row-icon {
 }
 html[data-lite-theme] .lite-access-avatar { width: 3.5rem; height: 3.5rem; }
 html[data-lite-theme] .lite-access-eyebrow { font-size: .78rem; color: var(--azure-muted); }
-html[data-lite-theme] .lite-access-person h2 { margin: .15rem 0; font-size: clamp(1.25rem, 2vw, 1.6rem); line-height: 1.25; letter-spacing: -.02em; }
+html[data-lite-theme] .lite-access-person h2 { margin: .15rem 0; font-size: clamp(1.25rem, 2vw, 1.6rem); line-height: 1.25; letter-spacing: -.02em; overflow-wrap: anywhere; }
 html[data-lite-theme] .lite-access-person p { margin: .15rem 0; font-weight: 550; }
 html[data-lite-theme] .lite-access-person small { display:block; color: var(--azure-muted); line-height: 1.5; }
 html[data-lite-theme] .lite-access-hero-action { display: grid; gap: var(--access-gap-md); min-width: 0; }
@@ -158,6 +158,11 @@ html[data-lite-theme] .lite-id-details-back:focus-visible { outline:3px solid va
   html[data-lite-theme] .lite-access-hero-layout { grid-template-columns:minmax(0,1fr); gap:1rem; }
   html[data-lite-theme] .lite-access-hero-action { border-top:1px solid var(--azure-border); padding-top:1rem; }
   html[data-lite-theme] .lite-access-hero-action .pocket-button { width:100%; justify-self:stretch; }
+  html[data-lite-theme] .lite-access-page .lite-operational-story { grid-template-columns:1fr; }
+  html[data-lite-theme] .lite-access-page .lite-operational-story-actions { justify-content:stretch; }
+  html[data-lite-theme] .lite-access-page .lite-operational-story-action { justify-items:stretch; }
+  html[data-lite-theme] .lite-access-page .lite-operational-story-action .pocket-button { width:100%; justify-content:center; }
+  html[data-lite-theme] .lite-access-page .lite-operational-story-action small { max-width:none; text-align:left; }
   html[data-lite-theme] .lite-access-center { gap:1.3rem; }
   html[data-lite-theme] .lite-access-hero,html[data-lite-theme] .lite-access-settings-row { padding:var(--azure-spacing-card); }
   html[data-lite-theme] .lite-access-settings-row { min-height:66px; }
@@ -189,3 +194,326 @@ html[data-lite-theme] .lite-access-nested-details.is-movable .lite-overlay-scrol
 html[data-lite-theme] .lite-access-nested-details .lite-overlay-head { display:flex; gap:.55rem; align-items:center; flex-wrap:wrap; }
 html[data-lite-theme] .lite-access-nested-details .lite-overlay-head > div:first-child { flex:1 1 12rem; min-width:0; }
 html[data-lite-theme] .lite-access-nested-details .lite-overlay-scroll { overscroll-behavior:contain; }
+
+/*
+ * Access P0–P6: canonical page and signed-out geometry.
+ * Themes supply only semantic appearance tokens. Geometry is identical in
+ * Light, Dark and System; the legacy Daylight-only grid/card rules are retired.
+ */
+html[data-lite-theme] .lite-access-page {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+  color: var(--azure-text);
+  font-family: var(--azure-font-ui);
+}
+html[data-lite-theme] .lite-access-page > :is(.lite-page-header,.lite-identity-operational-story,.lite-ux-freshness,.lite-identity-grid,.lite-identity-card,.lite-access-center,.lite-access-signed-out-guidance) {
+  width: min(100%, 60rem);
+  min-width: 0;
+  margin-inline: auto;
+}
+html[data-lite-theme] .lite-access-page .lite-page-header > :last-child,
+html[data-lite-theme] .lite-access-page .lite-page-header .lite-governance-inline-actions {
+  min-width: 0;
+  max-width: 100%;
+}
+html[data-lite-theme] .lite-access-page .lite-page-header .lite-refresh-control {
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 10rem;
+}
+html[data-lite-theme] .lite-access-page .lite-page-header .lite-refresh-button {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+}
+html[data-lite-theme] .lite-access-page .lite-identity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+html[data-lite-theme] .lite-access-page .lite-identity-card {
+  min-height: 0;
+  min-width: 0;
+  margin: 0;
+  padding: var(--azure-spacing-card);
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-card);
+  background: var(--azure-surface);
+  color: var(--azure-text);
+  box-shadow: var(--azure-shadow);
+  animation: none;
+}
+html[data-lite-theme] .lite-access-page .lite-identity-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .9rem;
+}
+html[data-lite-theme] .lite-access-page .lite-identity-card :is(h2,h3) {
+  margin: .2rem 0 .65rem;
+  font-size: 1.2rem;
+  font-weight: 650;
+  line-height: 1.35;
+  letter-spacing: normal;
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-access-page .lite-identity-card p {
+  margin: .45rem 0 .85rem;
+  font-size: .91rem;
+  line-height: 1.55;
+  font-weight: 400;
+  color: var(--azure-muted);
+}
+html[data-lite-theme] .lite-access-page .lite-operational-story {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .9rem;
+  padding: 1rem;
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-surface);
+  color: var(--azure-text);
+  box-shadow: var(--azure-shadow);
+}
+html[data-lite-theme] .lite-access-page .lite-operational-story-copy { min-width: 0; }
+html[data-lite-theme] .lite-access-page .lite-operational-story-copy > span {
+  display: block;
+  color: var(--azure-accent);
+  font-size: .67rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+html[data-lite-theme] .lite-access-page .lite-operational-story-copy > strong {
+  display: block;
+  color: var(--azure-text);
+  font-size: .95rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-access-page .lite-operational-story-copy > p {
+  margin: .28rem 0 0;
+  color: var(--azure-muted);
+  font-size: .82rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-access-page .lite-operational-story-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: start;
+  justify-content: flex-end;
+  gap: .5rem;
+}
+html[data-lite-theme] .lite-access-page .lite-operational-story-action {
+  display: grid;
+  gap: .3rem;
+  justify-items: end;
+}
+html[data-lite-theme] .lite-access-page .lite-operational-story-action small {
+  max-width: 14rem;
+  color: var(--azure-warning);
+  font-size: .72rem;
+  text-align: right;
+}
+html[data-lite-theme] .lite-access-page :is(.lite-identity-mini-icon,.lite-identity-soft-badge) {
+  background: var(--azure-accent-subtle);
+  color: var(--azure-accent);
+  border-color: var(--azure-border);
+}
+/* Identity's legacy Daylight skin supplied the icon box geometry while the
+   dark path relied on the SVG's intrinsic size. Own the shared geometry here
+   so appearance changes cannot reflow the signed-out cards. */
+html[data-lite-theme] .lite-access-page .lite-identity-mini-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  animation: none;
+}
+html[data-lite-theme] .lite-access-page .lite-identity-form {
+  display: grid;
+  gap: .75rem;
+  min-width: 0;
+}
+html[data-lite-theme] .lite-access-page .lite-identity-form-field {
+  display: grid;
+  gap: .35rem;
+  min-width: 0;
+}
+html[data-lite-theme] .lite-access-page .lite-identity-form-field label,
+html[data-lite-theme] .lite-access-page .lite-safe-field label {
+  color: var(--azure-text);
+  font-weight: 600;
+}
+html[data-lite-theme] .lite-access-page :is(input.pocket-input,select.pocket-input) {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  background: var(--azure-input);
+  border: 1px solid var(--azure-strong-border);
+  border-radius: var(--azure-radius-control);
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-access-page :is(input.pocket-input,select.pocket-input):focus-visible {
+  outline: 3px solid var(--azure-focus);
+  outline-offset: 2px;
+}
+html[data-lite-theme] .lite-access-page .lite-ux-freshness {
+  min-width: 0;
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-raised);
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-access-page .lite-ux-freshness small { color: var(--azure-muted); }
+html[data-lite-theme] .lite-access-education-link {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  width: 100%;
+  min-height: 64px;
+  padding: .8rem var(--azure-spacing-card);
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-card);
+  background: var(--azure-surface);
+  color: var(--azure-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+html[data-lite-theme] .lite-access-education-link:hover { background: var(--azure-hover); }
+html[data-lite-theme] .lite-access-education-link > svg:last-child { margin-left: auto; flex: 0 0 auto; color: var(--azure-muted); }
+html[data-lite-theme] .lite-access-education-link:focus-visible { outline: 3px solid var(--azure-focus); outline-offset: 2px; }
+
+/* The shared technical-facts chevron is native <details>, not a second toggle. */
+html[data-lite-theme] .lite-access-nested-details .lite-ux-technical-facts {
+  background: var(--azure-raised);
+  color: var(--azure-text);
+  border-color: var(--azure-border);
+}
+html[data-lite-theme] .lite-access-nested-details .lite-ux-technical-facts > summary { color: var(--azure-text); }
+html[data-lite-theme] .lite-access-nested-details .lite-ux-technical-facts-body { border-color: var(--azure-border); }
+html[data-lite-theme] .lite-access-nested-details .lite-ux-technical-facts :is(dt,small,p) { color: var(--azure-muted); }
+html[data-lite-theme] .lite-access-nested-details .lite-ux-technical-facts dd { color: var(--azure-text); }
+html[data-lite-theme] .lite-access-nested-details .lite-ux-technical-facts dl > div { background: var(--azure-surface); }
+
+/* Reusable Access details: the data and protected-action handlers remain intact. */
+html[data-lite-theme] .lite-id-details { min-width: 0; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-access-detail-intro { display: grid; gap: .85rem; margin-bottom: 1rem; }
+html[data-lite-theme] .lite-access-detail-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: .85rem;
+  min-width: 0;
+}
+html[data-lite-theme] .lite-access-detail-icon,
+html[data-lite-theme] .lite-access-education-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-accent-subtle);
+  color: var(--azure-accent);
+}
+html[data-lite-theme] .lite-access-detail-heading-copy { display: grid; gap: .25rem; min-width: 0; }
+html[data-lite-theme] .lite-access-detail-heading-copy small { color: var(--azure-muted); font-size: .76rem; }
+html[data-lite-theme] .lite-access-detail-heading h2 {
+  margin: 0;
+  color: var(--azure-text);
+  font-size: clamp(1.15rem, 2vw, 1.4rem);
+  line-height: 1.32;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-access-detail-status {
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--azure-border);
+  border-radius: 999px;
+  padding: .24rem .65rem;
+  background: var(--azure-neutral-subtle);
+  color: var(--azure-text);
+  font-size: .78rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-access-detail-explanation {
+  display: flex;
+  align-items: flex-start;
+  gap: .7rem;
+  min-width: 0;
+  padding: var(--azure-spacing-card);
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-raised);
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-access-detail-explanation > svg { color: var(--azure-accent); flex: 0 0 auto; }
+html[data-lite-theme] .lite-access-detail-explanation h3 { margin: 0 0 .35rem; font-size: .95rem; font-weight: 650; }
+html[data-lite-theme] .lite-access-detail-explanation p { margin: 0; color: var(--azure-muted); line-height: 1.5; font-size: .86rem; }
+html[data-lite-theme] .lite-id-detail-fact { min-width: 0; }
+html[data-lite-theme] .lite-id-detail-fact dt { color: var(--azure-muted); }
+html[data-lite-theme] .lite-id-detail-fact dd { color: var(--azure-text); overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-id-detail-protection {
+  padding: .8rem;
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-warning-subtle);
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-id-item-row > svg:last-child { flex: 0 0 auto; color: var(--azure-muted); }
+html[data-lite-theme] .lite-access-nested-details .lite-overlay-scroll { min-width: 0; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-access-nested-details .lite-overlay-head > div:first-child { min-width: 0; overflow-wrap: anywhere; }
+
+/* Lightweight four-step education, never an artificial progress indicator. */
+html[data-lite-theme] .lite-access-education { display: grid; gap: 1rem; min-width: 0; }
+html[data-lite-theme] .lite-access-education-heading h3 { margin: 0 0 .4rem; color: var(--azure-text); }
+html[data-lite-theme] .lite-access-education-heading p { margin: 0; line-height: 1.5; color: var(--azure-muted); }
+html[data-lite-theme] .lite-access-education-steps { display: grid; gap: .65rem; list-style: none; padding: 0; margin: 0; }
+html[data-lite-theme] .lite-access-education-steps li { min-width: 0; }
+html[data-lite-theme] .lite-access-education-step {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  min-width: 0;
+  padding: .85rem;
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-surface);
+}
+html[data-lite-theme] .lite-access-education-step > div { display: grid; gap: .25rem; min-width: 0; }
+html[data-lite-theme] .lite-access-education-step small { font-size: .75rem; color: var(--azure-muted); }
+html[data-lite-theme] .lite-access-education-step strong { color: var(--azure-text); }
+html[data-lite-theme] .lite-access-education-step p { margin: 0; line-height: 1.5; font-size: .85rem; color: var(--azure-muted); }
+html[data-lite-theme] .lite-access-education-mode { margin: 0; padding: .85rem; border-radius: var(--azure-radius-control); background: var(--azure-accent-subtle); color: var(--azure-text); line-height: 1.5; }
+
+/* Container-aware Manage, portal-owned overlay and mobile snap geometry. */
+html[data-lite-theme] .lite-identity-manage-sheet,
+html[data-lite-theme] .lite-access-nested-details { min-width: 0; }
+html[data-lite-theme] .lite-identity-manage-sheet .lite-overlay-scroll,
+html[data-lite-theme] .lite-access-nested-details .lite-overlay-scroll { flex: 1 1 auto; min-height: 0; overscroll-behavior: contain; }
+html[data-lite-theme] .lite-id-native-workspace .lite-id-native-detail-content { min-width: 0; }
+html[data-lite-theme] .lite-identity-manage-sheet :is(input,select,textarea) { max-width: 100%; min-width: 0; }
+@media (max-width: 700px) {
+  html[data-lite-theme] .lite-access-page .lite-identity-grid { grid-template-columns: minmax(0, 1fr); }
+  html[data-lite-theme] .lite-access-page { gap: .8rem; }
+  html[data-lite-theme] .lite-access-education-step { padding: .75rem; }
+  html[data-lite-theme] .lite-identity-manage-sheet.is-mobile-resizable,
+  html[data-lite-theme] .lite-access-nested-details.is-mobile-resizable { width: 100%; max-width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-lite-theme] .lite-access-education *,
+  html[data-lite-theme] .lite-access-detail-intro *,
+  html[data-lite-theme] .lite-ux-technical-facts .lite-shared-disclosure-chevron { transition: none; animation: none; }
+}

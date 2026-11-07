@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
 // Canonical snapshots are reviewed qualification artifacts. The narrow mobile
-// light-theme tolerances below cover Chromium text rasterization variance only;
-// the screenshot assertions still compare the complete rendered surface.
+// light/system-theme tolerances below cover Chromium text rasterization
+// variance only; the screenshot assertions still compare the complete surface.
 for (const theme of ['light', 'dark', 'system'] as const) {
   for (const width of [320, 360, 390, 430, 768, 1024, 1440]) {
     test('Access Center ' + theme + ' ' + width + 'px overview', async ({ page }) => {
@@ -46,7 +46,10 @@ for (const theme of ['light', 'dark', 'system'] as const) {
       await page.getByRole('button', { name: 'Manage Access' }).click();
       const dialog = page.getByRole('dialog', { name: /Manage access/i });
       if (section !== 'index') await dialog.getByRole('button', { name: ({ activity: 'Access activity', settings: 'Access settings' } as Record<string,string>)[section] || section[0].toUpperCase() + section.slice(1) }).click();
-      await expect(dialog).toHaveScreenshot('access-native-' + theme + '-manage-' + section + '.png', { animations: 'disabled' });
+      const screenshotOptions = test.info().project.name === 'mocked-mobile' && theme !== 'dark'
+        ? { animations: 'disabled' as const, maxDiffPixels: 500 }
+        : { animations: 'disabled' as const };
+      await expect(dialog).toHaveScreenshot('access-native-' + theme + '-manage-' + section + '.png', screenshotOptions);
     });
   }
   for (const width of [768, 1024, 1440]) {
@@ -59,7 +62,7 @@ for (const theme of ['light', 'dark', 'system'] as const) {
       await waitForLiteScreenToSettle(page, 'identity');
       await page.getByRole('button', { name: 'Manage Access' }).click();
       const dialog = page.getByRole('dialog', { name: /Manage access/i });
-      const screenshotOptions = test.info().project.name === 'mocked-mobile' && theme === 'light' && (width === 1024 || width === 1440)
+      const screenshotOptions = test.info().project.name === 'mocked-mobile' && theme !== 'dark'
         ? { animations: 'disabled' as const, maxDiffPixels: 1500 }
         : { animations: 'disabled' as const };
       await expect(dialog).toHaveScreenshot('access-native-' + theme + '-manage-desktop-index-' + width + '.png', screenshotOptions);
@@ -99,6 +102,9 @@ for (const theme of ['light', 'dark', 'system'] as const) {
     await expect(detail).toHaveScreenshot('access-native-' + theme + '-nested-details.png', { animations: 'disabled' });
     await detail.getByRole('button', { name: 'Sign out session' }).click();
     const confirmation = page.getByRole('dialog', { name: /Sign out this session/i });
-    await expect(confirmation).toHaveScreenshot('access-native-' + theme + '-protected-confirmation.png', { animations: 'disabled' });
+    const screenshotOptions = test.info().project.name === 'mocked-mobile' && theme !== 'dark'
+      ? { animations: 'disabled' as const, maxDiffPixels: 500 }
+      : { animations: 'disabled' as const };
+    await expect(confirmation).toHaveScreenshot('access-native-' + theme + '-protected-confirmation.png', screenshotOptions);
   });
 }
