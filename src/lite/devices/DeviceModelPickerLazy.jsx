@@ -7,10 +7,7 @@ import { suggestedAndroidDeviceModels } from '../../data/androidDeviceModels.js'
 import { useLiteMutation, getLiteDeviceActionInvalidations } from '../../hooks/useLiteMutation.js';
 import { useLiteDeviceModelFlow } from '../../hooks/useLiteDeviceModelFlow.js';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
-
-function vibrate(pattern = 12) {
-  try { navigator?.vibrate?.(pattern); } catch { /* best effort */ }
-}
+import { triggerLiteHaptic } from '../../lib/liteNativeFeedback.js';
 
 export default function DeviceModelPickerLazy({ device, open, onClose, backendReachable = true, savedStateOnly = false }) {
   const search = useLiteUiStore((state) => state.deviceModelSearch);
@@ -41,10 +38,10 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
         expectedConsumerModelName: current,
       });
       flow.succeeded(result?.system_profile?.consumer_model_name || '');
-      vibrate([12, 35, 12]);
+      triggerLiteHaptic('success');
     } catch (error) {
       flow.failed(error);
-      vibrate(40);
+      triggerLiteHaptic('warning');
     }
   }
 
@@ -86,7 +83,7 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
               <Check className="h-4 w-4" />
               {mutation.isPending ? 'Saving…' : 'Save model'}
             </LiteButton>
-            <LiteButton tone="secondary" onClick={flow.edit} disabled={mutation.isPending}>Back</LiteButton>
+            <LiteButton tone="secondary" onClick={() => { triggerLiteHaptic('tap'); flow.edit(); }} disabled={mutation.isPending}>Back</LiteButton>
           </div>
         </div>
       ) : (
@@ -106,7 +103,7 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
                 key={entry.consumerModelName}
                 type="button"
                 className="lite-device-model-option"
-                onClick={() => { flow.review(entry.consumerModelName); vibrate(); }}
+                onClick={() => { flow.review(entry.consumerModelName); triggerLiteHaptic('tap'); }}
                 disabled={flow.writeBlocked}
               >
                 <span>{entry.manufacturer}</span>
@@ -123,10 +120,10 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
             <div className="lite-device-model-actions">
               <LiteButton
                 tone="secondary"
-                onClick={() => flow.review(search)}
+                onClick={() => { triggerLiteHaptic('tap'); flow.review(search); }}
                 disabled={!search.trim() || flow.writeBlocked}
               >Use “{search.trim() || 'custom name'}”</LiteButton>
-              <LiteButton tone="secondary" onClick={flow.clear} disabled={!current || flow.writeBlocked}>Use detected technical model</LiteButton>
+              <LiteButton tone="secondary" onClick={() => { triggerLiteHaptic('tap'); flow.clear(); }} disabled={!current || flow.writeBlocked}>Use detected technical model</LiteButton>
             </div>
           </div>
         </div>

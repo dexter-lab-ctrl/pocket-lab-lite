@@ -5,7 +5,7 @@ import {
   resourceFactValue,
 } from '../../lib/liteDeviceFacts.js';
 import React from 'react';
-import { Activity, AlertTriangle, Clock3, HeartPulse, History, Link2, Server, Settings2, ShieldCheck, Smartphone, DatabaseBackup, X } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronDown, ChevronLeft, Clock3, HeartPulse, Smartphone, X } from 'lucide-react';
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
 import { liteEnterpriseApi } from '../../lib/liteEnterpriseApi.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
@@ -16,7 +16,9 @@ import DevicePhotoBackup from './DevicePhotoBackup.jsx';
 import { ResourceMetric, SoftwarePosture } from '../components/DeviceFactsPrimitives.jsx';
 import { isLitePerformanceMode } from '../liteNavigationRuntime.js';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
-import { triggerLiteTactileFeedback } from '../LiteMotion.jsx';
+import { triggerLiteHaptic } from '../../lib/liteNativeFeedback.js';
+import DeviceManageNavigation from './DeviceManageNavigation.jsx';
+import { deviceEventDate, deviceEventIcon, groupDeviceServices } from './deviceManagePresentation.js';
 import { LiteHistoryTimeline } from '../LiteUx.jsx';
 import {
   LiteButton,
@@ -235,22 +237,6 @@ function recommendationScreen(value) {
   })[action] || '';
 }
 
-function metricTone(percent, { watch = 75, attention = 90 } = {}) {
-  if (percent === null || percent === undefined || !Number.isFinite(Number(percent))) return 'unknown';
-  const value = Number(percent);
-  if (value >= attention) return 'attention';
-  if (value >= watch) return 'watch';
-  return 'healthy';
-}
-
-function temperatureMeter(celsius) {
-  const value = Number(celsius);
-  if (!Number.isFinite(value)) return { percent: null, tone: 'unknown' };
-  const percent = Math.max(0, Math.min(100, (value / 80) * 100));
-  const tone = value >= 60 ? 'attention' : value >= 45 ? 'watch' : 'healthy';
-  return { percent, tone };
-}
-
 function resourceHealthLabel(status, hasMeasurement) {
   const normalized = normalizeStatus(status || '');
   if (['healthy', 'normal', 'ok', 'ready'].includes(normalized)) return 'Healthy';
@@ -300,7 +286,6 @@ function healthResourceRows(health = {}, device = {}) {
   );
   const processCount = factValue('pocketlab_workload_cpu', 'process_count', resources.load?.process_count);
   const temperature = factValue('temperature', 'celsius', resources.temperature?.celsius);
-  const temperatureVisual = temperatureMeter(temperature);
 
   const definitions = [
     {
@@ -310,7 +295,7 @@ function healthResourceRows(health = {}, device = {}) {
       primaryValue: storageFree !== null ? `${formatDeviceCapacityGb(storageFree)} free` : null,
       secondaryValue: storageTotal !== null ? `${formatDeviceCapacityGb(storageTotal)} total` : '',
       meterPercent: storageUsedPercent,
-      meterTone: metricTone(storageUsedPercent, { watch: 75, attention: 90 }),
+      meterTone: 'neutral',
       meterLabel: 'Storage used',
     },
     {
@@ -320,7 +305,7 @@ function healthResourceRows(health = {}, device = {}) {
       primaryValue: memoryFree !== null ? `${formatDeviceCapacityGb(memoryFree)} free` : null,
       secondaryValue: memoryTotal !== null ? `${formatDeviceCapacityGb(memoryTotal)} total` : '',
       meterPercent: memoryUsedPercent,
-      meterTone: metricTone(memoryUsedPercent, { watch: 75, attention: 90 }),
+      meterTone: 'neutral',
       meterLabel: 'Memory used',
     },
     {
@@ -332,7 +317,7 @@ function healthResourceRows(health = {}, device = {}) {
         ? `${Math.round(processCount)} Pocket Lab service process${Math.round(processCount) === 1 ? '' : 'es'}`
         : '',
       meterPercent: cpuPercent,
-      meterTone: metricTone(cpuPercent, { watch: 60, attention: 80 }),
+      meterTone: 'neutral',
       meterLabel: 'Pocket Lab CPU usage',
     },
     {
@@ -341,9 +326,9 @@ function healthResourceRows(health = {}, device = {}) {
       healthValue: resources.temperature,
       primaryValue: temperature !== null ? `${Math.round(temperature)} °C` : null,
       secondaryValue: temperature !== null ? 'Current thermal reading' : '',
-      meterPercent: temperatureVisual.percent,
-      meterTone: temperatureVisual.tone,
-      meterLabel: 'Temperature on a 0 to 80 °C display scale',
+      meterPercent: null,
+      meterTone: 'neutral',
+      meterLabel: 'Temperature reading',
     },
   ];
 
@@ -353,7 +338,7 @@ function healthResourceRows(health = {}, device = {}) {
     const statusLabel = resourceHealthLabel(presentation.healthStatus, hasMeasurement);
     return {
       label: definition.label,
-      status: normalizeStatus(presentation.healthStatus || definition.meterTone || presentation.observationStatus || 'unknown'),
+      status: normalizeStatus(presentation.healthStatus || presentation.observationStatus || 'unknown'),
       statusLabel,
       primaryValue: definition.primaryValue || presentation.availabilityLabel,
       secondaryValue: definition.secondaryValue,
@@ -421,6 +406,8 @@ function deviceHistoryTimelineItems(items = []) {
       summary,
       time: createdAt ? formatLiteTime(createdAt) : '',
       state: type,
+      date: deviceEventDate(createdAt),
+      eventKind: deviceEventIcon(type),
     };
   });
 }
@@ -649,6 +636,7 @@ function DeviceAwarenessDetails({ device, area = 'technical' }) {
     const capabilities = capabilityRows(device);
     const capabilitySummary = deviceCapabilitySummary(device);
     const runtimeServices = deviceRuntimeServices(device);
+    const serviceGroups = groupDeviceServices(runtimeServices);
     const restartAssessment = deviceRestartAssessment(device) || {};
     const dependencies = device?.dependencies || {};
     const removal = device?.removal_assessment || {};
@@ -727,16 +715,28 @@ function DeviceAwarenessDetails({ device, area = 'technical' }) {
         <span>Services</span>
         <strong>{runtimeServices.length ? `${runtimeServices.length} reported` : 'Not reported'}</strong>
         {runtimeServices.length ? (
-          <ul className="lite-device-capability-list">
-            {runtimeServices.map((service) => (
-              <li key={service.service_id}>
-                <span>{service.label || titleCase(service.service_id)}</span>
-                <strong className={`is-${String(service.freshness || 'unknown').toLowerCase()}`}>
-                  {String(service.freshness || '').toLowerCase() === 'stale' ? `Last reported ${titleCase(service.state)}` : titleCase(service.state)}
-                </strong>
-              </li>
+          <div className="lite-device-service-groups">
+            {serviceGroups.map((group) => (
+              <section key={group.label} className="lite-device-service-group" aria-label={group.label}>
+                <h4>{group.label}</h4>
+                <ul className="lite-device-capability-list">
+                  {group.services.map((service) => (
+                    <li key={service.service_id}>
+                      <span>{service.label || titleCase(service.service_id)}</span>
+                      <span className="lite-device-service-state">
+                        <strong className={`is-${String(service.freshness || 'unknown').toLowerCase()}`}>
+                          {String(service.freshness || '').toLowerCase() === 'stale'
+                            ? `Last reported ${titleCase(service.state)}` : titleCase(service.state, 'Not reported')}
+                        </strong>
+                        {service.observed_at || service.last_reported_at || service.updated_at
+                          ? <small>{formatDeviceTime(service.observed_at || service.last_reported_at || service.updated_at)}</small> : null}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             ))}
-          </ul>
+          </div>
         ) : <p>Service status will appear after the device reports again.</p>}
         {!restartAssessment.allowed ? <p>{restartAssessment.summary || 'Restart actions are unavailable until the device reports a safe recovery state.'}</p> : null}
       </section>,
@@ -745,7 +745,7 @@ function DeviceAwarenessDetails({ device, area = 'technical' }) {
         <span>Responsibilities</span>
         <strong>{Number(dependencies.hosted_app_count || 0) + Number(dependencies.backup_set_count || 0)} responsibilities</strong>
         {Array.isArray(dependencies.hosted_apps) && dependencies.hosted_apps.length ? (
-          <ul>{dependencies.hosted_apps.map((app) => <li key={app.app_id}><strong>{app.label}</strong> · {titleCase(app.status)}</li>)}</ul>
+          <ul>{dependencies.hosted_apps.map((app) => <li key={app.app_id}><strong>{app.label}</strong> · {app.freshness === 'stale' ? `Last reported ${titleCase(app.status)}` : titleCase(app.status, 'Not reported')}</li>)}</ul>
         ) : <p>No hosted apps reported.</p>}
         {Number(dependencies.backup_set_count || 0) > 0 ? <p>Stores {dependencies.backup_set_count} verified backup set{Number(dependencies.backup_set_count) === 1 ? '' : 's'}.</p> : null}
         <p>Action delivery: {deviceCommandDeliveryLabel(device)}</p>
@@ -823,19 +823,28 @@ function DeviceHealthHistory({ deviceId }) {
         </div>
         <LiteButton
           tone="secondary"
-          onClick={() => setDeviceHealthHistoryOpenId(healthHistoryOpen ? '' : deviceId)}
+          onClick={() => { triggerLiteHaptic('tap'); setDeviceHealthHistoryOpenId(healthHistoryOpen ? '' : deviceId); }}
           aria-expanded={healthHistoryOpen}
+          aria-controls="lite-device-health-history-content"
+          className="lite-progressive-disclosure-toggle lite-device-health-history-toggle"
         >
-          {healthHistoryOpen ? 'Hide health history' : 'Show health history'}
+          <span>{healthHistoryOpen ? 'Hide health history' : 'Show health history'}</span>
+          <ChevronDown className="lite-shared-disclosure-chevron" size={18} aria-hidden="true" />
         </LiteButton>
       </div>
       {healthHistoryOpen ? (
-        <div className="lite-device-health-history" role="region" aria-label="Device health history">
+        <div id="lite-device-health-history-content" className="lite-device-health-history" role="region" aria-label="Device health history">
           {healthHistoryQuery.loading ? <p className="lite-device-timeline-loading">Loading health history…</p> : null}
           {!healthHistoryQuery.loading ? (
             <LiteHistoryTimeline
               className="lite-device-timeline is-health"
-              items={healthTransitions.map((item) => ({ id: item.id, title: item.title, summary: item.summary, time: item.created_at ? formatLiteTime(item.created_at) : '', state: item.status }))}
+              variant="devices"
+              items={healthTransitions.map((item) => ({
+                id: item.id, title: item.title, summary: item.summary,
+                time: item.created_at ? formatLiteTime(item.created_at) : '',
+                date: deviceEventDate(item.created_at),
+                state: item.status, eventKind: deviceEventIcon(item.status),
+              }))}
               emptyTitle="No health changes yet"
               emptyDescription="Health changes will appear here when Pocket Lab observes a meaningful transition."
             />
@@ -846,10 +855,25 @@ function DeviceHealthHistory({ deviceId }) {
   );
 }
 
-export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRestartAgent, onReviewRemoval, restartBusy = false, removeBusy = false, actionsBlocked = false }) {
+export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRestartAgent, onReviewRemoval, restartBusy = false, removeBusy = false, actionsBlocked = false, mobile = false }) {
   if (!device) return null;
   const initialDeviceId = device?.id || '';
-  const [activeArea, setActiveArea] = React.useState('overview');
+  const [activeArea, setActiveArea] = React.useState(mobile ? 'index' : 'overview');
+  const detailHeadingRef = React.useRef(null);
+  const navigationRef = React.useRef(null);
+  React.useEffect(() => {
+    setActiveArea(mobile ? 'index' : 'overview');
+  }, [initialDeviceId, mobile]);
+  const selectArea = (area) => {
+    triggerLiteHaptic('tap');
+    setActiveArea(area);
+    if (mobile) window.requestAnimationFrame(() => detailHeadingRef.current?.focus?.({ preventScroll: true }));
+  };
+  const goBack = () => {
+    triggerLiteHaptic('tap');
+    setActiveArea('index');
+    window.requestAnimationFrame(() => navigationRef.current?.querySelector('button')?.focus?.({ preventScroll: true }));
+  };
   const [deviceHistoryOpen, setDeviceHistoryOpen] = React.useState(false);
   const setActiveTab = useLiteUiStore((state) => state.setActiveTab);
   const detailsQuery = useLiteQuery({
@@ -908,13 +932,22 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
   }, [healthReviewFlow.confirmBackend, proactiveHealth?.attention_count, proactiveHealth?.health_revision, proactiveHealth?.status]);
 
   return (
-    <section className={`lite-device-details-panel is-${status}`} role="region" aria-label={`${title} details`}>
+    <section className={`lite-device-details-panel is-${status} ${mobile ? 'is-mobile-workspace' : 'is-desktop-workspace'}`} role="region" aria-label={`${title} details`}
+      data-manage-view={mobile && activeArea !== 'index' ? 'detail' : 'index'}
+      onKeyDownCapture={(event) => {
+        if (mobile && activeArea !== 'index' && event.key === 'Escape') {
+          event.preventDefault(); event.stopPropagation(); goBack();
+        }
+      }}> 
       <div className="lite-device-details-panel-head">
         <div>
           <span>Device Manage · {isProtectedServer ? 'Protected server host' : deviceRoleSummary(device)}</span>
           <h3>{title}</h3>
           <div className="lite-device-details-head-facts" aria-label="Device connection and freshness">
-            <strong>{actionsBlocked ? 'Saved · connection not confirmed' : canonicalDevicePresentation(device).label}</strong>
+            <span className="lite-device-details-state-icon" aria-hidden="true">
+               {actionsBlocked ? <Clock3 size={17} /> : effectiveStatus === 'online' ? <CheckCircle2 size={17} /> : <AlertTriangle size={17} />}
+             </span>
+             <strong>{actionsBlocked ? 'Saved · connection not confirmed' : canonicalDevicePresentation(device).label}</strong>
             <small>{device?.last_seen_state?.last_seen_at || device?.last_seen
               ? `Last reported ${formatLiteTime(device?.last_seen_state?.last_seen_at || device?.last_seen)}`
               : 'No recent heartbeat reported'}</small>
@@ -926,24 +959,20 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
         </button>
       </div>
 
-      <nav className="lite-device-manage-navigation" aria-label="Device management sections">
-        {[
-          { id: 'overview', label: 'Overview', Icon: Server },
-          { id: 'connection', label: 'Connection', Icon: Link2 },
-          { id: 'health', label: 'Health', Icon: HeartPulse },
-          ...(!isProtectedServer ? [{ id: 'roles', label: 'Roles', Icon: ShieldCheck }] : []),
-          { id: 'services', label: 'Services', Icon: Activity },
-          ...(!isProtectedServer ? [{ id: 'backup', label: 'Backup', Icon: DatabaseBackup }] : []),
-          { id: 'history', label: 'History', Icon: History },
-          { id: 'technical', label: 'Technical', Icon: Settings2 },
-        ].map(({ id, label, Icon }) => (
-          <button type="button" key={id} className={activeArea === id ? 'is-current' : ''}
-            aria-current={activeArea === id ? 'page' : undefined}
-            onClick={() => { triggerLiteTactileFeedback('selection'); setActiveArea(id); }}>
-            <Icon size={16} aria-hidden="true" />{label}
-          </button>
-        ))}
-      </nav>
+      <div className="lite-device-manage-workspace" data-device-manage-layout={mobile ? 'mobile' : 'desktop'}>
+        <div className="lite-device-manage-nav-wrap" ref={navigationRef}>
+          <DeviceManageNavigation isProtectedServer={isProtectedServer} activeArea={activeArea} mobile={mobile} onSelect={selectArea} />
+        </div>
+        {activeArea !== 'index' ? (
+        <div className="lite-device-manage-detail">
+          {mobile ? (
+            <div className="lite-device-manage-backbar">
+              <button type="button" onClick={goBack} aria-label="Back to all device settings">
+                <ChevronLeft size={18} aria-hidden="true" /> All device settings
+              </button>
+              <h4 tabIndex={-1} ref={detailHeadingRef}>{activeArea === 'technical' ? 'Technical details' : activeArea.charAt(0).toUpperCase() + activeArea.slice(1)}</h4>
+            </div>
+          ) : <h4 className="lite-device-manage-detail-title" tabIndex={-1} ref={detailHeadingRef}>{activeArea === 'technical' ? 'Technical details' : activeArea.charAt(0).toUpperCase() + activeArea.slice(1)}</h4>}
       <div className="lite-device-manage-content" data-active-device-section={activeArea}>
         {activeArea === 'overview' ? (
           <>
@@ -993,6 +1022,12 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
                 : device?.remote_access?.ready === true ? 'Remote access ready'
                   : device?.remote_access?.ready === false ? 'Remote access not ready' : 'Not reported'}</strong>
               <p>Private network access and a live device-agent connection are separate checks.</p>
+              <dl>
+                <div><dt>Agent status</dt><dd>{actionsBlocked ? 'Saved · not confirmed' : titleCase(device?.agent?.status || device?.agent_status, 'Not reported')}</dd></div>
+                <div><dt>Supervisor / recovery</dt><dd>{actionsBlocked ? 'Saved · not confirmed' : supervisorStatusLabel(device)}</dd></div>
+                <div><dt>Command delivery</dt><dd>{actionsBlocked ? 'Saved · not confirmed' : deviceCommandDeliveryLabel(device)}</dd></div>
+                <div><dt>Device trust</dt><dd>{titleCase(device?.identity?.status || device?.identity_status, 'Not reported')}</dd></div>
+              </dl>
             </section>
           </>
         ) : null}
@@ -1015,8 +1050,11 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
           </span>
           <div>
             <span>Overall health</span>
-            <strong>{proactiveHealthLabel(proactiveHealth?.status)}</strong>
+            <strong>{healthAttentionCurrent ? proactiveHealthLabel(proactiveHealth?.status) : 'Saved · health not confirmed'}</strong>
             <p>{proactiveHealth?.summary || 'Device health is not available yet.'}</p>
+            <small>{proactiveHealth?.observed_at || proactiveHealth?.updated_at || proactiveHealth?.checked_at
+              ? `Health reported ${formatDeviceTime(proactiveHealth.observed_at || proactiveHealth.updated_at || proactiveHealth.checked_at)}`
+              : 'Health report time unavailable'}</small>
           </div>
           <small>{titleCase(proactiveHealth?.severity, 'No severity')}</small>
         </div>
@@ -1036,12 +1074,12 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
             <div className="lite-device-health-posture-grid">
               <article>
                 <span>Connection</span>
-                <strong>{titleCase(proactiveHealth.connection?.status)}</strong>
+                <strong>{healthAttentionCurrent ? titleCase(proactiveHealth.connection?.status) : 'Saved · not confirmed'}</strong>
                 <p>{proactiveHealth.connection?.summary || 'Connection quality is not available yet.'}</p>
               </article>
               <article>
                 <span>Recovery</span>
-                <strong>{titleCase(proactiveHealth.recovery?.status)}</strong>
+                <strong>{healthAttentionCurrent ? titleCase(proactiveHealth.recovery?.status) : 'Saved · not confirmed'}</strong>
                 <p>{proactiveHealth.recovery?.summary || 'Recovery posture is not available yet.'}</p>
               </article>
               <article>
@@ -1053,7 +1091,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
               </article>
               <article>
                 <span>Responsibility impact</span>
-                <strong>{titleCase(proactiveHealth.dependency_impact?.status)}</strong>
+                <strong>{healthAttentionCurrent ? titleCase(proactiveHealth.dependency_impact?.status) : 'Saved · not confirmed'}</strong>
                 <p>{proactiveHealth.dependency_impact?.impact_summary || 'Responsibility impact is not available yet.'}</p>
               </article>
             </div>
@@ -1061,14 +1099,14 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
             <div className="lite-device-health-recommendation" role="note">
               <div>
                 <span>Recommended next step</span>
-                <strong>{recommendationLabel(proactiveHealth.recommended_action)}</strong>
+                <strong>{healthAttentionCurrent ? recommendationLabel(proactiveHealth.recommended_action) : 'Reconnect to review'}</strong>
                 <p>Recommendations are guidance only. Pocket Lab will not run an action without the normal guarded flow.</p>
               </div>
               {recommendationTargetScreen && healthAttentionCurrent ? (
                 <LiteButton
                   tone="secondary"
                   onClick={() => {
-                    triggerLiteTactileFeedback('selection');
+                    triggerLiteHaptic('tap');
                     healthReviewFlow.routeTo(recommendationTargetScreen, (screenId) => {
                       setActiveTab(screenId);
                       if (screenId === 'devices') onClose?.();
@@ -1130,7 +1168,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
               </dl>
             </section>
             {!actionsBlocked && canRestartDeviceAgent(device) ? (
-              <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy}>
+              <LiteButton tone="secondary" onClick={() => { triggerLiteHaptic('tap'); onRestartAgent?.(); }} disabled={restartBusy}>
                 {restartBusy ? 'Restart requested…' : 'Restart agent'}
               </LiteButton>
             ) : <p>Restart remains unavailable unless Pocket Lab confirms a safe recovery action.</p>}
@@ -1146,6 +1184,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
             <h4>Recent device activity</h4>
             {historyQuery.loading ? <p>Loading recent activity…</p> : (
               <LiteHistoryTimeline
+                variant="devices"
                 items={deviceHistoryTimelineItems(Array.isArray(historyQuery.data?.items) && historyQuery.data.items.length
                   ? historyQuery.data.items : deviceHistoryItems({ ...device, recent_events: device?.recent_lifecycle }))}
                 emptyTitle="No device history yet"
@@ -1158,7 +1197,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
           <>
             <DeviceAwarenessDetails device={device} area="technical" />
             <details className="lite-device-advanced-details">
-              <summary>Technical and troubleshooting details</summary>
+              <summary onClick={() => triggerLiteHaptic('tap')}><span>Technical and troubleshooting details</span><ChevronDown className="lite-shared-disclosure-chevron" size={18} aria-hidden="true" /></summary>
               <LiteProgressiveDetails
                 title={title} status={status} statusLabel={deviceStatusLabel(effectiveStatus)}
                 summary={deviceSummary(device)}
@@ -1176,11 +1215,14 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
               />
             </details>
             {!isProtectedServer && !actionsBlocked && canRemoveDevice(device) ? (
-              <LiteButton tone="danger" onClick={onReviewRemoval} disabled={removeBusy}>
+              <LiteButton tone="danger" onClick={() => { triggerLiteHaptic('tap'); onReviewRemoval?.(); }} disabled={removeBusy}>
                 {removeBusy ? 'Reviewing removal…' : 'Review device removal'}
               </LiteButton>
             ) : null}
           </>
+        ) : null}
+      </div>
+        </div>
         ) : null}
       </div>
 
