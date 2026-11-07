@@ -419,6 +419,7 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs, deviceActionHandlersR
             <MemoDeviceDetailsLazy
               key={String(activeDetailsDevice?.id || activeDetailsDevice?.name || '')}
               device={activeDetailsDevice}
+              mobile={!desktopPanel}
               onClose={closeDeviceDetails}
               onChooseModel={chooseDeviceModel}
                onRestartAgent={() => deviceActionHandlersRef.current.restartAgent?.(activeDetailsDevice)}
