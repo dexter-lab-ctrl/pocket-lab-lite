@@ -35,11 +35,12 @@ const serviceGroupFor = (service = {}) => {
   if (/photo|prism|gitea|hosted|app[-_]/.test(id)) return 'Hosted apps';
   if (/tailscale|nats|caddy|proxy|network|connect/.test(id)) return 'Connectivity';
   if (/supervisor|recover|backup/.test(id)) return 'Recovery';
-  return 'Pocket Lab core';
+  if (/pocket|api|worker|agent|telemetry/.test(id)) return 'Pocket Lab core';
+  return 'Other services';
 };
 
 export function groupDeviceServices(services = []) {
-  const order = ['Pocket Lab core', 'Connectivity', 'Recovery', 'Hosted apps'];
+  const order = ['Pocket Lab core', 'Connectivity', 'Recovery', 'Hosted apps', 'Other services'];
   const groups = new Map(order.map((id) => [id, []]));
   for (const service of Array.isArray(services) ? services : []) {
     groups.get(serviceGroupFor(service)).push(service);
