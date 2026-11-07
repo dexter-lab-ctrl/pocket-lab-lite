@@ -828,6 +828,7 @@ export default function DevicesScreen() {
   }
 
   async function copyInvite() {
+    triggerLiteHaptic('tap');
     const copyValue = inviteCommand(latestInvite);
     const didCopy = await copyTextToClipboard(copyValue);
     if (didCopy) {
@@ -920,6 +921,7 @@ export default function DevicesScreen() {
 
   function closeRemovalReview() {
     if (removeBusy) return;
+    triggerLiteHaptic('tap');
     const candidateId = String(removeCandidate?.id || '');
     removalFlow.cancel();
     setRemoveCandidate(null);
@@ -1093,7 +1095,7 @@ export default function DevicesScreen() {
                 <button
                   type="button"
                   className="lite-device-remove-close"
-                  onClick={() => setRestartProgress(null)}
+                  onClick={() => { triggerLiteHaptic('tap'); setRestartProgress(null); }}
                   aria-label="Close restart progress"
                 >
                   <X className="h-4 w-4" />
@@ -1199,7 +1201,7 @@ export default function DevicesScreen() {
                   ) : (
                     <LiteButton
                       tone="danger"
-                      onClick={removalFlow.confirm}
+                      onClick={() => { triggerLiteHaptic('warning'); removalFlow.confirm(); }}
                       disabled={removeAssessmentLoading || !(removeAssessment?.allowed ?? removeAssessment?.safe_to_remove) || removeBusy || savedStateOnly || backendReachable === false}
                     >
                       Continue to confirmation
@@ -1430,7 +1432,7 @@ export default function DevicesScreen() {
           />
 
           <div className="mt-5">
-            <LiteButton onClick={addDevice} disabled={addDeviceDisabled}>
+            <LiteButton onClick={() => { triggerLiteHaptic('tap'); addDevice(); }} disabled={addDeviceDisabled}>
               {busy ? 'Preparing invite...' : (addDeviceFlow.writeBlocked ? 'Reconnect to continue' : activeNameConflict ? 'Device already added' : addDeviceAuthorityMode === 'deny' ? 'Not allowed' : addDeviceAuthorityMode === 'approval' ? 'Request Add Device' : 'Add Device')}
             </LiteButton>
           </div>
