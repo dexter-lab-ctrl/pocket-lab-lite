@@ -1,6 +1,6 @@
 # Pocket Lab Lite — Azure Horizon Home Premium Refinement (P0–P6)
 
-> **Status: PARTIALLY QUALIFIED.** DEV-PC functional, accessibility, visual and build gates pass on the final application commit. Strict Home performance remains `PARTIAL`, and physical Android qualification is `BLOCKED` by the unprivileged WSL CDP transport boundary. Documentation generation is run after this application qualification record.
+> **Status: PARTIALLY QUALIFIED.** DEV-PC functional, accessibility, visual and build gates pass on the final application commit. Strict Home performance remains `PARTIAL`. The standard-user Windows-local Android CDP transport is now verified, but the final physical rerun is **BLOCKED** by the dedicated test phone's secure keyguard; no final physical screenshot bundle is retained. Documentation generation is run after this application qualification record.
 
 ## 1. Objective and exact provenance
 
@@ -9,8 +9,8 @@
 - Resolved baseline SHA: `1b249be9fbb2f3bf7a1d898d8c8f282c4bfbe25a`
 - Implementation branch: `feat/azure-horizon-home-premium-refinement`
 - Initial PR #646 HEAD: `f36cda18d96c5b49df239e6f1dfdf8cd835bd542`
-- Qualified application commit: `e7892e2f` (`fix(lite-home): qualify premium Home interactions and shared snap controls`)
-- Final PR HEAD: **the final pushed feature-branch revision after application qualification and documentation regeneration**
+- Qualified application commit: `b9398be4d11b9f1a9bb1781a5a0b0e78c188eb12` (`fix(lite-home): align settings rows with recovery tabs`)
+- Final PR HEAD: `4bc443b56d8f3772fd1917daeb2e4b03f2608eb0` at the time of this record
 - Main SHA observed during qualification: `1b249be9fbb2f3bf7a1d898d8c8f282c4bfbe25a`
 - Scope: P0–P6, desktop, mobile, installed-PWA-compatible layout.
 - Qualification environment: native WSL2 Ubuntu on the Windows DEV-PC, Node `24.16.0`, Chromium/Playwright mocked desktop and mobile projects, Storybook production build, standard-user Windows PowerShell/ADB preflight.
@@ -143,11 +143,11 @@ All Home controls remain actual semantic buttons. `main.jsx` already installs `i
 - Mobile uses shared 35%/72%/94% Compact/Medium/Expanded ratios, dedicated grip interaction, visual viewport and safe areas.
 - Semantic buttons, visible focus, detail regions, disclosure associations, reduced motion and CSS-only transitions are retained/extended.
 - On-demand activity history and nested content remain lazy or panel-gated; no new polling or heavy dependency is added.
-- DEV-PC responsive and accessibility qualification passed: the final mocked matrix covered 320, 360, 390, 430, 768, 1024, 1280, 1440 and 1600px representative widths, 200% text, reduced motion, keyboard/focus, mobile scroll containment, System theme resolution and serious/critical Axe checks. Physical Android Chrome touch/safe-area/haptic behavior remains unvalidated because CDP transport could not be safely exposed to WSL without the repository helper's prohibited Administrator path.
+- DEV-PC responsive and accessibility qualification passed: the final mocked matrix covered 320, 360, 390, 430, 768, 1024, 1280, 1440 and 1600px representative widths, 200% text, reduced motion, keyboard/focus, mobile scroll containment, System theme resolution and serious/critical Axe checks. The standard-user Windows-local Android CDP endpoint and bounded WSL localhost relay are now verified without UAC; the final physical rerun remained blocked by the secure phone keyguard before foreground animation frames, so Android touch/safe-area/haptic behavior and final physical screenshots remain unvalidated.
 
 ## 11. P6 — qualification assets and results
 
-The following results are from the final application commit `e7892e2f0b704265bd859d4924042d87d2d25af5` unless noted otherwise. A green result means the command actually completed; authored comments and source inspection are not treated as execution evidence.
+The following results are from the final application commit `b9398be4d11b9f1a9bb1781a5a0b0e78c188eb12` unless noted otherwise. A green result means the command actually completed; authored comments and source inspection are not treated as execution evidence.
 
 | Gate | File / command | Result | Evidence |
 |---|---|---|---|
@@ -161,10 +161,10 @@ The following results are from the final application commit `e7892e2f0b704265bd8
 | Production application build | `npm run build` | **PASS — 2,262 modules** | Vite output; existing chunk-size warnings only |
 | Storybook production build | `npm run build-storybook` | **PASS** | `storybook-static/` build output (ignored artifact) |
 | Strict Home performance | `lite-home-panel-premium-performance.spec.ts`, `lite-home-command-performance.spec.ts` | **PARTIAL** — premium 10 / 12 and command 5 / 6; workspace open/switch cases recorded `long_animation_frame_ms` misses | `.pocketlab-dev/test-results/` and performance evidence output |
-| Physical Android Chrome | Home-only candidate runner | **BLOCKED** before candidate load; safe WSL CDP transport unavailable without prohibited elevated bridge | Standard-user PowerShell/ADB preflight record below |
+| Physical Android Chrome | Home-only candidate runner | **BLOCKED** on final HEAD after CDP attach and Home smoke; secure keyguard/Bouncer prevented foreground animation frames before the Home matrix and screenshot write | Standard-user PowerShell/ADB preflight and final rerun output below |
 | Documentation and contracts | `task lite:docs:generate`, `task lite:docs:check`, `task lite:check` | **PASS** — generation completed; docs check passed with existing Redocly warnings; full Lite check passed | Generated contracts/docs plus Taskfile output |
 
-The original stale Home unit expectation, an unregistered PR-authored Playwright file, an Axe grep that matched no tests, invalid broad region assertions, the shared snap button's direct Compact/Expanded jump, a Light-theme contrast miss and pointer/legacy-typography visual drift were corrected and covered by the gates above.
+The original stale Home unit expectation, an unregistered PR-authored Playwright file, an Axe grep that matched no tests, invalid broad region assertions, the shared snap button's direct Compact/Expanded jump, a Light-theme contrast miss, pointer/legacy-typography visual drift and Home/Recovery settings-row styling divergence were corrected and covered by the gates above.
 
 ## 12. Qualification detail, performance attribution and Android boundary
 
@@ -197,22 +197,22 @@ For attribution, clean detached runs of the original PR head `f36cda18d96c5b49df
 
 - One authorized device was verified: serial `RZCW71C09GX`, model `SM-S911B`, ADB state `device`; Chrome package `com.android.chrome` was foregrounded and the test screen was woken with the permitted non-privileged ADB key event.
 - Repository-supported ADB was `/mnt/c/Android/platform-tools/adb.exe`, version `1.0.41` / `37.0.1-15733141`.
-- The required initial `http://127.0.0.1:9222/json/version` check failed in both WSL and standard-user Windows PowerShell. A temporary standard-user ADB forward to `localabstract:chrome_devtools_remote` made the Windows endpoint report Chrome `156.0.8078.79`, CDP Protocol `1.3`, Android package `com.android.chrome` and a localhost WebSocket endpoint. WSL could not reach that Windows-only loopback listener.
-- A standard-user PowerShell listener attempt on the WSL host address and the repository's expected `19222` bridge path timed out from WSL. No firewall, UAC, portproxy, protected service or driver change was attempted.
+- The required initial `http://127.0.0.1:9222/json/version` check was verified from standard-user Windows PowerShell: Chrome `156.0.8078.79`, CDP Protocol `1.3`, Android package `com.android.chrome` and a localhost WebSocket endpoint were returned. The bounded repository relay exposed that endpoint to WSL on `127.0.0.1:19222` without a Windows listener, firewall rule or portproxy.
+- Playwright attached through the relay and the exact final candidate at `4bc443b56d8f3772fd1917daeb2e4b03f2608eb0` passed the physical Home smoke and candidate identity checks. The measured qualifier then failed closed because the phone reported `isKeyguardShowing=true`, `mCurrentFocus=NotificationShade`, a Bouncer input target and `mWakefulness=Dozing`; bounded wake, `wm dismiss-keyguard` and notification-shade collapse could not unlock it. No manual credential or security-policy change was attempted.
 - The repository helper `scripts/dev/lite/prepare-ui-performance-android-cdp.ps1` was inspected and not invoked because its setup path requires Administrator privileges and privileged `netsh`/firewall operations. No UAC escalation occurred.
-- The temporary owned forward was removed; `adb forward --list` and `adb reverse --list` were empty afterward. No candidate server, Android runner, synthetic harness or physical Home interaction was started.
+- The temporary candidate reverse, relay, candidate server and runner were cleaned up. The pre-existing `tcp:9222 localabstract:chrome_devtools_remote` ADB forward was preserved. No synthetic harness session, phone source edit or physical Home matrix was left running.
 
-Therefore the exact candidate SHA was not served to Android, foreground requestAnimationFrame evidence was not collected for the candidate, the Home-only matrix was **BLOCKED before execution**, and no physical screenshots are approved. The broad seven-screen matrix was not run.
+Therefore the exact final candidate SHA was served and identity-verified, but foreground requestAnimationFrame evidence was not collected because the secure keyguard prevented the renderer from becoming foreground. The final Home-only matrix was **BLOCKED before execution**, and no final physical screenshots are approved. The broad seven-screen matrix was not run.
 
 ## 13. Risks, intentionally preserved behavior and deferred work
 
-- **Android qualification blocker:** Windows Chrome CDP is healthy when inspected from Windows with a temporary ADB forward, but the endpoint is not reachable from WSL without the repository's Administrator-only bridge path. A safe standard-user transport change was not invented. Physical Android state remains `BLOCKED`.
+- **Android qualification blocker:** the Windows-local CDP transport and bounded WSL relay are healthy without UAC. The final run is blocked by the dedicated phone's secure keyguard/Bouncer after the phone entered Dozing; one manual unlock is required before the exact final candidate can produce foreground frame and screenshot evidence.
 - **Strict performance:** Home workspace grouped open/switch interactions fail the absolute long-animation-frame gate on this WSL/Chromium run. Main and the clean original PR head passed focused comparison runs, so the observed cause is currently an `INFERRED` environment/cold-start contribution, not a proven PR-only regression; the gate remains unresolved and is not downgraded.
 - **Visual retry:** The command visual suite had one first-run 298-pixel mobile offline-saved mismatch; the exact case passed on isolated retry. Premium canonical visual coverage is stable at 40 / 40. This is recorded as a retry-qualified visual result, not a blanket update of unrelated snapshots.
-- **Unvalidated physical behavior:** Android safe areas, touch gestures, real haptics, IME interaction, installed PWA behavior, thermal/power frame timing and physical screenshots were not executed.
+- **Unvalidated physical behavior:** the earlier application candidate run exercised the Home-only functional path, but its ignored screenshot directory was replaced by the subsequent baseline run. Final-head Android safe areas, touch gestures, real haptics, IME interaction, installed PWA behavior, thermal/power frame timing and physical screenshots are not approved until the phone is manually unlocked and the candidate rerun.
 - **Server Phone:** Read-only SSH verification found the phone on clean `main` at `1b249be9fbb2f3bf7a1d898d8c8f282c4bfbe25a`, with existing services unchanged. It was not used as a development workspace.
 - **Source truth:** The generic Services diagram node remains deliberately unknown without an authoritative aggregate service-health projection. Home does not invent connectivity, repair, restart, recovery, uptime, scan or review success.
 - **PWA offline:** Home remains read-only on saved/offline states; no browser write queue or secret storage was added.
 - **Documentation/CI:** Canonical docs generation, `task lite:docs:check` and full `task lite:check` passed after the application commit. GitHub checks remain external CI evidence and the PR remains Draft while Android and strict performance are incomplete.
 
-**Final disposition at this document revision: DEV-PC APPLICATION QUALIFIED — STRICT PERFORMANCE PARTIAL — PHYSICAL ANDROID BLOCKED — DRAFT PR OPEN — NO MERGE, RELEASE OR DEPLOYMENT.**
+**Final disposition at this document revision: DEV-PC APPLICATION QUALIFIED — STRICT PERFORMANCE PARTIAL — ANDROID CDP TRANSPORT VERIFIED — PHYSICAL HOME-ONLY BLOCKED BY SECURE KEYGUARD — DRAFT PR OPEN — NO MERGE, RELEASE OR DEPLOYMENT.**
