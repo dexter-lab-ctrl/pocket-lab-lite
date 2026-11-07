@@ -10,7 +10,7 @@
 - Implementation branch: `feat/azure-horizon-home-premium-refinement`
 - Initial PR #646 HEAD: `f36cda18d96c5b49df239e6f1dfdf8cd835bd542`
 - Qualified application commit: `e7892e2f` (`fix(lite-home): qualify premium Home interactions and shared snap controls`)
-- Final PR HEAD: **pending documentation-generation commit**
+- Final PR HEAD: **the final pushed feature-branch revision after application qualification and documentation regeneration**
 - Main SHA observed during qualification: `1b249be9fbb2f3bf7a1d898d8c8f282c4bfbe25a`
 - Scope: P0–P6, desktop, mobile, installed-PWA-compatible layout.
 - Qualification environment: native WSL2 Ubuntu on the Windows DEV-PC, Node `24.16.0`, Chromium/Playwright mocked desktop and mobile projects, Storybook production build, standard-user Windows PowerShell/ADB preflight.
