@@ -17,10 +17,11 @@ function Action({ label, onClick, disabled = false, why = '' }) {
   return <div className="lite-id-detail-action"><LiteButton variant="secondary" onClick={onClick} disabled={disabled}>{label}</LiteButton>{disabled && why ? <p>{why}</p> : null}</div>;
 }
 export default function IdentityDetailsContent({ selection, view, onRename, onRemovePasskey, onSignOutSession, onRegenerate, onSignOutOtherSessions, onOpenManage, disabled = false }) {
-  if (!selection) return null;
-  const { kind, item = {} } = selection;
+  const kind = selection?.kind;
+  const item = selection?.item || {};
   const [roleDraft, setRoleDraft] = useState(item.role || '');
   useEffect(() => setRoleDraft(item.role || ''), [item.role, kind]);
+  if (!selection) return null;
   const explanation = kind === 'explain';
   const basicTitle = ({ identity: 'Identity', passkey: 'Passkey', session: 'Session', recovery: 'Recovery', person: 'Person', role: 'Role', authorization: 'Access decision', activity: 'Access activity', mode: 'Workspace mode', explain: 'Understand your access' })[kind] || 'Access details';
   const title = kind === 'passkey' ? item.friendly_name || 'Passkey' : kind === 'person' ? item.display_name || 'Person' : basicTitle;

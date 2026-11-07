@@ -18,7 +18,7 @@ async function openManageAccess(canvasElement) {
   await expect(dialog).toBeInTheDocument();
   await expect(dialog).toHaveTextContent(/Passkeys/i);
   await expect(dialog).toHaveTextContent(/Sessions/i);
-  await expect(dialog.getByRole('button', { name: 'Recovery', exact: true })).toBeInTheDocument();
+  await expect(within(dialog).getByRole('button', { name: 'Recovery', exact: true })).toBeInTheDocument();
 }
 
 async function expectEnterpriseRole(canvasElement, role) {

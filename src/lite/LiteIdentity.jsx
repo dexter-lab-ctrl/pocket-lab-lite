@@ -509,7 +509,7 @@ export default function IdentityScreen() {
           <LiteSheet open={manageOpen} onClose={closeManage} onEscape={escapeManage} mobileSnap={!desktopPanel} title="Manage access" eyebrow="Access" description="Account settings and permissions." variant="identity" className={`lite-identity-manage-sheet ${desktopPanel ? 'is-movable' : ''}`}
             surfaceRef={managePanelRef} surfaceStyle={panelStyle}
             surfaceProps={{ 'data-lite-identity-manage-layout': desktopPanel ? 'desktop-movable' : 'mobile-sheet' }}
-            headerActions={desktopPanel ? <LiteDesktopPanelControls title="Access" desktopToolLabels geometry={{
+            headerActions={desktopPanel ? <LiteDesktopPanelControls title="Access" desktopToolLabels showResetLabel geometry={{
               announcement, reset: resetManagePanel, startPanelInteraction, adjustPanelWithKeyboard,
             }} /> : null}>
             <IdentityManageContent

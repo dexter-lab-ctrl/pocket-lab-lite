@@ -72,10 +72,21 @@ describe('Access Center global component and presentation hardening — not exec
     render(<IdentityDetailsContent selection={{ kind:'passkey', item:{ friendly_name:'Passkey without state', created_at:'invalid' } }}
       view={owner} onRename={noop} onRemovePasskey={noop} onSignOutSession={noop}
       onRegenerate={noop} onSignOutOtherSessions={noop} onOpenManage={noop} disabled />);
-    expect(screen.getByText('Passkey without state')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name:'Passkey without state' })).toBeInTheDocument();
     expect(screen.getAllByText('Not reported').length).toBeGreaterThan(0);
     expect(screen.queryByText('Revoked')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name:/Remove passkey/i })).not.toBeInTheDocument();
+  });
+
+  it('keeps the details hook order valid when the nested selection closes', () => {
+    const props = {
+      view: owner, onRename: noop, onRemovePasskey: noop, onSignOutSession: noop,
+      onRegenerate: noop, onSignOutOtherSessions: noop, onOpenManage: noop,
+    };
+    const { rerender } = render(<IdentityDetailsContent {...props}
+      selection={{ kind:'passkey', item:{ friendly_name:'Closable passkey', active:true } }} />);
+    rerender(<IdentityDetailsContent {...props} selection={null} />);
+    expect(document.querySelector('[data-identity-details-kind]')).not.toBeInTheDocument();
   });
   it('keeps protected actions disabled for stale reads', () => {
     render(<IdentityDetailsContent selection={{ kind:'passkey', item:{ friendly_name:'Current passkey', active:true } }}

@@ -46,7 +46,7 @@ html[data-lite-theme] .lite-access-row-icon {
 }
 html[data-lite-theme] .lite-access-avatar { width: 3.5rem; height: 3.5rem; }
 html[data-lite-theme] .lite-access-eyebrow { font-size: .78rem; color: var(--azure-muted); }
-html[data-lite-theme] .lite-access-person h2 { margin: .15rem 0; font-size: clamp(1.25rem, 2vw, 1.6rem); line-height: 1.25; letter-spacing: -.02em; }
+html[data-lite-theme] .lite-access-person h2 { margin: .15rem 0; font-size: clamp(1.25rem, 2vw, 1.6rem); line-height: 1.25; letter-spacing: -.02em; overflow-wrap: anywhere; }
 html[data-lite-theme] .lite-access-person p { margin: .15rem 0; font-weight: 550; }
 html[data-lite-theme] .lite-access-person small { display:block; color: var(--azure-muted); line-height: 1.5; }
 html[data-lite-theme] .lite-access-hero-action { display: grid; gap: var(--access-gap-md); min-width: 0; }
@@ -158,6 +158,11 @@ html[data-lite-theme] .lite-id-details-back:focus-visible { outline:3px solid va
   html[data-lite-theme] .lite-access-hero-layout { grid-template-columns:minmax(0,1fr); gap:1rem; }
   html[data-lite-theme] .lite-access-hero-action { border-top:1px solid var(--azure-border); padding-top:1rem; }
   html[data-lite-theme] .lite-access-hero-action .pocket-button { width:100%; justify-self:stretch; }
+  html[data-lite-theme] .lite-access-page .lite-operational-story { grid-template-columns:1fr; }
+  html[data-lite-theme] .lite-access-page .lite-operational-story-actions { justify-content:stretch; }
+  html[data-lite-theme] .lite-access-page .lite-operational-story-action { justify-items:stretch; }
+  html[data-lite-theme] .lite-access-page .lite-operational-story-action .pocket-button { width:100%; justify-content:center; }
+  html[data-lite-theme] .lite-access-page .lite-operational-story-action small { max-width:none; text-align:left; }
   html[data-lite-theme] .lite-access-center { gap:1.3rem; }
   html[data-lite-theme] .lite-access-hero,html[data-lite-theme] .lite-access-settings-row { padding:var(--azure-spacing-card); }
   html[data-lite-theme] .lite-access-settings-row { min-height:66px; }
@@ -209,6 +214,22 @@ html[data-lite-theme] .lite-access-page > :is(.lite-page-header,.lite-identity-o
   min-width: 0;
   margin-inline: auto;
 }
+html[data-lite-theme] .lite-access-page .lite-page-header > :last-child,
+html[data-lite-theme] .lite-access-page .lite-page-header .lite-governance-inline-actions {
+  min-width: 0;
+  max-width: 100%;
+}
+html[data-lite-theme] .lite-access-page .lite-page-header .lite-refresh-control {
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 10rem;
+}
+html[data-lite-theme] .lite-access-page .lite-page-header .lite-refresh-button {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+}
 html[data-lite-theme] .lite-access-page .lite-identity-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -248,10 +269,75 @@ html[data-lite-theme] .lite-access-page .lite-identity-card p {
   font-weight: 400;
   color: var(--azure-muted);
 }
+html[data-lite-theme] .lite-access-page .lite-operational-story {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .9rem;
+  padding: 1rem;
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  background: var(--azure-surface);
+  color: var(--azure-text);
+  box-shadow: var(--azure-shadow);
+}
+html[data-lite-theme] .lite-access-page .lite-operational-story-copy { min-width: 0; }
+html[data-lite-theme] .lite-access-page .lite-operational-story-copy > span {
+  display: block;
+  color: var(--azure-accent);
+  font-size: .67rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+html[data-lite-theme] .lite-access-page .lite-operational-story-copy > strong {
+  display: block;
+  color: var(--azure-text);
+  font-size: .95rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-access-page .lite-operational-story-copy > p {
+  margin: .28rem 0 0;
+  color: var(--azure-muted);
+  font-size: .82rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-access-page .lite-operational-story-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: start;
+  justify-content: flex-end;
+  gap: .5rem;
+}
+html[data-lite-theme] .lite-access-page .lite-operational-story-action {
+  display: grid;
+  gap: .3rem;
+  justify-items: end;
+}
+html[data-lite-theme] .lite-access-page .lite-operational-story-action small {
+  max-width: 14rem;
+  color: var(--azure-warning);
+  font-size: .72rem;
+  text-align: right;
+}
 html[data-lite-theme] .lite-access-page :is(.lite-identity-mini-icon,.lite-identity-soft-badge) {
   background: var(--azure-accent-subtle);
   color: var(--azure-accent);
   border-color: var(--azure-border);
+}
+/* Identity's legacy Daylight skin supplied the icon box geometry while the
+   dark path relied on the SVG's intrinsic size. Own the shared geometry here
+   so appearance changes cannot reflow the signed-out cards. */
+html[data-lite-theme] .lite-access-page .lite-identity-mini-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-control);
+  animation: none;
 }
 html[data-lite-theme] .lite-access-page .lite-identity-form {
   display: grid;
@@ -288,6 +374,7 @@ html[data-lite-theme] .lite-access-page .lite-ux-freshness {
   background: var(--azure-raised);
   color: var(--azure-text);
 }
+html[data-lite-theme] .lite-access-page .lite-ux-freshness small { color: var(--azure-muted); }
 html[data-lite-theme] .lite-access-education-link {
   display: flex;
   align-items: center;
