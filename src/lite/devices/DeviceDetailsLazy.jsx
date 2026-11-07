@@ -5,7 +5,7 @@ import {
   resourceFactValue,
 } from '../../lib/liteDeviceFacts.js';
 import React from 'react';
-import { AlertTriangle, ChevronDown, ChevronLeft, Clock3, HeartPulse, Smartphone, X } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronDown, ChevronLeft, Clock3, HeartPulse, Smartphone, X } from 'lucide-react';
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
 import { liteEnterpriseApi } from '../../lib/liteEnterpriseApi.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
@@ -235,14 +235,6 @@ function recommendationScreen(value) {
     wait_for_recovery: 'devices',
     remove_old_device: 'devices',
   })[action] || '';
-}
-
-function metricTone(percent, { watch = 75, attention = 90 } = {}) {
-  if (percent === null || percent === undefined || !Number.isFinite(Number(percent))) return 'unknown';
-  const value = Number(percent);
-  if (value >= attention) return 'attention';
-  if (value >= watch) return 'watch';
-  return 'healthy';
 }
 
 function resourceHealthLabel(status, hasMeasurement) {
@@ -1061,12 +1053,12 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
             <div className="lite-device-health-posture-grid">
               <article>
                 <span>Connection</span>
-                <strong>{titleCase(proactiveHealth.connection?.status)}</strong>
+                <strong>{healthAttentionCurrent ? titleCase(proactiveHealth.connection?.status) : 'Saved · not confirmed'}</strong>
                 <p>{proactiveHealth.connection?.summary || 'Connection quality is not available yet.'}</p>
               </article>
               <article>
                 <span>Recovery</span>
-                <strong>{titleCase(proactiveHealth.recovery?.status)}</strong>
+                <strong>{healthAttentionCurrent ? titleCase(proactiveHealth.recovery?.status) : 'Saved · not confirmed'}</strong>
                 <p>{proactiveHealth.recovery?.summary || 'Recovery posture is not available yet.'}</p>
               </article>
               <article>
@@ -1078,7 +1070,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
               </article>
               <article>
                 <span>Responsibility impact</span>
-                <strong>{titleCase(proactiveHealth.dependency_impact?.status)}</strong>
+                <strong>{healthAttentionCurrent ? titleCase(proactiveHealth.dependency_impact?.status) : 'Saved · not confirmed'}</strong>
                 <p>{proactiveHealth.dependency_impact?.impact_summary || 'Responsibility impact is not available yet.'}</p>
               </article>
             </div>
@@ -1086,7 +1078,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
             <div className="lite-device-health-recommendation" role="note">
               <div>
                 <span>Recommended next step</span>
-                <strong>{recommendationLabel(proactiveHealth.recommended_action)}</strong>
+                <strong>{healthAttentionCurrent ? recommendationLabel(proactiveHealth.recommended_action) : 'Reconnect to review'}</strong>
                 <p>Recommendations are guidance only. Pocket Lab will not run an action without the normal guarded flow.</p>
               </div>
               {recommendationTargetScreen && healthAttentionCurrent ? (
@@ -1155,7 +1147,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
               </dl>
             </section>
             {!actionsBlocked && canRestartDeviceAgent(device) ? (
-              <LiteButton tone="secondary" onClick={onRestartAgent} disabled={restartBusy}>
+              <LiteButton tone="secondary" onClick={() => { triggerLiteHaptic('tap'); onRestartAgent?.(); }} disabled={restartBusy}>
                 {restartBusy ? 'Restart requested…' : 'Restart agent'}
               </LiteButton>
             ) : <p>Restart remains unavailable unless Pocket Lab confirms a safe recovery action.</p>}
@@ -1202,7 +1194,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
               />
             </details>
             {!isProtectedServer && !actionsBlocked && canRemoveDevice(device) ? (
-              <LiteButton tone="danger" onClick={onReviewRemoval} disabled={removeBusy}>
+              <LiteButton tone="danger" onClick={() => { triggerLiteHaptic('tap'); onReviewRemoval?.(); }} disabled={removeBusy}>
                 {removeBusy ? 'Reviewing removal…' : 'Review device removal'}
               </LiteButton>
             ) : null}
