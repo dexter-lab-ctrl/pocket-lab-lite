@@ -54,3 +54,18 @@ export function accessManageGroups({ enterpriseEnabled = false, hasApprovals = f
     ] },
   ];
 }
+
+/**
+ * Display-only conversion of backend timestamps. Never guess missing values,
+ * silently change timezones, or expose raw invalid values in normal UI.
+ */
+export function formatAccessTimestamp(value, locale) {
+  if (value === null || value === undefined || value === '') return 'Not reported';
+  const date = value instanceof Date ? value : new Date(value);
+  if (!Number.isFinite(date.getTime())) return 'Not reported';
+  try {
+    return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+  } catch {
+    return 'Not reported';
+  }
+}
