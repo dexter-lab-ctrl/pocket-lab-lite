@@ -98,6 +98,41 @@ test.describe('Azure Horizon Home premium refinement — mocked qualification', 
     await expect(opener).toBeFocused();
   });
 
+  test('Home settings rows reuse Recovery Manage tab styling and semantic colors', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await openHome(page, 'healthy', 'light');
+    await page.getByRole('button', { name: 'Workspace details' }).click();
+    const homePanel = page.getByRole('dialog', { name: 'Workspace details' });
+    const homeRow = homePanel.locator('.lite-home-settings-row[aria-current="page"]');
+    const homeStyle = await homeRow.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return {
+        background: style.backgroundColor,
+        color: style.color,
+        borderColor: style.borderTopColor,
+        radius: style.borderRadius,
+        shadow: style.boxShadow,
+      };
+    });
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Open Backups' }).click();
+    await waitForLiteScreenToSettle(page, 'recovery');
+    await page.getByRole('button', { name: 'Manage Recovery' }).click();
+    const recoveryPanel = page.getByRole('dialog', { name: /Manage backups and recovery/i });
+    const recoveryTab = recoveryPanel.locator('.lite-recovery-manage-tabs button[aria-selected="true"]');
+    const recoveryStyle = await recoveryTab.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return {
+        background: style.backgroundColor,
+        color: style.color,
+        borderColor: style.borderTopColor,
+        radius: style.borderRadius,
+        shadow: style.boxShadow,
+      };
+    });
+    expect(homeStyle).toEqual(recoveryStyle);
+  });
+
   test('Desktop Move, Resize, Reset and grouped index remain keyboard usable', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await openHome(page, 'healthy', 'light');

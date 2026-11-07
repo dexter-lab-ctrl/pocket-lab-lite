@@ -3,7 +3,7 @@
  * Loaded after legacy Home files; never changes Apps, Safety, Devices or Recovery.
  * Layout values are theme-independent. Colors exclusively use shared semantic tokens.
  * DEV-PC mocked qualification is executed in the Home suites; physical Android
- * qualification remains separately tracked because the WSL CDP transport is blocked.
+ * qualification is recorded separately in exact-SHA evidence artifacts.
  */
 html[data-lite-theme] .lite-home-refined.lite-home-premium-shell {
   --home-density-gap: clamp(.8rem, 1.7vw, 1.2rem);
@@ -181,7 +181,38 @@ html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row {
   padding: .7rem .85rem;
 }
 html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row[aria-current="page"] {
-  color: var(--azure-focus);
+  color: var(--azure-text);
+  background: var(--azure-selected);
+  border: 1px solid var(--azure-strong-border);
+  box-shadow: inset 0 -3px var(--azure-accent);
+}
+/* Home grouped navigation uses the same raised/tab treatment as Recovery
+ * Manage tabs. The Home rows keep their icon and description layout, while
+ * active, hover and focus colors remain the shared Azure Horizon tokens. */
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-rows {
+  gap: .35rem;
+  padding: .35rem;
+  background: var(--azure-raised);
+  border: 1px solid var(--azure-border);
+  border-radius: .9rem;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row {
+  background: transparent;
+  color: var(--azure-text);
+  border: 1px solid transparent;
+  border-radius: var(--azure-radius-control);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row:last-child {
+  border-bottom: 1px solid transparent;
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row[aria-current="page"] small {
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row:hover {
+  background: var(--azure-hover);
+}
+html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-row[aria-current="page"]:hover {
+  background: var(--azure-selected);
 }
 html[data-lite-theme] .lite-home-panel-layer .lite-home-settings-back {
   min-height: var(--home-control-height);
