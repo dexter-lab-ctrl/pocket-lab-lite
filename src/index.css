@@ -3001,41 +3001,11 @@ textarea {
   font-weight: 950;
 }
 
-.theme-pocket-lite-daylight .lite-identity-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 1rem;
-}
-
-.theme-pocket-lite-daylight .lite-identity-card {
-  min-height: 22rem;
-  animation: lite-soft-rise 360ms ease both;
-}
+/* Current Access layout geometry is theme-independent in
+   src/lite/identity/accessCenter.css. Historical Daylight-only rules removed. */
 
 .theme-pocket-lite-daylight .lite-identity-action-card {
   animation-delay: 55ms;
-}
-
-.theme-pocket-lite-daylight .lite-identity-card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.theme-pocket-lite-daylight .lite-identity-card h2 {
-  color: #0f172a;
-  font-size: 1.45rem;
-  font-weight: 950;
-  letter-spacing: -0.04em;
-}
-
-.theme-pocket-lite-daylight .lite-identity-card p {
-  margin-top: 0.7rem;
-  color: #475569;
-  font-size: 0.96rem;
-  line-height: 1.7;
 }
 
 .theme-pocket-lite-daylight .lite-identity-checklist {
@@ -3120,8 +3090,7 @@ textarea {
 }
 
 @media (max-width: 900px) {
-  .theme-pocket-lite-daylight .lite-identity-hero,
-  .theme-pocket-lite-daylight .lite-identity-grid {
+  .theme-pocket-lite-daylight .lite-identity-hero {
     grid-template-columns: 1fr;
   }
 
