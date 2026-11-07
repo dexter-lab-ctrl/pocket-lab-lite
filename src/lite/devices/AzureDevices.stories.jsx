@@ -54,3 +54,49 @@ export const NativeLibraryTopologyExpanded = {
     await expect(await canvas.findByRole('region', { name:'Pocket Lab device connections' })).toBeInTheDocument();
   },
 };
+
+
+/* P7 Native Manage qualification: AUTHORED, NOT EXECUTED.
+ * Shared production Devices page, Azure semantic themes and mocked API only.
+ * Screenshot baseline approval and hardware haptic checks remain pending. */
+function nativeManageStory({ theme = 'dark', viewport = 'desktop', scenario = 'devices-online', section = '', details = false } = {}) {
+  return {
+    ...createLiteStory('devices', scenario, { theme, viewport }),
+    play: async ({ canvasElement }) => {
+      const canvas = within(canvasElement);
+      await userEvent.click((await canvas.findAllByRole('button', { name: /^Manage / }))[0]);
+      const dialog = await within(document.body).findByRole('dialog', { name: /^Manage / });
+      if (viewport.startsWith('mobile')) {
+        await expect(dialog.querySelector('[data-manage-view="index"]')).toBeInTheDocument();
+      }
+      if (section) {
+        await userEvent.click(await within(dialog).findByRole('button', { name: section, exact: true }));
+        await expect(dialog.querySelector('[data-active-device-section="' + section.toLowerCase() + '"]')).toBeInTheDocument();
+      }
+      if (details && viewport.startsWith('mobile')) {
+        await userEvent.click(await within(dialog).findByRole('button', { name: 'Back to all device settings' }));
+        await expect(dialog.querySelector('[data-manage-view="index"]')).toBeInTheDocument();
+      }
+    },
+  };
+}
+export const NativeManageDesktopOverviewDark = nativeManageStory({ theme: 'dark' });
+export const NativeManageDesktopHealthDaylight = nativeManageStory({ theme: 'daylight', section: 'Health' });
+export const NativeManageDesktopConnectionDark = nativeManageStory({ section: 'Connection' });
+export const NativeManageDesktopServicesDaylight = nativeManageStory({ theme: 'daylight', section: 'Services' });
+export const NativeManageDesktopHistoryDark = nativeManageStory({ section: 'History' });
+export const NativeManageDesktopTechnicalDaylight = nativeManageStory({ theme: 'daylight', section: 'Technical' });
+export const NativeManageDesktopSystemTheme = nativeManageStory({ theme: 'system', section: 'Overview' });
+export const NativeManageMobileIndexDark = nativeManageStory({ viewport: 'mobile390' });
+export const NativeManageMobileIndexDaylight = nativeManageStory({ theme: 'daylight', viewport: 'mobile360' });
+export const NativeManageMobileDetailHealth = nativeManageStory({ viewport: 'mobile390', section: 'Health' });
+export const NativeManageMobileBackToIndex = nativeManageStory({ viewport: 'mobile390', section: 'Connection', details: true });
+export const NativeManageMobileOfflineSaved = nativeManageStory({ viewport: 'mobile390', scenario: 'offline-saved' });
+export const NativeManageMobileRepairing = nativeManageStory({ viewport: 'mobile390', scenario: 'devices-repairing', section: 'Health' });
+export const NativeManageServerProtected = nativeManageStory({ scenario: 'devices-protected-host' });
+export const NativeManageRemoteNotReady = nativeManageStory({ scenario: 'devices-remote-not-ready', section: 'Connection' });
+export const NativeManagePartialResources = nativeManageStory({ scenario: 'devices-resource-partial', section: 'Health' });
+export const NativeManageStaleServices = nativeManageStory({ scenario: 'devices-services-stale', section: 'Services' });
+export const NativeManageLongNames320 = createLiteStory('devices', 'devices-long-name', {
+  theme: 'daylight', viewport: 'mobile360', textScale: 2,
+});
