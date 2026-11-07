@@ -5,6 +5,9 @@ import { LiteTechnicalFacts } from '../LiteUx.jsx';
 import { getLiteReasonPresentation } from '../../lib/identityRulesPresentation.js';
 import { identityDecisionLabel } from './identityPremiumView.js';
 import LiteEvidenceGuide from '../components/LiteEvidenceGuide.jsx';
+import AccessDetailPresentation from './AccessDetailPresentation.jsx';
+import AccessHowItWorks from './AccessHowItWorks.jsx';
+import { formatAccessTimestamp } from './accessCenterPresentation.js';
 
 function Fact({ label, children }) {
   return <div className="lite-id-detail-fact"><dt>{label}</dt><dd>{children == null || children === '' ? 'Not reported' : children}</dd></div>;
@@ -21,7 +24,7 @@ export default function IdentityDetailsContent({ selection, view, onRename, onRe
   const explanation = kind === 'explain';
   const basicTitle = ({ identity: 'Identity', passkey: 'Passkey', session: 'Session', recovery: 'Recovery', person: 'Person', role: 'Role', authorization: 'Access decision', activity: 'Access activity', mode: 'Workspace mode', explain: 'Understand your access' })[kind] || 'Access details';
   const title = kind === 'passkey' ? item.friendly_name || 'Passkey' : kind === 'person' ? item.display_name || 'Person' : basicTitle;
-  const status = kind === 'passkey' ? (item.active ? 'Active' : 'Revoked') : kind === 'session' ? (item.active && item.current ? 'Current session' : item.active ? 'Active' : 'Inactive') : kind === 'activity' ? item.outcome : kind === 'recovery' ? (view.recoveryConfigured ? 'Configured' : 'Unavailable or unconfigured') : view.fresh ? 'Reported by Pocket Lab' : 'Saved information';
+  const status = kind === 'passkey' ? (item.active === true ? 'Active' : item.active === false ? 'Revoked' : 'Not reported') : kind === 'session' ? (item.active === true && item.current ? 'Current session' : item.active === true ? 'Active' : item.active === false ? 'Inactive' : 'Not reported') : kind === 'activity' ? item.outcome : kind === 'recovery' ? (view.recoveryConfigured ? 'Configured' : 'Unavailable or unconfigured') : view.fresh ? 'Reported by Pocket Lab' : 'Saved information';
   const summary = ({
     identity: 'Your displayed identity is server-reported. A role alone does not authorize a protected change.',
     passkey: 'This passkey belongs to your signed-in identity. Protected removal may need another passkey confirmation.',
@@ -36,24 +39,24 @@ export default function IdentityDetailsContent({ selection, view, onRename, onRe
   })[kind];
   return <div className="lite-id-details" data-identity-details-kind={kind}>
     {typeof onOpenManage === 'function' ? <button type="button" className="lite-id-details-back" onClick={onOpenManage}><ArrowLeft size={18} aria-hidden="true" /> Back to Manage Access</button> : null}
-    <div className="lite-id-detail-heading"><h2>{title}</h2><span>{status}</span><p>{summary}</p></div>
-    <DetailGroup title={explanation ? 'What this means' : 'Reported facts'}>
+    <AccessDetailPresentation kind={kind} title={title} status={status} summary={summary} />
+    <DetailGroup title="Reported facts">
       <dl className="lite-id-detail-facts">
         {kind === 'identity' ? <><Fact label="Signed in as">{view.name}</Fact><Fact label="Role">{view.role}</Fact><Fact label="Mode">{view.mode}</Fact><Fact label="Sign-in method">{view.authentication}</Fact></> : null}
-        {kind === 'passkey' ? <><Fact label="Name">{item.friendly_name}</Fact><Fact label="State">{item.active ? 'Active' : 'Revoked'}</Fact><Fact label="Created">{item.created_at || 'Not reported'}</Fact><Fact label="Last used">{item.last_used_at || 'Not reported'}</Fact></> : null}
-        {kind === 'session' ? <><Fact label="Session">{item.current ? 'Current' : 'Other session'}</Fact><Fact label="Method">{item.auth_method || 'Not reported'}</Fact><Fact label="Expires">{item.absolute_expires_at || 'Not reported'}</Fact></> : null}
+        {kind === 'passkey' ? <><Fact label="Name">{item.friendly_name}</Fact><Fact label="State">{item.active === true ? 'Active' : item.active === false ? 'Revoked' : 'Not reported'}</Fact><Fact label="Created">{formatAccessTimestamp(item.created_at)}</Fact><Fact label="Last used">{formatAccessTimestamp(item.last_used_at)}</Fact></> : null}
+        {kind === 'session' ? <><Fact label="Session">{item.current ? 'Current' : 'Other session'}</Fact><Fact label="Method">{item.auth_method || 'Not reported'}</Fact><Fact label="Expires">{formatAccessTimestamp(item.absolute_expires_at)}</Fact></> : null}
         {kind === 'recovery' ? <><Fact label="Configured">{view.recoveryConfigured == null ? 'Unavailable' : view.recoveryConfigured ? 'Yes' : 'No'}</Fact><Fact label="Unused codes">{view.remaining == null ? 'Unavailable' : view.remaining}</Fact></> : null}
         {kind === 'person' ? <><Fact label="Name">{item.display_name}</Fact><Fact label="Username">{item.username}</Fact><Fact label="Role">{item.role}</Fact><Fact label="Membership">{item.membership_status || item.status}</Fact><Fact label="Active passkeys">{item.active_passkeys}</Fact><Fact label="Active sessions">{item.active_sessions}</Fact></> : null}
         {kind === 'role' ? <><Fact label="Role">{item.label || item.id}</Fact><Fact label="Purpose">{item.summary}</Fact></> : null}
         {kind === 'authorization' ? <><Fact label="Action">{item.label}</Fact><Fact label="Reported decision">{identityDecisionLabel(item.decision)}</Fact><Fact label="Reason">{item.summary}</Fact></> : null}
-        {kind === 'activity' ? <><Fact label="What happened">{item.title}</Fact><Fact label="Outcome">{item.outcome}</Fact><Fact label="When">{item.timestamp}</Fact><Fact label="Reported reason">{item.reasonCode ? getLiteReasonPresentation(item.reasonCode).message : 'Not reported'}</Fact></> : null}
+        {kind === 'activity' ? <><Fact label="What happened">{item.title}</Fact><Fact label="Outcome">{item.outcome}</Fact><Fact label="When">{formatAccessTimestamp(item.timestamp)}</Fact><Fact label="Reported reason">{item.reasonCode ? getLiteReasonPresentation(item.reasonCode).message : 'Not reported'}</Fact></> : null}
         {kind === 'mode' ? <><Fact label="Workspace mode">{view.mode}</Fact><Fact label="Current role">{view.role}</Fact></> : null}
         {explanation ? <><Fact label="Who">{view.name}</Fact><Fact label="Authority">{view.role} · {view.mode}</Fact><Fact label="Sign-in method">{view.authentication}</Fact></> : null}
       </dl>
     </DetailGroup>
+    {explanation ? <AccessHowItWorks view={view} signedIn={Boolean(view?.signedIn)} /> : null}
     {explanation ? <LiteEvidenceGuide title="Why Pocket Lab says this" description="This is a sanitized, read-only Identity projection." saved={!view.fresh} facts={[{ id: 'name', label: 'Signed in as', value: view.name }, { id: 'role', label: 'Reported role', value: view.role }, { id: 'method', label: 'Reported sign-in method', value: view.authentication }, { id: 'mode', label: 'Mode', value: view.mode }]} caution="Only a fresh backend decision can authorize protected changes." /> : null}
     {explanation ? <DetailGroup title="Why Pocket Lab says this"><p>These facts were reported by the Identity read. Browser passkey support alone does not prove your sign-in method or authorize an action.</p><p><BookOpenText size={16} aria-hidden="true" /> {view.fresh ? 'Live access read available.' : 'Previously reported access information; live authority unavailable.'}</p></DetailGroup> : null}
-    <DetailGroup title="What this means"><p>{kind === 'activity' ? 'The record describes only the reported event and outcome.' : summary}</p></DetailGroup>
     <DetailGroup title="What happens next">
       {kind === 'passkey' && item.active ? <><Action label="Rename passkey" onClick={() => onRename(item)} disabled={disabled} why="Live access is required." /><Action label="Remove passkey" onClick={() => onRemovePasskey(item)} disabled={disabled} why="Live access is required." /></> : null}
       {kind === 'session' && item.active && !item.current ? <Action label="Sign out session" onClick={() => onSignOutSession(item)} disabled={disabled} why="Live access is required." /> : null}
