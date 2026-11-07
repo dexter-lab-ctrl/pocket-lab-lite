@@ -10,6 +10,7 @@ import AccessHowItWorks, { accessEducationContext } from './AccessHowItWorks.jsx
 import IdentityDetailsContent from './IdentityDetailsContent.jsx';
 import { formatAccessTimestamp } from './accessCenterPresentation.js';
 import { LiteTechnicalFacts } from '../LiteUx.jsx';
+import { liteHapticTarget } from '../../lib/liteGlobalHaptics.js';
 
 afterEach(cleanup);
 const noop = () => {};
@@ -83,5 +84,28 @@ describe('Access Center global component and presentation hardening — not exec
       onOpenManage={noop} disabled />);
     expect(screen.getByRole('button', { name:'Remove passkey' })).toBeDisabled();
     expect(screen.getByText('Live access unavailable')).toBeInTheDocument();
+  });
+
+  it('reuses delegated global haptic targeting for Access controls, not disabled controls', () => {
+    const button = document.createElement('button');
+    button.textContent = 'Manage Access';
+    document.body.appendChild(button);
+    expect(liteHapticTarget({ target: button })).toBe(button);
+    button.disabled = true;
+    expect(liteHapticTarget({ target: button })).toBeNull();
+    button.remove();
+  });
+  it('native technical summary invokes the existing optional haptic API for an actual user click', () => {
+    const prior = navigator.vibrate;
+    const vibrate = vi.fn(() => true);
+    Object.defineProperty(navigator, 'vibrate', { configurable: true, value: vibrate });
+    try {
+      const { container } = render(<LiteTechnicalFacts facts={[{ id:'source', label:'Source', value:'Identity' }]} />);
+      fireEvent.click(container.querySelector('summary'));
+      expect(container.querySelector('details')).toHaveAttribute('open');
+      expect(vibrate).toHaveBeenCalledTimes(1);
+    } finally {
+      Object.defineProperty(navigator, 'vibrate', { configurable: true, value: prior });
+    }
   });
 });
