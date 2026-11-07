@@ -1073,7 +1073,10 @@ if (!findingDetailsButton) {
 
 }
 
-// Phase 4: explicit list/page scrolling on a content-rich screen.
+// Phase 4: explicit list/page scrolling on a content-rich screen. Home-only
+// qualification stops after the Home interaction matrix; it must never enter
+// the unrelated Recovery flow.
+if (!homeOnly) {
 await gotoScreen('recovery');
 await captureRecoveryScreenshot('landing', page.locator('[data-lite-screen-id="recovery"]'));
 await measurePhase4Interaction({
@@ -1385,6 +1388,7 @@ if (recoveryOnly) {
     return focused ? { status: 'COMPLETED' } : { status: 'NOT_EXERCISED', reason: 'manage_focus_return_not_confirmed' };
   });
   markRecoveryInteraction('R26', 'Desktop Manage move, resize and reset', 'NOT_APPLICABLE', 'desktop qualification is executed on the Dev-PC browser matrix');
+}
 }
 
 // Phase 4: truthful read-only progress/feedback lifecycle.
