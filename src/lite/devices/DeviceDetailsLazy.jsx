@@ -835,7 +835,13 @@ function DeviceHealthHistory({ deviceId }) {
           {!healthHistoryQuery.loading ? (
             <LiteHistoryTimeline
               className="lite-device-timeline is-health"
-              items={healthTransitions.map((item) => ({ id: item.id, title: item.title, summary: item.summary, time: item.created_at ? formatLiteTime(item.created_at) : '', state: item.status }))}
+              variant="devices"
+              items={healthTransitions.map((item) => ({
+                id: item.id, title: item.title, summary: item.summary,
+                time: item.created_at ? formatLiteTime(item.created_at) : '',
+                date: deviceEventDate(item.created_at),
+                state: item.status, eventKind: deviceEventIcon(item.status),
+              }))}
               emptyTitle="No health changes yet"
               emptyDescription="Health changes will appear here when Pocket Lab observes a meaningful transition."
             />
@@ -1013,6 +1019,12 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
                 : device?.remote_access?.ready === true ? 'Remote access ready'
                   : device?.remote_access?.ready === false ? 'Remote access not ready' : 'Not reported'}</strong>
               <p>Private network access and a live device-agent connection are separate checks.</p>
+              <dl>
+                <div><dt>Agent status</dt><dd>{actionsBlocked ? 'Saved · not confirmed' : titleCase(device?.agent?.status || device?.agent_status, 'Not reported')}</dd></div>
+                <div><dt>Supervisor / recovery</dt><dd>{actionsBlocked ? 'Saved · not confirmed' : supervisorStatusLabel(device)}</dd></div>
+                <div><dt>Command delivery</dt><dd>{actionsBlocked ? 'Saved · not confirmed' : deviceCommandDeliveryLabel(device)}</dd></div>
+                <div><dt>Device trust</dt><dd>{titleCase(device?.identity?.status || device?.identity_status, 'Not reported')}</dd></div>
+              </dl>
             </section>
           </>
         ) : null}
@@ -1035,8 +1047,11 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel, onRe
           </span>
           <div>
             <span>Overall health</span>
-            <strong>{proactiveHealthLabel(proactiveHealth?.status)}</strong>
+            <strong>{healthAttentionCurrent ? proactiveHealthLabel(proactiveHealth?.status) : 'Saved · health not confirmed'}</strong>
             <p>{proactiveHealth?.summary || 'Device health is not available yet.'}</p>
+            <small>{proactiveHealth?.observed_at || proactiveHealth?.updated_at || proactiveHealth?.checked_at
+              ? `Health reported ${formatDeviceTime(proactiveHealth.observed_at || proactiveHealth.updated_at || proactiveHealth.checked_at)}`
+              : 'Health report time unavailable'}</small>
           </div>
           <small>{titleCase(proactiveHealth?.severity, 'No severity')}</small>
         </div>
