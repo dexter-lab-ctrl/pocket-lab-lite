@@ -27,7 +27,7 @@ describe('Devices native Manage presentation contract', () => {
       { service_id: 'experimental-service', state: 'unavailable' },
     ];
     const grouped = groupDeviceServices(services);
-    expect(grouped.map((g) => g.label)).toEqual(['Pocket Lab core', 'Connectivity', 'Recovery', 'Hosted apps']);
+    expect(grouped.map((g) => g.label)).toEqual(['Pocket Lab core', 'Connectivity', 'Recovery', 'Hosted apps', 'Other services']);
     expect(grouped.flatMap((g) => g.services)).toHaveLength(services.length);
     expect(grouped.find((g) => g.label === 'Pocket Lab core').services[0].freshness).toBe('stale');
     expect(grouped.find((g) => g.label === 'Connectivity').services[0].state).toBe('offline');
