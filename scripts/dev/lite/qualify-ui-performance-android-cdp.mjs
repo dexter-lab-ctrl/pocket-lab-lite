@@ -76,6 +76,9 @@ const commit = sourceCommit();
 
 await rm(outputDir, { recursive: true, force: true });
 await mkdir(outputDir, { recursive: true });
+const homeScreenshotDir = resolve(outputDir, 'physical-home-screenshots-' + commit);
+const homeScreenshotFiles = [];
+if (homeOnly) await mkdir(homeScreenshotDir, { recursive: true });
 
 const browser = await chromium.connectOverCDP(cdpUrl);
 const androidChromeVersion = String(browser.version() || '').trim();
@@ -489,6 +492,15 @@ async function captureRecoveryScreenshot(name, target = page) {
   console.log(`[ui-performance-android] screenshot ${safeName}: ${filePath}`);
 }
 
+async function captureHomeScreenshot(name, target = page) {
+  if (!homeOnly) return;
+  const safeName = sanitizeLitePerformanceName(name);
+  const filePath = resolve(homeScreenshotDir, safeName + '.png');
+  await target.screenshot({ path: filePath, animations: 'disabled' });
+  homeScreenshotFiles.push({ name: safeName, path: filePath });
+  console.log('[ui-performance-android] Home screenshot ' + safeName + ': ' + filePath);
+}
+
 async function gotoScreen(screenId) {
   const target = new URL(base.href);
   target.searchParams.set('screen', screenId);
@@ -547,13 +559,17 @@ async function exerciseHomeMobileSnap(dialog, panel) {
   if (!mobileViewport) {
     fail(`Android Home ${panel} snap qualification requires the physical browser in a portrait mobile viewport.`);
   }
+  const screenshotPrefix = 'home-' + sanitizeLitePerformanceName(panel);
   await assertHomeMobileSnap(dialog, panel, 'medium');
+  await captureHomeScreenshot(screenshotPrefix + '-medium', dialog);
   await dialog.getByRole('button', { name: 'Compact', exact: true }).click();
   await assertHomeMobileSnap(dialog, panel, 'compact');
+  await captureHomeScreenshot(screenshotPrefix + '-compact', dialog);
   await dialog.getByRole('button', { name: 'Expand', exact: true }).click();
   await assertHomeMobileSnap(dialog, panel, 'medium');
   await dialog.getByRole('button', { name: 'Expand', exact: true }).click();
   await assertHomeMobileSnap(dialog, panel, 'expanded');
+  await captureHomeScreenshot(screenshotPrefix + '-expanded', dialog);
 
   const grip = dialog.getByRole('button', { name: /Resize sheet, currently/ });
   await grip.focus();
@@ -704,6 +720,7 @@ for (const screenId of screens) {
 // unrelated screen-specific matrices below.
 if (!recoveryOnly) {
   await gotoScreen('home');
+  await captureHomeScreenshot('landing', page.locator('[data-lite-screen-id="home"]'));
   if (homeOnly) {
   for (const [label, screenId] of [
     ['Apps', 'catalog'],
@@ -774,6 +791,7 @@ if (homeOnly) {
     },
     settleMs: 480,
   });
+  await captureHomeScreenshot('workspace-service-health', workspaceDialog);
   // The mobile grouped-settings presentation replaces the section index with
   // the selected detail. Return to the index before selecting Diagnostics so
   // the same Home-only sequence works on both mobile sheets and desktop rails.
@@ -793,6 +811,7 @@ await measureNestedInteraction({
     await workspaceTechnicalDetails.waitFor({ state: 'visible' });
   },
 });
+await captureHomeScreenshot('workspace-diagnostics', workspaceDialog);
 await measureNestedInteraction({
   screen: 'home',
   nestedSurface: 'Workspace details / Technical details',
@@ -850,6 +869,7 @@ if (homeOnly) {
     settleMs: 420,
   });
   const activityDialog = await firstVisible(page.getByRole('dialog', { name: 'Recent activity' }), 'Home Recent activity dialog');
+  await captureHomeScreenshot('activity-index', activityDialog);
   await exerciseHomeMobileSnap(activityDialog, 'Recent activity');
   await measureNestedInteraction({
     screen: 'home',
@@ -863,6 +883,7 @@ if (homeOnly) {
     },
     settleMs: 480,
   });
+  await captureHomeScreenshot('activity-history', activityDialog);
   await measureNestedInteraction({
     screen: 'home',
     nestedSurface: 'Recent activity / grouped sections',
@@ -1494,6 +1515,26 @@ const qualificationGaps = [
 ];
 if (qualificationGaps.length) {
   fail(`physical Android qualification could not exercise all requested coverage: ${qualificationGaps.join(' | ')}`);
+}
+
+if (homeOnly) {
+  await writeFile(resolve(outputDir, 'android-home-visual-evidence.json'), JSON.stringify({
+    schema_version: '1.0.0',
+    qualification_scope: 'home',
+    qualification_surface: 'physical-android-chrome',
+    source_commit: commit,
+    candidate_origin: base.origin,
+    route: '/?screen=home',
+    android_chrome_version: androidChromeVersion,
+    android_package: 'com.android.chrome',
+    candidate_manifest_verified: candidateManifestVerified,
+    candidate_manifest_source_commit: candidateManifest.source_commit,
+    candidate_manifest_response_header_verified: candidateManifestResponseHeaderVerified,
+    candidate_page_response_header_verified: candidatePageResponseHeaderVerified,
+    candidate_page_meta_verified: candidatePageMetaVerified,
+    screenshots: homeScreenshotFiles,
+    sanitized: true,
+  }, null, 2) + '\n', 'utf8');
 }
 
 if (recoveryOnly) {
