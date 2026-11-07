@@ -3,6 +3,7 @@ import { Camera, RefreshCw, Square } from 'lucide-react';
 import { useLiteQuery } from '../../hooks/useLiteQuery.js';
 import { liteApi } from '../../lib/liteApi.js';
 import { LiteButton } from '../LiteUi.jsx';
+import { triggerLiteHaptic } from '../../lib/liteNativeFeedback.js';
 
 const COLLECTIONS = [
   { id: 'camera', label: 'Camera' },
@@ -346,22 +347,22 @@ export default function DevicePhotoBackup({ deviceId }) {
       {actionState.error ? <p className="lite-device-photo-backup-error" role="alert">{actionState.error}</p> : null}
 
       <div className="lite-device-photo-backup-actions" role="group" aria-label="Photo backup actions">
-        <LiteButton tone="secondary" disabled={actionState.busy || query.refreshing || !deviceId} onClick={() => query.refresh()}>
+        <LiteButton tone="secondary" disabled={actionState.busy || query.refreshing || !deviceId} onClick={() => { triggerLiteHaptic('tap'); query.refresh(); }}>
           <RefreshCw className="h-4 w-4" /> Check status
         </LiteButton>
         {canRepair ? (
-          <LiteButton tone="secondary" disabled={actionState.busy || repairing} onClick={() => run('repair')}>
+          <LiteButton tone="secondary" disabled={actionState.busy || repairing} onClick={() => { triggerLiteHaptic('tap'); run('repair'); }}>
             <RefreshCw className="h-4 w-4" />
             Repair photo backup
           </LiteButton>
         ) : null}
         {live ? (
-          <LiteButton tone="secondary" disabled={actionState.busy} onClick={() => run('cancel')}>
+          <LiteButton tone="secondary" disabled={actionState.busy} onClick={() => { triggerLiteHaptic('warning'); run('cancel'); }}>
             <Square className="h-4 w-4" />
             Stop backup
           </LiteButton>
         ) : (
-          <LiteButton tone="primary" disabled={!canStart} onClick={() => run('start')}>
+          <LiteButton tone="primary" disabled={!canStart} onClick={() => { triggerLiteHaptic('confirm'); run('start'); }}>
             <Camera className="h-4 w-4" />
             {latest.retryable && canStart ? 'Retry' : 'Back up photos'}
           </LiteButton>
