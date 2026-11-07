@@ -79,17 +79,25 @@ export function LiteHistoryTimeline({ items = [], emptyTitle = 'No history yet',
   const history = normalizeTimelineItems(items);
   if (!history.length) return <LiteEmptyState title={emptyTitle} description={emptyDescription} className={className} />;
   return (
-    <ol className={`lite-ux-history-timeline ${className}`.trim()}>
-      {history.map((item) => (
-        <li key={item.id} className={`is-${String(item.state || 'neutral').toLowerCase()}`}>
-          <span className="lite-ux-history-marker" aria-hidden="true" />
-          <div>
-            <strong>{item.title}</strong>
-            {item.summary ? <p>{item.summary}</p> : null}
-            {item.time ? <time>{item.time}</time> : null}
-          </div>
-        </li>
-      ))}
+    <ol className={`lite-ux-history-timeline ${variant === 'devices' ? 'is-devices' : ''} ${className}`.trim()}>
+      {history.map((item, index) => {
+        const kind = item.eventKind || 'activity';
+        const Marker = ({ alert: WifiOff, recover: RotateCcw, online: Wifi, activity: Activity })[kind] || Activity;
+        return (
+          <li key={item.id} className={`is-${variant === 'devices' ? kind : String(item.state || 'neutral').toLowerCase()}`}>
+            {variant === 'devices' && item.date && item.date !== history[index - 1]?.date
+              ? <span className="lite-device-event-date">{item.date}</span> : null}
+            <span className="lite-ux-history-marker" aria-hidden="true">
+              {variant === 'devices' ? <Marker size={15} /> : null}
+            </span>
+            <div>
+              <strong>{item.title}</strong>
+              {item.summary ? <p>{item.summary}</p> : null}
+              {item.time ? <time>{item.time}</time> : null}
+            </div>
+          </li>
+        );
+      })}
     </ol>
   );
 }
