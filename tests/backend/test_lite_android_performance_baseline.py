@@ -20,6 +20,7 @@ def test_android_baseline_runner_repeats_existing_physical_matrix():
     assert 'qualifier_attempts=3' in runner
     assert 'retrying the complete qualifier' in runner
     assert 'expected_interaction_reports' in runner
+    assert 'LITE_ANDROID_KEEP_CANDIDATE_PAGE=1' in runner
 
 
 def test_android_baseline_control_is_exact_sha_candidate_surface():
