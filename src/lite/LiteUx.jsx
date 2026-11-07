@@ -1,5 +1,6 @@
 import React from 'react';
-import { CheckCircle2, CircleAlert, Clock3, Info, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, ChevronDown, CircleAlert, Clock3, Info, ShieldCheck } from 'lucide-react';
+import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { LiteButton, StateSurface } from './LiteUi.jsx';
 import {
   actionOutcomePresentation,
@@ -58,7 +59,7 @@ export function LiteTechnicalFacts({ title = 'Technical details', description = 
   if (!rows.length) return null;
   return (
     <details className={`lite-ux-technical-facts ${className}`.trim()}>
-      <summary>{title}</summary>
+      <summary onClick={() => triggerLiteHaptic('tap')}><span>{title}</span><ChevronDown className="lite-shared-disclosure-chevron" size={18} aria-hidden="true" /></summary>
       <div className="lite-ux-technical-facts-body">
         <p>{description}</p>
         <dl>
