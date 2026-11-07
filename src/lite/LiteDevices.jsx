@@ -350,7 +350,7 @@ function DeviceDetailsPortal({ devices, detailsButtonRefs, deviceActionHandlersR
 
   if (!activeDetailsDevice) return null;
   return (
-    <DeviceActionPortal>
+    <DeviceActionPortal onBackdropClick={closeDeviceDetails}>
       <div
         ref={detailsPanelRef}
         tabIndex={-1}
