@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 526,
+  "page_count": 528,
   "page_types": [
     "overview",
     "guide",
@@ -4844,6 +4844,52 @@
       "source_or_generator": "development/azure-horizon-recovery-center-revamp.md",
       "title": "Azure Horizon Recovery Center — source implementation and qualification handoff",
       "url": "/development/azure-horizon-recovery-center-revamp/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/devices-azure-horizon-p0-p7-hardening.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "devices",
+      "generated": false,
+      "id": "page:development/devices-azure-horizon-p0-p7-hardening",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/devices-azure-horizon-p0-p7-hardening.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/devices-azure-horizon-p0-p7-hardening.md",
+      "title": "Azure Horizon Devices · Native Manage Hardening (P0–P7)",
+      "url": "/development/devices-azure-horizon-p0-p7-hardening/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-azure-horizon-access-hardening.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:development/lite-azure-horizon-access-hardening",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-azure-horizon-access-hardening.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-azure-horizon-access-hardening.md",
+      "title": "Pocket Lab Lite — Azure Horizon Access Center UI/UX Hardening",
+      "url": "/development/lite-azure-horizon-access-hardening/"
     },
     {
       "additional_audiences": [],
@@ -18459,7 +18505,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "c85f738b288edc7a75d5dddd2ab24e808975affb2538531a3044e610721b29e8",
+  "source_fingerprint": "388a87448645ad4db76fd1c35c249189e95e3715623e3291bf568b57a47fab3c",
   "top_level": [
     "start-here",
     "use",

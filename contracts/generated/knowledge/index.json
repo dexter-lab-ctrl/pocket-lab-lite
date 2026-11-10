@@ -31062,6 +31062,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-access-azure-hardening.spec.ts",
+      "name": "tests/e2e/lite-access-azure-hardening.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-access-azure-hardening.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-access-native-performance.spec.ts",
       "name": "tests/e2e/lite-access-native-performance.spec.ts",
       "source_refs": [
@@ -31452,10 +31462,30 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-devices-manage-hardening.spec.ts",
+      "name": "tests/e2e/lite-devices-manage-hardening.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-devices-manage-hardening.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-devices-native-workspace-qualification.spec.ts",
       "name": "tests/e2e/lite-devices-native-workspace-qualification.spec.ts",
       "source_refs": [
         "tests/e2e/lite-devices-native-workspace-qualification.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-devices-theme-density-hardening.spec.ts",
+      "name": "tests/e2e/lite-devices-theme-density-hardening.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-devices-theme-density-hardening.spec.ts"
       ],
       "type": "test"
     },
@@ -35274,6 +35304,7 @@
         "test:tests/docs/threat-model-layout.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/global-setup.ts",
+        "test:tests/e2e/lite-access-azure-hardening.spec.ts",
         "test:tests/e2e/lite-access-native-performance.spec.ts",
         "test:tests/e2e/lite-access-native-visual.spec.ts",
         "test:tests/e2e/lite-access-native.spec.ts",
@@ -35313,7 +35344,9 @@
         "test:tests/e2e/lite-azure-horizon.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-device-facts.spec.ts",
+        "test:tests/e2e/lite-devices-manage-hardening.spec.ts",
         "test:tests/e2e/lite-devices-native-workspace-qualification.spec.ts",
+        "test:tests/e2e/lite-devices-theme-density-hardening.spec.ts",
         "test:tests/e2e/lite-home-command-performance.spec.ts",
         "test:tests/e2e/lite-home-command-visual.spec.ts",
         "test:tests/e2e/lite-home-command.spec.ts",
@@ -36832,6 +36865,7 @@
         "test:tests/docs/threat-model-layout.spec.ts",
         "test:tests/docs/threat-model-poster.spec.ts",
         "test:tests/e2e/global-setup.ts",
+        "test:tests/e2e/lite-access-azure-hardening.spec.ts",
         "test:tests/e2e/lite-access-native-performance.spec.ts",
         "test:tests/e2e/lite-access-native-visual.spec.ts",
         "test:tests/e2e/lite-access-native.spec.ts",
@@ -36871,7 +36905,9 @@
         "test:tests/e2e/lite-azure-horizon.spec.ts",
         "test:tests/e2e/lite-content-stress.spec.ts",
         "test:tests/e2e/lite-device-facts.spec.ts",
+        "test:tests/e2e/lite-devices-manage-hardening.spec.ts",
         "test:tests/e2e/lite-devices-native-workspace-qualification.spec.ts",
+        "test:tests/e2e/lite-devices-theme-density-hardening.spec.ts",
         "test:tests/e2e/lite-home-command-performance.spec.ts",
         "test:tests/e2e/lite-home-command-visual.spec.ts",
         "test:tests/e2e/lite-home-command.spec.ts",
@@ -53951,6 +53987,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-devices-theme-density-hardening.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-home-command-visual.spec.ts": [
         {
           "source": "reason:disabled",
@@ -69472,6 +69514,10 @@
         },
         {
           "target": "test:tests/e2e/lite-devices-native-workspace-qualification.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-devices-theme-density-hardening.spec.ts",
           "type": "verified_by"
         },
         {
@@ -93905,6 +93951,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-devices-theme-density-hardening.spec.ts"
+      ],
+      "id": "rel:87a3a1fb9f2bff41",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-devices-theme-density-hardening.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:87aa207ac56994f1",
@@ -111073,9 +111128,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "5407a38b6c8fed76c0468a04f0ace833393e61d10ae02524282c97953ac16a40",
+  "source_fingerprint": "a4127f9a98d18909227202e6d335b5bf73b29d52e7784bb45cd71961e6725f9a",
   "statistics": {
-    "entity_count": 1476,
+    "entity_count": 1479,
     "entity_type_counts": {
       "adr": 6,
       "api": 256,
@@ -111092,14 +111147,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 89,
-      "test": 328,
+      "test": 331,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 11,
       "vocabulary": 39
     },
-    "relation_count": 4116,
-    "source_count": 365
+    "relation_count": 4117,
+    "source_count": 368
   }
 }

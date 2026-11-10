@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 7ded10e0a006447587591a203eca1eb3a9e347e16765517361acc82fdb501dc2
+source_fingerprint: 5b2e05c998165ca10ae3aea1626e7dcbe2b926ed5e5a0551240809e826df6984
 schema_revision: 1
 validation_status: generated
 ---
@@ -398,6 +398,13 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `NativeConfirmation`
 - `NativePeopleDetails`
 - `NativeSheetCompactMediumExpanded`
+- `HardenedSignedOutDark`
+- `HardenedSignedOutLight`
+- `HardenedHowAccessWorks`
+- `HardenedSignedOutEducation`
+- `HardenedSessionDetails`
+- `HardenedRecoveryDetails`
+- `HardenedTechnicalChevron`
 
 ## LiteP2
 
