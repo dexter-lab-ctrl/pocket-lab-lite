@@ -42,6 +42,101 @@ html[data-lite-theme] .lite-role-card {
   border-color: var(--azure-border);
   color: var(--azure-text);
 }
+html[data-lite-theme] .lite-remote-access-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+  margin: -.2rem 0 1.1rem;
+  padding: 1rem;
+  overflow: hidden;
+}
+html[data-lite-theme] .lite-remote-access-icon,
+html[data-lite-theme] .lite-remote-access-copy,
+html[data-lite-theme] .lite-remote-access-facts,
+html[data-lite-theme] .lite-remote-access-details {
+  position: relative;
+  z-index: 1;
+}
+html[data-lite-theme] .lite-remote-access-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 1rem;
+  color: var(--azure-accent);
+  background: var(--azure-accent-subtle);
+}
+html[data-lite-theme] .lite-remote-access-ready .lite-remote-access-icon { color: var(--azure-success); }
+html[data-lite-theme] .lite-remote-access-not-ready .lite-remote-access-icon { color: var(--azure-warning); }
+html[data-lite-theme] .lite-remote-access-copy {
+  display: grid;
+  grid-column: 2;
+  gap: .16rem;
+  min-width: 0;
+}
+html[data-lite-theme] .lite-remote-access-copy span,
+html[data-lite-theme] .lite-remote-access-facts span {
+  color: var(--azure-muted);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+html[data-lite-theme] .lite-remote-access-copy strong {
+  color: var(--azure-text);
+  font-size: 1rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-remote-access-copy p {
+  margin: 0;
+  color: var(--azure-muted);
+  font-size: .9rem;
+  line-height: 1.5;
+}
+html[data-lite-theme] .lite-remote-access-facts {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .65rem;
+  width: 100%;
+}
+html[data-lite-theme] .lite-remote-access-facts > div {
+  display: grid;
+  gap: .28rem;
+  min-width: 0;
+  padding: .78rem .82rem;
+  border: 1px solid var(--azure-border);
+  border-radius: 1rem;
+}
+html[data-lite-theme] .lite-remote-access-facts strong {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  min-width: 0;
+  color: var(--azure-text);
+  font-size: .9rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-remote-access-facts strong i {
+  flex: 0 0 auto;
+  width: .48rem;
+  height: .48rem;
+  border-radius: 999px;
+  background: var(--azure-neutral);
+}
+html[data-lite-theme] .lite-remote-access-facts .is-ready strong i { background: var(--azure-success); }
+html[data-lite-theme] .lite-remote-access-facts .is-attention strong i { background: var(--azure-warning); }
+html[data-lite-theme] .lite-remote-access-facts .is-saved strong i { background: var(--azure-neutral); }
+html[data-lite-theme] .lite-remote-access-details {
+  grid-column: 1 / -1;
+  justify-self: start;
+  width: min(34rem, 100%);
+  min-width: 0;
+}
 html[data-lite-theme] .lite-device-relationship-flow {
   min-width: 0;
   max-width: 100%;
@@ -1067,8 +1162,14 @@ html[data-lite-theme] .lite-ux-history-timeline.is-devices li time { display: bl
   html[data-lite-theme] .lite-remote-access-panel .lite-remote-access-details dl > div { grid-template-columns: minmax(0,1fr); gap: .15rem; }
 }
 @media(max-width:760px) {
+  html[data-lite-theme] .lite-remote-access-panel { grid-template-columns: auto minmax(0,1fr); }
+  html[data-lite-theme] .lite-remote-access-facts { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  html[data-lite-theme] .lite-remote-access-details { width: 100%; }
   html[data-lite-theme] .lite-device-proactive-health-head { grid-template-columns:auto minmax(0,1fr); }
   html[data-lite-theme] .lite-device-proactive-health-head > small { grid-column:2; justify-self:start; }
+}
+@media(max-width:420px) {
+  html[data-lite-theme] .lite-remote-access-facts { grid-template-columns: minmax(0,1fr); }
 }
 @media(prefers-reduced-motion:reduce) {
   html[data-lite-theme] .lite-device-manage-nav-row,
