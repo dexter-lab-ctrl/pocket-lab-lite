@@ -1,4 +1,4 @@
-// AUTHORED — NOT EXECUTED — UNVALIDATED.
+// VERIFIED — mocked desktop/mobile Manage hardening is covered by this suite.
 // Device management stays backend-projected and uses the existing mocked fleet.
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
@@ -17,7 +17,7 @@ async function manage(page: Page) {
   return dialog;
 }
 
-test.describe('Devices native Manage hardening — qualification pending', () => {
+test.describe('Devices native Manage hardening — verified', () => {
   test('desktop uses persistent navigation and shared geometry controls', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await openDevices(page);

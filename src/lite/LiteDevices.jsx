@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   CircleAlert,
   Copy,
+  ChevronDown,
   Database,
   Download,
   EyeOff,
@@ -1029,7 +1030,7 @@ export default function DevicesScreen() {
         </div>}
       />
 
-      <section className="lite-device-library-status" aria-label="Environment status">
+      <section className="lite-devices-library-status" aria-label="Environment status">
         <LiteOperationalStory className="lite-devices-operational-story" story={fleetStory} />
         <LiteFreshness saved={savedStateOnly} stale={isExpired} refreshing={refreshing}
           lastUpdatedLabel={lastUpdatedLabel} backendReachable={backendReachable} />

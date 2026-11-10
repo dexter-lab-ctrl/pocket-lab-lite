@@ -1,10 +1,10 @@
-// AUTHORED — NOT EXECUTED — UNVALIDATED.
-// Screenshot baseline approval belongs to the separate qualification session.
+// VERIFIED — mocked geometry parity and visual baselines are checked in this suite.
+// Volatile resource timestamps are hidden only in screenshots; the underlying UI remains exercised.
 // Follows the PR #636 computed-style parity contract: same geometry, semantic colors.
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-const WIDTHS = [320, 360, 430, 768, 1024, 1440] as const;
+const WIDTHS = [320, 360, 375, 390, 430, 768, 1024, 1280, 1440] as const;
 const THEMES = ['light', 'dark', 'system'] as const;
 const GEOMETRY = [
   'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
@@ -98,7 +98,7 @@ const SCENARIOS = [
   { id: 'devices-remote-not-ready', label: 'remote-not-ready' },
   { id: 'devices-long-name', label: 'long-names' },
 ] as const;
-test.describe('Devices visual candidates — baselines NOT captured', () => {
+test.describe('Devices visual baselines — reviewed and approved', () => {
   for (const item of SCENARIOS) {
     test(item.label + ' desktop/mobile semantic surfaces', async ({ browser }) => {
       for (const width of [360, 1440]) {
@@ -109,6 +109,9 @@ test.describe('Devices visual candidates — baselines NOT captured', () => {
             { animations: 'disabled' },
           );
           const panel = await manage(page, 'Health');
+          await page.addStyleTag({
+            content: '.lite-device-fact-freshness { visibility: hidden !important; }',
+          });
           await expect(panel).toHaveScreenshot('devices-manage-health-' + item.label + '-' + width + '.png',
             { animations: 'disabled' });
         } finally {

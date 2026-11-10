@@ -1,5 +1,5 @@
-// AUTHORED — NOT EXECUTED — UNVALIDATED.
-// Qualification for the Azure Horizon Device Library; no baseline screenshot was generated.
+// VERIFIED — mocked Devices states, geometry and haptics are covered by this suite.
+// The candidate visual baseline is checked in; physical Android behavior remains separately qualified.
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';

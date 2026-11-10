@@ -602,11 +602,14 @@ html[data-lite-theme] .lite-device-relationship-peer:is(.is-disconnected,.is-sto
 /* Native Device Library P0–P6: shared geometry for Daylight, Dark and System.
  * This is the Devices-owned composition layer. Colors reference only the
  * existing Azure Horizon semantic tokens; themes never redefine spacing. */
-html[data-lite-theme] .lite-device-library-status {
+html[data-lite-theme] .lite-devices-library-status {
   display:grid;gap:.35rem;min-width:0;margin-block:.3rem 1rem;
 }
-html[data-lite-theme] .lite-device-library-status .lite-devices-operational-story {
+html[data-lite-theme] .lite-devices-library-status .lite-devices-operational-story {
   min-width:0;margin:0;
+}
+html[data-lite-theme] .lite-devices-library-status .lite-operational-story-copy > span {
+  display:block;
 }
 html[data-lite-theme] .lite-devices-horizon-summary {
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
@@ -921,6 +924,17 @@ html[data-lite-theme] .lite-device-relationship-node[role="button"]:focus-visibl
 
 /* Devices scope keeps geometry identical in Light/Dark/System; only tokens vary. */
 html[data-lite-theme] .lite-screen-stage-devices { min-width: 0; }
+html[data-lite-theme] .lite-devices-layout {
+  display: grid;
+  align-items: start;
+  gap: 1rem;
+}
+html[data-lite-theme] .lite-devices-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+html[data-lite-theme] .lite-devices-topology-workspace { min-height: auto; }
 html[data-lite-theme] .lite-screen-stage-devices :is(.lite-device-card,.lite-devices-topology-workspace,.lite-devices-add-disclosure) {
   max-width: 100%; min-width: 0;
 }
@@ -931,6 +945,17 @@ html[data-lite-theme] .lite-device-details-panel :is(.lite-device-proactive-heal
 html[data-lite-theme] .lite-device-details-panel :is(.lite-device-proactive-health-head,.lite-device-health-posture-grid article,.lite-device-health-resource) {
   background: var(--azure-raised); border-color: var(--azure-border); color: var(--azure-text);
   min-width: 0;
+}
+html[data-lite-theme] .lite-device-proactive-health-head {
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:.75rem;
+}
+html[data-lite-theme] .lite-device-proactive-health-head > div {
+  display:grid;
+  min-width:0;
+  gap:.1rem;
 }
 html[data-lite-theme] .lite-device-details-panel :is(.lite-device-health-resource,.lite-device-health-posture-grid article) :is(strong,b,h3,h4,dd) {
   color: var(--azure-text); overflow-wrap: anywhere;
@@ -944,6 +969,24 @@ html[data-lite-theme] .lite-device-details-panel.is-ready .lite-device-details-h
 html[data-lite-theme] .lite-device-details-panel.is-review .lite-device-details-head-facts strong { border-inline-start: 3px solid var(--azure-warning); padding-inline-start: .55rem; }
 html[data-lite-theme] .lite-device-health-posture-grid,
 html[data-lite-theme] .lite-device-health-resource-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--device-manage-gap,.75rem); }
+html[data-lite-theme] .lite-device-health-posture-grid article,
+html[data-lite-theme] .lite-device-health-recommendation,
+html[data-lite-theme] .lite-device-health-attention-list,
+html[data-lite-theme] .lite-device-health-history-control,
+html[data-lite-theme] .lite-device-health-history {
+  display:grid;
+  gap:.45rem;
+}
+html[data-lite-theme] .lite-device-health-attention-list article {
+  display:grid;
+  gap:.35rem;
+}
+html[data-lite-theme] .lite-device-health-attention-list article > div {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:.75rem;
+}
 html[data-lite-theme] .lite-device-proactive-health :is(.lite-device-health-recommendation,.lite-device-health-attention-list,.lite-device-health-posture-grid article) {
   min-width: 0; overflow-wrap: anywhere;
 }
@@ -1008,6 +1051,12 @@ html[data-lite-theme] .lite-ux-history-timeline.is-devices li time { display: bl
   html[data-lite-theme] .lite-device-health-posture-grid,
   html[data-lite-theme] .lite-device-health-resource-grid { grid-template-columns: minmax(0,1fr); }
 }
+@media(max-width:980px) {
+  html[data-lite-theme] .lite-devices-layout { grid-template-columns: 1fr; }
+}
+@media(max-width:760px) {
+  html[data-lite-theme] .lite-devices-grid { grid-template-columns: 1fr; }
+}
 @media(max-width:700px) {
   html[data-lite-theme] .lite-device-details-focus-anchor,
   html[data-lite-theme] .lite-device-details-focus-anchor .lite-device-details-panel { border-radius: 1.25rem 1.25rem 0 0; }
@@ -1016,6 +1065,10 @@ html[data-lite-theme] .lite-ux-history-timeline.is-devices li time { display: bl
   html[data-lite-theme] .lite-device-awareness-section dl > div,
   html[data-lite-theme] .lite-device-capability-list li { flex-wrap: wrap; }
   html[data-lite-theme] .lite-remote-access-panel .lite-remote-access-details dl > div { grid-template-columns: minmax(0,1fr); gap: .15rem; }
+}
+@media(max-width:760px) {
+  html[data-lite-theme] .lite-device-proactive-health-head { grid-template-columns:auto minmax(0,1fr); }
+  html[data-lite-theme] .lite-device-proactive-health-head > small { grid-column:2; justify-self:start; }
 }
 @media(prefers-reduced-motion:reduce) {
   html[data-lite-theme] .lite-device-manage-nav-row,
