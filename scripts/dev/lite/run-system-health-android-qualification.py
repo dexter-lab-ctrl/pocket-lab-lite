@@ -236,10 +236,17 @@ def parse_json_log_record(text: str, *, label: str) -> tuple[dict[str, Any], int
     raise QualificationError(f"{label} emitted no JSON record (nonempty_lines={len(lines)})")
 
 
+def response_detail(response: HttpResult) -> dict[str, Any]:
+    """Normalize direct and HTTPException-wrapped JSON error bodies."""
+    body = response.body if isinstance(response.body, dict) else {}
+    detail = body.get("detail")
+    return detail if isinstance(detail, dict) else body
+
+
 def response_contract(response: HttpResult) -> dict[str, Any]:
     """Expose only bounded status/detail fields needed to diagnose a contract."""
     body = response.body if isinstance(response.body, dict) else {}
-    detail = body.get("detail") if isinstance(body.get("detail"), dict) else {}
+    detail = response_detail(response)
     return {
         "status": response.status,
         "body_keys": sorted(str(key) for key in body)[:32],
@@ -959,8 +966,8 @@ time.sleep(3)
         }
         if preflight.status != 200 or repair.status != 409 or replay.status != 409 or stale_repair.status != 409 or unauthorized.status != 401:
             raise QualificationError("System Health repair denial/authentication contract failed")
-        body = repair.body.get("detail") if isinstance(repair.body.get("detail"), dict) else {}
-        stale_body = stale_repair.body.get("detail") if isinstance(stale_repair.body.get("detail"), dict) else {}
+        body = response_detail(repair)
+        stale_body = response_detail(stale_repair)
         if body.get("status") != "blocked" or body.get("recorded") is not True or stale_body.get("reason_code") != "incident_generation_changed":
             raise QualificationError("System Health repair denial was not fail-closed")
         self.results["system_health_api"] = {

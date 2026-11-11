@@ -121,6 +121,12 @@ def test_response_contract_is_bounded_to_denial_fields():
     assert contract["reason_code"] == "system_health_executor_not_qualified"
     assert contract["recorded"] is True
     assert "unexpected" in contract["detail_keys"]
+    direct = module.response_contract(module.HttpResult(409, {
+        "status": "blocked",
+        "reason_code": "incident_generation_changed",
+    }))
+    assert direct["detail_status"] == "blocked"
+    assert direct["reason_code"] == "incident_generation_changed"
 
 
 def test_schema42_forward_migrations_repeat_and_rollback_copy(tmp_path):
