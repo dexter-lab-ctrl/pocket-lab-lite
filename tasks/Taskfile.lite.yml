@@ -401,6 +401,63 @@ tasks:
         --target-main-sha "{{.TARGET_MAIN_SHA}}"
         --target-schema "{{.TARGET_SCHEMA}}"
 
+  lite:backend:promotion:prepare:
+    desc: Prepare an immutable exact-SHA Android/Termux backend-runtime artifact; does not deploy or activate it
+    requires:
+      vars: [SOURCE_SHA, OUTPUT_DIR]
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py prepare
+        --source-sha "{{.SOURCE_SHA}}"
+        --output-dir "{{.OUTPUT_DIR}}"
+
+  lite:backend:promotion:verify:
+    desc: Verify backend-runtime artifact checksums, inventory, safe paths and migration contract
+    requires:
+      vars: [ARTIFACT, MANIFEST, CHECKSUMS]
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py verify
+        --artifact "{{.ARTIFACT}}"
+        --manifest "{{.MANIFEST}}"
+        --checksums "{{.CHECKSUMS}}"
+
+  lite:backend:promotion:qualify:isolate:
+    desc: Exercise backend promotion backup, restore, migration, auth and rollback in disposable state
+    requires:
+      vars: [ARTIFACT, MANIFEST, CHECKSUMS, WORKSPACE]
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py qualify-isolated
+        --artifact "{{.ARTIFACT}}"
+        --manifest "{{.MANIFEST}}"
+        --checksums "{{.CHECKSUMS}}"
+        --workspace "{{.WORKSPACE}}"
+
+  lite:backend:promotion:preflight:
+    desc: Run fail-closed read-only production admission for a verified backend-runtime artifact
+    requires:
+      vars: [DATABASE, CURRENT_SHA, CANDIDATE_SHA, ARTIFACT_SHA256, DEVICE_ID, EXPECTED_DEVICE_ID, STAGING_ROOT, MANIFEST, OUTPUT]
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py preflight
+        --database "{{.DATABASE}}"
+        --current-sha "{{.CURRENT_SHA}}"
+        --candidate-sha "{{.CANDIDATE_SHA}}"
+        --artifact-sha256 "{{.ARTIFACT_SHA256}}"
+        --target-device-id "{{.DEVICE_ID}}"
+        --expected-device-id "{{.EXPECTED_DEVICE_ID}}"
+        --staging-root "{{.STAGING_ROOT}}"
+        --manifest "{{.MANIFEST}}"
+        --output "{{.OUTPUT}}"
+
+  lite:backend:promotion:reconcile:
+    desc: Reconcile incomplete backend promotion journals without repeating destructive operations
+    requires:
+      vars: [STATE_ROOT]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py reconcile --state-root "{{.STATE_ROOT}}"'
+
   lite:ui:perf:qualified:
     desc: Run renewable synthetic qualification-owner UI performance with bounded between-interaction session/bridge rotation
     requires:
