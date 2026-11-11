@@ -1,6 +1,6 @@
 # System Health contracts — source-authored; qualified with explicit runtime boundaries
 
-**Qualification provenance:** Gate B continuation started at feature SHA `1ce603d5524824e11b6b47da415569452f2bc93c` and final candidate SHA is `e3c9777d4e2c87da12c8197c24d8f2e4ab2766a6`; base SHA `cfd4194fd338aeae07580fa7f227d118bebdd907`. The exact candidate backend, isolated schema-42→44 migration, security harness, real route contracts and narrow Android Chrome-to-candidate UI path passed on a run-owned ARM64/Termux phone runtime. Production `main` was intentionally left unchanged and remains a separate runtime identity; candidate qualification does not authorize production activation.
+**Qualification provenance:** Gate B continuation started at feature SHA `1ce603d5524824e11b6b47da415569452f2bc93c` and final candidate SHA is `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; base SHA `cfd4194fd338aeae07580fa7f227d118bebdd907`. The exact candidate backend, isolated schema-42→44 migration, security harness, real route contracts and narrow Android Chrome-to-candidate UI path passed on a run-owned ARM64/Termux phone runtime. Production `main` was intentionally left unchanged and remains a separate runtime identity; candidate qualification does not authorize production activation.
 
 ## Incident and freshness
 

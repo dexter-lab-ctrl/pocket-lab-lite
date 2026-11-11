@@ -1,6 +1,6 @@
 # System Health P6 qualification handoff — executed with bounded evidence
 
-This handoff records the approved qualification session for PR #649. The Gate B continuation started at feature SHA `1ce603d5524824e11b6b47da415569452f2bc93c` and finished at `e3c9777d4e2c87da12c8197c24d8f2e4ab2766a6`; base SHA: `cfd4194fd338aeae07580fa7f227d118bebdd907`. The exact candidate was staged in a run-owned, isolated Android/Termux runtime on the physical Server Phone. Production `main`, PM2, Caddy, NATS and SQLite were not activated or modified. No source edits, commits or pushes were performed on the phone.
+This handoff records the approved qualification session for PR #649. The Gate B continuation started at feature SHA `1ce603d5524824e11b6b47da415569452f2bc93c` and finished at `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; base SHA: `cfd4194fd338aeae07580fa7f227d118bebdd907`. The exact candidate was staged in a run-owned, isolated Android/Termux runtime on the physical Server Phone. Production `main`, PM2, Caddy, NATS and SQLite were not activated or modified. No source edits, commits or pushes were performed on the phone.
 
 ## 1. Baseline/read-only review
 
@@ -9,7 +9,7 @@ This handoff records the approved qualification session for PR #649. The Gate B 
     git diff origin/main...HEAD --stat
     git diff --check
 
-Recorded exact base/head, local/remote parity, clean branch transitions and candidate manifest identity. The final local and remote feature SHA was `e3c9777d4e2c87da12c8197c24d8f2e4ab2766a6`; no production rollout was performed.
+Recorded exact base/head, local/remote parity, clean branch transitions and candidate manifest identity. The final local and remote qualifying feature SHA was `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; no production rollout was performed.
 
 ## 2. Backend
 
@@ -17,7 +17,7 @@ Recorded exact base/head, local/remote parity, clean branch transitions and cand
     PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest -q tests/backend/test_lite_system_health.py
     PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest -q tests/backend/test_lite_api.py
 
-Result: py_compile passed; the new Android qualifier tests passed (8), the combined qualifier/System Health regression run passed (15), the full backend stage passed (416 with 1 warning), and the Lite backend gate passed (171, with 165 unrelated tests deselected). Additional migration, SQLite, authorization, security, identity, harness and tooling suites passed in the recorded DEV-PC run. The isolated route probe verified migration count 44, authenticated reads, diagnosis persistence, CSRF/session expiry, generation fencing, idempotent blocked repair and sanitized evidence. The final sanitized phone-candidate report is `.pocketlab-dev/validation/pr649-system-health-android-ui-e3c9777d4e2c/pr649-system-health-android-ui-final-e3c9777d4e2c.json`.
+Result: py_compile passed; the new Android qualifier tests passed (8), the combined qualifier/System Health regression run passed (15), the full backend stage passed (416 with 1 warning), and the Lite backend gate passed (171, with 165 unrelated tests deselected). Additional migration, SQLite, authorization, security, identity, harness and tooling suites passed in the recorded DEV-PC run. The isolated route probe verified migration count 44, authenticated reads, diagnosis persistence, CSRF/session expiry, generation fencing, idempotent blocked repair and sanitized evidence. The final sanitized phone-candidate report is `.pocketlab-dev/validation/pr649-system-health-android-ui-8c21a4ff729f/pr649-system-health-android-ui-final-8c21a4ff729f.json`.
 
 ## 3. Frontend/mocked
 
@@ -32,7 +32,7 @@ Result: 6 focused unit tests, 10 System Health Playwright tests, full unit 625 t
 
 The exact feature candidate was copied as a read-only, checksum-bound snapshot to a run-owned phone directory. The Server Phone reported `aarch64` and Python `3.14.6`; the candidate used loopback-only FastAPI and worker processes, a disposable loopback NATS/JetStream broker, and an isolated SQLite database. Production PM2, Caddy, NATS and the production database were not used.
 
-The migration proof passed from schema 42 to schema 44: migrations `[43, 44]` applied once, repeat application was empty/idempotent, quick-check/integrity-check/foreign-key checks passed, required System Health tables and indexes were present, marker data and diagnosis/audit/projection rows persisted, concurrent read/write errors were empty, and the isolated rollback proof restored/opened a schema-42 snapshot with the base runtime. The candidate database remained WAL-backed; the bounded post-UI-read WAL observation was `4,124,152` bytes. The production database was never touched.
+The migration proof passed from schema 42 to schema 44: migrations `[43, 44]` applied once, repeat application was empty/idempotent, quick-check/integrity-check/foreign-key checks passed, required System Health tables and indexes were present, marker data and diagnosis/audit/projection rows persisted, concurrent read/write errors were empty, and the isolated rollback proof restored/opened a schema-42 snapshot with the base runtime. The candidate database remained WAL-backed; the bounded post-UI-read WAL observation was `4,293,072` bytes. The production database was never touched.
 
 The real candidate API returned the repository-defined route results: anonymous summary `401`; authenticated summary, incidents, detail, history, dependencies, resources, intelligence, configuration, policies, repairs, app diagnostics, diagnosis and preflight `200`; blocked repair `409` with `system_health_executor_not_qualified`; stale generation denial `409` with `incident_generation_changed`; unauthorized diagnosis `401`; idempotent replay remained blocked and recorded; raw evidence was not exposed. The projection driver verified duplicate suppression. The API lane used the `security-assurance-runner` profile with local-server target scope; the Android UI lane used a separate short-lived target-bound `qualification-owner` browser bridge. Destructive mode and test-auth bypass were disabled, and revocation returned `200`.
 
@@ -49,13 +49,13 @@ Result: Caddy, FastAPI readiness/status, NATS monitor/JetStream, PM2 core servic
 
 The final Windows standard-user preflight and browser run completed without UAC elevation. Android Chrome `157.0.8103.50`, CDP Protocol `1.3`, package `com.android.chrome`, loopback websocket and explicit ADB device selection were verified. The existing CDP relay was reused through the repository-owned bounded standard-user bridge; no elevation, firewall change, protected-service manipulation or Chrome restart was used.
 
-The final narrow Android UI qualifier is exact-SHA candidate evidence: the manifest and API response headers matched `e3c9777d4e2c87da12c8197c24d8f2e4ab2766a6`; summary, incidents and diagnosis responses were consumed through the candidate same-origin proxy. The active incident rendered, Manage opened, diagnosis returned `200`, Fix remained disabled, no repair/preflight write occurred and navigation returned Home. A first retry timed out waiting for the fixture incident; a fresh session rerun passed and cleanup completed. Earlier MSW-based UI evidence remains separately labelled as fixture evidence.
+The final narrow Android UI qualifier is exact-SHA candidate evidence: the manifest and API response headers matched `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; summary, incidents and diagnosis responses were consumed through the candidate same-origin proxy. The active incident rendered, Manage opened, diagnosis returned `200`, Fix remained disabled, no repair/preflight write occurred and navigation returned Home. One bounded session timed out before the projection incident was visible; a fresh session rerun passed and cleanup completed. Earlier MSW-based UI evidence remains separately labelled as fixture evidence.
 
 The previously completed Home-only performance candidate ran 18 reports with three 18-report baseline repetitions. Absolute targets remained red; final normalized attribution was `MIXED=18`, `APP_INCREMENTAL_COST=0`. The broad seven-screen workflow was not run. No unrelated optimization was made.
 
 ## 7. Bounded low-power candidate observation
 
-Candidate-only System Health latency samples were `139.12`, `125.95`, `194.26`, `187.17` and `234.95 ms` (mean `176.29 ms`, max `234.95 ms`). Candidate API and worker processes were owned and sleeping during observation; available memory was approximately `2.14 GB`, free phone storage approximately `92.8 GB`, and 85 thermal zones were observed with raw thermal values sanitized. These are isolated-candidate measurements, not production regression or improvement claims. No production stress or fault injection was performed.
+Candidate-only System Health latency samples were `124.67`, `226.88`, `229.61`, `293.75` and `303.32 ms` (mean `235.65 ms`, max `303.32 ms`). Candidate API and worker processes were owned and sleeping during observation; available memory was approximately `1.99 GB`, free phone storage approximately `92.7 GB`, and 85 thermal zones were observed with raw thermal values sanitized. These are isolated-candidate measurements, not production regression or improvement claims. No production stress or fault injection was performed.
 
 ## 8. Deferred isolated fault scenarios
 
