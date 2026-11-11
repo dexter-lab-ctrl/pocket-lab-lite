@@ -434,6 +434,20 @@ tasks:
         --checksums "{{.CHECKSUMS}}"
         --workspace "{{.WORKSPACE}}"
 
+  lite:backend:promotion:qualify:android:
+    desc: Transfer an exact-SHA backend artifact to an inactive Android/Termux cache, qualify it in disposable state, and collect read-only admission evidence
+    requires:
+      vars: [SOURCE_SHA]
+    vars:
+      DEVICE_ID: '{{default "pocket-lab-lite-server" .DEVICE_ID}}'
+      SSH_ALIAS: '{{default "pocketlab-termux" .SSH_ALIAS}}'
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/run-backend-runtime-promotion-android-qualification.py
+        --candidate-sha "{{.SOURCE_SHA}}"
+        --device-id "{{.DEVICE_ID}}"
+        --ssh-alias "{{.SSH_ALIAS}}"
+
   lite:backend:promotion:preflight:
     desc: Run fail-closed read-only production admission for a verified backend-runtime artifact
     requires:

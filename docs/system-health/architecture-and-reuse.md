@@ -1,8 +1,8 @@
 # Pocket Lab Lite — System Health implementation and source reuse
 
-**State:** IMPLEMENTED — DEV-PC AND ISOLATED PHYSICAL ANDROID/TERMUX BACKEND QUALIFIED WITH BOUNDARIES. **Qualification:** PASS for the exact-SHA isolated candidate/API, mocked UI and Android Chrome-to-candidate UI; production backend activation remains intentionally unperformed on `main`.
+**State:** IMPLEMENTED — DEV-PC AND ISOLATED PHYSICAL ANDROID/TERMUX BACKEND-PROMOTION WORKFLOW QUALIFIED WITH BOUNDARIES. **Qualification:** PASS for exact-SHA artifact verification, isolated promotion, schema-42→44 backup/restore/migration rehearsal and the inactive phone-side candidate; production backend activation remains intentionally unperformed on `main` because the live admission gate requires the missing external guardian.
 
-**Provenance:** dexter-lab-ctrl/pocket-lab-lite; main base SHA `cfd4194fd338aeae07580fa7f227d118bebdd907`; Gate B continuation starting feature SHA `1ce603d5524824e11b6b47da415569452f2bc93c`; final qualifying feature SHA `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; feature `feat/azure-horizon-system-health-intelligence`. The repository is authoritative; historical PRs are context, not proof of runtime readiness.
+**Provenance:** dexter-lab-ctrl/pocket-lab-lite; main base SHA `cfd4194fd338aeae07580fa7f227d118bebdd907`; prior System Health UI candidate SHA `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; backend-promotion candidate SHA `0b767dc662c8f7c37accb4bc5fbad71a5f31564f`; feature `feat/azure-horizon-system-health-intelligence`. The repository is authoritative; historical PRs are context, not proof of runtime readiness. Documentation synchronization may produce a later feature SHA without changing the qualified backend candidate.
 
 ## Architecture and ownership
 
@@ -59,6 +59,18 @@ POST paths: /incidents/{id}/diagnose (persist diagnosis), /incidents/{id}/prefli
 - Home-only performance: 18 candidate reports and 3×18 baseline-normalized reports. Absolute production gates remained red; final normalized attribution was `MIXED=18`, `APP_INCREMENTAL_COST=0`, with no actionable PR-specific regression established. The seven-screen workflow was not run.
 - Server Phone production runtime: clean `main` at base SHA `cfd4194…`; all 10 observed PM2 services were online and bounded health observation remained non-disruptive. Its installed backend remains separately identified because production activation was not performed. Candidate processes and temporary qualification material were removed; the production database was not touched.
 
+## Backend promotion and activation contract
+
+The repository-owned `scripts/dev/lite/backend_runtime_promotion.py` is the bootstrap-side promotion controller for the backend runtime. It is separate from the PWA `dist.zip` release flow and does not replace the existing release controller. `scripts/dev/lite/run-backend-runtime-promotion-android-qualification.py` performs the bounded physical qualifier; it stages only an exact-SHA artifact and controller in a unique inactive phone cache directory, uses disposable SQLite state for lifecycle tests, records a read-only live admission snapshot and removes its temporary directory.
+
+The artifact is schema `pocketlab.backend-runtime-artifact/v1`: exact Git SHA, deterministic 284-file inventory, SHA256 checksums, Android/Termux aarch64 + PRoot Ubuntu target, required service ownership, complete migration checksums through schema 44, forbidden-path/secret/symlink checks and no environment or credential material. Admission binds candidate SHA, artifact digest, current production SHA, protected database device identity, schema, storage/memory/battery/thermal, SQLite integrity, Caddy/FastAPI readiness, all required PM2 services, worker-owned runtime-contract heartbeat and the external guardian.
+
+Backup assurance uses SQLite online backup with WAL included, receipt hashes and an independent restore target. The actual production snapshot remained schema 42, integrity/quick-check passed and the isolated rehearsal applied migrations 0043 and 0044 exactly once to schema 44 with data, foreign-key and checksum validation. The old `main` runtime does not know migrations 0043/0044, so code-only rollback is not admitted. The controller uses consistent code-and-database restore, disables automatic rollback after newer writes, records a durable journal and fails closed with `manual_recovery_required` when a write boundary is uncertain.
+
+Promotion authorization and recovery authorization are separate Ed25519, short-lived, single-use contracts. They bind exact candidate/current revisions, target identity, artifact and receipt digests, preflight evidence, checkpoint and audit identity. A durable lock, atomic pointer/database transition, controlled writer quiescence, consecutive health observations and restart reconciliation protect the cutover. No final production authorization was issued or consumed.
+
+**Physical result at `0b767dc6`:** artifact verification PASS; isolated candidate promotion PASS; schema 42→44 migration PASS; phone checkout before/after `main` + clean at `cfd4194…`; temporary candidate removed; production preflight `BLOCKED` only by `external_guardian=false`. Worker heartbeat is `PASS` from the existing sanitized `/api/lite/runtime` runtime contract (`state=stable`, `stable=true`, `pocket-worker` stable). Other admission checks—device identity, schema 42/integrity, Caddy/FastAPI readiness, required PM2 services, storage, memory, battery and thermal—passed. This is candidate qualification plus admission evidence, not production activation.
+
 ## Source reuse matrix — verified repository paths
 
 | Reference PR | Existing path and component/service | Where reused, adaptation and reason for new code |
@@ -94,7 +106,7 @@ No new background polling thread, heavyweight ML library, continuous process sam
 - Add actual historic metric trends/hysteresis before presenting a forecast.
 - Map an Apps/Devices contextual entry directly to a canonical incident ID when available.
 - Keep the repository-owned standard-user candidate proxy/CDP bridge as the narrow Android qualification path; no browser fixture or production route is substituted for candidate identity.
-- Establish a reviewed production backend artifact, independently verified migration backup/restore and atomic activation/abort workflow before any promotion.
+- Start and verify the existing external Termux runtime guardian through its supported boot/recovery ownership path, then repeat the read-only admission and obtain a separate explicit production-promotion authorization. Do not bypass the guardian check or treat PM2 online as a substitute.
 - Qualify remaining deferred fault scenarios and independently measure hardware haptics.
 
-**Final state: SOURCE IMPLEMENTATION PROVIDED — EXACT-SHA ARM64/TERMUX CANDIDATE BACKEND, ISOLATED MIGRATIONS, MOCKED UI AND ANDROID CHROME-TO-CANDIDATE UI QUALIFIED — PRODUCTION ACTIVATION DEFERRED/BLOCKED BY PROMOTION AND ROLLBACK SAFETY — DRAFT PR REQUIRED.**
+**Final state: SOURCE IMPLEMENTATION AND GUARDED PROMOTION WORKFLOW PROVIDED — EXACT-SHA ARM64/TERMUX CANDIDATE, ISOLATED MIGRATIONS, MOCKED UI AND ANDROID CHROME-TO-CANDIDATE UI QUALIFIED — PRODUCTION ACTIVATION NOT PERFORMED; LIVE ADMISSION BLOCKED BY THE MISSING EXTERNAL GUARDIAN — DRAFT PR REQUIRED.**
