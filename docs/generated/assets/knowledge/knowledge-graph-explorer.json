@@ -13241,6 +13241,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_backend_runtime_promotion.py",
+      "name": "tests/backend/test_lite_backend_runtime_promotion.py",
+      "source_refs": [
+        "tests/backend/test_lite_backend_runtime_promotion.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_backup_locations.py",
       "name": "tests/backend/test_lite_backup_locations.py",
       "source_refs": [

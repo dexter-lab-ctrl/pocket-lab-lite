@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 1870175a68c3624378abf9f8e4a9ead4526a85a8cbaf13460ff90d7f36f45ed0
+source_fingerprint: 85aa453f62ac831a1c79c1573308c76f09cd08327c5b0b0bab7029c39452a342
 schema_revision: 1
 validation_status: generated
 ---
@@ -28,6 +28,12 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:api:read-latency`
 - `lite:api:schemathesis`
 - `lite:api:schemathesis:discovery`
+- `lite:backend:promotion:preflight`
+- `lite:backend:promotion:prepare`
+- `lite:backend:promotion:qualify:android`
+- `lite:backend:promotion:qualify:isolate`
+- `lite:backend:promotion:reconcile`
+- `lite:backend:promotion:verify`
 - `lite:bootstrap:check`
 - `lite:browser:detect`
 - `lite:check`

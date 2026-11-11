@@ -12117,7 +12117,7 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/reconcile-runtime.sh",
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_reconciler.py",
-        "tests/backend/test_lite_runtime_reconciler.py"
+        "scripts/dev/lite/backend_runtime_promotion.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

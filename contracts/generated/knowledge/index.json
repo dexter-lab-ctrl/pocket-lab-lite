@@ -29762,6 +29762,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_backend_runtime_promotion.py",
+      "name": "tests/backend/test_lite_backend_runtime_promotion.py",
+      "source_refs": [
+        "tests/backend/test_lite_backend_runtime_promotion.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_backup_locations.py",
       "name": "tests/backend/test_lite_backup_locations.py",
       "source_refs": [
@@ -35880,6 +35890,7 @@
         "test:tests/backend/test_lite_app_projection_deadline.py",
         "test:tests/backend/test_lite_app_registry.py",
         "test:tests/backend/test_lite_app_runtime_reconciliation.py",
+        "test:tests/backend/test_lite_backend_runtime_promotion.py",
         "test:tests/backend/test_lite_backup_locations.py",
         "test:tests/backend/test_lite_boot_recovery.py",
         "test:tests/backend/test_lite_command_attention_audit_idempotency.py",
@@ -37467,6 +37478,7 @@
         "test:tests/backend/test_lite_app_projection_deadline.py",
         "test:tests/backend/test_lite_app_registry.py",
         "test:tests/backend/test_lite_app_runtime_reconciliation.py",
+        "test:tests/backend/test_lite_backend_runtime_promotion.py",
         "test:tests/backend/test_lite_backup_locations.py",
         "test:tests/backend/test_lite_boot_recovery.py",
         "test:tests/backend/test_lite_command_attention_audit_idempotency.py",
@@ -113228,9 +113240,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "bd2caed074d13bc0064f5d830ed651213a86aeea7fa2d9408745e9c1287f9afa",
+  "source_fingerprint": "c34dbc4f3d22e444c9c2a45b535ca4f886f43faa3233a3467298b89810faee83",
   "statistics": {
-    "entity_count": 1506,
+    "entity_count": 1507,
     "entity_type_counts": {
       "adr": 6,
       "api": 271,
@@ -113247,7 +113259,7 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 95,
-      "test": 334,
+      "test": 335,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
@@ -113255,6 +113267,6 @@
       "vocabulary": 39
     },
     "relation_count": 4188,
-    "source_count": 371
+    "source_count": 372
   }
 }

@@ -583,6 +583,43 @@ def _html_row_sort_key(row: str) -> tuple[tuple[str, ...], str, str]:
     return hrefs, visible, structural
 
 
+def canonicalize_constraints_html(path: Path) -> None:
+    """Sort SchemaSpy's foreign-key rows by their rendered relationship."""
+
+    if not path.is_file():
+        return
+
+    text = path.read_text(encoding="utf-8")
+    tbody_pattern = re.compile(r"(?P<open><tbody\b[^>]*>)(?P<body>.*?)(?P<close></tbody>)", flags=re.I | re.S)
+    tag_pattern = re.compile(r"<(?P<close>/)?tr\b[^>]*>", flags=re.I)
+
+    def normalize_body(match: re.Match[str]) -> str:
+        body = match.group("body")
+        rows: list[str] = []
+        depth = 0
+        start = None
+        for tag in tag_pattern.finditer(body):
+            if tag.group("close"):
+                depth -= 1
+                if depth == 0 and start is not None:
+                    rows.append(body[start : tag.end()])
+                    start = None
+            elif depth == 0:
+                start = tag.start()
+                depth = 1
+            else:
+                depth += 1
+
+        if len(rows) < 2:
+            return match.group(0)
+        first = body.find(rows[0])
+        last = body.rfind(rows[-1]) + len(rows[-1])
+        ordered = "\n".join(sorted(rows, key=_html_row_sort_key))
+        return match.group("open") + body[:first] + ordered + body[last:] + match.group("close")
+
+    path.write_text(tbody_pattern.sub(normalize_body, text).rstrip() + "\n", encoding="utf-8")
+
+
 
 def canonicalize_relationship_html(path: Path) -> None:
     """Canonicalize SchemaSpy relationship image maps."""
@@ -689,6 +726,7 @@ def canonicalize_schemaspy_output(path: Path) -> None:
     canonicalize_relationship_html(
         path / "relationships.html"
     )
+    canonicalize_constraints_html(path / "constraints.html")
 
     summary_directory = path / "diagrams" / "summary"
 

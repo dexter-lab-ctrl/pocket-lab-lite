@@ -14275,7 +14275,7 @@
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/reconcile-runtime.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_reconciler.py",
-          "tests/backend/test_lite_runtime_reconciler.py"
+          "scripts/dev/lite/backend_runtime_promotion.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -49229,7 +49229,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "c3b4c64a30e73e83cd5a5768f5386eaccd92cea8ee010b360a06c916ae1c66d8",
-        "documentation": "1a4dbae05eecdfa7424da7ddf5070f96415bebecf54ef994ddf22e41e1427769",
+        "documentation": "b7098a2fba5b46f56b2c0e4f7c483d08c9ca2ef26cc0e9bba2b16df647681ae9",
         "openapi": "38baff15a70648585d6011bf868a4d665931203c92b8affdd708f4d70a2f6fd8",
         "operational_health": "4fb45ba7140f4aefc45bffc4605a42cf7ff6bb07fb69d64e1a9d1c5d25005c8b"
       },
@@ -95602,6 +95602,246 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
+          "{{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py preflight --database \"{{.DATABASE}}\" --current-sha \"{{.CURRENT_SHA}}\" --candidate-sha \"{{.CANDIDATE_SHA}}\" --artifact-sha256 \"{{.ARTIFACT_SHA256}}\" --target-device-id \"{{.DEVICE_ID}}\" --expected-device-id \"{{.EXPECTED_DEVICE_ID}}\" --staging-root \"{{.STAGING_ROOT}}\" --manifest \"{{.MANIFEST}}\" --output \"{{.OUTPUT}}\""
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:backend:promotion:preflight",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/backend_runtime_promotion.py"
+        ],
+        "name": "lite:backend:promotion:preflight",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run fail-closed read-only production admission for a verified backend-runtime artifact",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Release loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py prepare --source-sha \"{{.SOURCE_SHA}}\" --output-dir \"{{.OUTPUT_DIR}}\""
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:backend:promotion:prepare",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/backend_runtime_promotion.py"
+        ],
+        "name": "lite:backend:promotion:prepare",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Prepare an immutable exact-SHA Android/Termux backend-runtime artifact; does not deploy or activate it",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Runtime-evidence loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer/operator",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/run-backend-runtime-promotion-android-qualification.py --candidate-sha \"{{.SOURCE_SHA}}\" --device-id \"{{.DEVICE_ID}}\" --ssh-alias \"{{.SSH_ALIAS}}\""
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:backend:promotion:qualify:android",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/run-backend-runtime-promotion-android-qualification.py"
+        ],
+        "name": "lite:backend:promotion:qualify:android",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Transfer an exact-SHA backend artifact to an inactive Android/Termux cache, qualify it in disposable state, and collect read-only admission evidence",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Runtime-evidence loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py qualify-isolated --artifact \"{{.ARTIFACT}}\" --manifest \"{{.MANIFEST}}\" --checksums \"{{.CHECKSUMS}}\" --workspace \"{{.WORKSPACE}}\""
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:backend:promotion:qualify:isolate",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/backend_runtime_promotion.py"
+        ],
+        "name": "lite:backend:promotion:qualify:isolate",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Exercise backend promotion backup, restore, migration, auth and rollback in disposable state",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Runtime-evidence loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py reconcile --state-root \"{{.STATE_ROOT}}\""
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:backend:promotion:reconcile",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/backend_runtime_promotion.py"
+        ],
+        "name": "lite:backend:promotion:reconcile",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Reconcile incomplete backend promotion journals without repeating destructive operations",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Runtime-evidence loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py verify --artifact \"{{.ARTIFACT}}\" --manifest \"{{.MANIFEST}}\" --checksums \"{{.CHECKSUMS}}\""
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:backend:promotion:verify",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "scripts/dev/lite/backend_runtime_promotion.py"
+        ],
+        "name": "lite:backend:promotion:verify",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Verify backend-runtime artifact checksums, inventory, safe paths and migration contract",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "gate-defined",
+        "workflow_group": "Runtime-evidence loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
           "bash scripts/dev/check-lite-bootstrap.sh"
         ],
         "dependencies": [],
@@ -124649,5 +124889,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "d61a77e3b4d8fc01e25f9aaf278bc7c5f84225fa9c23652fb6b35ac6d9fcfb70"
+  "source_fingerprint": "3aad1f325539a3a4b4784db49e05e766824fb677b7272c29f57d52a98e9db73a"
 }

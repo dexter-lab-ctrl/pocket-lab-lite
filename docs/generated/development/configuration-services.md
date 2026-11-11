@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 1870175a68c3624378abf9f8e4a9ead4526a85a8cbaf13460ff90d7f36f45ed0
+source_fingerprint: 85aa453f62ac831a1c79c1573308c76f09cd08327c5b0b0bab7029c39452a342
 schema_revision: 1
 validation_status: generated
 ---
@@ -217,6 +217,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_LIGHTHOUSE_CHROME_FLAGS`
 - `POCKETLAB_LIGHTHOUSE_CHROME_PATH`
 - `POCKETLAB_LIGHTHOUSE_WSL_CHROME_FIX`
+- `POCKETLAB_LITE`
 - `POCKETLAB_LITE_API_TOKEN`
 - `POCKETLAB_LITE_BACKUP_ROOT`
 - `POCKETLAB_LITE_DB_PATH`
@@ -272,7 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_LONG_GATE_PROGRESS_MAX_BUDGET_SECONDS`
 - `POCKETLAB_LONG_GATE_PROGRESS_P95_BUDGET_SECONDS`
 - `POCKETLAB_LONG_GATE_PROGRESS_SAMPLE_INTERVAL_MS`
-- `POCKETLAB_LONG_GATE_PROGRESS_SCAN_COUNT`
 
 ## Process roles
 
