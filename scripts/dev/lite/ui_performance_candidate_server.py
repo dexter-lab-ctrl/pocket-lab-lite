@@ -17,6 +17,7 @@ import mimetypes
 import os
 import re
 import signal
+import ssl
 import subprocess
 import sys
 import time
@@ -47,9 +48,11 @@ BRIDGE_HEADER = "X-Pocket-Lab-Qualification-Bridge"
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 MAX_BRIDGE_HEADER_BYTES = 4096
 MAX_PROXY_RESPONSE_BYTES = 32 * 1024 * 1024
+MAX_PROXY_REQUEST_BYTES = 64 * 1024
 PREPARED_RUNTIME_PROBE_ATTEMPTS = 20
 PREPARED_RUNTIME_PROBE_INTERVAL_SECONDS = 0.25
 READ_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
+DIAGNOSE_PATH_RE = re.compile(r"^/api/lite/system-health/incidents/health-[0-9a-f]{24}/diagnose$")
 HOP_BY_HOP_HEADERS = frozenset(
     {
         "connection",
@@ -87,13 +90,18 @@ def exact_source_commit(value: str | None = None) -> str:
 
 def candidate_manifest(source_commit: str) -> dict[str, Any]:
     commit = exact_source_commit(source_commit)
+    runtime_transport = (
+        "ssh_loopback_to_isolated_phone_candidate"
+        if os.environ.get("POCKETLAB_CANDIDATE_API_LOCAL_PORT")
+        else "ssh_loopback_to_server_phone_caddy"
+    )
     return {
         "schema_version": "1.0.0",
         "source_commit": commit,
         "build_timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "performance_schema_version": "1.0.0",
         "qualification_surface": "devpc_candidate_loopback",
-        "runtime_transport": "ssh_loopback_to_server_phone_caddy",
+        "runtime_transport": runtime_transport,
         "browser_secret_persisted": False,
         "sanitized": True,
     }
@@ -106,6 +114,38 @@ def is_allowed_api_path(path: str) -> bool:
         return False
     # The direct-loopback harness namespace is never a browser-facing proxy.
     return not (pathname == "/api/lite/harness" or pathname.startswith("/api/lite/harness/"))
+
+
+def is_allowed_candidate_write(path: str) -> bool:
+    """Allow only the non-destructive, persisted diagnosis action in UI runs."""
+    return bool(DIAGNOSE_PATH_RE.fullmatch(urlsplit(str(path or "")).path))
+
+
+def candidate_api_target() -> tuple[str, int, ssl.SSLContext | None]:
+    """Resolve a loopback API target, failing closed for candidate mode."""
+    raw_port = os.environ.get("POCKETLAB_CANDIDATE_API_LOCAL_PORT", "").strip()
+    if not raw_port:
+        return "http", CADDY_HTTP_LOCAL_PORT, None
+    try:
+        port = int(raw_port)
+    except ValueError as exc:
+        raise CandidateServerError("candidate_api_port_invalid") from exc
+    if not 1 <= port <= 65535:
+        raise CandidateServerError("candidate_api_port_invalid")
+    if os.environ.get("POCKETLAB_CANDIDATE_API_SCHEME", "").strip().casefold() != "https":
+        raise CandidateServerError("candidate_api_tls_required")
+    ca_file = Path(os.environ.get("POCKETLAB_CANDIDATE_API_CA_FILE", "").strip())
+    if not ca_file.is_file() or ca_file.is_symlink():
+        raise CandidateServerError("candidate_api_ca_unavailable")
+    try:
+        context = ssl.create_default_context(cafile=str(ca_file))
+    except (OSError, ssl.SSLError) as exc:
+        raise CandidateServerError("candidate_api_ca_invalid") from exc
+    return "https", port, context
+
+
+def candidate_api_mode_enabled() -> bool:
+    return bool(os.environ.get("POCKETLAB_CANDIDATE_API_LOCAL_PORT", "").strip())
 
 
 def safe_dist_file(dist_root: Path, request_path: str) -> Path | None:
@@ -199,7 +239,24 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
         self._dispatch()
 
     def do_POST(self) -> None:  # noqa: N802
-        self._send_error_json(405, "candidate_read_only")
+        if not candidate_api_mode_enabled() or not is_allowed_candidate_write(self.path):
+            self._send_error_json(405, "candidate_write_not_qualified")
+            return
+        length = self.headers.get("Content-Length", "")
+        try:
+            body_length = int(length)
+        except ValueError:
+            self._send_error_json(400, "candidate_request_length_invalid")
+            return
+        if body_length < 0 or body_length > MAX_PROXY_REQUEST_BYTES:
+            self._send_error_json(413, "candidate_request_too_large")
+            return
+        try:
+            body = self.rfile.read(body_length)
+        except OSError:
+            self._send_error_json(400, "candidate_request_body_unavailable")
+            return
+        self._proxy_api(body=body)
 
     do_PUT = do_POST
     do_PATCH = do_POST
@@ -227,7 +284,7 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
             return
         self._serve_static()
 
-    def _proxy_api(self) -> None:
+    def _proxy_api(self, *, body: bytes | None = None) -> None:
         bridge = self.headers.get(BRIDGE_HEADER, "")
         if len(bridge.encode("utf-8", "ignore")) > MAX_BRIDGE_HEADER_BYTES or "\r" in bridge or "\n" in bridge:
             self._send_error_json(400, "qualification_bridge_invalid")
@@ -240,9 +297,18 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
                 headers[name] = value[:512]
         if bridge:
             headers[BRIDGE_HEADER] = bridge
+        if body is not None:
+            headers["Content-Type"] = self.headers.get("Content-Type", "application/json")[:128]
+            headers["Content-Length"] = str(len(body))
+        connection: http.client.HTTPConnection | http.client.HTTPSConnection | None = None
         try:
-            connection = http.client.HTTPConnection("127.0.0.1", CADDY_HTTP_LOCAL_PORT, timeout=20)
-            connection.request(self.command, self.path, headers=headers)
+            scheme, port, context = candidate_api_target()
+            if scheme == "https":
+                assert context is not None
+                connection = http.client.HTTPSConnection("127.0.0.1", port, timeout=20, context=context)
+            else:
+                connection = http.client.HTTPConnection("127.0.0.1", port, timeout=20)
+            connection.request(self.command, self.path, body=body, headers=headers)
             response = connection.getresponse()
             self.send_response(response.status, response.reason)
             for name, value in response.getheaders():
@@ -272,10 +338,8 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
                 except OSError:
                     pass
         finally:
-            try:
+            if connection is not None:
                 connection.close()
-            except UnboundLocalError:
-                pass
 
     def _serve_static(self) -> None:
         file_path = safe_dist_file(self.dist_root, self.path)
@@ -307,6 +371,7 @@ def serve_candidate(dist_dir: Path, source_commit: str) -> None:
     marker = f'name="pocketlab-candidate-sha" content="{source_commit}"'
     if marker not in html:
         raise CandidateServerError("candidate_dist_sha_mismatch")
+    candidate_api_target()
 
     server = ThreadingHTTPServer((CANDIDATE_HOST, CANDIDATE_PORT), CandidateRequestHandler)
     server.dist_root = root  # type: ignore[attr-defined]
@@ -359,6 +424,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Use an already-running repository-owned loopback Caddy forward.",
     )
+    parser.add_argument(
+        "--candidate-api",
+        action="store_true",
+        help="Use the explicitly configured isolated HTTPS candidate API instead of Caddy.",
+    )
     args = parser.parse_args(argv)
 
     # The shell wrapper owns this process and may need to terminate it during
@@ -371,7 +441,13 @@ def main(argv: list[str] | None = None) -> int:
     signal.signal(signal.SIGTERM, _graceful_termination)
     try:
         commit = exact_source_commit(args.source_commit)
-        if args.prepared_runtime:
+        if args.prepared_runtime and args.candidate_api:
+            raise CandidateServerError("candidate_runtime_modes_conflict")
+        if args.candidate_api:
+            if not candidate_api_mode_enabled():
+                raise CandidateServerError("candidate_api_target_missing")
+            serve_candidate(Path(args.dist_dir), commit)
+        elif args.prepared_runtime:
             if not prepared_runtime_ready():
                 raise CandidateServerError("candidate_runtime_tunnel_unavailable")
             serve_candidate(Path(args.dist_dir), commit)

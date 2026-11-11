@@ -162,15 +162,25 @@ def validate_synthetic_identity(
     qualification_owner: str,
     destructive: str,
     test_bypass: str,
+    allow_browser_ui: bool = False,
 ) -> None:
     if not PRINCIPAL_RE.fullmatch(principal_id):
         raise QualificationError("synthetic principal identity is invalid")
-    if profile != "security-assurance-runner":
-        raise QualificationError("System Health qualifier must use the security assurance profile")
-    if qualification_owner != "0" or destructive != "0" or test_bypass != "0":
+    allowed_security = (
+        profile == "security-assurance-runner"
+        and qualification_owner == "0"
+        and destructive == "0"
+        and test_bypass == "0"
+    )
+    allowed_browser_ui = (
+        allow_browser_ui
+        and profile == "qualification-owner"
+        and qualification_owner == "1"
+        and destructive == "0"
+        and test_bypass == "0"
+    )
+    if not (allowed_security or allowed_browser_ui):
         raise QualificationError("System Health qualifier attempted to enable unsafe authority")
-
-
 def validate_rollback_backup(path: Path, run_root: Path) -> None:
     """Require an independent, run-owned SQLite rollback copy."""
     root = run_root.resolve(strict=True)
@@ -597,7 +607,17 @@ class CandidateClient:
 
 
 class SystemHealthAndroidQualification:
-    def __init__(self, *, repo: Path, candidate_sha: str, base_sha: str, python: str, nats_binary: str | None, evidence_dir: Path | None):
+    def __init__(
+        self,
+        *,
+        repo: Path,
+        candidate_sha: str,
+        base_sha: str,
+        python: str,
+        nats_binary: str | None,
+        evidence_dir: Path | None,
+        browser_ui: bool = False,
+    ):
         self.repo = repo
         self.controller = _controller()
         self.candidate_sha = validate_candidate_sha(repo, candidate_sha, self.controller)
@@ -605,6 +625,10 @@ class SystemHealthAndroidQualification:
         if not SHA_RE.fullmatch(self.base_sha):
             raise QualificationError("base SHA must be an explicit commit")
         self.python = python
+        self.browser_ui = bool(browser_ui)
+        self.bootstrap_profile = "qualification-owner" if self.browser_ui else "security-assurance-runner"
+        self.qualification_owner_flag = "1" if self.browser_ui else "0"
+        self.bootstrap_purpose = "ui-performance-60fps" if self.browser_ui else "security-assurance"
         self.nats_binary = nats_binary or shutil.which("nats-server")
         self.run_id = __import__("secrets").token_hex(12)
         if not RUN_ID_RE.fullmatch(self.run_id):
@@ -641,6 +665,7 @@ class SystemHealthAndroidQualification:
         self.context_token = self.controller.secrets_token(48)
         self.webdav_password = self.controller.secrets_token(48)
         self.session = ""
+        self.browser_bridge = ""
         self.client: CandidateClient | None = None
         self.database: Path | None = None
         self.rollback_database: Path | None = None
@@ -760,12 +785,16 @@ class SystemHealthAndroidQualification:
             "XDG_CONFIG_HOME": f"{self.remote_root}/xdg-config", "XDG_CACHE_HOME": f"{self.remote_root}/xdg-cache", "XDG_DATA_HOME": f"{self.remote_root}/xdg-data",
             "PATH": f"{self.remote_root}/bin:{self.remote.prefix}/bin", "PYTHONPATH": os.pathsep.join([self.runtime_root, *site_packages]),
             "PYTHONDONTWRITEBYTECODE": "1", "PREFIX": self.remote.prefix, "LD_PRELOAD": str(self.remote.baseline.get("termux_exec_ld_preload") or ""), "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8",
-            "POCKETLAB_ENVIRONMENT": "qualification", "POCKETLAB_HARNESS_ENABLED": "1", "POCKETLAB_HARNESS_DESTRUCTIVE": "0", "POCKETLAB_QUALIFICATION_OWNER": "0", "POCKETLAB_TEST_AUTH_BYPASS": "0",
-            "POCKETLAB_HARNESS_BOOTSTRAP_APPROVED": "1", "POCKETLAB_HARNESS_BOOTSTRAP_PROFILE": "security-assurance-runner", "POCKETLAB_HARNESS_RUNTIME_ID": f"qualification-{self.run_id}",
+            # The default security-assurance lane remains owner-off
+            # ("POCKETLAB_QUALIFICATION_OWNER": "0"). The browser UI lane
+            # opts into the existing non-destructive owner bridge explicitly.
+            "POCKETLAB_ENVIRONMENT": "qualification", "POCKETLAB_HARNESS_ENABLED": "1", "POCKETLAB_HARNESS_DESTRUCTIVE": "0", "POCKETLAB_QUALIFICATION_OWNER": self.qualification_owner_flag, "POCKETLAB_TEST_AUTH_BYPASS": "0",
+            "POCKETLAB_HARNESS_BOOTSTRAP_APPROVED": "1", "POCKETLAB_HARNESS_BOOTSTRAP_PROFILE": self.bootstrap_profile, "POCKETLAB_HARNESS_RUNTIME_ID": f"qualification-{self.run_id}",
             "POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID": self.principal_id, "POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT": self.fingerprint, "POCKETLAB_HARNESS_PROVISIONING_TOKEN": self.provisioning_token,
             "POCKETLAB_STATE_DIR": f"{self.remote_root}/state", "POCKETLAB_LITE_DB_PATH": f"{self.remote_root}/state/{SCHEMA_DB_NAME}", "POCKETLAB_BASE_DIR": f"{self.remote_root}/base", "POCKETLAB_API_DIR": f"{self.remote_root}/api", "POCKETLAB_IAC_DIR": f"{self.remote_root}/iac",
             "POCKETLAB_DEVICE_NAME": f"qualification-health-{self.run_id}", "POCKETLAB_NODE_ID": f"qualification-health-{self.run_id}", "POCKETLAB_NODE_NAME": f"qualification-health-{self.run_id}", "POCKETLAB_NODE_ROLES": "server", "POCKETLAB_NODE_ROLE": "server",
             "POCKETLAB_QUALIFICATION_CONTEXT": "isolated-runtime-v1", "POCKETLAB_QUALIFICATION_RUN_ID": self.run_id, "POCKETLAB_QUALIFICATION_CANDIDATE_SHA": self.candidate_sha, "POCKETLAB_QUALIFICATION_SNAPSHOT_MANIFEST_SHA256": self.snapshot.manifest_sha256,
+            "POCKETLAB_HARNESS_BOOTSTRAP_PURPOSE": self.bootstrap_purpose,
             "POCKETLAB_QUALIFICATION_ALLOW_TEST_DESTINATION": "1", "POCKETLAB_QUALIFICATION_CONTEXT_TOKEN": self.context_token, "POCKETLAB_QUALIFICATION_ROOT": self.remote_root, "POCKETLAB_QUALIFICATION_DESTINATION_ROOT": f"{self.remote_root}/destination",
             "POCKETLAB_QUALIFICATION_WEBDAV_USER": "qualification", "POCKETLAB_QUALIFICATION_WEBDAV_PASSWORD": self.webdav_password, "POCKETLAB_QUALIFICATION_TEST_ORIGIN": f"https://127.0.0.1:{remote_api_port}", "POCKETLAB_QUALIFICATION_CONTROL_ORIGIN": f"https://127.0.0.1:{remote_api_port}",
             "POCKETLAB_API_BIND": "127.0.0.1", "POCKETLAB_API_PORT": str(remote_api_port), "POCKETLAB_OPA_URL": "http://127.0.0.1:1", "POCKETLAB_OPA_ACTIVE_POLICY_DIR": f"{self.remote_root}/opa/active",
@@ -897,7 +926,14 @@ time.sleep(3)
 
     def _bootstrap(self) -> None:
         assert self.client is not None
-        validate_synthetic_identity(self.principal_id, "security-assurance-runner", qualification_owner="0", destructive="0", test_bypass="0")
+        validate_synthetic_identity(
+            self.principal_id,
+            self.bootstrap_profile,
+            qualification_owner=self.qualification_owner_flag,
+            destructive="0",
+            test_bypass="0",
+            allow_browser_ui=self.browser_ui,
+        )
         # Bootstrap endpoints intentionally reject all x-pocket-lab-harness-*
         # headers. Approval is bound in the candidate environment and the
         # possession proof is the Ed25519 signature below.
@@ -908,14 +944,24 @@ time.sleep(3)
             raise QualificationError("signed synthetic assurance bootstrap was rejected")
         session = self.client.request("POST", "/api/lite/harness/bootstrap/complete", {
             "challenge_id": challenge.body.get("challenge_id"), "grant_id": grant.body.get("grant_id"), "principal_id": self.principal_id,
-            "public_key": self.public_key, "signature": _b64u(self.principal_private.sign(signing_payload.encode())), "ttl_seconds": 120,
+            "public_key": self.public_key, "signature": _b64u(self.principal_private.sign(signing_payload.encode())), "ttl_seconds": 240 if self.browser_ui else 120,
         })
         token = str(session.body.get("session_token") or "")
         if session.status != 201 or not token:
             raise QualificationError("signed synthetic assurance session was not established")
         self.session = token
         status = self.client.request("GET", "/api/lite/harness/status")
-        self.results["security_assurance_harness"] = {"status": "PASS", "profile": "security-assurance-runner", "destructive": False, "qualification_owner": False, "test_auth_bypass": False, "target_scope": status.body.get("target_scope"), "active_sessions": status.body.get("active_sessions"), "principal_count": status.body.get("principal_count"), "private_key_published": False}
+        self.results["security_assurance_harness"] = {"status": "PASS", "profile": self.bootstrap_profile, "purpose": self.bootstrap_purpose, "destructive": False, "qualification_owner": self.browser_ui, "test_auth_bypass": False, "target_scope": status.body.get("target_scope"), "active_sessions": status.body.get("active_sessions"), "principal_count": status.body.get("principal_count"), "private_key_published": False}
+        if self.browser_ui:
+            bridge = self.client.request("POST", "/api/lite/harness/browser/bridge", session=self.session)
+            bridge_token = str(bridge.body.get("browser_bridge_token") or "")
+            metadata = bridge.body.get("browser_bridge") if isinstance(bridge.body, dict) else None
+            if bridge.status != 200 or not bridge_token or not isinstance(metadata, dict):
+                raise QualificationError("signed synthetic browser qualification bridge was rejected")
+            if metadata.get("profile") != "qualification-owner" or metadata.get("purpose") != "ui-performance-60fps" or metadata.get("target_scope") != "local_server_host_only":
+                raise QualificationError("browser qualification bridge binding was not accepted")
+            self.browser_bridge = bridge_token
+            self.results["security_assurance_harness"]["browser_bridge"] = {"status": "PASS", "short_lived": True, "private_token_published": False, "destructive": False}
 
     def _qualify_api(self) -> None:
         assert self.client is not None and self.session

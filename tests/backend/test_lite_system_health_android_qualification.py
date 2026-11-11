@@ -52,6 +52,15 @@ def test_candidate_sha_and_identity_fail_closed():
             "qualification-health-run", "security-assurance-runner",
             qualification_owner="1", destructive="0", test_bypass="0",
         )
+    module.validate_synthetic_identity(
+        "qualification-health-run", "qualification-owner",
+        qualification_owner="1", destructive="0", test_bypass="0", allow_browser_ui=True,
+    )
+    with pytest.raises(module.QualificationError):
+        module.validate_synthetic_identity(
+            "qualification-health-run", "qualification-owner",
+            qualification_owner="1", destructive="0", test_bypass="0",
+        )
 
 
 def test_isolated_binding_rejects_production_paths_and_collisions(tmp_path):
@@ -174,3 +183,12 @@ def test_taskfile_wires_only_the_narrow_system_health_lane():
     assert "lite:system-health:candidate:android:qualify" in taskfile
     assert "run-system-health-android-qualification.py" in taskfile
     assert "run-ui-performance-android-safety.sh" not in taskfile
+
+
+def test_browser_ui_lane_keeps_owner_non_destructive_and_uses_candidate_bridge():
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert "browser_ui: bool = False" in source
+    assert 'self.bootstrap_profile = "qualification-owner" if self.browser_ui else "security-assurance-runner"' in source
+    assert '"POCKETLAB_HARNESS_DESTRUCTIVE": "0"' in source
+    assert '"POCKETLAB_TEST_AUTH_BYPASS": "0"' in source
+    assert '"/api/lite/harness/browser/bridge"' in source
