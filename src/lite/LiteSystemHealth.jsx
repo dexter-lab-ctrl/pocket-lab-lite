@@ -33,7 +33,8 @@ const SECTIONS = Object.freeze([
 export function systemHealthPresentation(payload, saved = false) {
   if (!payload || typeof payload !== 'object') return { state: 'unknown', title: 'System status is not confirmed', detail: 'No current System Health information is available.' };
   const freshness = saved ? 'saved' : String(payload.freshness || 'unknown');
-  if (freshness !== 'current') return { state: 'saved', title: 'Showing saved information', detail: 'Live health has not been confirmed. Reconnect or refresh to check again.' };
+  if (saved || freshness === 'stale' || freshness === 'saved') return { state: 'saved', title: 'Showing saved information', detail: 'Live health has not been confirmed. Reconnect or refresh to check again.' };
+  if (freshness !== 'current') return { state: 'unknown', title: 'System status needs confirmation', detail: payload.summary || 'Not enough current evidence to confirm health.' };
   if (payload.status === 'attention') return { state: 'attention', title: 'Some services need attention', detail: payload.summary || 'Review active problems before changing services.' };
   if (payload.status === 'healthy' && Number(payload.unknown_services || 0) === 0) return { state: 'ready', title: 'Observed services are healthy', detail: payload.summary || 'Current observations show no detected problems.' };
   return { state: 'unknown', title: 'System status needs confirmation', detail: payload.summary || 'Not enough current evidence to confirm health.' };

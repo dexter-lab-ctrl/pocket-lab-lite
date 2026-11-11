@@ -9,6 +9,11 @@ describe('System Health authoritative presentation', () => {
     expect(systemHealthPresentation({ status: 'healthy', freshness: 'stale' }).state).toBe('saved');
     expect(systemHealthPresentation({ status: 'healthy', freshness: 'current' }, true).state).toBe('saved');
   });
+  it('keeps unavailable evidence distinct from saved information', () => {
+    const result = systemHealthPresentation({ status: 'unknown', freshness: 'unavailable', summary: 'Health evidence is unavailable.' });
+    expect(result.state).toBe('unknown');
+    expect(result.title).toMatch(/needs confirmation/i);
+  });
   it('uses observed unknown counts to avoid false green', () => {
     expect(systemHealthPresentation({ status: 'healthy', freshness: 'current', unknown_services: 2 }).state).toBe('unknown');
   });
