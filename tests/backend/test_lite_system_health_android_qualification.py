@@ -70,6 +70,22 @@ def test_isolated_binding_rejects_production_paths_and_collisions(tmp_path):
         module.assert_isolated_binding(root, database, "nats://127.0.0.1:4222", "0.0.0.0", 8080)
     with pytest.raises(module.QualificationError):
         module.assert_isolated_binding(root, database, "nats://127.0.0.1:4222", "127.0.0.1", 8080, occupied_ports=[8080])
+    with pytest.raises(module.QualificationError):
+        module.assert_isolated_binding(root, database, "nats://127.0.0.1:8080", "127.0.0.1", 8080)
+
+
+def test_production_projection_ignores_runtime_process_ids():
+    module = _module()
+    before = {
+        "system": "Android",
+        "architecture": "aarch64",
+        "source_sha": "a" * 40,
+        "git_clean": True,
+        "pm2": [{"name": "api", "pid": 101, "status": "online", "version": "1", "cwd_class": "pocketlab_checkout"}],
+        "listeners": {"tcp": ["127.0.0.1:8080"]},
+    }
+    after = {**before, "pm2": [{**before["pm2"][0], "pid": 202}]}
+    assert module.production_projection(before) == module.production_projection(after)
 
 
 def test_schema42_forward_migrations_repeat_and_rollback_copy(tmp_path):

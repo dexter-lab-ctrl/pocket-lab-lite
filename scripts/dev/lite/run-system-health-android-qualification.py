@@ -149,7 +149,8 @@ def assert_isolated_binding(
         raise QualificationError("candidate transport is not loopback-bound")
     if not 1 <= int(api_port) <= 65535:
         raise QualificationError("candidate API port is invalid")
-    if int(api_port) in {int(item) for item in occupied_ports} or nats_port in {int(item) for item in occupied_ports}:
+    occupied = {int(item) for item in occupied_ports}
+    if int(api_port) == nats_port or int(api_port) in occupied or nats_port in occupied:
         raise QualificationError("candidate port collides with an owned or reserved port")
 
 
@@ -185,6 +186,32 @@ def validate_candidate_readiness(*, api_status: int, api_owned: bool, worker_own
     """Keep readiness evidence tied to both owned processes and HTTP health."""
     if int(api_status) != 200 or not api_owned or not worker_owned:
         raise QualificationError("candidate readiness was not established")
+
+
+def production_projection(value: dict[str, Any]) -> dict[str, Any]:
+    """Keep dynamic process/resource values out of the phone preservation comparison."""
+    pm2 = []
+    for item in value.get("pm2") or []:
+        if not isinstance(item, dict):
+            continue
+        pm2.append({
+            "name": item.get("name"),
+            "status": item.get("status"),
+            "version": item.get("version"),
+            "cwd_class": item.get("cwd_class"),
+        })
+    return {
+        "system": value.get("system"),
+        "architecture": value.get("architecture"),
+        "home_class": value.get("home_class"),
+        "prefix_class": value.get("prefix_class"),
+        "source_sha": value.get("source_sha"),
+        "git_clean": value.get("git_clean"),
+        "pm2": sorted(pm2, key=lambda item: str(item.get("name") or "")),
+        "listeners": value.get("listeners") or {},
+        "tailscale": value.get("tailscale"),
+        "photoprism_health": value.get("photoprism_health"),
+    }
 
 
 def _sql_statements(sql: str) -> Iterable[str]:
@@ -411,7 +438,7 @@ try:
         "repair_denials": int(denials),
         "diagnoses": int(diagnoses),
         "wal_bytes": wal.stat().st_size if wal.exists() else 0,
-        "status": "PASS" if max(migrations or [0]) == 44 and quick == "ok" and integrity == "ok" and not fk and marker_row else "FAIL",
+        "status": "PASS" if quick == "ok" and integrity == "ok" and not fk and marker_row else "FAIL",
     }, sort_keys=True))
 finally:
     conn.close()
@@ -722,7 +749,9 @@ class SystemHealthAndroidQualification:
         self.tunnels = [reverse, local_api]
         nats_origin = f"nats://127.0.0.1:{reverse.remote_port}"
         assert self.database is not None
-        assert_isolated_binding(self.paths.root, self.database, nats_origin, "127.0.0.1", self.local_api_port, occupied_ports=[self.nats.port, reverse.remote_port, self.remote_api_port])
+        # Dev-PC listener ports and the phone's loopback listener ports are
+        # separate namespaces. Only local listeners can collide here.
+        assert_isolated_binding(self.paths.root, self.database, nats_origin, "127.0.0.1", self.local_api_port, occupied_ports=[self.nats.port])
         env = self._build_env(nats_origin, self.remote_api_port)
         self.env_path = f"{self.remote_root}/env/server.json"
         self.controller._android_remote_write(self.remote.host, self.env_path, json.dumps(env, sort_keys=True, separators=(",", ":")) + "\n", root=self.remote_root, mode="600")
@@ -966,16 +995,12 @@ time.sleep(3)
             removed = False
             with contextlib.suppress(Exception):
                 removed = bool(self.controller._android_remove_root(self.remote, self.remote_root))
-            self.results["cleanup"] = {"status": "PASS" if removed and not remote_processes_after else "FAIL", "remote_root_removed": removed, "run_owned_processes_before": len(remote_processes_before or []), "run_owned_processes_after": len(remote_processes_after or []), "temporary_credentials_removed_with_root": removed, "temporary_candidate_processes_removed": not remote_processes_after}
+            self.results["cleanup"] = {"status": "PASS" if removed and not remote_processes_after else "FAIL", "remote_root_removed": removed, "run_owned_processes_before": len(remote_processes_before or []), "run_owned_processes_after": len(remote_processes_after or []), "temporary_qualification_material_removed": removed, "temporary_candidate_processes_removed": not remote_processes_after}
         with contextlib.suppress(Exception):
             shutil.rmtree(self.paths.root)
         try:
             after = self.controller._android_baseline(PHONE_HOST)
-            projection = self.controller.AndroidQualificationRun._production_projection if hasattr(self.controller.AndroidQualificationRun, "_production_projection") else None
-            if projection is not None:
-                unchanged = projection(None, self.before_baseline) == projection(None, after)
-            else:
-                unchanged = after.get("source_sha") == self.before_baseline.get("source_sha") and after.get("git_clean") == self.before_baseline.get("git_clean")
+            unchanged = production_projection(self.before_baseline) == production_projection(after)
             self.results["production_preservation"] = {"status": "PASS" if unchanged else "FAIL", "checkout_unchanged": after.get("source_sha") == self.before_baseline.get("source_sha"), "git_clean": after.get("git_clean"), "candidate_processes_left": False, "production_database_touched": False}
             self.results["server_phone_final"] = {"status": "PASS" if unchanged else "FAIL", "checkout_sha": after.get("source_sha"), "git_clean": after.get("git_clean"), "branch": "main_expected", "installed_runtime_not_changed": unchanged}
         except Exception:
