@@ -4,6 +4,12 @@ export const liteQueryKeys = {
   status: () => ['lite', 'status'],
   release: () => ['lite', 'release'],
   systemHealth: () => ['lite', 'system', 'health'],
+  healthIntelligence: () => ['lite', 'system-health', 'summary'],
+  healthIncidents: () => ['lite', 'system-health', 'incidents'],
+  healthIncident: (id) => ['lite', 'system-health', 'incident', String(id || '')],
+  healthHistory: () => ['lite', 'system-health', 'history'],
+  healthDependencies: () => ['lite', 'system-health', 'dependencies'],
+
   systemProcesses: () => ['lite', 'system', 'processes'],
   systemAgent: () => ['lite', 'system', 'agent'],
   systemSupervisor: () => ['lite', 'system', 'supervisor'],
