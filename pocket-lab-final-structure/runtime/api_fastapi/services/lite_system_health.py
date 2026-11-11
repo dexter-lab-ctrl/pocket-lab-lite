@@ -8,10 +8,11 @@ from __future__ import annotations
 
 import hashlib
 import sqlite3
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import Any
 
-from ..db.connection import begin_immediate, open_connection, open_fast_read_connection
+from contextlib import closing
+from ..db.connection import begin_immediate, connection, open_fast_read_connection
 
 ACTIVE = frozenset({"detected", "diagnosing", "diagnosed", "repair_available", "repairing", "verifying", "blocked", "failed", "manual_attention_required"})
 UNHEALTHY = frozenset({"degraded", "unavailable", "unhealthy", "critical", "offline", "stopped", "missing", "errored", "failed", "attention", "pressure"})
@@ -128,7 +129,7 @@ def ingest_projection(domain: str, payload: dict[str, Any]) -> int:
     revision = _safe(payload.get("generation") or payload.get("revision"), 64)
     now = _now()
     changed = 0
-    with open_connection() as conn:
+    with connection() as conn:
         with begin_immediate(conn):
             for source, target, status, summary in observations[:64]:
                 if not target:
@@ -184,7 +185,7 @@ def ingest_projection(domain: str, payload: dict[str, Any]) -> int:
 
 def _read(sql: str, params: tuple = ()) -> list[dict[str, Any]]:
     try:
-        with open_fast_read_connection() as conn:
+        with closing(open_fast_read_connection()) as conn:
             return [dict(row) for row in conn.execute(sql, params).fetchall()]
     except (FileNotFoundError, sqlite3.OperationalError):
         return []

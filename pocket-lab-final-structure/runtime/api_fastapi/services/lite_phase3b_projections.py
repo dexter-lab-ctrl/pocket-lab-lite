@@ -719,6 +719,16 @@ def commit_projection_if_changed(
 def project(domain: str, payload: dict[str, Any]) -> ProjectionCommitResult:
     result = commit_projection_if_changed(domain=domain, payload=payload)
     safe_domain = _safe_text(domain, 96).lower()
+    if result.changed and safe_domain in {
+        "system.health", "system.nats_remote", "system.processes",
+        "system.agent", "system.supervisor", "system.remote_access",
+    }:
+        # Projection owner only. Prepared GETs never collect or persist incidents.
+        try:
+            from .lite_system_health import ingest_projection
+            ingest_projection(safe_domain, payload)
+        except Exception:
+            _LOGGER.exception("system health incident ingestion failed (sanitized domain=%s)", safe_domain)
     if result.changed and safe_domain in {"security.progress", "security.summary"}:
         try:
             from . import lite_phase3c_projections
