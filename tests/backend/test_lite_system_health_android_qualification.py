@@ -88,6 +88,18 @@ def test_production_projection_ignores_runtime_process_ids():
     assert module.production_projection(before) == module.production_projection(after)
 
 
+def test_parse_json_log_record_uses_last_valid_record():
+    module = _module()
+    payload, line_count = module.parse_json_log_record(
+        "startup warning\n{\"status\":\"PASS\",\"changed\":true}\nshutdown note\n",
+        label="projection driver",
+    )
+    assert payload["status"] == "PASS"
+    assert line_count == 3
+    with pytest.raises(module.QualificationError, match="nonempty_lines=2"):
+        module.parse_json_log_record("startup warning\nshutdown note\n", label="projection driver")
+
+
 def test_schema42_forward_migrations_repeat_and_rollback_copy(tmp_path):
     module = _module()
     sha = module._run(["git", "rev-parse", "HEAD"], cwd=REPO).stdout.strip()

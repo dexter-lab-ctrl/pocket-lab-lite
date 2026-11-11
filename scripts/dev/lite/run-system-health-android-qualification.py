@@ -214,6 +214,19 @@ def production_projection(value: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def parse_json_log_record(text: str, *, label: str) -> tuple[dict[str, Any], int]:
+    """Read the last bounded JSON object from a run-owned process log."""
+    lines = [line.strip() for line in str(text or "").splitlines() if line.strip()]
+    for line in reversed(lines[-128:]):
+        try:
+            value = json.loads(line)
+        except (TypeError, ValueError):
+            continue
+        if isinstance(value, dict):
+            return value, len(lines)
+    raise QualificationError(f"{label} emitted no JSON record (nonempty_lines={len(lines)})")
+
+
 def _sql_statements(sql: str) -> Iterable[str]:
     buffer = ""
     for line in sql.splitlines(keepends=True):
@@ -837,11 +850,18 @@ time.sleep(3)
             raise QualificationError("projection driver did not finish in its bounded window")
         log = self.controller._android_read_text(self.remote, f"{self.remote_root}/logs/driver.log", root=self.remote_root)
         try:
-            payload = json.loads(log.strip().splitlines()[-2] if log.strip().splitlines()[-1] == "" else log.strip().splitlines()[-1])
-        except (ValueError, IndexError):
-            raise QualificationError("projection driver evidence was malformed") from None
+            payload, line_count = parse_json_log_record(log, label="projection driver")
+        except QualificationError:
+            lines = [line.strip() for line in str(log or "").splitlines() if line.strip()]
+            self.results["projection_driver"] = {
+                "status": "FAIL",
+                "nonempty_lines": len(lines),
+                "last_line_prefixes": [line[:160] for line in lines[-4:]],
+            }
+            raise
         if payload.get("status") != "PASS":
             raise QualificationError("projection driver duplicate suppression did not pass")
+        self.results["projection_driver"] = {"status": "PASS", "output_lines": line_count, "duplicate_suppression": True}
         return payload
 
     def _bootstrap(self) -> None:
