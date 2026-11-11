@@ -36,6 +36,14 @@ case "$qualification_scope" in
   recovery) default_expected_interaction_reports=4 ;;
   *) fail 'LITE_ANDROID_QUALIFICATION_SCOPE must be all, home, access or recovery.' ;;
 esac
+
+device_state_args=()
+if [[ -n "${POCKETLAB_ANDROID_DEVICE_SERIAL:-}" ]]; then
+  [[ "${POCKETLAB_ANDROID_DEVICE_SERIAL}" =~ ^[A-Za-z0-9._:-]+$ ]] \
+    || fail 'POCKETLAB_ANDROID_DEVICE_SERIAL contains unsupported characters.'
+  device_state_args=(-DeviceSerial "${POCKETLAB_ANDROID_DEVICE_SERIAL}")
+fi
+
 expected_interaction_reports="${LITE_ANDROID_EXPECTED_INTERACTION_REPORTS:-$default_expected_interaction_reports}"
 if ! [[ "$expected_interaction_reports" =~ ^[0-9]+$ ]] || (( expected_interaction_reports < 1 )); then
   fail 'LITE_ANDROID_EXPECTED_INTERACTION_REPORTS must be a positive integer.'
@@ -54,7 +62,7 @@ for run_index in $(seq 1 "$repetitions"); do
 
   node scripts/dev/lite/qualify-ui-performance-android-baseline.mjs     --label "${run_name}-before"     --samples 3     --output "$run_root/baseline-before.json"
 
-  powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass     -File scripts/dev/lite/capture-ui-performance-android-state.ps1     >"$run_root/device-state.json"
+  powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass     -File scripts/dev/lite/capture-ui-performance-android-state.ps1     "${device_state_args[@]}"     >"$run_root/device-state.json"
 
   qualifier_status=1
   evidence_count=0
