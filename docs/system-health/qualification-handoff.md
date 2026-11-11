@@ -26,7 +26,7 @@ Result: py_compile passed; System Health tests passed (9); Lite API tests passed
     npm run build-storybook
     npm run build
 
-Result: 6 focused unit tests, 10 System Health Playwright tests, full unit 624 tests, Storybook build and production build passed. Mocked accessibility, themes, context links, focus return, mobile snap and disabled repair were exercised. Canonical Home desktop/mobile snapshots were regenerated only for Home after physical validation and Home comparison passed. Hardware haptic actuation was not independently measurable through CDP.
+Result: 6 focused unit tests, 10 System Health Playwright tests, full unit 625 tests, Storybook build and production build passed. Mocked accessibility, themes, context links, focus return, mobile snap and disabled repair were exercised. Canonical Home desktop/mobile snapshots were regenerated only for Home after physical validation and Home comparison passed. Hardware haptic actuation was not independently measurable through CDP.
 
 ## 4. Non-disruptive Termux/ARM64 observation
 
