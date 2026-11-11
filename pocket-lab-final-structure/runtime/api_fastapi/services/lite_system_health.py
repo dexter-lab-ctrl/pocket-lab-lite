@@ -16,7 +16,7 @@ from contextlib import closing
 from ..db.connection import begin_immediate, connection, open_fast_read_connection
 
 ACTIVE = frozenset({"detected", "diagnosing", "diagnosed", "repair_available", "repairing", "verifying", "blocked", "failed", "manual_attention_required"})
-UNHEALTHY = frozenset({"read_only", "recovery_required", "watch", "elevated", "storage_pressure", "degraded", "unavailable", "unhealthy", "critical", "offline", "stopped", "missing", "errored", "failed", "attention", "pressure"})
+UNHEALTHY = frozenset({"errored", "read_only", "recovery_required", "watch", "elevated", "storage_pressure", "degraded", "unavailable", "unhealthy", "critical", "offline", "stopped", "missing", "errored", "failed", "attention", "pressure"})
 HEALTHY = frozenset({"normal", "healthy", "online", "ready", "running", "connected"})
 UNKNOWN = frozenset({"unknown", "stale", "unverified", "pending", "unsupported", "not_ready"})
 OBSERVATION_MAX_AGE_SECONDS = 300
