@@ -79,9 +79,26 @@ def system_health_repairs(request: Request):
 
 @router.post("/incidents/{incident_id}/diagnose")
 def system_health_diagnose(incident_id: str, request: Request):
-    # POST is deliberately protected even though the operation is read-only.
+    # State-changing audit of diagnosis is explicitly authenticated.
     deps.require_auth(request, write=True)
-    result = health.diagnose(incident_id)
+    result = health.record_diagnosis(incident_id)
+    if result is None:
+        raise HTTPException(404, detail={"status": "not_found", "summary": "This problem was not found."})
+    return result
+
+
+@router.get("/incidents/{incident_id}/decisions")
+def system_health_decisions(incident_id: str, request: Request, limit: int = Query(20, ge=1, le=50)):
+    deps.require_auth(request)
+    if health.incident(incident_id) is None:
+        raise HTTPException(404, detail={"status": "not_found", "summary": "This problem was not found."})
+    return health.decision_history(incident_id, limit=limit)
+
+
+@router.post("/incidents/{incident_id}/preflight")
+def system_health_preflight(incident_id: str, payload: RepairRequest, request: Request):
+    deps.require_auth(request, write=True)
+    result = health.repair_preflight(incident_id, payload.operation_id, payload.expected_generation)
     if result is None:
         raise HTTPException(404, detail={"status": "not_found", "summary": "This problem was not found."})
     return result
@@ -89,7 +106,7 @@ def system_health_diagnose(incident_id: str, request: Request):
 
 @router.post("/incidents/{incident_id}/repair", status_code=409)
 def system_health_repair(incident_id: str, payload: RepairRequest, request: Request):
-    deps.require_auth(request, write=True)
+    context = deps.require_auth(request, write=True)
     # Fail closed: do not invent an executor or bypass existing OPA/app authority,
     # supervisor ownership, idempotency or verified recovery criteria.
     found = health.incident(incident_id)
@@ -97,5 +114,12 @@ def system_health_repair(incident_id: str, payload: RepairRequest, request: Requ
         raise HTTPException(404, detail={"status": "not_found", "summary": "This problem was not found."})
     if found["generation"] != payload.expected_generation:
         raise HTTPException(409, detail={"status": "blocked", "reason_code": "incident_generation_changed", "summary": "Status changed. Diagnose again before attempting repair."})
-    raise HTTPException(409, detail={"status": "blocked", "reason_code": "repair_not_qualified",
-                                    "summary": "No new System Health repair executor is enabled. Use the existing protected repair workflow."})
+    result = health.record_repair_denial(incident_id, payload.operation_id,
+                                        payload.expected_generation, payload.idempotency_key,
+                                        str(((context or {}).get("actor") or {}).get("type") or "unknown"))
+    if result is None:
+        raise HTTPException(404, detail={"status": "not_found", "summary": "This problem was not found."})
+    raise HTTPException(409, detail={"status": "blocked",
+                                    "reason_code": result["reasons"][0],
+                                    "summary": "No new System Health repair executor is enabled. Use the existing protected repair workflow.",
+                                    "recorded": result["recorded"]})

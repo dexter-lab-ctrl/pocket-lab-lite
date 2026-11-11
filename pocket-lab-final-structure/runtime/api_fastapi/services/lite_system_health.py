@@ -7,6 +7,7 @@ with existing supervisors/agents/workers, not this module.
 from __future__ import annotations
 
 import hashlib
+import uuid
 import sqlite3
 from datetime import datetime, timezone
 from typing import Any
@@ -79,7 +80,8 @@ def _prune(conn: sqlite3.Connection) -> None:
     conn.execute("DELETE FROM lite_system_health_repair_attempts WHERE repair_id NOT IN (SELECT repair_id FROM lite_system_health_repair_attempts ORDER BY requested_at DESC LIMIT 2000)")
     conn.execute(
         "DELETE FROM lite_system_health_incidents WHERE state='resolved' AND incident_id NOT IN "
-        "(SELECT incident_id FROM lite_system_health_incidents ORDER BY last_seen_at DESC LIMIT ?)",
+        "(SELECT incident_id FROM lite_system_health_incidents ORDER BY last_seen_at DESC LIMIT ?) "
+        "AND incident_id NOT IN (SELECT incident_id FROM lite_system_health_repair_attempts)",
         (MAX_HISTORY,),
     )
 
@@ -304,4 +306,115 @@ def diagnose(incident_id: str) -> dict[str, Any] | None:
         "repair_available": False, "safe_next_step": "Use the existing protected Devices, Apps or Recovery action when its current readiness permits.",
         "what_changes": "Nothing. Diagnosis reads persisted evidence only.",
         "what_does_not_change": "No service restart, configuration update, or data change.",
+    }
+
+
+# No new executor is activated. Persisted decisions distinguish diagnosis,
+# denial and verified recovery rather than treating a command acceptance as success.
+def record_diagnosis(incident_id: str) -> dict[str, Any] | None:
+    assessed = diagnose(incident_id)
+    if assessed is None:
+        return None
+    diagnosis_id = "diagnosis-" + uuid.uuid4().hex
+    with connection() as conn:
+        with begin_immediate(conn):
+            conn.execute(
+                "INSERT INTO lite_system_health_diagnoses "
+                "(diagnosis_id,incident_id,incident_generation,created_at,symptom,suspected_cause,"
+                "confidence,evidence_freshness,recommended_action) VALUES (?,?,?,?,?,?,?,?,?)",
+                (diagnosis_id, incident_id, assessed["generation"], _now(),
+                 _safe(assessed["observed_symptom"]), _safe(assessed["suspected_cause"]),
+                 assessed["cause_confidence"], assessed["evidence_freshness"],
+                 "Use reviewed existing recovery controls."),
+            )
+            _event(conn, incident_id, assessed["generation"], "diagnosed",
+                   "Evidence-based diagnosis recorded; no repair was executed.")
+            conn.execute(
+                "DELETE FROM lite_system_health_diagnoses WHERE diagnosis_id NOT IN "
+                "(SELECT diagnosis_id FROM lite_system_health_diagnoses ORDER BY created_at DESC LIMIT 2000)"
+            )
+    return {**assessed, "diagnosis_id": diagnosis_id, "recorded": True}
+
+
+def repair_preflight(incident_id: str, operation_id: str, expected_generation: int) -> dict[str, Any] | None:
+    found = incident(incident_id)
+    if found is None:
+        return None
+    candidate = next((item for item in REPAIR_CATALOG if item["operation_id"] == operation_id), None)
+    reasons: list[str] = []
+    if candidate is None:
+        reasons.append("operation_not_allowlisted")
+    if found["generation"] != expected_generation:
+        reasons.append("incident_generation_changed")
+    if found["state"] == "resolved":
+        reasons.append("incident_already_resolved")
+    if found["evidence_freshness"] != "current":
+        reasons.append("evidence_not_current")
+    # The subsystem never bypasses the established app/device/agent authority.
+    reasons.append("system_health_executor_not_qualified")
+    return {
+        "incident_id": incident_id, "incident_generation": found["generation"],
+        "operation_id": _safe(operation_id, 80), "risk_class": candidate["risk_class"] if candidate else "unknown",
+        "allowed": False, "status": "blocked",
+        "reasons": reasons,
+        "requires_confirmation": bool(candidate and candidate["risk_class"] != "A"),
+        "requires_authorization": True, "requires_fresh_evidence": True,
+        "max_retries": 0, "cooldown_state": "not_applicable",
+        "single_flight_state": "not_applicable",
+        "verification": "not_started", "execution": "not_started",
+        "guidance": "Use the already governed Apps, Devices or Recovery action if it is currently offered.",
+    }
+
+
+def record_repair_denial(incident_id: str, operation_id: str, expected_generation: int,
+                         idempotency_key: str, actor_class: str) -> dict[str, Any] | None:
+    assessment = repair_preflight(incident_id, operation_id, expected_generation)
+    if assessment is None:
+        return None
+    digest = hashlib.sha256(idempotency_key.encode("utf-8")).hexdigest()
+    denial_id = "denial-" + uuid.uuid4().hex
+    with connection() as conn:
+        with begin_immediate(conn):
+            previous = conn.execute(
+                "SELECT incident_id,operation_id,reason_code FROM lite_system_health_repair_denials "
+                "WHERE idempotency_digest=?", (digest,)
+            ).fetchone()
+            if previous is not None:
+                if previous["incident_id"] != incident_id or previous["operation_id"] != operation_id:
+                    return {**assessment, "reasons": ["idempotency_conflict"], "recorded": False}
+                return {**assessment, "reasons": [previous["reason_code"]], "recorded": True,
+                        "idempotent_replay": True}
+            reason = assessment["reasons"][0]
+            conn.execute(
+                "INSERT INTO lite_system_health_repair_denials "
+                "(denial_id,incident_id,incident_generation,idempotency_digest,operation_id,"
+                "risk_class,denied_at,actor_class,reason_code,safe_summary) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (denial_id, incident_id, assessment["incident_generation"], digest,
+                 _safe(operation_id, 80), assessment["risk_class"], _now(),
+                 actor_class if actor_class in {"human", "service", "test"} else "unknown",
+                 reason, "Repair was blocked; no execution occurred."),
+            )
+            _event(conn, incident_id, assessment["incident_generation"], "repair_blocked",
+                   "New System Health repair executor is not qualified.")
+            conn.execute(
+                "DELETE FROM lite_system_health_repair_denials WHERE denial_id NOT IN "
+                "(SELECT denial_id FROM lite_system_health_repair_denials ORDER BY denied_at DESC LIMIT 2000)"
+            )
+    return {**assessment, "recorded": True, "idempotent_replay": False}
+
+
+def decision_history(incident_id: str, *, limit: int = 20) -> dict[str, Any]:
+    return {
+        "diagnoses": _read(
+            "SELECT diagnosis_id,incident_id,incident_generation,created_at,suspected_cause,"
+            "confidence,evidence_freshness,recommended_action FROM lite_system_health_diagnoses "
+            "WHERE incident_id=? ORDER BY created_at DESC LIMIT ?",
+            (incident_id, max(1, min(limit, 50))),
+        ),
+        "repair_denials": _read(
+            "SELECT denial_id,incident_id,incident_generation,operation_id,risk_class,"
+            "denied_at,actor_class,reason_code,safe_summary FROM lite_system_health_repair_denials "
+            "WHERE incident_id=? ORDER BY denied_at DESC LIMIT ?",
+            (incident_id, max(1, min(limit, 50))),
+        ),
     }
