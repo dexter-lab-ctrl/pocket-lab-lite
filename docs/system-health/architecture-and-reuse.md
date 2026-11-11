@@ -1,8 +1,8 @@
 # Pocket Lab Lite — System Health implementation and source reuse
 
-**State:** IMPLEMENTED — DEV-PC AND ISOLATED PHYSICAL ANDROID/TERMUX BACKEND QUALIFIED WITH BOUNDARIES. **Qualification:** PASS for the exact-SHA isolated candidate/API and mocked UI; PARTIAL for current Android Chrome-to-candidate UI because CDP was unavailable; production backend activation remains intentionally unperformed on `main`.
+**State:** IMPLEMENTED — DEV-PC AND ISOLATED PHYSICAL ANDROID/TERMUX BACKEND QUALIFIED WITH BOUNDARIES. **Qualification:** PASS for the exact-SHA isolated candidate/API, mocked UI and Android Chrome-to-candidate UI; production backend activation remains intentionally unperformed on `main`.
 
-**Provenance:** dexter-lab-ctrl/pocket-lab-lite; main base SHA `cfd4194fd338aeae07580fa7f227d118bebdd907`; Gate B continuation starting feature SHA `1ce603d5524824e11b6b47da415569452f2bc93c`; final qualifying feature SHA `1ba45f410cf3c9a1f993b84b6dcffe90a895ac5b`; feature `feat/azure-horizon-system-health-intelligence`. The repository is authoritative; historical PRs are context, not proof of runtime readiness.
+**Provenance:** dexter-lab-ctrl/pocket-lab-lite; main base SHA `cfd4194fd338aeae07580fa7f227d118bebdd907`; Gate B continuation starting feature SHA `1ce603d5524824e11b6b47da415569452f2bc93c`; final qualifying feature SHA `e3c9777d4e2c87da12c8197c24d8f2e4ab2766a6`; feature `feat/azure-horizon-system-health-intelligence`. The repository is authoritative; historical PRs are context, not proof of runtime readiness.
 
 ## Architecture and ownership
 
@@ -18,7 +18,7 @@ The new System Health service does not execute shell commands, start PM2, connec
 | P1 | 0043 SQLite schema, stable incident identity, deduplication, recurrence, reopen, freshness, bounded reads and history | VERIFIED by focused backend tests and isolated route qualification; NATS-lifespan integration remains separately limited by local tool availability |
 | P2 | 0044 diagnostic/denial audit, risk A/B/C policy registry, authenticated fail-closed preflight, incident-generation guard, idempotency digest | VERIFIED: diagnosis persists, preflight is blocked, repair returns audited denial, no new executor is enabled |
 | P3 | Existing watchdog/supervisor ownership preserved; worker-owned NATS/process/agent, storage/SQLite/telemetry signals; registered app-process detection | Source and exact-SHA isolated ARM64/Termux candidate qualified; no destructive fault injection or production-phone service changes performed |
-| P4 | Lazy System Health tab, Home summary, Apps/Devices/Safety/Recovery links, native Manage, diagnosis, safe guidance, history, policy and dependency views | Mocked desktop/mobile and earlier frontend-only physical Android UI qualified; current browser-to-candidate API attachment remains CDP-blocked |
+| P4 | Lazy System Health tab, Home summary, Apps/Devices/Safety/Recovery links, native Manage, diagnosis, safe guidance, history, policy and dependency views | Mocked desktop/mobile and exact-SHA physical Android Chrome-to-candidate UI qualified; hardware haptics and production API remain separately limited |
 | P5 | Dependency authority labels, inferred upstream diagnosis, safe configuration mismatch reporting, recurrence, resource bands and disabled AI state | Truthful unknown/stale/unavailable semantics qualified; predictive forecast remains intentionally unavailable without evidence |
 | P6 | Authored pytest, Vitest, Storybook and Playwright, mock API states and handoff | DEV-PC tests/builds pass; Home-only Android performance is baseline-attributed with no `APP_INCREMENTAL_COST`; exact-SHA phone-side backend candidate and isolated migration proof pass; broader legacy visual loop retains unrelated Catalog drift |
 
@@ -54,10 +54,10 @@ POST paths: /incidents/{id}/diagnose (persist diagnosis), /incidents/{id}/prefli
 
 - Focused Android qualifier tests: 8 passed; the combined qualifier/System Health regression run passed 15; the full backend gate passed 171 with 165 unrelated tests deselected. SQLite/authorization/security/harness/tooling suites passed in the recorded DEV-PC runs. An isolated exact-head route probe verified anonymous rejection, service/Owner reads, diagnosis persistence, CSRF, session expiry, generation fencing, idempotent repair denial and evidence sanitization.
 - Frontend: System Health unit 6 passed; System Health mocked desktop/mobile Playwright 10 passed; full unit run 625 passed; Storybook and production build passed. Canonical Home desktop/mobile snapshots were regenerated after physical validation and then Home comparison passed.
-- Physical Android/Termux backend candidate: exact SHA `1ba45f410cf3c9a1f993b84b6dcffe90a895ac5b`, ARM64/aarch64, Python `3.14.6`, read-only snapshot manifest `5e0d01915be865b0230593216cd26907c44584a302c9e43ef837935f11ecf2fe`, schema 42→44 isolated migration and rollback proof passed. Real candidate API routes and blocked-repair/security contracts passed; production PM2/Caddy/NATS/SQLite were not used. Current Android Chrome CDP was unavailable, so no current UI-to-candidate API claim is made.
-- Earlier frontend-only physical Android UI: exact then-head `fce2c643eff02fab996a8583f3a6ac74541d80d5`, Chrome `156.0.8078.79`, CDP protocol `1.3`, 360×691 viewport, 10/10 scoped System Health checks passed, zero repair POSTs, no page errors. API responses in that UI run were repository MSW fixtures, not the phone candidate backend.
+- Physical Android/Termux backend candidate: exact SHA `e3c9777d4e2c87da12c8197c24d8f2e4ab2766a6`, ARM64/aarch64, Python `3.14.6`, read-only snapshot manifest `d3938ed983fdfdc094f97e605548f856351446e610ad8c952a9e4cae226e125c`, schema 42→44 isolated migration and rollback proof passed. Real candidate API routes and blocked-repair/security contracts passed; production PM2/Caddy/NATS/SQLite were not used.
+- Android Chrome-to-candidate UI: exact candidate manifest and response headers matched `e3c9777d4e2c87da12c8197c24d8f2e4ab2766a6`; Chrome `157.0.8103.50`, CDP Protocol `1.3`, package `com.android.chrome`, loopback websocket and explicit standard-user ADB selection passed. Summary, incidents and diagnosis were consumed from the candidate; Manage opened, diagnosis returned `200`, Fix was disabled, no repair/preflight write occurred and Home navigation returned.
 - Home-only performance: 18 candidate reports and 3×18 baseline-normalized reports. Absolute production gates remained red; final normalized attribution was `MIXED=18`, `APP_INCREMENTAL_COST=0`, with no actionable PR-specific regression established. The seven-screen workflow was not run.
-- Server Phone production runtime: clean `main` at base SHA `cfd4194…`; core PM2 services and bounded health endpoints were healthy. Its installed backend returned 404 for `/api/lite/system-health/`, as expected because production activation was not performed. Candidate processes and temporary qualification material were removed; the production database was not touched.
+- Server Phone production runtime: clean `main` at base SHA `cfd4194…`; all 10 observed PM2 services were online and bounded health observation remained non-disruptive. Its installed backend remains separately identified because production activation was not performed. Candidate processes and temporary qualification material were removed; the production database was not touched.
 
 ## Source reuse matrix — verified repository paths
 
@@ -93,8 +93,8 @@ No new background polling thread, heavyweight ML library, continuous process sam
 - Extend app-adapter-specific route, database and backup diagnosis using source facts.
 - Add actual historic metric trends/hysteresis before presenting a forecast.
 - Map an Apps/Devices contextual entry directly to a canonical incident ID when available.
-- Reattach Android Chrome to the phone-side candidate when a single unambiguous CDP target is available; the current preflight had two authorized logical ADB connections and a closed Chrome endpoint.
-- Establish a reviewed production backend artifact, migration backup/restore and atomic activation workflow before any promotion.
+- Keep the repository-owned standard-user candidate proxy/CDP bridge as the narrow Android qualification path; no browser fixture or production route is substituted for candidate identity.
+- Establish a reviewed production backend artifact, independently verified migration backup/restore and atomic activation/abort workflow before any promotion.
 - Qualify remaining deferred fault scenarios and independently measure hardware haptics.
 
-**Final state: SOURCE IMPLEMENTATION PROVIDED — EXACT-SHA ARM64/TERMUX CANDIDATE BACKEND, ISOLATED MIGRATIONS, MOCKED UI AND PRIOR FRONTEND-ONLY PHYSICAL UI QUALIFIED — CURRENT ANDROID CHROME-TO-CANDIDATE UI AND PRODUCTION ACTIVATION DEFERRED/BLOCKED — DRAFT PR REQUIRED.**
+**Final state: SOURCE IMPLEMENTATION PROVIDED — EXACT-SHA ARM64/TERMUX CANDIDATE BACKEND, ISOLATED MIGRATIONS, MOCKED UI AND ANDROID CHROME-TO-CANDIDATE UI QUALIFIED — PRODUCTION ACTIVATION DEFERRED/BLOCKED BY PROMOTION AND ROLLBACK SAFETY — DRAFT PR REQUIRED.**
