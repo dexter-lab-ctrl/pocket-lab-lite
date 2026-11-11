@@ -84,7 +84,7 @@ MAX_SYMBOLS_PER_FILE = 200
 # the bounded tail is only a compact search aid, not canonical source evidence.
 # Keep enough path, role, ownership and symbol terms for the static inspector
 # while leaving headroom for ordinary source additions before the 10 MB gate.
-MAX_BROWSER_SEARCH_CHARS = 218
+MAX_BROWSER_SEARCH_CHARS = 208
 MAX_BROWSER_SYMBOLS_PER_FILE = 70
 
 
