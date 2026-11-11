@@ -1,6 +1,6 @@
 # System Health P6 qualification handoff — executed with bounded evidence
 
-This handoff records the approved qualification session for PR #649. The Gate B continuation started at feature SHA `1ce603d5524824e11b6b47da415569452f2bc93c`; the prior UI candidate was `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; the backend-promotion candidate qualified below is `0b767dc662c8f7c37accb4bc5fbad71a5f31564f`; base SHA: `cfd4194fd338aeae07580fa7f227d118bebdd907`. The exact candidate was staged in a run-owned, inactive Android/Termux cache on the physical Server Phone. Production `main`, PM2, Caddy, NATS and SQLite were not activated or modified. No source edits, commits or pushes were performed on the phone.
+This handoff records the approved qualification session for PR #649. The Gate B continuation started at feature SHA `1ce603d5524824e11b6b47da415569452f2bc93c`; the prior UI candidate was `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; the backend-promotion candidate qualified below is `0b767dc662c8f7c37accb4bc5fbad71a5f31564f`; the final documentation-synchronized feature SHA is `613fab662f62c090f2fa7d7930315b4cb6c1e814`; base SHA: `cfd4194fd338aeae07580fa7f227d118bebdd907`. The exact candidate was staged in a run-owned, inactive Android/Termux cache on the physical Server Phone. Production `main`, PM2, Caddy, NATS and SQLite were not activated or modified. No source edits, commits or pushes were performed on the phone.
 
 ## 1. Baseline/read-only review
 
@@ -9,7 +9,7 @@ This handoff records the approved qualification session for PR #649. The Gate B 
     git diff origin/main...HEAD --stat
     git diff --check
 
-Recorded exact base/head, local/remote parity, clean branch transitions and candidate manifest identity. The final local and remote qualifying feature SHA was `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; no production rollout was performed.
+Recorded exact base/head, local/remote parity, clean branch transitions and candidate manifest identity. The final documentation-synchronized feature SHA is `613fab662f62c090f2fa7d7930315b4cb6c1e814`; the UI/device candidate was `8c21a4ff729f89064aa794c65bf8795beeef4ed4` and the backend-promotion candidate was `0b767dc662c8f7c37accb4bc5fbad71a5f31564f`. No production rollout was performed.
 
 ## 2. Backend
 

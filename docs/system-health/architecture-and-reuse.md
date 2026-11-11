@@ -2,7 +2,7 @@
 
 **State:** IMPLEMENTED — DEV-PC AND ISOLATED PHYSICAL ANDROID/TERMUX BACKEND-PROMOTION WORKFLOW QUALIFIED WITH BOUNDARIES. **Qualification:** PASS for exact-SHA artifact verification, isolated promotion, schema-42→44 backup/restore/migration rehearsal and the inactive phone-side candidate; production backend activation remains intentionally unperformed on `main` because the live admission gate requires the missing external guardian.
 
-**Provenance:** dexter-lab-ctrl/pocket-lab-lite; main base SHA `cfd4194fd338aeae07580fa7f227d118bebdd907`; prior System Health UI candidate SHA `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; backend-promotion candidate SHA `0b767dc662c8f7c37accb4bc5fbad71a5f31564f`; feature `feat/azure-horizon-system-health-intelligence`. The repository is authoritative; historical PRs are context, not proof of runtime readiness. Documentation synchronization may produce a later feature SHA without changing the qualified backend candidate.
+**Provenance:** dexter-lab-ctrl/pocket-lab-lite; main base SHA `cfd4194fd338aeae07580fa7f227d118bebdd907`; prior System Health UI candidate SHA `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; backend-promotion candidate SHA `0b767dc662c8f7c37accb4bc5fbad71a5f31564f`; final documentation-synchronized feature SHA `613fab662f62c090f2fa7d7930315b4cb6c1e814`; feature `feat/azure-horizon-system-health-intelligence`. The repository is authoritative; historical PRs are context, not proof of runtime readiness. Documentation synchronization may produce a later feature SHA without changing the qualified backend candidate.
 
 ## Architecture and ownership
 

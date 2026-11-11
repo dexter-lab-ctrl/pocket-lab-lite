@@ -1,6 +1,6 @@
 # System Health contracts — source-authored; qualified with explicit runtime boundaries
 
-**Qualification provenance:** Gate B continuation started at feature SHA `1ce603d5524824e11b6b47da415569452f2bc93c`; prior UI candidate SHA `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; backend-promotion candidate SHA `0b767dc662c8f7c37accb4bc5fbad71a5f31564f`; base SHA `cfd4194fd338aeae07580fa7f227d118bebdd907`. The exact candidate backend, isolated schema-42→44 migration, security harness, real route contracts and narrow Android Chrome-to-candidate UI path passed on a run-owned ARM64/Termux phone runtime. Production `main` was intentionally left unchanged and remains a separate runtime identity; candidate qualification does not authorize production activation.
+**Qualification provenance:** Gate B continuation started at feature SHA `1ce603d5524824e11b6b47da415569452f2bc93c`; prior UI candidate SHA `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; backend-promotion candidate SHA `0b767dc662c8f7c37accb4bc5fbad71a5f31564f`; final documentation-synchronized feature SHA `613fab662f62c090f2fa7d7930315b4cb6c1e814`; base SHA `cfd4194fd338aeae07580fa7f227d118bebdd907`. The exact candidate backend, isolated schema-42→44 migration, security harness, real route contracts and narrow Android Chrome-to-candidate UI path passed on a run-owned ARM64/Termux phone runtime. Production `main` was intentionally left unchanged and remains a separate runtime identity; candidate qualification does not authorize production activation.
 
 ## Incident and freshness
 
@@ -36,7 +36,7 @@ All UI reads via same-origin FastAPI, no browser shell/NATS/secret storage, no c
 - GET paths are read-only prepared reads; migration 0043/0044 registration and integrity were exercised in isolated DEV-PC tests.
 - Raw logs, evidence paths, secrets, command payloads and private runtime data remain outside the browser contract.
 
-**Production-readiness boundary:** these contracts do not claim that the installed Server Phone has the PR #649 backend or that isolated candidate qualification authorizes production activation. The Android Chrome evidence is exact-SHA candidate evidence through the repository-owned loopback proxy and short-lived browser bridge, not fixture-only evidence. Production promotion still requires reviewed artifact transfer, backup/restore proof for schema 0043/0044, atomic cutover/abort and explicit authorization.
+**Production-readiness boundary:** these contracts do not claim that the installed Server Phone has the PR #649 backend or that isolated candidate qualification authorizes production activation. The Android Chrome evidence is exact-SHA candidate evidence through the repository-owned loopback proxy and short-lived browser bridge, not fixture-only evidence. The repository-owned promotion workflow now covers artifact transfer, backup/restore rehearsal, schema 0043/0044 migration, atomic cutover/abort and explicit authorization. Live activation still requires a passing production admission snapshot, a verified production backup/restore receipt and separate authorization; the current phone is blocked by its absent external guardian.
 
 ## Backend promotion contract
 
