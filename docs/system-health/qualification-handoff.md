@@ -1,23 +1,23 @@
-# System Health P6 qualification plan — NOT RUN
+# System Health P6 qualification handoff — executed with bounded evidence
 
-The authoring session must not execute any command below. Execute only in a separate approved qualification session, starting from a known clean feature branch and isolated dev fixture. Never inject faults into the production server phone.
+This handoff records the approved qualification session for PR #649. Final feature SHA: `fce2c643eff02fab996a8583f3a6ac74541d80d5`; base SHA: `cfd4194fd338aeae07580fa7f227d118bebdd907`. Qualification used an isolated DEV-PC candidate and repository fixtures. The Server Phone remained consumer-only: no source edits, commits, pushes, fault injection or PR #649 backend installation were performed.
 
 ## 1. Baseline/read-only review
 
     git switch feat/azure-horizon-system-health-intelligence
     git status --short
-    git diff main...HEAD --stat
+    git diff origin/main...HEAD --stat
     git diff --check
 
-Record exact base/head, isolated environment and scenario ID. Check the branch before any new rollout.
+Recorded exact base/head, local/remote parity, clean branch transitions and candidate manifest identity. No rollout was performed.
 
 ## 2. Backend
 
-    python3 -m py_compile pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py pocket-lab-final-structure/runtime/api_fastapi/routers/lite_system_health.py
-    PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q tests/backend/test_lite_system_health.py
-    PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q tests/backend/test_lite_api.py
+    .venv/bin/python -m py_compile pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py pocket-lab-final-structure/runtime/api_fastapi/routers/lite_system_health.py pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3b_projections.py pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3c_projections.py
+    PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest -q tests/backend/test_lite_system_health.py
+    PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest -q tests/backend/test_lite_api.py
 
-Required: no DDL on GET; stable IDs; reopen generation, unknown/stale invariant, duplicate sequence, actor permission (401/403), blocked Class C actions, safe idempotent denial, migration upgrade, database concurrency, bounded retention, sanitization, NATS consumer callback ownership and single-flight. Add missing integration cases before promotion.
+Result: py_compile passed; System Health tests passed (9); Lite API tests passed (336). Additional migration, SQLite, authorization, security, identity, harness and tooling suites passed in the recorded DEV-PC run. The isolated route probe verified migration count 44, authenticated reads, diagnosis persistence, CSRF/session expiry, generation fencing, idempotent blocked repair and sanitized evidence. Local NATS lifespan startup was not claimed because `nats-server` is not installed; the repository isolated-runtime CI check remained a separate exact-head evidence source.
 
 ## 3. Frontend/mocked
 
@@ -26,25 +26,33 @@ Required: no DDL on GET; stable IDs; reopen generation, unknown/stale invariant,
     npm run build-storybook
     npm run build
 
-Check Daylight, Black and System at 320/360/390/768/1024/1440px, 200% text, keyboard and screen reader, focus return, Escape, backdrop, chevron, shared desktop drag/resize/reset, mobile safe area, Compact/Expand, reduced motion and one haptic per supported user interaction. Verify Home and context links to System Health and canonical deep links. Compare card rhythm/spacing with the merged Apps PR #636. Confirm Fix is disabled when unqualified and no unauthorized POST is issued.
+Result: 6 focused unit tests, 10 System Health Playwright tests, full unit 624 tests, Storybook build and production build passed. Mocked accessibility, themes, context links, focus return, mobile snap and disabled repair were exercised. Canonical Home desktop/mobile snapshots were regenerated only for Home after physical validation and Home comparison passed. Hardware haptic actuation was not independently measurable through CDP.
 
 ## 4. Non-disruptive Termux/ARM64 observation
 
-Authorized same-origin GET queries only, with normal authentication; do not bypass user identity checks:
+Authorized same-origin, bounded read-only observation used the existing normal runtime identity; no bypass was used:
 
     curl -fsS http://127.0.0.1:8443/api/lite/system-health/summary | python3 -m json.tool
     pm2 status
 
-Capture CPU, RSS, battery, thermal, SQLite WAL size, idle startup time, route readiness and backend projection age. Do not assume /tmp is writable on Termux; use the project-owned writable state temp or TMPDIR. Observe existing guardian, NATS durable consumer and supervisor without stopping a production service.
+Result: Caddy, FastAPI readiness/status, NATS monitor/JetStream, PM2 core services and the main checkout were healthy. The installed backend returned 404 for `/api/lite/system-health/`, so it was not represented as PR #649 backend evidence. Detailed battery/thermal/WAL trend and live System Health runtime metrics remain deferred; no service was stopped or mutated.
 
-## 5. Deferred isolated fault scenarios
+## 5. Android Chrome candidate qualification
+
+The Windows standard-user ADB/CDP path was reused without UAC elevation. The selected Android Chrome target reported Chrome `156.0.8078.79`, CDP `1.3`, package `com.android.chrome`; the WSL localhost relay and Playwright attach passed. The exact candidate manifest and page response/header matched `fce2c643eff02fab996a8583f3a6ac74541d80d5`.
+
+The narrow System Health UI qualifier passed 10/10 checks: attention, diagnosis, disabled repair with zero repair POSTs, focus restoration, Compact/Expand, healthy/stale/unknown, Daylight/Black/System, deep link, Home navigation, reduced motion and simulated 200% layout safety. API responses were repository MSW fixtures; the installed phone backend remained separately identified.
+
+The Home-only performance candidate ran 18 reports at the exact SHA. Three baseline repetitions ran 18 reports each. Absolute targets remained red; final normalized attribution was `MIXED=18`, `APP_INCREMENTAL_COST=0`. The broad seven-screen workflow was not run. No unrelated optimization was made.
+
+## 6. Deferred isolated fault scenarios
 
 NATS down/connected-but-unconsumed; active callback in flight; worker dead/returned; disconnected agent vs stopped supervisor; unexpected Caddy route state; PhotoPrism stopped/uninstalled; SQLite storage pressure; expired evidence; partial app dependency; code release/rollback blockers; failed post-repair verification; idempotent concurrent denial; rejected authorization; recurrence after resolution; unknown command outcome; restart-storm budget.
 
 Do not treat process online, accepted command or an observed healthy signal as proof of a verified repair. Controlled fault injection requires separate approval and nonproduction targets.
 
-## 6. Promotion gate
+## 7. Promotion gate
 
-Require passing targeted backend/frontend tests, permission and redaction audit, live runtime evidence, mobile/desktop/theme/200%-text qualification, low-power/idle budget, reconciled app/NATS ownership and rollback compatibility before PR review readiness. Record actual outputs in a separate evidence report.
+Targeted backend/frontend tests, permission/redaction checks, candidate identity, mocked UI and narrow physical Android UI qualification passed. Live PR #649 backend behavior on the installed Server Phone, detailed low-power trend evidence and deferred fault-injection scenarios remain incomplete and are not represented as passed.
 
-**Qualification status: NOT RUN — DEFERRED.**
+**Qualification status: DEV-PC AND PHYSICAL ANDROID UI QUALIFIED — INSTALLED PHONE BACKEND AND DEFERRED RUNTIME SCENARIOS PARTIAL/BLOCKED BY SCOPE. DRAFT PR REQUIRED.**

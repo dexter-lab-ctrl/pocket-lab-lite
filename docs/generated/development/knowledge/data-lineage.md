@@ -41,6 +41,14 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `GET /api/lite/security/profiles/{profile}` | ui:litesecurity | table:security_database_backups, table:security_database_restores, table:security_maintenance_runs, table:security_profile_snapshots, table:security_scan_evidence_refs, table:security_scan_findings, table:security_scan_progress_events, table:security_scan_tool_runs, table:security_store_metadata | contract-derived |
 | `GET /api/lite/security/progress` | ui:litesecurity | — | unvalidated |
 | `GET /api/lite/security/summary` | ui:litesecurity | table:security_database_backups, table:security_database_restores, table:security_maintenance_runs, table:security_profile_snapshots, table:security_scan_evidence_refs, table:security_scan_findings, table:security_scan_progress_events, table:security_scan_tool_runs, table:security_store_metadata | contract-derived |
+| `GET /api/lite/system-health/configuration-drift` | ui:litesystemhealth | — | unvalidated |
+| `GET /api/lite/system-health/dependencies` | ui:litesystemhealth | — | unvalidated |
+| `GET /api/lite/system-health/history` | ui:litesystemhealth | — | unvalidated |
+| `GET /api/lite/system-health/incidents` | ui:litesystemhealth | — | unvalidated |
+| `GET /api/lite/system-health/intelligence` | ui:litesystemhealth | — | unvalidated |
+| `GET /api/lite/system-health/policies` | ui:litesystemhealth | — | unvalidated |
+| `GET /api/lite/system-health/resources` | ui:litesystemhealth | — | unvalidated |
+| `GET /api/lite/system-health/summary` | ui:litehome, ui:litesystemhealth | — | unvalidated |
 | `GET /api/lite/system/activity-summary` | ui:litehome | — | unvalidated |
 | `POST /api/lite/apps/{app_id}/backup` | ui:literecovery | — | unvalidated |
 | `POST /api/lite/fleet/add-device` | ui:litedevices | — | unvalidated |
@@ -81,6 +89,7 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `POST /api/lite/release/check` | ui:litereleaseupdatecard | — | unvalidated |
 | `POST /api/lite/security/apps/{app_id}/check` | ui:litesecurity | — | unvalidated |
 | `POST /api/lite/security/check` | ui:litesecurity | — | unvalidated |
+| `POST /api/lite/system-health/incidents/{incident_id}/diagnose` | ui:litesystemhealth | — | unvalidated |
 | `PUT /api/lite/identity/passkeys/{credential_id}` | ui:liteidentity | — | unvalidated |
 
 ## Field lineage

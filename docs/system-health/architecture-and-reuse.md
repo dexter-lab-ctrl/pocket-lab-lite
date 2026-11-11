@@ -1,8 +1,8 @@
 # Pocket Lab Lite — System Health implementation and source reuse
 
-**State:** SOURCE AUTHORED — UNVALIDATED. **Qualification:** NOT RUN — DEFERRED.
+**State:** IMPLEMENTED — DEV-PC AND PHYSICAL ANDROID UI QUALIFIED WITH BOUNDARIES. **Qualification:** PASS for isolated candidate/API and mocked UI; PASS for the narrow physical Android UI scope; PARTIAL for the installed Server Phone backend, which remains on `main` before PR #649.
 
-**Provenance:** dexter-lab-ctrl/pocket-lab-lite; main base SHA cfd4194fd338aeae07580fa7f227d118bebdd907; feature feat/azure-horizon-system-health-intelligence. The repository is authoritative; historical PRs are context, not proof of runtime readiness.
+**Provenance:** dexter-lab-ctrl/pocket-lab-lite; main base SHA `cfd4194fd338aeae07580fa7f227d118bebdd907`; starting feature SHA `37cb4d0597d3f35dbf536f86c5bb21478674d782`; final qualifying feature SHA `fce2c643eff02fab996a8583f3a6ac74541d80d5`; feature `feat/azure-horizon-system-health-intelligence`. The repository is authoritative; historical PRs are context, not proof of runtime readiness.
 
 ## Architecture and ownership
 
@@ -14,13 +14,13 @@ The new System Health service does not execute shell commands, start PM2, connec
 
 | Phase | Source authored | Gaps and qualification |
 |---|---|---|
-| P0 | Reviewed live navigation, overlay, SQLite, projection and app registry source; canonical contracts below | Runtime audit not performed |
-| P1 | 0043 SQLite schema, stable incident identity, deduplication, recurrence, reopen, freshness, bounded reads and history | Multi-source correlation and all races unvalidated |
-| P2 | 0044 diagnostic/denial audit, risk A/B/C policy registry, authenticated fail-closed preflight, incident-generation guard, idempotency digest | No new repair executor, retry scheduler, lease or post-repair verifier enabled |
-| P3 | Existing watchdog/supervisor ownership preserved; worker-owned NATS/process/agent, storage/SQLite/telemetry signals; registered app-process detection | Auto repair and new app/Caddy recipes NOT ENABLED; no live-device qualification |
-| P4 | Lazy System Health tab, Home summary, Apps/Devices/Safety/Recovery links, native Manage, diagnosis, safe guidance, history, policy and dependency views | UI desktop/mobile/theme/haptic tests not run; contextual link does not auto-select the matching incident |
-| P5 | Dependency authority labels, inferred upstream diagnosis, safe configuration mismatch reporting, recurrence, resource bands and disabled AI state | Insufficient rolling evidence for predictive forecast or attributable repair-success rates |
-| P6 | Authored pytest, Vitest, Storybook and Playwright, mock API states and handoff | NOT RUN — DEFERRED |
+| P0 | Reviewed live navigation, overlay, SQLite, projection and app registry source; canonical contracts below | VERIFIED by source audit; Server Phone does not contain the PR #649 route |
+| P1 | 0043 SQLite schema, stable incident identity, deduplication, recurrence, reopen, freshness, bounded reads and history | VERIFIED by focused backend tests and isolated route qualification; NATS-lifespan integration remains separately limited by local tool availability |
+| P2 | 0044 diagnostic/denial audit, risk A/B/C policy registry, authenticated fail-closed preflight, incident-generation guard, idempotency digest | VERIFIED: diagnosis persists, preflight is blocked, repair returns audited denial, no new executor is enabled |
+| P3 | Existing watchdog/supervisor ownership preserved; worker-owned NATS/process/agent, storage/SQLite/telemetry signals; registered app-process detection | Source and isolated fixtures qualified; no destructive fault injection or production-phone service changes performed |
+| P4 | Lazy System Health tab, Home summary, Apps/Devices/Safety/Recovery links, native Manage, diagnosis, safe guidance, history, policy and dependency views | Mocked desktop/mobile and exact-SHA physical Android UI qualified; haptic actuation and installed-phone System Health API remain separately limited |
+| P5 | Dependency authority labels, inferred upstream diagnosis, safe configuration mismatch reporting, recurrence, resource bands and disabled AI state | Truthful unknown/stale/unavailable semantics qualified; predictive forecast remains intentionally unavailable without evidence |
+| P6 | Authored pytest, Vitest, Storybook and Playwright, mock API states and handoff | DEV-PC tests/builds pass; Home-only Android performance is baseline-attributed with no `APP_INCREMENTAL_COST`; broader legacy visual loop retains unrelated Catalog drift |
 
 ## Architectural recommendations 1–12
 
@@ -49,6 +49,14 @@ GET paths: /summary, /incidents, /incidents/{id}, /incidents/{id}/decisions, /hi
 POST paths: /incidents/{id}/diagnose (persist diagnosis), /incidents/{id}/preflight (always blocked), /incidents/{id}/repair (always 409 with audited denial). All paths share /api/lite/system-health base.
 
 **No new repair is executed by these paths.** A healthy observation can resolve a detection but cannot count as a verified repair. Unknown and stale never imply healthy.
+
+## Qualification record
+
+- Focused backend System Health tests: 9 passed; related Lite API tests: 336 passed; SQLite/authorization/security/harness/tooling suites passed in the recorded DEV-PC runs. An isolated exact-head route probe verified anonymous rejection, service/Owner reads, diagnosis persistence, CSRF, session expiry, generation fencing, idempotent repair denial and evidence sanitization.
+- Frontend: System Health unit 6 passed; System Health mocked desktop/mobile Playwright 10 passed; full unit run 624 passed; Storybook and production build passed. Canonical Home desktop/mobile snapshots were regenerated after physical validation and then Home comparison passed.
+- Physical Android candidate: exact SHA `fce2c643eff02fab996a8583f3a6ac74541d80d5`, Chrome `156.0.8078.79`, CDP protocol `1.3`, Android Chrome package verified, 360×691 viewport, 10/10 scoped System Health checks passed, zero repair POSTs, no page errors. API responses in this UI run were repository MSW fixtures, not the installed phone backend.
+- Home-only performance: 18 candidate reports and 3×18 baseline-normalized reports. Absolute production gates remained red; final normalized attribution was `MIXED=18`, `APP_INCREMENTAL_COST=0`, with no actionable PR-specific regression established. The seven-screen workflow was not run.
+- Server Phone: runtime remained on clean `main` at base SHA `cfd4194…`; core PM2 services and bounded health endpoints were healthy. Its installed backend returned 404 for `/api/lite/system-health/`, so new backend behavior was not represented as phone-runtime validation.
 
 ## Source reuse matrix — verified repository paths
 
@@ -86,4 +94,4 @@ No new background polling thread, heavyweight ML library, continuous process sam
 - Map an Apps/Devices contextual entry directly to a canonical incident ID when available.
 - Qualify migrations, latency, a11y/haptics and mobile/desktop theme parity.
 
-**Final state: SOURCE IMPLEMENTATION PROVIDED — QUALIFICATION DEFERRED — DRAFT PR REQUIRED.**
+**Final state: SOURCE IMPLEMENTATION PROVIDED — ISOLATED BACKEND, MOCKED UI AND NARROW PHYSICAL ANDROID UI QUALIFIED — INSTALLED PHONE BACKEND AND FULL PRODUCTION RUNTIME DEFERRED — DRAFT PR REQUIRED.**

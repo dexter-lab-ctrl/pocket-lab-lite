@@ -8214,6 +8214,32 @@
         "affects_release": false,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_ANDROID_DEVICE_SERIAL",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/run-ui-performance-android-baseline.sh",
+          "scripts/dev/lite/run-ui-performance-android-candidate.sh",
+          "tests/backend/test_lite_android_performance_baseline.py",
+          "tests/backend/test_lite_windows_adb_qualification_tools.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "POCKETLAB_ANDROID_WAKE_BEFORE_QUALIFICATION",
         "owner": "repository tooling",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -34101,7 +34127,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/main.py:122"
+          "pocket-lab-final-structure/runtime/api_fastapi/main.py:123"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -34138,7 +34164,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/main.py:194"
+          "pocket-lab-final-structure/runtime/api_fastapi/main.py:195"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -41139,7 +41165,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 528,
+      "page_count": 531,
       "top_level": [
         "start-here",
         "use",
@@ -49022,10 +49048,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "cd5e0974b51fbb3d18295e9e6b4c6149582848008d3ccd530eeaf2ea57f93faf",
-        "documentation": "4649226f32a3edfa3369af74d2d7f18f8aff03d0fad16cddcd1bec7a005bebb3",
-        "openapi": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
-        "operational_health": "c758d7d653b42f1860a89c2ab10d285eea8d8f477df13804b883c3b2e3255f8e"
+        "asyncapi": "c3b4c64a30e73e83cd5a5768f5386eaccd92cea8ee010b360a06c916ae1c66d8",
+        "documentation": "b3f2fdc234bbaca15845939cdacd1257f62058977e85a5d122a70c339f8fe892",
+        "openapi": "38baff15a70648585d6011bf868a4d665931203c92b8affdd708f4d70a2f6fd8",
+        "operational_health": "4fb45ba7140f4aefc45bffc4605a42cf7ff6bb07fb69d64e1a9d1c5d25005c8b"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -124401,5 +124427,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "5b83a355ef743bb604a71b30800a28a4739d106436f557f093619b8ddec305de"
+  "source_fingerprint": "cfad66d97dc360ef85314fbf6f793e03e68580458cf27b179d9f6f3d1da16c41"
 }

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 69831c18152ed4a9cddb3a257f7742dc8330302fcc4b0deffb1a1b8894fe9296
+source_fingerprint: 180f576dab3f74b7b222b3eade109c1c3649c65c537f90c54a0d4d366cef1cd7
 schema_revision: 1
 validation_status: generated
 ---
@@ -136,6 +136,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_ALLOW_TAILSCALE_API` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/core/control_plane_core.py |
 | `POCKETLAB_ANDROID_CDP_BRIDGE_PORT` | configuration | 19222 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-devices.sh, scripts/dev/lite/run-ui-performance-android-rules.sh, scripts/dev/lite/run-ui-performance-android-safety.sh |
 | `POCKETLAB_ANDROID_CDP_LOCAL_PORT` | configuration | 9222 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-apps.sh, scripts/dev/lite/run-ui-performance-android-devices.sh, scripts/dev/lite/run-ui-performance-android-rules.sh, scripts/dev/lite/run-ui-performance-android-safety.sh |
+| `POCKETLAB_ANDROID_DEVICE_SERIAL` | configuration | ]+$ ]] \<br>    \|\| fail 'POCKETLAB_ANDROID_DEVICE_SERIAL contains unsupported characters.'<br>  candidate_device_args=(-Device | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-baseline.sh, scripts/dev/lite/run-ui-performance-android-candidate.sh |
 | `POCKETLAB_ANDROID_WAKE_BEFORE_QUALIFICATION` | configuration | 0 | yes | component-dependent | scripts/dev/lite/run-ui-performance-android-candidate.sh, scripts/dev/lite/run-ui-performance-android-cdp.sh |
 | `POCKETLAB_API_BIND` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_API_DIR` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/core/control_plane_core.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
@@ -1031,6 +1032,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `SOURCE_DIR` | configuration | $POCKET_LAB_IAC_DIR | no | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/seed-gitops-repo.sh |
 | `SOURCE_GENERATED_AT` | configuration | source-defined or empty | no | component-dependent | scripts/docs/graphviz/generate_lite_architecture.py, scripts/docs/graphviz/generate_lite_diagrams.py, scripts/docs/knowledge/generate_knowledge.py, scripts/docs/lite/generate_contracts.py, scripts/docs/lite/generate_docs.py, scripts/docs/lite/generate_platform_catalogs.py, scripts/docs/runtime/generate_termux_runtime_docs.py, scripts/docs/sqlite/generate_schemaspy.py |
 | `SOURCE_GLOBS` | configuration | source-defined or empty | no | component-dependent | scripts/docs/generate_policy_evidence.py |
+| `SOURCE_NAMES` | configuration | source-defined or empty | no | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py |
 | `SOURCE_PATTERNS` | configuration | source-defined or empty | no | component-dependent | scripts/docs/threat_model_drift_lib.py |
 | `SOURCE_REAL` | configuration | source-defined or empty | no | component-dependent | scripts/dev/sync-wsl-to-windows.sh |
 | `SOURCE_RELEASE_BADGE` | configuration | source-defined or empty | no | component-dependent | scripts/docs/knowledge/generate_knowledge.py |

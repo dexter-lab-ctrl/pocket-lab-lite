@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 5b2e05c998165ca10ae3aea1626e7dcbe2b926ed5e5a0551240809e826df6984
+source_fingerprint: 37ee89db14b20c26cd201355869f9c32507333d2f2e95bb7c5c3b46d63b6045d
 schema_revision: 1
 validation_status: generated
 ---
@@ -126,6 +126,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_ALLOW_REMOTE_ACCESS_FAULT`
 - `POCKETLAB_ANDROID_CDP_BRIDGE_PORT`
 - `POCKETLAB_ANDROID_CDP_LOCAL_PORT`
+- `POCKETLAB_ANDROID_DEVICE_SERIAL`
 - `POCKETLAB_ANDROID_WAKE_BEFORE_QUALIFICATION`
 - `POCKETLAB_API_BIND`
 - `POCKETLAB_API_DIR`
@@ -272,7 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_LONG_GATE_REPEATED_COOLDOWN_SECONDS`
 - `POCKETLAB_LONG_GATE_REPEATED_COUNT`
 - `POCKETLAB_LONG_GATE_REPEATED_PARITY_EVERY`
-- `POCKETLAB_LONG_GATE_REPEATED_RESOURCE_EVERY`
 
 ## Process roles
 

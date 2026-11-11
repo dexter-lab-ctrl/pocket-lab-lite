@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 1e22535b2faedab50a1beb693113e6ab946566d52b081b008cb796751a117dce
+source_fingerprint: ecd2c0982163b23d98d31d88c4c71480f8f479409da093bac7a8bc22621c68fa
 schema_revision: 1
 validation_status: generated
 ---
@@ -232,5 +232,13 @@ validation_status: generated
 | `pocket-lab-lite-security-refinementsavedoffline` | security | `offline-saved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-refinementsavedoffline-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-refinementfirstrun` | security | `security-first-run` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-refinementfirstrun-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-security-refinementattention` | security | `security-action-needed` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-security-refinementattention-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-system-health-healthylightdesktop` | system-health | `system-health-healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-healthylightdesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-system-health-healthydarkdesktop` | system-health | `system-health-healthy` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-healthydarkdesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-system-health-attentiondarkdesktop` | system-health | `system-health-attention` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-attentiondarkdesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-system-health-attentionlightmobile` | system-health | `system-health-attention` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-attentionlightmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-system-health-staledarkmobile` | system-health | `system-health-stale` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-staledarkmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-system-health-noevidencelightmobile` | system-health | `system-health-unknown` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-noevidencelightmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-system-health-resolveddesktop` | system-health | `system-health-resolved` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-resolveddesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-system-health-twohundredpercenttext` | system-health | `system-health-attention` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-twohundredpercenttext-{viewport}.png` | fixture-dependent |
 
 Screenshot files are produced by the existing WSL2-aware external Chrome resolver. A missing screenshot is not reported as PASS.

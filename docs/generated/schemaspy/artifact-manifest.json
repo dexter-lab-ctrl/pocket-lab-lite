@@ -2,8 +2,8 @@
   "artifacts": [
     {
       "path": "anomalies.html",
-      "sha256": "18ef06d25c53f49a910d1f575ed3a4914e940a674967ec9bf8d88b40b78cab36",
-      "size_bytes": 31293
+      "sha256": "31d7bcea698f6785bb815b180731833f5a805068bc4c669c8039ac899282eea9",
+      "size_bytes": 32524
     },
     {
       "path": "anomalies.js",
@@ -567,8 +567,8 @@
     },
     {
       "path": "columns.html",
-      "sha256": "274825dd805b64b4f7a82f291bb4e67d2d24e8b1777310a5c9bbe5b4548e3544",
-      "size_bytes": 528993
+      "sha256": "c7dba978b8848096f4ab4b0a681459acac118ac0b827969e3d7373003b4730f1",
+      "size_bytes": 555492
     },
     {
       "path": "constraint.js",
@@ -577,63 +577,63 @@
     },
     {
       "path": "constraints.html",
-      "sha256": "7c1ab7d868ee3158dc1c312a2dfd4dcbc1384795f57880e1c8214193e485ac36",
-      "size_bytes": 78676
+      "sha256": "3c3864220e362d1d4419b1eb543448dacb459edc2c6df88042d80767a4003086",
+      "size_bytes": 80003
     },
     {
       "path": "deletionOrder.txt",
-      "sha256": "cfa7193815fbe12d2174701c8fa81f399069e2cae6d18e6a1003d7034f858012",
-      "size_bytes": 2063
+      "sha256": "b2424eb5c35aa28561fc4d6a1d4d5eef9b3219c7ec116ab6c220ed796605c2de",
+      "size_bytes": 2248
     },
     {
       "path": "diagrams/orphans/orphans.dot",
-      "sha256": "e3d5872f8253abaa61046503fb2f47f890476ca5f52885c0f47e5e21e873a40b",
-      "size_bytes": 184077
+      "sha256": "becb2ea4e1e0b66d2f2ed92e50d57aa1139dc1af9a25c1f5ed507a3d065a65fe",
+      "size_bytes": 197765
     },
     {
       "path": "diagrams/orphans/orphans.png",
-      "sha256": "2c5929a3a35f1f52d3192152306f65ac01394f28f3cd031d4f34062599a56320",
-      "size_bytes": 1590100
+      "sha256": "4a6e5f5b855e840a0092fc685883d68708d5d07a29d1534847d9cb863a88415e",
+      "size_bytes": 1702062
     },
     {
       "path": "diagrams/summary/relationships.implied.compact.dot",
-      "sha256": "04688a36ccdb82c60ec6e40e5539ebdf825c7ddcffca68a2b308fde36b74f199",
-      "size_bytes": 177784
+      "sha256": "d2821e6356412cc233ed2a26bdeb996f8a80b2c4c5e1fa65e8a18e5b6936ad1a",
+      "size_bytes": 187842
     },
     {
       "path": "diagrams/summary/relationships.implied.compact.png",
-      "sha256": "689facda8c726adbf759a7ed3508bad1f6b21dd68e2469c4b0bc0e6f846fb497",
-      "size_bytes": 1347930
+      "sha256": "2b910f02b7c7ffb877aa1805a1694401ea646d1a86684fa01a15c887fe998435",
+      "size_bytes": 1408530
     },
     {
       "path": "diagrams/summary/relationships.implied.large.dot",
-      "sha256": "88a2e6fdc91fef8f5822bdba0bb3cddd112e47c18edd15faf64be51fd3b357cf",
-      "size_bytes": 380704
+      "sha256": "489f73ad5d3b1b0f01f839fdb098c8ed3d6e355bb13b427667b4413aa86fb4a5",
+      "size_bytes": 400996
     },
     {
       "path": "diagrams/summary/relationships.implied.large.png",
-      "sha256": "9ff029ce52c1f12a31ae16dedfa8c27f3871559b3b264cb2c0a9803a8bfa0c6a",
-      "size_bytes": 2634398
+      "sha256": "dc9d9b2625f0c7bcf6e1ec5a141d5271b18ae89f1b43f406f779a65ae69472de",
+      "size_bytes": 2762717
     },
     {
       "path": "diagrams/summary/relationships.real.compact.dot",
-      "sha256": "9b25750cb468b254ccf9820c096ca84df7919db4fc532a82c73b9f7359521948",
-      "size_bytes": 136640
+      "sha256": "3c35ffe24f2ad3d1e9381334778a9671bff4126409511d9bf5e2684473aade5c",
+      "size_bytes": 140984
     },
     {
       "path": "diagrams/summary/relationships.real.compact.png",
-      "sha256": "8c329bc1b236a976a49fef64246d00bb8a57c8cee4771fe0c8aaf16490236aa6",
-      "size_bytes": 1079576
+      "sha256": "73100cb633c9dfcfd28dc729269c64df6a018d87d2591456a172011c624861d2",
+      "size_bytes": 996542
     },
     {
       "path": "diagrams/summary/relationships.real.large.dot",
-      "sha256": "6b2ec8e7d56cca62aec03908174ab3757c398aeada15d1ca3e58bc3a72f5ac9d",
-      "size_bytes": 280740
+      "sha256": "15401a7bf01a6cf80f56f54fab757e6932d04c3b651c3ae12835c1b1004e7ef4",
+      "size_bytes": 291234
     },
     {
       "path": "diagrams/summary/relationships.real.large.png",
-      "sha256": "870cd546a1bc836dec44e28c679fa351569a48d956aee86af14c1c3c4ea14c26",
-      "size_bytes": 2076992
+      "sha256": "979a1cc0a005b862a561ed4c14287a0e76407402e3091e7d9b1a2259eef8a124",
+      "size_bytes": 1921374
     },
     {
       "path": "diagrams/tables/app_action_lifecycle.1degree.dot",
@@ -1904,6 +1904,156 @@
       "path": "diagrams/tables/lite_revision_events.implied2degrees.png",
       "sha256": "7617201cf582dc5df87771c7611d82c945000db66b88a7dc1c87d302dde34058",
       "size_bytes": 201717
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_diagnoses.1degree.dot",
+      "sha256": "d93085ad19a0fe587647ba3d95391a5e4790e95fc6dd6e2be3c1a215fa2cdd0b",
+      "size_bytes": 4260
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_diagnoses.1degree.png",
+      "sha256": "6300e5641f00f99f1860e2838b70eb268a0087c33d191cad9ca7774fd40dac08",
+      "size_bytes": 34297
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_diagnoses.implied1degrees.dot",
+      "sha256": "cd4e1551c111e476855dd046baf1347523703dc521ad3e4b663986359374e4a2",
+      "size_bytes": 6617
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_diagnoses.implied1degrees.png",
+      "sha256": "b8baa5bc61bf43aa7b2c641e9b916712f4f0240a5f43cfc897eb874d19788689",
+      "size_bytes": 46347
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_diagnoses.implied2degrees.dot",
+      "sha256": "f164665633819dccb5c3675b81fd6b2d32add940f91aa058dc7b95c18201d298",
+      "size_bytes": 9186
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_diagnoses.implied2degrees.png",
+      "sha256": "24fdbe6b45350d55e64e7906bdcb78ae885c5016994ce259cd0ed6072ba74031",
+      "size_bytes": 69431
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_events.1degree.dot",
+      "sha256": "23f6452fc7a138a737a0653c436210b81917a6a4582edf4e8c57d13e0a412243",
+      "size_bytes": 3105
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_events.1degree.png",
+      "sha256": "e377b0f957c2f9e00215454377be767e3da4c91fad2940e1726a31b02e26c44a",
+      "size_bytes": 24258
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_events.implied1degrees.dot",
+      "sha256": "e99c10d946afd4b6311ef3d3ff8649e0f0f2fce2476738dd17cdfa58bb8d5c90",
+      "size_bytes": 5459
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_events.implied1degrees.png",
+      "sha256": "38fec34a64f273384e2a326be47487db301213b477b951aa5aa456c30718ab91",
+      "size_bytes": 34646
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_events.implied2degrees.dot",
+      "sha256": "4729652659825bcc65ae768f28ecaedd8494eb3532fa227be9dfb7eba5b4ab70",
+      "size_bytes": 8043
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_events.implied2degrees.png",
+      "sha256": "c2ca75f5feb849bcc4332b71cc5dda2ae9f41223440eb15d0e552d2f4516ef90",
+      "size_bytes": 60370
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_incidents.1degree.dot",
+      "sha256": "406ce5521326368ca2089dcf0a9ab7b0322079a19da6734f9b172cc048213da5",
+      "size_bytes": 8746
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_incidents.1degree.png",
+      "sha256": "fd766901baa5314b87846a8d5607e2fea20072749a5ee75de65bab3742b68b5c",
+      "size_bytes": 67909
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_incidents.implied1degrees.dot",
+      "sha256": "c6af545909a07387a0d279967c2eadc6a1541b06391dc44d183da5a057f91e70",
+      "size_bytes": 14473
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_incidents.implied1degrees.png",
+      "sha256": "c48e234be5722b65e12933b063f1759d22794742449d461e3f30298878b4852c",
+      "size_bytes": 104924
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_observations.1degree.dot",
+      "sha256": "92d80a9b25a80bd554ce25b7dad4de4744915de51f088e9c5d9836fd7efd86ec",
+      "size_bytes": 3102
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_observations.1degree.png",
+      "sha256": "ff20179ac1a0bb6faeb3631b37c4f26e7ad79a7c05ae870b7a24dd5e7dbbe304",
+      "size_bytes": 25747
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_repair_attempts.1degree.dot",
+      "sha256": "07f522333b27b17d2309380dd6d06da49ebdd78bf40b258464d76ed0bd91074d",
+      "size_bytes": 8745
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_repair_attempts.1degree.png",
+      "sha256": "350cf9d60e50a7ea36ca83202c6d4e6fd4452dba3c9e64adb0d68c50f334381e",
+      "size_bytes": 68506
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_repair_attempts.implied1degrees.dot",
+      "sha256": "946ccdc63f4fa9f81fc59467eacc1df1a6a01b259bd99b2e7c42cce137149781",
+      "size_bytes": 8752
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_repair_attempts.implied1degrees.png",
+      "sha256": "350cf9d60e50a7ea36ca83202c6d4e6fd4452dba3c9e64adb0d68c50f334381e",
+      "size_bytes": 68506
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_repair_attempts.implied2degrees.dot",
+      "sha256": "672f4687f752ba2ad8ab0608305d584d930e8191c255f2f870647d6a8bd0add1",
+      "size_bytes": 11304
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_repair_attempts.implied2degrees.png",
+      "sha256": "09dbecbfdf26476f416f4896eac586ea3821c91765e8210757249ec8c256f7cc",
+      "size_bytes": 95294
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_repair_denials.1degree.dot",
+      "sha256": "8d34741a4657f6bee5bc91642888fd26af322770c0b1e39f68a79aef399786e3",
+      "size_bytes": 4597
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_repair_denials.1degree.png",
+      "sha256": "aab8c1b747b8f87bfa141bd324bc4faf71287b2e6a753a03354218cd9f851ff5",
+      "size_bytes": 37025
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_repair_denials.implied1degrees.dot",
+      "sha256": "f8cb9ec1f581560d1f243ad4cca4bbfcb85b95cae24d0e35b6b96657f944091b",
+      "size_bytes": 6959
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_repair_denials.implied1degrees.png",
+      "sha256": "1b1fded60e33090397767b25476f2acb9711f4300b93dfde43fdde75e8dee21c",
+      "size_bytes": 49128
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_repair_denials.implied2degrees.dot",
+      "sha256": "3882859c8c89c15c1ef9b8dbcbc695cdffafb06891f44f39c53fea6fffca0aad",
+      "size_bytes": 9503
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_repair_denials.implied2degrees.png",
+      "sha256": "c9eee32e7bc332d583aec09b176d64de7acdca8a96d01393f0ecc2a9e7ec3af7",
+      "size_bytes": 72451
     },
     {
       "path": "diagrams/tables/owner_approved_operations.1degree.dot",
@@ -3477,8 +3627,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "ec313a8793839ddc07a2f05bc56a08f6e673e24f73766026b0ff27c80d5b7385",
-      "size_bytes": 75031
+      "sha256": "42f119be91142256003d2c91b9e869cff30280e4318d2c0339b1c634ebf362f0",
+      "size_bytes": 79178
     },
     {
       "path": "info-html.txt",
@@ -3487,8 +3637,8 @@
     },
     {
       "path": "insertionOrder.txt",
-      "sha256": "0ca65f1713677c5bdcc6f0e4b78a669271a84452010f974e596e6363b61bd60b",
-      "size_bytes": 2063
+      "sha256": "cde6191ae0a746bae41f30539c6836f049d2ac01945486d4fcc81a82348402f4",
+      "size_bytes": 2248
     },
     {
       "path": "main.js",
@@ -3497,18 +3647,18 @@
     },
     {
       "path": "orphans.html",
-      "sha256": "1b44301c3d134c7e2909a66fa71f0a0b20e06627ebee4292ccb7341707a99388",
-      "size_bytes": 13542
+      "sha256": "2d42c69056a4b866d28bfe21d68f183b3853767755f9da9b7d08447f3b9b7c43",
+      "size_bytes": 14214
     },
     {
       "path": "pocketlab-lite-schema.sqlite3.main.xml",
-      "sha256": "41c6c2151ed52f2f6dade5949af8658d91e4b33c1c3052503c1f236f56759ce7",
-      "size_bytes": 321054
+      "sha256": "6bcd94d0dc7afb1ab173210154ec3ffa58c4d29223c3abf9cbf05ffe98ac5f63",
+      "size_bytes": 337170
     },
     {
       "path": "relationships.html",
-      "sha256": "9ce27f7ad19e11d42eabaf4b445206edb017b69088d852b5471f9486b7f651e8",
-      "size_bytes": 50279
+      "sha256": "970f49050f4f9bc67ba83938ca53db02b3cdfe694fb03529b02c0f40b02f1a8a",
+      "size_bytes": 52693
     },
     {
       "path": "relationships.js",
@@ -3542,8 +3692,8 @@
     },
     {
       "path": "source-metadata.json",
-      "sha256": "7540d17d49c4c2da75a338e54ef5f6fba9746e771039acce69848149f24f883c",
-      "size_bytes": 11892
+      "sha256": "de6261438c2de4cadbb0d442ee33cb775c12e728e7e3704c52cdb6bcaf48253a",
+      "size_bytes": 12414
     },
     {
       "path": "tables/app_action_lifecycle.html",
@@ -3764,6 +3914,36 @@
       "path": "tables/lite_revision_events.html",
       "sha256": "7a70c5fa9acbfb8ac641d47814e7cb2a794991c04f9a60b52682e487528d375b",
       "size_bytes": 30085
+    },
+    {
+      "path": "tables/lite_system_health_diagnoses.html",
+      "sha256": "a8693ae06ae750b075212ae56fb78d30ff0e4b5b921b200492127d6af3de198b",
+      "size_bytes": 26912
+    },
+    {
+      "path": "tables/lite_system_health_events.html",
+      "sha256": "98911b5beaaf8cbc9c3ff05395e0745147f3f0ce5e2a67cdeab88a49d888a0e3",
+      "size_bytes": 23633
+    },
+    {
+      "path": "tables/lite_system_health_incidents.html",
+      "sha256": "3f838716629e61773f2f1f39ebbe5d5bdfc0a93447c92d3ad74e96b6cd30fd0b",
+      "size_bytes": 35257
+    },
+    {
+      "path": "tables/lite_system_health_observations.html",
+      "sha256": "7e22da4b1e8d157a6a0e7c81383f6e0a220cf62a2bd09e6756f60f1ae514acd7",
+      "size_bytes": 20393
+    },
+    {
+      "path": "tables/lite_system_health_repair_attempts.html",
+      "sha256": "41849dbfd6c92837a8b0fa39e5dbec89deb962a942ed444969db3afabf552938",
+      "size_bytes": 33176
+    },
+    {
+      "path": "tables/lite_system_health_repair_denials.html",
+      "sha256": "206349cd1d747538ce2052b1ce29e6c93427977af9c5daa1bcc81a8a3a493490",
+      "size_bytes": 28373
     },
     {
       "path": "tables/owner_approved_operations.html",

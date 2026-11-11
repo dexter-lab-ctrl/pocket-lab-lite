@@ -71,6 +71,31 @@
       "api:get:/api/lite/security/summary": [
         "ui:litesecurity"
       ],
+      "api:get:/api/lite/system-health/configuration-drift": [
+        "ui:litesystemhealth"
+      ],
+      "api:get:/api/lite/system-health/dependencies": [
+        "ui:litesystemhealth"
+      ],
+      "api:get:/api/lite/system-health/history": [
+        "ui:litesystemhealth"
+      ],
+      "api:get:/api/lite/system-health/incidents": [
+        "ui:litesystemhealth"
+      ],
+      "api:get:/api/lite/system-health/intelligence": [
+        "ui:litesystemhealth"
+      ],
+      "api:get:/api/lite/system-health/policies": [
+        "ui:litesystemhealth"
+      ],
+      "api:get:/api/lite/system-health/resources": [
+        "ui:litesystemhealth"
+      ],
+      "api:get:/api/lite/system-health/summary": [
+        "ui:litehome",
+        "ui:litesystemhealth"
+      ],
       "api:get:/api/lite/system/activity-summary": [
         "ui:litehome"
       ],
@@ -197,6 +222,9 @@
       "api:post:/api/lite/security/check": [
         "ui:litesecurity"
       ],
+      "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose": [
+        "ui:litesystemhealth"
+      ],
       "api:put:/api/lite/identity/passkeys/{credential_id}": [
         "ui:liteidentity"
       ]
@@ -217,6 +245,7 @@
       "ui:litehome": [
         "api:get:/api/lite/home/activity-cursor",
         "api:get:/api/lite/home/activity-history",
+        "api:get:/api/lite/system-health/summary",
         "api:get:/api/lite/system/activity-summary",
         "api:post:/api/lite/home/activity-cursor/review"
       ],
@@ -294,6 +323,17 @@
         "api:get:/api/lite/security/summary",
         "api:post:/api/lite/security/apps/{app_id}/check",
         "api:post:/api/lite/security/check"
+      ],
+      "ui:litesystemhealth": [
+        "api:get:/api/lite/system-health/configuration-drift",
+        "api:get:/api/lite/system-health/dependencies",
+        "api:get:/api/lite/system-health/history",
+        "api:get:/api/lite/system-health/incidents",
+        "api:get:/api/lite/system-health/intelligence",
+        "api:get:/api/lite/system-health/policies",
+        "api:get:/api/lite/system-health/resources",
+        "api:get:/api/lite/system-health/summary",
+        "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose"
       ]
     }
   },
@@ -303,6 +343,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "a4127f9a98d18909227202e6d335b5bf73b29d52e7784bb45cd71961e6725f9a"
+    "source_fingerprint": "fb3201181d32d7101a542e3add853a4b4a1e7e149ad65f00606937742b856e75"
   }
 }

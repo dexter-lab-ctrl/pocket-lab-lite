@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 528,
+  "page_count": 531,
   "page_types": [
     "overview",
     "guide",
@@ -17433,6 +17433,75 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "system-health/architecture-and-reuse.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "architecture",
+      "generated": false,
+      "id": "page:system-health/architecture-and-reuse",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "architecture",
+      "path": "system-health/architecture-and-reuse.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "system-health/architecture-and-reuse.md",
+      "title": "Pocket Lab Lite — System Health implementation and source reuse",
+      "url": "/system-health/architecture-and-reuse/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "system-health/contracts.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:system-health/contracts",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "system-health/contracts.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "system-health/contracts.md",
+      "title": "System Health contracts — source-authored; qualified with explicit runtime boundaries",
+      "url": "/system-health/contracts/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "system-health/qualification-handoff.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:system-health/qualification-handoff",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "evidence",
+      "path": "system-health/qualification-handoff.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "system-health/qualification-handoff.md",
+      "title": "System Health P6 qualification handoff — executed with bounded evidence",
+      "url": "/system-health/qualification-handoff/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "validation/README.md"
       ],
       "confidence": "source-derived",
@@ -18505,7 +18574,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "388a87448645ad4db76fd1c35c249189e95e3715623e3291bf568b57a47fab3c",
+  "source_fingerprint": "8c8b6be3680a836a62f03a72fdc1a2d45c0b376f41211b687e65feae8aa1f397",
   "top_level": [
     "start-here",
     "use",

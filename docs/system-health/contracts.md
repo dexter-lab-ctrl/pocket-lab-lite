@@ -1,10 +1,14 @@
-# System Health contracts — source-authored; unvalidated
+# System Health contracts — source-authored; qualified with explicit runtime boundaries
+
+**Qualification provenance:** final feature SHA `fce2c643eff02fab996a8583f3a6ac74541d80d5`; base SHA `cfd4194fd338aeae07580fa7f227d118bebdd907`. The isolated DEV-PC route and mocked UI contracts passed focused qualification. The Server Phone was intentionally left on `main` and does not expose the new System Health route; physical Android UI evidence therefore used the exact candidate frontend with repository MSW responses.
 
 ## Incident and freshness
 
 Canonical incident: incident_id = hash(source + target), source, target_id, kind, state, severity, generation, recurrence_count, observation_count, first_seen_at, last_seen_at, resolved_at, evidence_revision, summary, suspected_cause and verified_cause. States: detected, diagnosing, diagnosed, repair_available, repairing, verifying, resolved, blocked, failed, manual_attention_required.
 
 Supported status mapping: healthy/normal/online/ready/running/connected vs explicit unhealthy/critical/pressure/offline/stopped vs unknown/stale. Unknown never closes an incident. An observed healthy state may mark a problem resolved but is NOT a verified repair outcome.
+
+UI freshness mapping is deliberately distinct: `current` may present observed health or attention; `stale`/saved snapshot data presents “Showing saved information”; `unavailable` or otherwise non-current evidence without a saved snapshot presents “System status needs confirmation”. None of these states authorize repair.
 
 ## Diagnose
 
@@ -24,4 +28,12 @@ verified_runtime = persisted recent observation; verified_contract = repo-define
 
 All UI reads via same-origin FastAPI, no browser shell/NATS/secret storage, no command cache. Worker-only projection ingest; SQLite read-only prepared GET, bounded metadata and pagination. Existing authenticated policies and agent/worker/supervisor execution boundaries remain authoritative.
 
-**All source content UNVALIDATED; no production-readiness assertion.**
+## Qualification assertions
+
+- Anonymous reads are rejected by the authenticated API boundary; service and synthetic Owner qualification reads are target-bound.
+- Human diagnosis writes require CSRF; expired sessions are rejected. Diagnosis is sanitized and persisted.
+- Preflight is fail-closed and repair returns a recorded 409 denial because no new System Health executor is qualified. Duplicate denial requests do not execute work or claim recovery.
+- GET paths are read-only prepared reads; migration 0043/0044 registration and integrity were exercised in isolated DEV-PC tests.
+- Raw logs, evidence paths, secrets, command payloads and private runtime data remain outside the browser contract.
+
+**Production-readiness boundary:** these contracts do not claim that the installed Server Phone has the PR #649 backend or that Android UI fixture consumption proves phone-runtime backend qualification.
