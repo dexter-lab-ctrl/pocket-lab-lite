@@ -981,6 +981,13 @@ def project(domain: str, payload: dict[str, Any]) -> prepared.ProjectionCommitRe
     )
     if result.changed:
         _counter(domain, "semantic_change_count")
+        if domain in {"system.telemetry_thresholds", "system.storage_pressure", "system.sqlite_health"}:
+            try:
+                from .lite_system_health import ingest_projection
+                ingest_projection(domain, payload)
+            except Exception:
+                # Intelligence must never disrupt core projection lifecycle.
+                pass
         if domain in {
             "system.telemetry_thresholds",
             "system.storage_pressure",

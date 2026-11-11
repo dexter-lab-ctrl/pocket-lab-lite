@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 import json
+import logging
 import os
 import re
 import shutil
@@ -26,6 +27,8 @@ from ..db.migrations import apply_migrations
 from ..db.runtime import SQLITE_READS, SQLITE_WRITER
 from .nats_bus import BUS
 
+
+_LOGGER = logging.getLogger(__name__)
 
 PHASE3B_DOMAINS = (
     "security.progress",
