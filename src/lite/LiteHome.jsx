@@ -34,6 +34,7 @@ import './components/homeActivityEvidence.css';
 import './components/homePanelRefinement.css';
 import './components/homeCommand.css';
 import './components/homePremiumRefinement.css';
+import './systemHealth.css';
 
 const HOME_WORKFLOW_STEPS = Object.freeze([
   { id: 'device', label: 'Device', icon: Smartphone },

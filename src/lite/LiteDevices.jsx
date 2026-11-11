@@ -1,4 +1,5 @@
 import { LiteProtectedConfirmation } from './components/LiteSafeForms.jsx';
+import LiteSystemHealthEntry from './components/LiteSystemHealthEntry.jsx';
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LiteField } from './components/LiteSafeForms.jsx';
 import {
@@ -603,7 +604,7 @@ export function fleetOperationalStory({ data, devices = [], onlineDevices = 0, h
   };
 }
 
-export default function DevicesScreen() {
+export default function DevicesScreen({ onNavigate }) {
   const [hostname, setHostname] = useState('');
   const [selectedRoles, setSelectedRoles] = useState(['compute']);
   const [addDeviceOpen, setAddDeviceOpen] = useState(false);
@@ -1030,6 +1031,7 @@ export default function DevicesScreen() {
         </div>}
       />
 
+      <LiteSystemHealthEntry onNavigate={onNavigate} label="Diagnose device health" />
       <section className="lite-devices-library-status" aria-label="Environment status">
         <LiteOperationalStory className="lite-devices-operational-story" story={fleetStory} />
         <LiteFreshness saved={savedStateOnly} stale={isExpired} refreshing={refreshing}

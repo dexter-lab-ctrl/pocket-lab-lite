@@ -1,4 +1,5 @@
 import { LiteProtectedConfirmation } from '../components/LiteSafeForms.jsx';
+import LiteSystemHealthEntry from '../components/LiteSystemHealthEntry.jsx';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { catalogStateBucket, filterCatalogApps, sortCatalogApps, partitionCatalogApps, trustedCatalogIconPath, catalogLibraryIdentity } from './catalogPresentation.js';
 import { LiteDetailsPanel, useFocusTrap, useFocusReturn } from '../LiteOverlay.jsx';
@@ -2509,7 +2510,7 @@ function CatalogManagePortal({
 }
 
 
-export default function CatalogScreen({ onOpenWorkspace }) {
+export default function CatalogScreen({ onOpenWorkspace, onNavigate }) {
   const {
     data,
     loading,
@@ -3382,6 +3383,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         description="Your self-hosted applications"
         actions={<LiteRefreshButton scope="apps" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
+      <LiteSystemHealthEntry onNavigate={onNavigate} label="Diagnose app health" />
 
       <LiteFreshness
         saved={catalogSaved}

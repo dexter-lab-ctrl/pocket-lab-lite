@@ -10,6 +10,7 @@ import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.
 import { useLitePanelSectionNavigation } from './hooks/useLitePanelSectionNavigation.js';
 import HomeGroupedSections from './components/HomeGroupedSections.jsx';
 import './components/azureHome.css';
+import './components/homeCommand.css';
 import './systemHealth.css';
 
 const SECTIONS = Object.freeze([

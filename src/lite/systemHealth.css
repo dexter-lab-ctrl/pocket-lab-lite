@@ -36,3 +36,11 @@ html[data-lite-theme] .lite-system-health-incident-head>div{flex:1 1 65%}
 html[data-lite-theme] .lite-system-health-actions>.pocket-button{min-height:44px}
 html[data-lite-theme] .lite-system-health-manage-button{width:100%}}
 @media (prefers-reduced-motion:reduce){html[data-lite-theme] .lite-system-health-page *,html[data-lite-theme] .lite-system-health-page *::before{animation:none!important;transition:none!important}}
+
+html[data-lite-theme] .lite-home-system-health{display:grid;gap:.8rem;padding:clamp(1rem,1.6vw,1.35rem);background:var(--azure-surface);border:1px solid var(--azure-border);border-radius:var(--azure-radius-card)}
+html[data-lite-theme] .lite-home-system-health-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.55rem}
+html[data-lite-theme] .lite-home-system-health-facts>span{display:grid;gap:.25rem;padding:.7rem;border:1px solid var(--azure-border);border-radius:.85rem;background:var(--azure-raised);font-size:.76rem;color:var(--azure-muted)}
+html[data-lite-theme] .lite-home-system-health-facts strong{font-size:1.1rem;color:var(--azure-text);font-variant-numeric:tabular-nums}
+html[data-lite-theme] .lite-system-health-context-entry{display:flex;justify-content:flex-end;min-width:0;padding:.15rem 0}
+html[data-lite-theme] .lite-system-health-context-entry button{min-height:44px}
+@media(max-width:700px){html[data-lite-theme] .lite-home-system-health-facts{grid-template-columns:repeat(2,minmax(0,1fr))}html[data-lite-theme] .lite-system-health-context-entry button{width:100%}}

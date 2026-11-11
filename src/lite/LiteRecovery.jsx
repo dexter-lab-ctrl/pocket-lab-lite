@@ -1,3 +1,4 @@
+import LiteSystemHealthEntry from './components/LiteSystemHealthEntry.jsx';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArchiveRestore,
@@ -66,7 +67,7 @@ function mergeOptional(...values) {
   return Object.keys(merged).length ? merged : null;
 }
 
-export default function RecoveryScreen() {
+export default function RecoveryScreen({ onNavigate }) {
   const mobileRecoverySheet = useRecoveryMobileSheet();
   const [copiedEvidence, setCopiedEvidence] = useState('');
   const [selectedBackup, setSelectedBackup] = useState(null);
@@ -682,6 +683,7 @@ export default function RecoveryScreen() {
       />
 
       
+      <LiteSystemHealthEntry onNavigate={onNavigate} label="Diagnose recovery services" />
       <div className="lite-recovery-premium-screen lite-recovery-center lite-render-containment lite-render-containment--recovery" data-recovery-premium="true">
         <div className="lite-recovery-native-announcer" role="status" aria-live="polite" aria-atomic="true">{recoveryAnnouncement}</div>
         <GlassCard className="lite-recovery-premium-protection lite-recovery-center-hero lite-recovery-r1-hero" data-recovery-protection-state={premiumHero.state} data-recovery-r1-summary="true">

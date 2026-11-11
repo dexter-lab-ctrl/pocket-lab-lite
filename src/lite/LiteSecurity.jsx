@@ -1,4 +1,5 @@
 import LiteEvidenceGuide from './components/LiteEvidenceGuide.jsx';
+import LiteSystemHealthEntry from './components/LiteSystemHealthEntry.jsx';
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -1927,7 +1928,7 @@ export function hasLiveSecurityOperation(payload) {
   return false;
 }
 
-export default function SecurityScreen() {
+export default function SecurityScreen({ onNavigate }) {
   const [result, setResult] = useState(null);
   const [directSecurityProgressData, setDirectSecurityProgressData] = useState(null);
   const [actionError, setActionError] = useState(null);
@@ -3005,6 +3006,7 @@ export default function SecurityScreen() {
         </>}
       />
 
+      <LiteSystemHealthEntry onNavigate={onNavigate} label="Diagnose safety services" />
       <animated.section ref={securityLiveShellRef} className={`lite-security-phase5-shell lite-security-phase4-motion lite-security-native-polish ${securityLivePresentation ? 'lite-security-phase4-live' : ''}`.trim()} data-security-native-polish="true" style={safetyShellSpring} aria-label="Safety Center" data-security-phase5-summary-first="true" data-security-phase4-motion="shell" data-security-react-spring="summary-shell">
         <SafetyCenterHero
           status={safetyCenterSummary}
