@@ -167,6 +167,7 @@
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
         "scripts/dev/lite/run-ui-performance-android-baseline.sh",
         "scripts/dev/lite/run-ui-performance-android-cdp.sh",
@@ -420,6 +421,7 @@
       "runtime_readers": [
         "Taskfile.yml",
         "playwright.config.ts",
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
         "scripts/dev/lite/run-ui-performance-android-baseline.sh",
         "scripts/dev/lite/run-ui-performance-android-candidate.sh",
@@ -937,6 +939,7 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "scripts/dev/lite/analyze-ui-performance-android-baseline.sh",
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
         "scripts/dev/lite/run-ui-performance-android-apps.sh",
         "scripts/dev/lite/run-ui-performance-android-baseline.sh",
         "scripts/dev/lite/run-ui-performance-android-candidate.sh",
@@ -1204,6 +1207,24 @@
       "runtime_readers": [
         "Taskfile.yml",
         "scripts/docs/lite/generate_docs.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_SYSTEM_HEALTH_ANDROID_OUTPUT_DIR",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -2651,6 +2672,63 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
       ],
       "safe_default": "0",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_CANDIDATE_API_CA_FILE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
+        "scripts/dev/lite/ui_performance_candidate_server.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_CANDIDATE_API_LOCAL_PORT",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
+        "scripts/dev/lite/ui_performance_candidate_server.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_CANDIDATE_API_SCHEME",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
+        "scripts/dev/lite/ui_performance_candidate_server.py"
+      ],
+      "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -5460,6 +5538,24 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_HARNESS_BOOTSTRAP_PURPOSE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/run-system-health-android-qualification.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
         "pocket-lab-final-structure"
       ],
       "deprecated_aliases": [],
@@ -5489,6 +5585,7 @@
       "runtime_readers": [
         "playwright.config.ts",
         "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
         "scripts/dev/lite/run-ui-performance-qualified.py"
       ],
       "safe_default": "source-defined or empty",

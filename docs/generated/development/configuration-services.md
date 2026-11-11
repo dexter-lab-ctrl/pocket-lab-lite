@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: f61f73bdd4e5dc12db478eb6c36644e7da72b6f6dfce6a0327c36cd4f34e8ca0
+source_fingerprint: 1870175a68c3624378abf9f8e4a9ead4526a85a8cbaf13460ff90d7f36f45ed0
 schema_revision: 1
 validation_status: generated
 ---
@@ -91,6 +91,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `LITE_RUNTIME_PROMOTE`
 - `LITE_SERVICES`
 - `LITE_STORYBOOK_URL`
+- `LITE_SYSTEM_HEALTH_ANDROID_OUTPUT_DIR`
 - `NATS_CONTAINER`
 - `NATS_HARDENING_REPORT`
 - `NATS_HEALTH_URL`
@@ -141,6 +142,9 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_BASE_URL`
 - `POCKETLAB_BUILD_ID`
 - `POCKETLAB_CADDYFILE`
+- `POCKETLAB_CANDIDATE_API_CA_FILE`
+- `POCKETLAB_CANDIDATE_API_LOCAL_PORT`
+- `POCKETLAB_CANDIDATE_API_SCHEME`
 - `POCKETLAB_COMMANDS`
 - `POCKETLAB_CONTROL_ORIGIN`
 - `POCKETLAB_DEVICE_NAME`
@@ -195,6 +199,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID`
 - `POCKETLAB_HARNESS_BOOTSTRAP_PROFILE`
 - `POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT`
+- `POCKETLAB_HARNESS_BOOTSTRAP_PURPOSE`
 - `POCKETLAB_HARNESS_BROWSER_BRIDGE`
 - `POCKETLAB_HARNESS_CLI_TIMEOUT_SECONDS`
 - `POCKETLAB_HARNESS_CONTINUITY_FILE`
@@ -268,11 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_LONG_GATE_PROGRESS_P95_BUDGET_SECONDS`
 - `POCKETLAB_LONG_GATE_PROGRESS_SAMPLE_INTERVAL_MS`
 - `POCKETLAB_LONG_GATE_PROGRESS_SCAN_COUNT`
-- `POCKETLAB_LONG_GATE_PROXY_BASE_URL`
-- `POCKETLAB_LONG_GATE_PYTHON`
-- `POCKETLAB_LONG_GATE_RECOVERY_SCENARIO`
-- `POCKETLAB_LONG_GATE_REPEATED_COOLDOWN_SECONDS`
-- `POCKETLAB_LONG_GATE_REPEATED_COUNT`
 
 ## Process roles
 
