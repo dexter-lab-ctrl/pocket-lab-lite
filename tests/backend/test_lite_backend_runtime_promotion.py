@@ -62,6 +62,8 @@ def test_backend_artifact_is_exact_sha_bound_and_rejects_path_traversal(tmp_path
     assert promotion._safe_relative("runtime/api_fastapi/pocket.py").as_posix() == "runtime/api_fastapi/pocket.py"
     with pytest.raises(promotion.PromotionError, match="unsafe"):
         promotion._safe_relative("../escape.txt")
+    assert not promotion._contains_embedded_secret_marker("runtime/fixture.py", b"private_key = f'-----BEGIN PRIVATE KEY-----\\n{marker}\\n-----END PRIVATE KEY-----'")
+    assert promotion._contains_embedded_secret_marker("runtime/key.txt", b"-----BEGIN PRIVATE KEY-----\n" + b"A" * 48 + b"\n-----END PRIVATE KEY-----")
 
 
 def test_backup_restore_and_schema_42_to_44_rehearsal_are_independent(tmp_path: Path):

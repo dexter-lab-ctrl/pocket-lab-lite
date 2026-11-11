@@ -107,6 +107,7 @@ SECRET_MARKERS = (
     b"-----BEGIN PRIVATE KEY-----",
     b"-----BEGIN RSA PRIVATE KEY-----",
 )
+PRIVATE_PEM_RE = re.compile(rb"-----BEGIN (?:RSA )?PRIVATE KEY-----\s*[A-Za-z0-9+/=\r\n]{32,}\s*-----END (?:RSA )?PRIVATE KEY-----")
 
 
 class PromotionError(RuntimeError):
@@ -257,12 +258,10 @@ def _forbidden_path(path: str) -> bool:
 
 
 def _contains_embedded_secret_marker(path: str, data: bytes) -> bool:
-    # The controller documents the marker strings used by this verifier.  They
-    # are source literals, not credential material; scanning that source file
-    # for its own detector would reject every valid artifact.
-    if path.startswith("controller/"):
-        return False
-    return any(marker in data for marker in SECRET_MARKERS)
+    # Source may legitimately contain a redaction fixture that names a PEM
+    # marker.  Reject only a complete PEM-shaped private-key block with actual
+    # encoded material; marker literals and placeholder f-strings are not keys.
+    return any(marker in data for marker in SECRET_MARKERS) and bool(PRIVATE_PEM_RE.search(data))
 
 
 def _source_tree_files(repo_root: Path, source_sha: str) -> list[tuple[str, bytes, int]]:
