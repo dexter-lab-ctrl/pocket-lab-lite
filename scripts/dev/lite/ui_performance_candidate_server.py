@@ -382,7 +382,7 @@ def serve_candidate(dist_dir: Path, source_commit: str) -> None:
                 "status": "READY",
                 "bind": f"{CANDIDATE_HOST}:{CANDIDATE_PORT}",
                 "source_commit": source_commit,
-                "runtime_transport": "ssh_loopback_to_server_phone_caddy",
+                "runtime_transport": "ssh_loopback_to_isolated_phone_candidate" if candidate_api_mode_enabled() else "ssh_loopback_to_server_phone_caddy",
                 "browser_secret_persisted": False,
                 "sanitized": True,
             },

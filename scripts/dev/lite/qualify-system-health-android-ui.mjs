@@ -131,8 +131,9 @@ async function main() {
     page.waitForResponse((response) => response.request().method() === 'POST' && safePath(response.url()) === `/api/lite/system-health/incidents/${incidentId}/diagnose` && response.status() === 200, { timeout: 30_000 }),
     dialog.getByRole('button', { name: 'Check cause', exact: true }).click(),
   ]);
-  await dialog.getByRole('button', { name: 'Fix', exact: true }).waitFor({ state: 'visible', timeout: 10_000 });
-  if (!(await dialog.getByRole('button', { name: 'Fix', exact: true }).isDisabled())) fail('System Health Fix action was not disabled');
+  const fixButton = dialog.getByRole('button', { name: /^Fix/ });
+  await fixButton.waitFor({ state: 'visible', timeout: 10_000 });
+  if (!(await fixButton.isDisabled())) fail('System Health Fix action was not disabled');
   await page.screenshot({ path: resolve(outputDir, 'system-health-diagnosis.png'), fullPage: true });
 
   const forbiddenWrites = requests.filter((item) => item.method === 'POST' && (item.path.endsWith('/repair') || item.path.endsWith('/preflight')));
