@@ -96,6 +96,11 @@ def test_parse_json_log_record_uses_last_valid_record():
     )
     assert payload["status"] == "PASS"
     assert line_count == 3
+    payload, line_count = module.parse_json_log_record(
+        "b'{\"status\":\"PASS\",\"changed\":true}\\n'", label="projection driver"
+    )
+    assert payload["changed"] is True
+    assert line_count == 1
     with pytest.raises(module.QualificationError, match="nonempty_lines=2"):
         module.parse_json_log_record("startup warning\nshutdown note\n", label="projection driver")
 

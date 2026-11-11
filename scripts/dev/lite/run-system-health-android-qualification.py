@@ -11,6 +11,7 @@ process-ownership primitives are reused from the Photo Backup lane.
 from __future__ import annotations
 
 import argparse
+import ast
 import base64
 import contextlib
 from dataclasses import dataclass
@@ -216,7 +217,15 @@ def production_projection(value: dict[str, Any]) -> dict[str, Any]:
 
 def parse_json_log_record(text: str, *, label: str) -> tuple[dict[str, Any], int]:
     """Read the last bounded JSON object from a run-owned process log."""
-    lines = [line.strip() for line in str(text or "").splitlines() if line.strip()]
+    raw = str(text or "")
+    if raw.startswith(("b'", 'b"')):
+        try:
+            decoded = ast.literal_eval(raw)
+        except (SyntaxError, ValueError):
+            decoded = None
+        if isinstance(decoded, bytes):
+            raw = decoded.decode("utf-8", "replace")
+    lines = [line.strip() for line in raw.splitlines() if line.strip()]
     for line in reversed(lines[-128:]):
         try:
             value = json.loads(line)
