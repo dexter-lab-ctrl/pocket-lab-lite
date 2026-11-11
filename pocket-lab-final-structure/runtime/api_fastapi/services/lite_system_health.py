@@ -16,8 +16,8 @@ from contextlib import closing
 from ..db.connection import begin_immediate, connection, open_fast_read_connection
 
 ACTIVE = frozenset({"detected", "diagnosing", "diagnosed", "repair_available", "repairing", "verifying", "blocked", "failed", "manual_attention_required"})
-UNHEALTHY = frozenset({"watch", "elevated", "storage_pressure", "degraded", "unavailable", "unhealthy", "critical", "offline", "stopped", "missing", "errored", "failed", "attention", "pressure"})
-HEALTHY = frozenset({"healthy", "online", "ready", "running", "connected"})
+UNHEALTHY = frozenset({"read_only", "recovery_required", "watch", "elevated", "storage_pressure", "degraded", "unavailable", "unhealthy", "critical", "offline", "stopped", "missing", "errored", "failed", "attention", "pressure"})
+HEALTHY = frozenset({"normal", "healthy", "online", "ready", "running", "connected"})
 UNKNOWN = frozenset({"unknown", "stale", "unverified", "pending", "unsupported", "not_ready"})
 OBSERVATION_MAX_AGE_SECONDS = 300
 MAX_HISTORY = 2000
@@ -25,6 +25,7 @@ MAX_HISTORY = 2000
 DEPENDENCY_EDGES = (
     {"upstream": "nats", "downstream": "worker", "authority": "verified_contract", "summary": "Commands use NATS/JetStream."},
     {"upstream": "nats", "downstream": "agent", "authority": "verified_contract", "summary": "Device agents use the command/event bus."},
+    {"upstream": "caddy", "downstream": "app", "authority": "verified_contract", "summary": "Registered apps use backend-managed same-origin Caddy routes."},
     {"upstream": "worker", "downstream": "security", "authority": "verified_contract", "summary": "Safety scans use worker execution."},
     {"upstream": "processes", "downstream": "api", "authority": "inferred", "summary": "Process availability can affect API readiness."},
     {"upstream": "remote_access", "downstream": "agent", "authority": "inferred", "summary": "Connectivity can affect remote device reachability."},
@@ -108,11 +109,29 @@ def _observations(domain: str, payload: dict[str, Any]):
             yield (source, target, _status(raw), "Device connection or agent needs review.")
         return
     if domain == "system.processes":
+        from . import lite_app_registry
+        registered = {
+            lite_app_registry.app_definition(app_id).process: app_id
+            for app_id in lite_app_registry.app_ids()
+        }
         for item in (payload.get("items") or [])[:64]:
-            if isinstance(item, dict) and item.get("expected"):
-                target = _safe(item.get("name"), 100)
-                if target:
-                    yield (source, target, _status(item.get("status")), "Required process needs attention.")
+            if not isinstance(item, dict):
+                continue
+            target = _safe(item.get("name"), 100)
+            status = _status(item.get("status"))
+            if target and item.get("expected"):
+                yield (source, target, status, "Required process needs attention.")
+            # Optional app process missing can simply mean not installed.
+            # Only observe running/previously detected app processes.
+            if target in registered and status not in {"missing", "unknown"}:
+                yield ("app", registered[target], status, "Registered app process needs review.")
+        return
+    if domain == "system.telemetry_thresholds":
+        for item in (payload.get("devices") or [])[:64]:
+            if isinstance(item, dict):
+                device_id = _safe(item.get("device_id"), 100)
+                if device_id:
+                    yield (source, device_id, _status(item.get("status")), "Device resource or connectivity signal needs review.")
         return
     if domain == "system.nats_remote":
         yield (source, "jetstream", _status(payload.get("status")), "Command delivery needs attention.")
@@ -418,3 +437,43 @@ def decision_history(incident_id: str, *, limit: int = 20) -> dict[str, Any]:
             (incident_id, max(1, min(limit, 50))),
         ),
     }
+
+
+def configuration_drift() -> dict[str, Any]:
+    """Read only expected-vs-observed status; never read PM2/Caddy config on GET."""
+    from . import lite_phase3b_projections as prepared
+    processes = prepared.snapshot("system.processes") or {}
+    observations = []
+    for item in (processes.get("items") or [])[:64]:
+        if not isinstance(item, dict) or item.get("expected") is not True:
+            continue
+        status = _status(item.get("status"))
+        if status not in HEALTHY:
+            observations.append({
+                "component": _safe(item.get("name"), 80),
+                "observed_status": status,
+                "classification": "observed_mismatch_unverified",
+                "approved_change": "unknown",
+                "auto_reconcile": False,
+                "explanation": "A current process observation does not establish authorized configuration drift.",
+            })
+    return {"observations": observations, "classification": "requires_review" if observations else
+            "not_established", "repair_enabled": False,
+            "source": "persisted_process_projection", "raw_configuration_exposed": False}
+
+
+def app_diagnostics(app_id: str) -> dict[str, Any] | None:
+    from . import lite_app_registry, lite_phase3b_projections as prepared
+    definition = lite_app_registry.maybe_app_definition(app_id)
+    if definition is None:
+        return None
+    observed = prepared.snapshot("system.processes") or {}
+    matches = [item for item in observed.get("items") or [] if
+               isinstance(item, dict) and item.get("name") == definition.process]
+    state = _status(matches[0].get("status")) if matches else "unknown"
+    return {"app_id": definition.id, "app_label": definition.name,
+            "process_status": state, "process_observation": "persisted",
+            "route_status": "unknown", "database_status": "unknown",
+            "media_scanned": False, "repair_authority": "existing_app_actions",
+            "auto_repair_available": False,
+            "summary": "Review the current app health and approved repair options in Apps Manage."}

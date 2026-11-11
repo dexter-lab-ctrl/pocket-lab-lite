@@ -65,6 +65,21 @@ def system_health_intelligence(request: Request):
     return health.knowledge()
 
 
+@router.get("/configuration-drift")
+def system_health_configuration_drift(request: Request):
+    deps.require_auth(request)
+    return health.configuration_drift()
+
+
+@router.get("/apps/{app_id}")
+def system_health_app_diagnostics(app_id: str, request: Request):
+    deps.require_auth(request)
+    result = health.app_diagnostics(app_id)
+    if result is None:
+        raise HTTPException(404, detail={"status": "not_found", "summary": "App diagnostic contract is unavailable."})
+    return result
+
+
 @router.get("/policies")
 def system_health_policies(request: Request):
     deps.require_auth(request)

@@ -25,6 +25,7 @@ const SECTIONS = Object.freeze([
     { id: 'dependencies', label: 'Dependencies', description: 'Contract relationships and evidence', icon: GitBranch },
     { id: 'resources', label: 'Resource Intelligence', description: 'Current resource signals', icon: Cpu },
     { id: 'policies', label: 'Policies', description: 'Safety rules and authority', icon: ShieldCheck },
+    { id: 'drift', label: 'Configuration', description: 'Review suspected runtime mismatches', icon: Settings2 },
     { id: 'details', label: 'Technical Details', description: 'Sanitized diagnostic metadata', icon: Settings2 },
   ] },
 ]);
@@ -117,6 +118,12 @@ export default function LiteSystemHealth({ onNavigate }) {
   const resources = useLiteQuery({
     queryKey: ['lite', 'system-health', 'resources'], path: '/api/lite/system-health/resources',
     queryFn: liteApi.healthIntelligenceResources, enabled: open && section === 'resources',
+    staleTime: 120_000, pollingMode: 'relaxed',
+  });
+  const drift = useLiteQuery({
+    queryKey: ['lite', 'system-health', 'configuration-drift'],
+    path: '/api/lite/system-health/configuration-drift',
+    queryFn: liteApi.healthIntelligenceDrift, enabled: open && section === 'drift',
     staleTime: 120_000, pollingMode: 'relaxed',
   });
   const intelligence = useLiteQuery({
@@ -225,6 +232,11 @@ export default function LiteSystemHealth({ onNavigate }) {
         {section === 'policies' ? <section><LiteActionRow label="Automatic repair" value="Existing supervisors only" summary="New System Health automatic operations remain disabled." />
           <LiteActionRow label="Sensitive operations" value="Confirmation required" summary="Database restore and identity changes never auto-execute." />
           <EvidenceRows rows={(policies.data?.repair_catalog || []).map(item => ({ target_id: item.operation_id, status: item.availability }))} /></section> : null}
+        {section === 'drift' ? <section>
+          <p className="lite-system-health-muted">Unexpected process states require review; an observed mismatch does not authorize overwriting configuration.</p>
+          <EvidenceRows rows={(drift.data?.observations || []).map(item => ({ target_id: item.component, status: item.observed_status, summary: item.explanation }))} />
+          <LiteActionRow label="Automatic configuration reconciliation" value="Disabled" summary="Existing runtime owner and authorization must confirm any repair." />
+        </section> : null}
         {section === 'details' ? <section><LiteActionRow label="Diagnosis engine" value="Deterministic" />
           <LiteActionRow label="Optional AI assistance" value="Unavailable" summary="No cloud AI dependency is required." />
           <LiteActionRow label="Recurring components" value={String(intelligence.data?.recurring_components?.length ?? 'Unknown')} />

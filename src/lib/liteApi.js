@@ -251,6 +251,8 @@ export const liteApi = {
   healthIntelligenceDependencies: () => readJson('/api/lite/system-health/dependencies'),
   healthIntelligenceResources: () => readJson('/api/lite/system-health/resources'),
   healthIntelligenceKnowledge: () => readJson('/api/lite/system-health/intelligence'),
+  healthIntelligenceDrift: () => readJson('/api/lite/system-health/configuration-drift'),
+  healthIntelligenceApp: (appId) => readJson(`/api/lite/system-health/apps/${encodeURIComponent(appId)}`),
   healthIntelligencePolicies: () => readJson('/api/lite/system-health/policies'),
   healthIntelligenceDiagnose: (incidentId) => postJson(`/api/lite/system-health/incidents/${encodeURIComponent(incidentId)}/diagnose`, {}),
 
