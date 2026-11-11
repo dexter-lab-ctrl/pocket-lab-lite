@@ -108,3 +108,21 @@ def test_forecast_and_ai_claims_remain_disabled(health):
     assert health.resource_intelligence()["forecast"] == "not_enough_information"
     assert health.knowledge()["ai_provider"] == "disabled"
     assert health.policy()["engine_auto_repair"] is False
+
+
+def test_anonymous_system_health_incident_read_is_denied():
+    ensure_runtime_path()
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from api_fastapi.routers.lite_system_health import router
+
+    app = FastAPI()
+    app.include_router(router)
+    with TestClient(app) as client:
+        response = client.get("/api/lite/system-health/summary")
+        assert response.status_code == 401
+        assert response.json()["detail"]["reason_code"] == "authentication_required"
+        attempt = client.post(
+            "/api/lite/system-health/incidents/health-111111111111111111111111/diagnose"
+        )
+        assert attempt.status_code == 401
