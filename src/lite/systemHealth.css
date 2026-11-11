@@ -1,7 +1,7 @@
 /* Azure Horizon System Health: geometry is theme-invariant; tokens own color. */
 html[data-lite-theme] .lite-system-health-page{max-width:1440px;margin-inline:auto;min-width:0;display:grid;gap:clamp(.9rem,1.65vw,1.4rem);color:var(--azure-text)}
 html[data-lite-theme] .lite-system-health-hero,html[data-lite-theme] .lite-system-health-incident,html[data-lite-theme] .lite-system-health-history-preview{display:grid;gap:.9rem;padding:clamp(1rem,1.6vw,1.35rem);min-width:0;border:1px solid var(--azure-border);background:var(--azure-surface);color:var(--azure-text);box-shadow:var(--azure-shadow);border-radius:var(--azure-radius-card)}
-html[data-lite-theme] .lite-system-health-hero{border-inline-start:3px solid var(--azure-neutral)}
+html[data-lite-theme] .lite-system-health-hero{border-inline-start:3px solid var(--azure-border)}
 html[data-lite-theme] .lite-system-health-hero.is-ready{border-inline-start-color:var(--azure-success)}
 html[data-lite-theme] .lite-system-health-hero.is-attention{border-inline-start-color:var(--azure-warning)}
 html[data-lite-theme] .lite-system-health-hero h2{font-size:clamp(1.25rem,2vw,1.8rem);font-weight:650;line-height:1.25}
