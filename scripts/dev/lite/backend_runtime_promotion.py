@@ -423,7 +423,9 @@ def prepare_artifact(*, repo_root: Path, source_sha: str, output_dir: Path) -> d
         "manifest_name": manifest_path.name,
         "checksums_name": checksums_path.name,
     }
-    _atomic_json(manifest_path, external, mode=0o644)
+    # The inventory is a complete integrity contract, not operator log data;
+    # do not apply bounded evidence redaction to this public manifest.
+    _atomic_json(manifest_path, external, mode=0o644, redact=False)
     checksums = f"{external['artifact_sha256']}  {artifact.name}\n{_sha256(manifest_path)}  {manifest_path.name}\n"
     checksums_path.write_text(checksums, encoding="utf-8")
     os.chmod(checksums_path, 0o644)
@@ -544,7 +546,7 @@ def _extract_artifact(artifact: Path, destination: Path, manifest: Mapping[str, 
             target.write_bytes(data)
             mode = next((int(item.get("mode") or 0o644) for item in manifest.get("payload_inventory", []) if item.get("path") == relative.as_posix()), 0o644)
             os.chmod(target, mode & 0o777)
-    _atomic_json(destination / "artifact-manifest.json", dict(manifest), mode=0o644)
+    _atomic_json(destination / "artifact-manifest.json", dict(manifest), mode=0o644, redact=False)
 
 
 def stage_artifact(*, artifact: Path, manifest_path: Path, checksums_path: Path, staging_root: Path, expected_device_id: str, target_device_id: str) -> dict[str, Any]:
