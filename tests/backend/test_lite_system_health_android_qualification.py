@@ -105,6 +105,24 @@ def test_parse_json_log_record_uses_last_valid_record():
         module.parse_json_log_record("startup warning\nshutdown note\n", label="projection driver")
 
 
+def test_response_contract_is_bounded_to_denial_fields():
+    module = _module()
+    contract = module.response_contract(module.HttpResult(409, {
+        "detail": {
+            "status": "blocked",
+            "reason_code": "system_health_executor_not_qualified",
+            "recorded": True,
+            "unexpected": "omitted",
+        },
+        "extra": "omitted",
+    }))
+    assert contract["status"] == 409
+    assert contract["detail_status"] == "blocked"
+    assert contract["reason_code"] == "system_health_executor_not_qualified"
+    assert contract["recorded"] is True
+    assert "unexpected" in contract["detail_keys"]
+
+
 def test_schema42_forward_migrations_repeat_and_rollback_copy(tmp_path):
     module = _module()
     sha = module._run(["git", "rev-parse", "HEAD"], cwd=REPO).stdout.strip()

@@ -236,6 +236,21 @@ def parse_json_log_record(text: str, *, label: str) -> tuple[dict[str, Any], int
     raise QualificationError(f"{label} emitted no JSON record (nonempty_lines={len(lines)})")
 
 
+def response_contract(response: HttpResult) -> dict[str, Any]:
+    """Expose only bounded status/detail fields needed to diagnose a contract."""
+    body = response.body if isinstance(response.body, dict) else {}
+    detail = body.get("detail") if isinstance(body.get("detail"), dict) else {}
+    return {
+        "status": response.status,
+        "body_keys": sorted(str(key) for key in body)[:32],
+        "detail_keys": sorted(str(key) for key in detail)[:32],
+        "detail_status": detail.get("status"),
+        "reason_code": detail.get("reason_code"),
+        "recorded": detail.get("recorded"),
+        "idempotent_replay": detail.get("idempotent_replay"),
+    }
+
+
 def _sql_statements(sql: str) -> Iterable[str]:
     buffer = ""
     for line in sql.splitlines(keepends=True):
@@ -935,6 +950,13 @@ time.sleep(3)
         stale = dict(repair_payload); stale["expected_generation"] = generation + 99
         stale_repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", stale, session=self.session)
         unauthorized = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/diagnose")
+        self.results["repair_contract"] = {
+            "preflight": response_contract(preflight),
+            "repair": response_contract(repair),
+            "replay": response_contract(replay),
+            "stale_repair": response_contract(stale_repair),
+            "unauthorized_diagnosis": response_contract(unauthorized),
+        }
         if preflight.status != 200 or repair.status != 409 or replay.status != 409 or stale_repair.status != 409 or unauthorized.status != 401:
             raise QualificationError("System Health repair denial/authentication contract failed")
         body = repair.body.get("detail") if isinstance(repair.body.get("detail"), dict) else {}
