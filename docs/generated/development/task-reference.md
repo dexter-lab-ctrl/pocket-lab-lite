@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 37ee89db14b20c26cd201355869f9c32507333d2f2e95bb7c5c3b46d63b6045d
+source_fingerprint: f61f73bdd4e5dc12db478eb6c36644e7da72b6f6dfce6a0327c36cd4f34e8ca0
 schema_revision: 1
 validation_status: generated
 ---
@@ -226,6 +226,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:storybook`
 - `lite:storybook:build`
 - `lite:storybook:screenshots`
+- `lite:system-health:candidate:android:qualify`
 - `lite:test:a11y`
 - `lite:test:android`
 - `lite:test:app-governance`

@@ -15,7 +15,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 151 |
+| Development loop | 152 |
 | Documentation loop | 57 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 36 |
@@ -5817,6 +5817,40 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:setup:system`
+
+## `lite:system-health:candidate:android:qualify`
+
+**Purpose:** Run the narrow exact-SHA System Health candidate against a run-owned Server Phone root
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/run-system-health-android-qualification.py --candidate-sha "{{.CANDIDATE_SHA}}" --base-sha "{{.BASE_SHA}}" {{if .NATS_SERVER_BIN}}--nats-server-bin "{{.NATS_SERVER_BIN}}"{{end}} {{if .EVIDENCE_DIR}}--evidence-dir "{{.EVIDENCE_DIR}}"{{end}}`
+
+**Environment:** NATS_SERVER_BIN
+
+**Inputs:** scripts/dev/lite/run-system-health-android-qualification.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:system-health:candidate:android:qualify`
 
 ## `lite:test:android`
 

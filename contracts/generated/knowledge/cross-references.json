@@ -12927,6 +12927,20 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_system_health_android_qualification.py": [
+        {
+          "source": "reason:generation_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:incident_generation_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:shutdown",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_system_health_semantic_revision.py": [
         {
           "source": "reason:storage_pressure",
@@ -33663,6 +33677,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -34034,6 +34052,10 @@
       "reason:incident_generation_changed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
           "type": "verified_by"
         },
         {
@@ -36043,6 +36065,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_workload_admission.py",
           "type": "verified_by"
         },
@@ -37355,6 +37381,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "fb3201181d32d7101a542e3add853a4b4a1e7e149ad65f00606937742b856e75"
+    "source_fingerprint": "fa5c5a5b954167f56a4dc104fe7d0ee055d4a26823c28d26a858db263a353dd2"
   }
 }

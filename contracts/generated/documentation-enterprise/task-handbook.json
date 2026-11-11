@@ -6933,6 +6933,48 @@
       "audience": "developer/operator",
       "captures_runtime": false,
       "commands": [
+        "{{.PYTHON}} scripts/dev/lite/run-system-health-android-qualification.py --candidate-sha \"{{.CANDIDATE_SHA}}\" --base-sha \"{{.BASE_SHA}}\" {{if .NATS_SERVER_BIN}}--nats-server-bin \"{{.NATS_SERVER_BIN}}\"{{end}} {{if .EVIDENCE_DIR}}--evidence-dir \"{{.EVIDENCE_DIR}}\"{{end}}"
+      ],
+      "dependencies": [],
+      "environment": [
+        "NATS_SERVER_BIN"
+      ],
+      "example_invocation": "task lite:system-health:candidate:android:qualify",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "scripts/dev/lite/run-system-health-android-qualification.py"
+      ],
+      "name": "lite:system-health:candidate:android:qualify",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run the narrow exact-SHA System Health candidate against a run-owned Server Phone root",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer/operator",
+      "captures_runtime": false,
+      "commands": [
         "bash scripts/dev/android-termux-smoke.sh"
       ],
       "dependencies": [],

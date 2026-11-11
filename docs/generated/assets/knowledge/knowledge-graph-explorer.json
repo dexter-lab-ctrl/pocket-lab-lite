@@ -14737,6 +14737,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_system_health_android_qualification.py",
+      "name": "tests/backend/test_lite_system_health_android_qualification.py",
+      "source_refs": [
+        "tests/backend/test_lite_system_health_android_qualification.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_system_health_semantic_revision.py",
       "name": "tests/backend/test_lite_system_health_semantic_revision.py",
       "source_refs": [
@@ -24587,6 +24598,20 @@
       "id": "rel:1d0413c3a89cd015",
       "source": "reason:csrf_required",
       "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_system_health_android_qualification.py"
+      ],
+      "id": "rel:1d16170d30f19626",
+      "source": "reason:generation_changed",
+      "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
       "type": "verified_by"
     },
     {
@@ -50774,6 +50799,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_system_health_android_qualification.py"
+      ],
+      "id": "rel:8d4aa093b419b8dc",
+      "source": "reason:incident_generation_changed",
+      "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:8d760544e1b6d2eb",
@@ -63261,6 +63300,20 @@
       "id": "rel:c71cf8b7febf6d5b",
       "source": "component:invite-state",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_system_health_android_qualification.py"
+      ],
+      "id": "rel:c731b6ac0fbf8f12",
+      "source": "reason:shutdown",
+      "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
       "type": "verified_by"
     },
     {

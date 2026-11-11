@@ -5021,6 +5021,29 @@
       "affects_release": false,
       "affects_runtime": true,
       "default": "source-defined/unvalidated",
+      "name": "NATS_LOOPBACK_RE",
+      "owner": "repository tooling",
+      "purpose": "NATS/JetStream connection or runtime configuration",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/dev/lite/run-system-health-android-qualification.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
       "name": "NATS_MONITOR_PORT",
       "owner": "repository tooling",
       "purpose": "NATS/JetStream connection or runtime configuration",
@@ -5557,7 +5580,8 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
-        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -5584,7 +5608,8 @@
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -6118,7 +6143,8 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -6142,7 +6168,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/core/control_plane_core.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -6219,7 +6246,8 @@
         "pocket-lab-final-structure/runtime/core/control_plane_core.py",
         "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
-        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -7950,7 +7978,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
-        "tests/backend/test_lite_api.py"
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -8128,7 +8156,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -10254,10 +10283,10 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh",
-        "tests/backend/test_lite_harness.py",
-        "tests/backend/test_lite_photo_backup_candidate_qualification.py"
+        "tests/backend/test_lite_harness.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -10306,10 +10335,10 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh",
-        "tests/backend/test_lite_harness.py",
-        "tests/backend/test_lite_photo_backup_candidate_qualification.py"
+        "tests/backend/test_lite_harness.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -10335,10 +10364,10 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh",
-        "tests/backend/test_lite_harness.py",
-        "tests/backend/test_lite_isolated_qualification_lane.py"
+        "tests/backend/test_lite_harness.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -10364,10 +10393,10 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/start-qualification.sh",
-        "tests/backend/test_lite_harness.py",
-        "tests/backend/test_lite_photo_backup_candidate_qualification.py"
+        "tests/backend/test_lite_harness.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -10645,8 +10674,8 @@
         "scripts/dev/lite/harness.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
         "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
-        "scripts/dev/lite/run-ui-performance-qualified.py",
-        "scripts/dev/lite/start-qualification.sh"
+        "scripts/dev/lite/run-system-health-android-qualification.py",
+        "scripts/dev/lite/run-ui-performance-qualified.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -10695,6 +10724,7 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_harness.py",
         "tests/backend/test_lite_security_assurance.py",
         "tests/backend/test_lite_security_assurance_controls.py"
@@ -11061,7 +11091,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/core/control_plane_core.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -11796,7 +11827,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -13986,6 +14018,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_api.py",
         "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
@@ -14588,6 +14621,7 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_isolated_qualification_lane.py",
         "tests/backend/test_lite_pm2_idempotency.py"
       ],
@@ -18176,7 +18210,8 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
-        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -18203,7 +18238,8 @@
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -18254,7 +18290,8 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
-        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -18356,7 +18393,8 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
-        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -18382,7 +18420,8 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
-        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -18407,7 +18446,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -18704,7 +18744,8 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
-        "scripts/dev/lite/run-photo-backup-candidate-qualification.py"
+        "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -18921,6 +18962,7 @@
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_fleet_multi_role_authorization.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -19392,7 +19434,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_opa.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -21301,6 +21344,7 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -21351,9 +21395,9 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_harness.py",
-        "tests/backend/test_lite_isolated_qualification_lane.py",
-        "tests/backend/test_lite_photo_backup_candidate_qualification.py"
+        "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -21379,6 +21423,7 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -21405,6 +21450,7 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -21431,6 +21477,7 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -21457,6 +21504,7 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -21481,7 +21529,8 @@
       "secret": false,
       "source": [
         "scripts/dev/lite/qualification_pm2.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -21585,6 +21634,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_harness.py",
         "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
@@ -21636,6 +21686,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/qualification_pm2.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_isolated_qualification_lane.py",
         "tests/backend/test_lite_photo_backup_candidate_qualification.py"
       ],
@@ -21663,6 +21714,7 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_harness.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -21719,6 +21771,7 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -21768,6 +21821,7 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_isolated_qualification_lane.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
@@ -21793,7 +21847,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -24691,7 +24746,8 @@
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -26650,7 +26706,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -26720,7 +26777,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py",
-        "scripts/dev/lite/run-isolated-runtime-qualification.py"
+        "scripts/dev/lite/run-isolated-runtime-qualification.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
