@@ -49,3 +49,12 @@ test('deep-linked incident opens diagnosis without initiating repair', async ({ 
   await expect(dialog.getByText(/repair executor is qualified/i)).toBeVisible();
   expect(seenWrites).toEqual([]);
 });
+
+test('Home exposes a compact System Health summary with direct navigation', async ({ page }) => {
+  await installScenario(page, 'system-health-attention');
+  await page.goto('/?screen=home');
+  await waitForLiteScreenToSettle(page, 'home');
+  await expect(page.getByRole('heading', { name: 'System Health' })).toBeVisible();
+  await page.getByRole('button', { name: 'Open System Health' }).click();
+  await expect(page.locator('[data-lite-screen-id="system-health"]')).toBeVisible();
+});
