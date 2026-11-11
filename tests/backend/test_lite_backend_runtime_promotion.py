@@ -210,3 +210,5 @@ def test_authority_and_final_confirmation_are_separate_gates(tmp_path: Path):
 
     adapter = promotion.SimulationAdapter()
     assert adapter.snapshot()["services"]["pocket-worker"] == "online"
+    assert promotion._worker_heartbeat({"reachable": True, "json": True, "state": "stable", "stable": True, "services": [{"process": "pocket-worker", "status": "Recovered recently", "stable": True}]})
+    assert not promotion._worker_heartbeat({"reachable": True, "json": True, "state": "stable", "stable": True, "services": [{"process": "pocket-worker", "status": "Something changed", "stable": False}]})

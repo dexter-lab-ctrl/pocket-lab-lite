@@ -903,9 +903,21 @@ def _http_probe(path: str) -> dict[str, Any]:
     try:
         with urllib.request.urlopen(f"http://127.0.0.1:8080{path}", timeout=3) as response:
             data = json.loads(response.read(128 * 1024).decode("utf-8"))
-            return {"reachable": True, "http_status": response.status, "status": data.get("status") if isinstance(data, dict) else None, "json": isinstance(data, dict), "sanitized": True}
+            services = []
+            if isinstance(data, dict) and isinstance(data.get("services"), list):
+                for item in data["services"][:64]:
+                    if isinstance(item, dict):
+                        services.append({"process": str(item.get("process") or "")[:120], "status": str(item.get("status") or "")[:80], "stable": bool(item.get("stable"))})
+            return {"reachable": True, "http_status": response.status, "status": data.get("status") if isinstance(data, dict) else None, "state": data.get("state") if isinstance(data, dict) else None, "stable": bool(data.get("stable")) if isinstance(data, dict) else False, "services": services, "json": isinstance(data, dict), "sanitized": True}
     except (OSError, urllib.error.URLError, UnicodeDecodeError, json.JSONDecodeError):
-        return {"reachable": False, "http_status": None, "status": None, "json": False, "sanitized": True}
+        return {"reachable": False, "http_status": None, "status": None, "state": None, "stable": False, "services": [], "json": False, "sanitized": True}
+
+
+def _worker_heartbeat(probe: Mapping[str, Any]) -> bool:
+    if probe.get("reachable") is not True or probe.get("json") is not True or probe.get("stable") is not True or probe.get("state") != "stable":
+        return False
+    worker = next((item for item in probe.get("services", []) if isinstance(item, Mapping) and item.get("process") == "pocket-worker"), None)
+    return isinstance(worker, Mapping) and worker.get("stable") is True and str(worker.get("status") or "").casefold() in {"running normally", "recovered recently"}
 
 
 def _guardian_present() -> bool:
@@ -984,7 +996,7 @@ def collect_runtime_snapshot(*, database: Path, contract: Sequence[Mapping[str, 
     # admission check to pass.
     worker_heartbeat = False
     if worker_api.get("json") and worker_api.get("reachable"):
-        worker_heartbeat = bool(worker_api.get("status") in {"ready", "healthy"})
+        worker_heartbeat = _worker_heartbeat(worker_api)
     guardian = _guardian_present()
     checks = {
         "device_identity": target_device_id == expected_device_id and database_identity.get("unique_device_id") == target_device_id,
@@ -1288,7 +1300,7 @@ class ProductionServiceAdapter(ServiceAdapter):
             health = _http_probe("/health")
             ready = _http_probe("/ready")
             worker = _http_probe("/api/lite/runtime")
-            worker_heartbeat = worker.get("json") is True and worker.get("status") in {"ready", "healthy"}
+            worker_heartbeat = _worker_heartbeat(worker)
             observations.append(pm2.get("available") is True and all(pm2.get("services", {}).get(name, {}).get("status") == "online" for name in REQUIRED_SERVICES) and health.get("http_status") == 200 and ready.get("http_status") == 200 and worker_heartbeat)
             if not observations[-1]:
                 break

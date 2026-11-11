@@ -177,7 +177,7 @@ print(json.dumps(payload, ensure_ascii=True, sort_keys=True))
 PY
 )"
 rm -rf -- "$root"
-printf '%s\n' "$result" | sed 's/"temporary_candidate_cleaned":false/"temporary_candidate_cleaned":true/'
+printf '%s\n' "$result" | sed 's/"temporary_candidate_cleaned": false/"temporary_candidate_cleaned": true/'
 '''
     remote = _json(_ssh(args.ssh_alias, f"bash -s -- {shlex.quote(remote_root)} {shlex.quote(args.device_id)}", input_text=remote_script).stdout, "Android/Termux qualification")
     remote["verify"] = verified
