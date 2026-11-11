@@ -16913,6 +16913,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-devices-theme-density-hardening.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-home-command-visual.spec.ts": [
         {
           "source": "reason:disabled",
@@ -32437,6 +32443,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-devices-theme-density-hardening.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-home-command-visual.spec.ts",
           "type": "verified_by"
         },
@@ -36717,6 +36727,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5407a38b6c8fed76c0468a04f0ace833393e61d10ae02524282c97953ac16a40"
+    "source_fingerprint": "a4127f9a98d18909227202e6d335b5bf73b29d52e7784bb45cd71961e6725f9a"
   }
 }

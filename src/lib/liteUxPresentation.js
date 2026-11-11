@@ -105,6 +105,8 @@ export function normalizeTimelineItems(items = []) {
       summary: friendlyLiteText(item.summary || item.description || item.detail, ''),
       time: item.time || item.created_at || item.updated_at || '',
       state: item.state || item.status || 'neutral',
+      date: item.date || '',
+      eventKind: item.eventKind || '',
     }));
 }
 

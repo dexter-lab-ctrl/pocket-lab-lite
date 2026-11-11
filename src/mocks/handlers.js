@@ -1646,10 +1646,22 @@ export const handlers = [
     }],
     });
   }),
-  http.get('/api/lite/fleet', ({ request }) => HttpResponse.json({
-    status: 'healthy',
+  http.get('/api/lite/fleet', ({ request }) => {
+    const savedScenario = rawScenario() === 'offline-saved';
+    return HttpResponse.json({
+    status: savedScenario ? 'degraded' : 'healthy',
     devices: mockLiteDevices(),
     count: mockLiteDevices().length,
+    read_degraded: savedScenario,
+    degraded_reason: savedScenario ? 'projection_too_old' : '',
+    data_source: savedScenario ? 'saved_snapshot' : 'live_projection',
+    __liteSnapshot: savedScenario ? {
+      cached: true,
+      stale: true,
+      source: 'cache',
+      savedAt: mockIso(-15 * 60 * 1000),
+      checkedAt: mockIso(-15 * 60 * 1000),
+    } : undefined,
     ...(scenario() === 'devices-add-ready' ? {
       remote_access: {
         status: 'healthy',
@@ -1683,7 +1695,8 @@ export const handlers = [
       // the same contract.
       'X-PocketLab-Read-Nonce': request.headers.get('X-PocketLab-Read-Nonce') || '',
     },
-  })),
+  });
+  }),
   http.get('/api/lite/media-backup', ({ request }) => HttpResponse.json({
     status: 'ok',
     provider: 'photoprism_webdav',

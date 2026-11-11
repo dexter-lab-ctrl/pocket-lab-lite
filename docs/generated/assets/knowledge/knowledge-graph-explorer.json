@@ -15190,6 +15190,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-access-azure-hardening.spec.ts",
+      "name": "tests/e2e/lite-access-azure-hardening.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-access-azure-hardening.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-access-native-performance.spec.ts",
       "name": "tests/e2e/lite-access-native-performance.spec.ts",
       "source_refs": [
@@ -15619,10 +15630,32 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-devices-manage-hardening.spec.ts",
+      "name": "tests/e2e/lite-devices-manage-hardening.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-devices-manage-hardening.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-devices-native-workspace-qualification.spec.ts",
       "name": "tests/e2e/lite-devices-native-workspace-qualification.spec.ts",
       "source_refs": [
         "tests/e2e/lite-devices-native-workspace-qualification.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-devices-theme-density-hardening.spec.ts",
+      "name": "tests/e2e/lite-devices-theme-density-hardening.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-devices-theme-density-hardening.spec.ts"
       ],
       "type": "test"
     },
@@ -48512,6 +48545,20 @@
       "id": "rel:8780159a44b0c765",
       "source": "api:post:/api/lite/security/apps/{app_id}/check",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/e2e/lite-devices-theme-density-hardening.spec.ts"
+      ],
+      "id": "rel:87a3a1fb9f2bff41",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-devices-theme-density-hardening.spec.ts",
       "type": "verified_by"
     },
     {

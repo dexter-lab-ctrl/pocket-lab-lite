@@ -42,6 +42,101 @@ html[data-lite-theme] .lite-role-card {
   border-color: var(--azure-border);
   color: var(--azure-text);
 }
+html[data-lite-theme] .lite-remote-access-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+  margin: -.2rem 0 1.1rem;
+  padding: 1rem;
+  overflow: hidden;
+}
+html[data-lite-theme] .lite-remote-access-icon,
+html[data-lite-theme] .lite-remote-access-copy,
+html[data-lite-theme] .lite-remote-access-facts,
+html[data-lite-theme] .lite-remote-access-details {
+  position: relative;
+  z-index: 1;
+}
+html[data-lite-theme] .lite-remote-access-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 1rem;
+  color: var(--azure-accent);
+  background: var(--azure-accent-subtle);
+}
+html[data-lite-theme] .lite-remote-access-ready .lite-remote-access-icon { color: var(--azure-success); }
+html[data-lite-theme] .lite-remote-access-not-ready .lite-remote-access-icon { color: var(--azure-warning); }
+html[data-lite-theme] .lite-remote-access-copy {
+  display: grid;
+  grid-column: 2;
+  gap: .16rem;
+  min-width: 0;
+}
+html[data-lite-theme] .lite-remote-access-copy span,
+html[data-lite-theme] .lite-remote-access-facts span {
+  color: var(--azure-muted);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+html[data-lite-theme] .lite-remote-access-copy strong {
+  color: var(--azure-text);
+  font-size: 1rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-remote-access-copy p {
+  margin: 0;
+  color: var(--azure-muted);
+  font-size: .9rem;
+  line-height: 1.5;
+}
+html[data-lite-theme] .lite-remote-access-facts {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .65rem;
+  width: 100%;
+}
+html[data-lite-theme] .lite-remote-access-facts > div {
+  display: grid;
+  gap: .28rem;
+  min-width: 0;
+  padding: .78rem .82rem;
+  border: 1px solid var(--azure-border);
+  border-radius: 1rem;
+}
+html[data-lite-theme] .lite-remote-access-facts strong {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  min-width: 0;
+  color: var(--azure-text);
+  font-size: .9rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-remote-access-facts strong i {
+  flex: 0 0 auto;
+  width: .48rem;
+  height: .48rem;
+  border-radius: 999px;
+  background: var(--azure-neutral);
+}
+html[data-lite-theme] .lite-remote-access-facts .is-ready strong i { background: var(--azure-success); }
+html[data-lite-theme] .lite-remote-access-facts .is-attention strong i { background: var(--azure-warning); }
+html[data-lite-theme] .lite-remote-access-facts .is-saved strong i { background: var(--azure-neutral); }
+html[data-lite-theme] .lite-remote-access-details {
+  grid-column: 1 / -1;
+  justify-self: start;
+  width: min(34rem, 100%);
+  min-width: 0;
+}
 html[data-lite-theme] .lite-device-relationship-flow {
   min-width: 0;
   max-width: 100%;
@@ -89,7 +184,7 @@ html[data-lite-theme] .lite-device-details-focus-anchor {
   box-shadow: var(--azure-panel-shadow);
 }
 html[data-lite-theme] .lite-device-details-focus-anchor .lite-device-details-panel {
-  background: var(--azure-surface) !important;
+  background: var(--azure-surface);
   color: var(--azure-text);
   backdrop-filter: none;
 }
@@ -100,7 +195,7 @@ html[data-lite-theme] .lite-device-remove-panel .lite-device-remove-actions {
   color: var(--azure-muted);
 }
 html[data-lite-theme] .lite-device-details-panel-tool,
-html[data-lite-theme] .lite-device-details-panel :is(button,input,select,textarea),
+html[data-lite-theme] .lite-device-details-panel :is(input,select,textarea),
 html[data-lite-theme] .lite-devices-add-card :is(input,select,textarea) {
   color: var(--azure-text);
   background-color: var(--azure-input);
@@ -602,11 +697,14 @@ html[data-lite-theme] .lite-device-relationship-peer:is(.is-disconnected,.is-sto
 /* Native Device Library P0–P6: shared geometry for Daylight, Dark and System.
  * This is the Devices-owned composition layer. Colors reference only the
  * existing Azure Horizon semantic tokens; themes never redefine spacing. */
-html[data-lite-theme] .lite-device-library-status {
+html[data-lite-theme] .lite-devices-library-status {
   display:grid;gap:.35rem;min-width:0;margin-block:.3rem 1rem;
 }
-html[data-lite-theme] .lite-device-library-status .lite-devices-operational-story {
+html[data-lite-theme] .lite-devices-library-status .lite-devices-operational-story {
   min-width:0;margin:0;
+}
+html[data-lite-theme] .lite-devices-library-status .lite-operational-story-copy > span {
+  display:block;
 }
 html[data-lite-theme] .lite-devices-horizon-summary {
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
@@ -725,21 +823,127 @@ html[data-lite-theme] .lite-devices-topology-content {
 }
 html[data-lite-theme] .lite-devices-topology-content .lite-remote-access-panel {margin:0;}
 html[data-lite-theme] .lite-device-relationship-node[role="button"] {cursor:pointer;}
+/* Native Manage: grouped settings navigation; no horizontal tab strip. */
+html[data-lite-theme] .lite-device-details-focus-anchor {
+  container-type: inline-size;
+}
+html[data-lite-theme] .lite-device-details-panel {
+  --device-manage-gap: clamp(.7rem, 1.5vw, 1rem);
+  background: var(--azure-surface);
+  color: var(--azure-text);
+  padding: var(--azure-spacing-card);
+}
+html[data-lite-theme] .lite-device-manage-workspace {
+  display: grid;
+  grid-template-columns: minmax(10.5rem, 12.5rem) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--device-manage-gap);
+  min-width: 0;
+}
+html[data-lite-theme] .lite-device-manage-nav-wrap,
+html[data-lite-theme] .lite-device-manage-detail { min-width: 0; }
+html[data-lite-theme] .lite-device-manage-nav-wrap {
+  position: sticky; top: 3.25rem;
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-card);
+  background: var(--azure-raised);
+  padding: .55rem;
+  max-height: calc(100dvh - 10rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
 html[data-lite-theme] .lite-device-manage-navigation {
-  display:flex;gap:.4rem;padding:.55rem .65rem;overflow-x:auto;overscroll-behavior-inline:contain;
-  border-bottom:1px solid var(--azure-border);scrollbar-width:thin;
+  display: grid; gap: 1rem;
+  padding: 0; margin: 0; min-width: 0;
+  overflow: visible; border: 0;
 }
-html[data-lite-theme] .lite-device-manage-navigation button {
-  display:inline-flex;align-items:center;gap:.35rem;min-height:2.65rem;flex:0 0 auto;
-  padding:.45rem .7rem;border:1px solid transparent;border-radius:var(--azure-radius-control);
-  background:transparent;color:var(--azure-muted);font:inherit;font-size:.83rem;
-  cursor:pointer;
+html[data-lite-theme] .lite-device-manage-nav-group h4 {
+  margin: .2rem .55rem .4rem;
+  color: var(--azure-muted);
+  font-size: .7rem; font-weight: 750;
+  line-height: 1.4; text-transform: uppercase; letter-spacing: .06em;
 }
-html[data-lite-theme] .lite-device-manage-navigation button.is-current {
-  background:var(--azure-selected);color:var(--azure-text);border-color:var(--azure-strong-border);
+html[data-lite-theme] .lite-device-manage-nav-list { display: grid; gap: .16rem; }
+html[data-lite-theme] .lite-device-manage-nav-row {
+  display: flex; align-items: center; gap: .65rem; width: 100%;
+  min-width: 0; min-height: 3.15rem;
+  padding: .52rem .65rem;
+  border: 1px solid transparent; border-radius: var(--azure-radius-control);
+  background: transparent; color: var(--azure-text);
+  font: inherit; text-align: start; cursor: pointer;
+  transition: background-color 130ms ease, border-color 130ms ease;
+}
+html[data-lite-theme] .lite-device-manage-nav-row > svg:first-child {
+  flex: 0 0 auto; color: var(--azure-accent);
+}
+html[data-lite-theme] .lite-device-manage-nav-copy {
+  display: grid; gap: .15rem; flex: 1 1 auto; min-width: 0;
+}
+html[data-lite-theme] .lite-device-manage-nav-copy strong {
+  font-size: .85rem; font-weight: 680; line-height: 1.35; color: var(--azure-text);
+}
+html[data-lite-theme] .lite-device-manage-nav-copy small {
+  font-size: .72rem; line-height: 1.4; color: var(--azure-muted);
+}
+html[data-lite-theme] .lite-device-manage-nav-row:is(:hover,:focus-visible) {
+  background: var(--azure-hover);
+}
+html[data-lite-theme] .lite-device-manage-nav-row:active { background: var(--azure-pressed); }
+html[data-lite-theme] .lite-device-manage-nav-row.is-current {
+  background: var(--azure-selected);
+  border-color: var(--azure-strong-border);
+}
+html[data-lite-theme] .lite-device-manage-nav-row:focus-visible,
+html[data-lite-theme] .lite-device-manage-backbar button:focus-visible {
+  outline: 2px solid var(--azure-focus); outline-offset: 2px;
+}
+html[data-lite-theme] .lite-device-manage-nav-chevron { color: var(--azure-muted); flex: 0 0 auto; }
+html[data-lite-theme] .lite-device-manage-detail-title,
+html[data-lite-theme] .lite-device-manage-backbar h4 {
+  color: var(--azure-text);
+  font-size: 1rem; font-weight: 750;
+  line-height: 1.4; overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-device-manage-detail-title {
+  margin: .1rem 0 .8rem;
 }
 html[data-lite-theme] .lite-device-manage-content {
-  display:grid;gap:1rem;min-width:0;padding-block:.75rem;
+  display: grid; gap: var(--device-manage-gap);
+  min-width: 0; padding: 0;
+}
+html[data-lite-theme] .lite-device-manage-backbar { display: grid; gap: .55rem; margin-bottom: .8rem; }
+html[data-lite-theme] .lite-device-manage-backbar button {
+  display: inline-flex; align-items: center; gap: .3rem;
+  justify-self: start; min-height: 2.75rem;
+  padding: .35rem .5rem; border: 0;
+  background: transparent; color: var(--azure-accent);
+  font: inherit; font-weight: 700; cursor: pointer;
+}
+html[data-lite-theme] .lite-device-manage-backbar h4 { margin: 0; }
+@container (max-width: 580px) {
+  html[data-lite-theme] .lite-device-manage-workspace { grid-template-columns: minmax(0, 1fr); }
+  html[data-lite-theme] .lite-device-manage-nav-wrap {
+    position: static; max-height: none;
+  }
+}
+html[data-lite-theme] .lite-device-details-panel.is-mobile-workspace .lite-device-manage-workspace {
+  grid-template-columns: minmax(0,1fr);
+}
+html[data-lite-theme] .lite-device-details-panel.is-mobile-workspace .lite-device-manage-nav-wrap {
+  position: static; max-height: none;
+  background: var(--azure-surface); border: 0; padding: 0;
+}
+html[data-lite-theme] .lite-device-details-panel.is-mobile-workspace .lite-device-manage-nav-group {
+  background: var(--azure-raised);
+  border: 1px solid var(--azure-border);
+  border-radius: var(--azure-radius-card);
+  padding: .45rem;
+}
+html[data-lite-theme] .lite-device-details-panel.is-mobile-workspace .lite-device-manage-nav-row {
+  min-height: 3.4rem;
+}
+html[data-lite-theme] .lite-device-details-panel.is-mobile-workspace[data-manage-view="detail"] .lite-device-manage-nav-wrap {
+  display: none;
 }
 html[data-lite-theme] .lite-device-native-overview {
   border:1px solid var(--azure-border);border-radius:var(--azure-radius-card);
@@ -810,4 +1014,166 @@ html[data-lite-theme] .lite-device-relationship-node[role="button"]:focus-visibl
   html[data-lite-theme] .lite-device-library-card *,
   html[data-lite-theme] .lite-devices-topology-workspace *,
   html[data-lite-theme] .lite-device-manage-navigation * {transition:none;animation:none;}
+}
+
+
+/* Devices scope keeps geometry identical in Light/Dark/System; only tokens vary. */
+html[data-lite-theme] .lite-screen-stage-devices { min-width: 0; }
+html[data-lite-theme] .lite-devices-layout {
+  display: grid;
+  align-items: start;
+  gap: 1rem;
+}
+html[data-lite-theme] .lite-devices-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+html[data-lite-theme] .lite-devices-topology-workspace { min-height: auto; }
+html[data-lite-theme] .lite-screen-stage-devices :is(.lite-device-card,.lite-devices-topology-workspace,.lite-devices-add-disclosure) {
+  max-width: 100%; min-width: 0;
+}
+html[data-lite-theme] .lite-device-details-panel :is(.lite-device-proactive-health,.lite-device-advanced-details,.lite-device-history-timeline-card,.lite-device-health-history-shell,.lite-device-awareness-section) {
+  background: var(--azure-surface); color: var(--azure-text); border-color: var(--azure-border);
+  min-width: 0;
+}
+html[data-lite-theme] .lite-device-details-panel :is(.lite-device-proactive-health-head,.lite-device-health-posture-grid article,.lite-device-health-resource) {
+  background: var(--azure-raised); border-color: var(--azure-border); color: var(--azure-text);
+  min-width: 0;
+}
+html[data-lite-theme] .lite-device-proactive-health-head {
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:.75rem;
+}
+html[data-lite-theme] .lite-device-proactive-health-head > div {
+  display:grid;
+  min-width:0;
+  gap:.1rem;
+}
+html[data-lite-theme] .lite-device-details-panel :is(.lite-device-health-resource,.lite-device-health-posture-grid article) :is(strong,b,h3,h4,dd) {
+  color: var(--azure-text); overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-device-details-panel :is(.lite-device-health-resource,.lite-device-health-posture-grid article) :is(span,small,p,dt) {
+  color: var(--azure-muted); overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-device-details-head-facts { display: flex; flex-wrap: wrap; gap: .35rem .7rem; align-items: baseline; }
+html[data-lite-theme] .lite-device-details-head-facts strong { color: var(--azure-text); }
+html[data-lite-theme] .lite-device-details-panel.is-ready .lite-device-details-head-facts strong { border-inline-start: 3px solid var(--azure-success); padding-inline-start: .55rem; }
+html[data-lite-theme] .lite-device-details-panel.is-review .lite-device-details-head-facts strong { border-inline-start: 3px solid var(--azure-warning); padding-inline-start: .55rem; }
+html[data-lite-theme] .lite-device-health-posture-grid,
+html[data-lite-theme] .lite-device-health-resource-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--device-manage-gap,.75rem); }
+html[data-lite-theme] .lite-device-health-posture-grid article,
+html[data-lite-theme] .lite-device-health-recommendation,
+html[data-lite-theme] .lite-device-health-attention-list,
+html[data-lite-theme] .lite-device-health-history-control,
+html[data-lite-theme] .lite-device-health-history {
+  display:grid;
+  gap:.45rem;
+}
+html[data-lite-theme] .lite-device-health-attention-list article {
+  display:grid;
+  gap:.35rem;
+}
+html[data-lite-theme] .lite-device-health-attention-list article > div {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:.75rem;
+}
+html[data-lite-theme] .lite-device-proactive-health :is(.lite-device-health-recommendation,.lite-device-health-attention-list,.lite-device-health-posture-grid article) {
+  min-width: 0; overflow-wrap: anywhere;
+}
+html[data-lite-theme] .lite-device-service-groups { display: grid; gap: .7rem; margin-block: .6rem; }
+html[data-lite-theme] .lite-device-service-group { min-width: 0; border-top: 1px solid var(--azure-border); padding-top: .55rem; }
+html[data-lite-theme] .lite-device-service-group h4 { color: var(--azure-muted); margin: 0 0 .35rem; font-size: .75rem; font-weight: 700; }
+html[data-lite-theme] .lite-device-service-state { display: grid; justify-items: end; gap: .2rem; min-width: 0; text-align: end; }
+html[data-lite-theme] .lite-device-service-state small { color: var(--azure-muted); font-size: .72rem; }
+html[data-lite-theme] .lite-device-advanced-details > summary,
+html[data-lite-theme] .lite-remote-access-details > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: .6rem;
+  min-height: 2.75rem; color: var(--azure-text); cursor: pointer; list-style: none;
+}
+html[data-lite-theme] .lite-device-advanced-details > summary::-webkit-details-marker,
+html[data-lite-theme] .lite-remote-access-details > summary::-webkit-details-marker { display: none; }
+html[data-lite-theme] .lite-device-advanced-details .lite-shared-disclosure-chevron,
+html[data-lite-theme] .lite-remote-access-details .lite-shared-disclosure-chevron,
+html[data-lite-theme] .lite-devices-topology-workspace .lite-shared-disclosure-chevron {
+  flex: 0 0 auto; color: var(--azure-muted); transition: transform 140ms ease;
+}
+html[data-lite-theme] .lite-device-advanced-details[open] > summary .lite-shared-disclosure-chevron,
+html[data-lite-theme] .lite-remote-access-details[open] > summary .lite-shared-disclosure-chevron,
+html[data-lite-theme] .lite-devices-topology-workspace[open] > summary .lite-shared-disclosure-chevron { transform: rotate(180deg); }
+html[data-lite-theme] .lite-remote-access-panel :is(dt,dd) { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+html[data-lite-theme] .lite-remote-access-panel dt { color: var(--azure-muted); }
+html[data-lite-theme] .lite-remote-access-panel dd { color: var(--azure-text); }
+html[data-lite-theme] .lite-remote-access-panel .lite-remote-access-details dl > div {
+  display: grid; grid-template-columns: minmax(8rem, .4fr) minmax(0,1fr);
+  gap: .6rem; align-items: baseline; border-bottom: 1px solid var(--azure-border);
+  padding: .5rem 0;
+}
+html[data-lite-theme] .lite-device-history-timeline-card .lite-ux-history-timeline.is-devices {
+  display: grid; gap: 0; margin: .35rem 0; padding: 0; list-style: none;
+}
+html[data-lite-theme] .lite-ux-history-timeline.is-devices li {
+  display: grid; grid-template-columns: 2rem minmax(0,1fr);
+  position: relative; gap: 0 .55rem; padding: .45rem 0 .95rem;
+  color: var(--azure-text);
+}
+html[data-lite-theme] .lite-ux-history-timeline.is-devices li::before {
+  content: ''; position: absolute; left: .96rem; top: 2.2rem; bottom: -.15rem;
+  width: 1px; background: var(--azure-border);
+}
+html[data-lite-theme] .lite-ux-history-timeline.is-devices li:last-child::before { display: none; }
+html[data-lite-theme] .lite-ux-history-timeline.is-devices .lite-ux-history-marker {
+  grid-column: 1; display: grid; place-items: center;
+  width: 2rem; height: 2rem; border-radius: 50%; border: 1px solid var(--azure-border);
+  background: var(--azure-raised); color: var(--azure-neutral);
+}
+html[data-lite-theme] .lite-ux-history-timeline.is-devices li.is-online .lite-ux-history-marker { color: var(--azure-success); }
+html[data-lite-theme] .lite-ux-history-timeline.is-devices li.is-alert .lite-ux-history-marker { color: var(--azure-danger); }
+html[data-lite-theme] .lite-ux-history-timeline.is-devices li.is-recover .lite-ux-history-marker { color: var(--azure-warning); }
+html[data-lite-theme] .lite-ux-history-timeline.is-devices .lite-device-event-date {
+  grid-column: 1 / -1; padding: .2rem 0 .55rem;
+  color: var(--azure-muted); font-size: .72rem; font-weight: 750;
+}
+html[data-lite-theme] .lite-ux-history-timeline.is-devices li > div { grid-column: 2; min-width: 0; }
+html[data-lite-theme] .lite-ux-history-timeline.is-devices li > div strong { color: var(--azure-text); }
+html[data-lite-theme] .lite-ux-history-timeline.is-devices li > div p { color: var(--azure-muted); }
+html[data-lite-theme] .lite-ux-history-timeline.is-devices li time { display: block; margin-top: .25rem; color: var(--azure-muted); }
+@container (max-width: 560px) {
+  html[data-lite-theme] .lite-device-health-posture-grid,
+  html[data-lite-theme] .lite-device-health-resource-grid { grid-template-columns: minmax(0,1fr); }
+}
+@media(max-width:980px) {
+  html[data-lite-theme] .lite-devices-layout { grid-template-columns: 1fr; }
+}
+@media(max-width:760px) {
+  html[data-lite-theme] .lite-devices-grid { grid-template-columns: 1fr; }
+}
+@media(max-width:700px) {
+  html[data-lite-theme] .lite-device-details-focus-anchor,
+  html[data-lite-theme] .lite-device-details-focus-anchor .lite-device-details-panel { border-radius: 1.25rem 1.25rem 0 0; }
+  html[data-lite-theme] .lite-device-manage-navigation { gap: .75rem; }
+  html[data-lite-theme] .lite-device-service-state { justify-items: start; text-align: start; }
+  html[data-lite-theme] .lite-device-awareness-section dl > div,
+  html[data-lite-theme] .lite-device-capability-list li { flex-wrap: wrap; }
+  html[data-lite-theme] .lite-remote-access-panel .lite-remote-access-details dl > div { grid-template-columns: minmax(0,1fr); gap: .15rem; }
+}
+@media(max-width:760px) {
+  html[data-lite-theme] .lite-remote-access-panel { grid-template-columns: auto minmax(0,1fr); }
+  html[data-lite-theme] .lite-remote-access-facts { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  html[data-lite-theme] .lite-remote-access-details { width: 100%; }
+  html[data-lite-theme] .lite-device-proactive-health-head { grid-template-columns:auto minmax(0,1fr); }
+  html[data-lite-theme] .lite-device-proactive-health-head > small { grid-column:2; justify-self:start; }
+}
+@media(max-width:420px) {
+  html[data-lite-theme] .lite-remote-access-facts { grid-template-columns: minmax(0,1fr); }
+}
+@media(prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-device-manage-nav-row,
+  html[data-lite-theme] .lite-device-advanced-details .lite-shared-disclosure-chevron,
+  html[data-lite-theme] .lite-remote-access-details .lite-shared-disclosure-chevron,
+  html[data-lite-theme] .lite-devices-topology-workspace .lite-shared-disclosure-chevron { transition: none; }
 }

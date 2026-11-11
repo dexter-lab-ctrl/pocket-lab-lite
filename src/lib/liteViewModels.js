@@ -1618,6 +1618,9 @@ export function selectFleetDevicesView(payload = {}) {
     live_device_ids: devices.filter((device) => device.live).map((device) => device.id),
     updated_at: safeIso(payload?.updated_at || payload?.checked_at),
     checked_at: safeIso(payload?.checked_at || payload?.updated_at),
+    ...(payload?.read_degraded === true ? { read_degraded: true } : {}),
+    ...(payload?.degraded_reason ? { degraded_reason: safeString(payload.degraded_reason) } : {}),
+    ...(payload?.data_source ? { data_source: safeString(payload.data_source) } : {}),
   });
 }
 

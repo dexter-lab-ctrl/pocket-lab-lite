@@ -477,7 +477,15 @@ async function scrollManage(dialog) {
 }
 
 async function chooseSection(dialog, label) {
-  const button = await firstVisibleOrNull(dialog.getByRole('button', { name: label, exact: true }));
+  let button = await firstVisibleOrNull(dialog.getByRole('button', { name: label, exact: true }));
+  if (!button) {
+    const back = await firstVisibleOrNull(dialog.getByRole('button', { name: 'Back to all device settings', exact: true }));
+    if (back) {
+      await back.click();
+      await dialog.locator('[data-manage-view="index"]').waitFor({ state: 'visible', timeout: 20_000 });
+      button = await firstVisibleOrNull(dialog.getByRole('button', { name: label, exact: true }));
+    }
+  }
   if (!button) return false;
   await button.click();
   await page.locator('[data-active-device-section="' + label.toLowerCase() + '"]').waitFor({ state: 'visible', timeout: 20_000 });

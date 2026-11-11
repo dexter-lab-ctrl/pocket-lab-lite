@@ -260,6 +260,10 @@ test('[interaction] Devices nested details and health history stay inside the re
   expectLitePerformanceBudget(detailReport);
   await writeLitePerformanceEvidence(testInfo, detailReport);
 
+  if (testInfo.project.name === 'mocked-mobile') {
+    await panel.getByRole('button', { name: 'Back to all device settings', exact: true }).click();
+    await expect(panel).toHaveAttribute('data-manage-view', 'index');
+  }
   await panel.getByRole('button', { name: 'Health', exact: true }).click();
   const healthHistory = panel.getByRole('button', { name: 'Show health history' });
   await expect(healthHistory).toBeVisible();
