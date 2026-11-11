@@ -112,6 +112,15 @@ def test_android_candidate_server_is_ready_before_chrome_is_opened():
     assert server_start < server_probe < chrome_open
 
 
+def test_android_candidate_runner_can_bind_an_explicit_device_serial():
+    source = CANDIDATE_RUNNER.read_text(encoding="utf-8")
+
+    assert "POCKETLAB_ANDROID_DEVICE_SERIAL" in source
+    assert "candidate_device_args=(-DeviceSerial" in source
+    assert "contains unsupported characters" in source
+    assert '"${candidate_device_args[@]}"' in source
+
+
 def test_android_home_only_qualifier_stops_before_recovery_flow():
     source = ANDROID_QUALIFIER.read_text(encoding="utf-8")
     home_only_guard = source.index("if (!homeOnly) {\nawait gotoScreen('recovery');")

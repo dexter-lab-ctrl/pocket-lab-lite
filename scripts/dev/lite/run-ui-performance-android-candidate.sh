@@ -17,6 +17,7 @@ command -v node >/dev/null 2>&1 || fail 'node is required; activate the checked-
 baseline_mode=0
 home_only=0
 access_only=0
+candidate_device_args=()
 for argument in "$@"; do
   case "$argument" in
     --baseline) baseline_mode=1 ;;
@@ -26,6 +27,12 @@ for argument in "$@"; do
     *) fail "unknown argument: $argument" ;;
   esac
 done
+
+if [[ -n "${POCKETLAB_ANDROID_DEVICE_SERIAL:-}" ]]; then
+  [[ "${POCKETLAB_ANDROID_DEVICE_SERIAL}" =~ ^[A-Za-z0-9._:-]+$ ]] \
+    || fail 'POCKETLAB_ANDROID_DEVICE_SERIAL contains unsupported characters.'
+  candidate_device_args=(-DeviceSerial "${POCKETLAB_ANDROID_DEVICE_SERIAL}")
+fi
 
 if (( access_only == 1 )) && (( home_only == 1 )); then
   fail '--access-only cannot be combined with --home-only.'
@@ -76,7 +83,8 @@ curl -fsS --connect-timeout 1 --max-time 2 \
 # target; CDP may still attach to that target, but it will not deliver real
 # renderer animation frames.
 powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
-  -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -OpenCandidate
+  -File scripts/dev/lite/prepare-ui-performance-android-candidate.ps1 -OpenCandidate \
+  "${candidate_device_args[@]}"
 
 printf '[ui-performance-android-candidate] running physical Android qualification for %s\n' "$source_commit"
 cdp_args=()
