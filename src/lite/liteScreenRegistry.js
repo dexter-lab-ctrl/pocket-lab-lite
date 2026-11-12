@@ -37,6 +37,11 @@ const SCREEN_DEFINITIONS = Object.freeze({
     intrinsicSize: '60rem',
     idlePreload: 'security',
   }),
+  'system-health': Object.freeze({
+    loader: () => import('./LiteSystemHealth.jsx'),
+    intrinsicSize: '52rem',
+    idlePreload: 'devices',
+  }),
   rules: Object.freeze({
     loader: () => import('./LiteRules.jsx'),
     intrinsicSize: '42rem',

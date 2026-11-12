@@ -6,6 +6,7 @@ projection_dirty_signals
 policy_continuation_events
 phase3b_revision_events
 phase3b_current_state
+lite_system_health_observations
 lite_home_activity_read_cursors
 domain_revisions
 device_identity_guards
@@ -40,6 +41,10 @@ recovery_backup_location_events
 owner_operation_events
 owner_operation_client_pairing_events
 owner_operation_challenges
+lite_system_health_repair_denials
+lite_system_health_repair_attempts
+lite_system_health_events
+lite_system_health_diagnoses
 lite_revision_events
 lite_installed_release_identity
 identity_audit_events
@@ -85,5 +90,6 @@ device_recovery_history
 device_invite_lifecycle
 device_enrollment_registry
 workflow_current_state
+lite_system_health_incidents
 synthetic_principals
 schema_migrations

@@ -283,6 +283,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_backend_runtime_promotion.py",
+      "name": "tests/backend/test_lite_backend_runtime_promotion.py",
+      "source_refs": [
+        "tests/backend/test_lite_backend_runtime_promotion.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_backup_locations.py",
       "name": "tests/backend/test_lite_backup_locations.py",
       "source_refs": [
@@ -1627,6 +1637,26 @@
       "name": "tests/backend/test_lite_storage_fault_injection.py",
       "source_refs": [
         "tests/backend/test_lite_storage_fault_injection.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_system_health.py",
+      "name": "tests/backend/test_lite_system_health.py",
+      "source_refs": [
+        "tests/backend/test_lite_system_health.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_system_health_android_qualification.py",
+      "name": "tests/backend/test_lite_system_health_android_qualification.py",
+      "source_refs": [
+        "tests/backend/test_lite_system_health_android_qualification.py"
       ],
       "type": "test"
     },
@@ -3093,6 +3123,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-system-health.spec.ts",
+      "name": "tests/e2e/lite-system-health.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-system-health.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-test-helpers.ts",
       "name": "tests/e2e/lite-test-helpers.ts",
       "source_refs": [
@@ -3317,6 +3357,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "7673a5229970a26d674adef4aef562d5fe168827da0bac22d84941e627539d22"
+    "source_fingerprint": "f00412d7d2d01d10c54abb57750677918c1a3422c1d68f800f01a6f240cbc531"
   }
 }

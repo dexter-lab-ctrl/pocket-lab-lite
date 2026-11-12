@@ -3740,6 +3740,421 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "System Health App Diagnostics",
+      "domain": "system-health",
+      "id": "api:get:/api/lite/system-health/apps/{app_id}",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/apps/{app_id}",
+      "operation_id": "system_health_app_diagnostics_api_lite_system_health_apps__app_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/apps/{app_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Configuration Drift",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceDrift",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/configuration-drift",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/configuration-drift",
+      "operation_id": "system_health_configuration_drift_api_lite_system_health_configuration_drift_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/configuration-drift",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Dependencies",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceDependencies",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/dependencies",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/dependencies",
+      "operation_id": "system_health_dependencies_api_lite_system_health_dependencies_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/dependencies",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health History",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceHistory",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/history",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/history",
+      "operation_id": "system_health_history_api_lite_system_health_history_get",
+      "response_statuses": [
+        "200",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/history",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Incidents",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceIncidents",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/incidents",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/incidents",
+      "operation_id": "system_health_incidents_api_lite_system_health_incidents_get",
+      "response_statuses": [
+        "200",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/incidents",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Incident",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/incidents/{incident_id}",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/incidents/{incident_id}",
+      "operation_id": "system_health_incident_api_lite_system_health_incidents__incident_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/incidents/{incident_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Decisions",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/incidents/{incident_id}/decisions",
+      "operation_id": "system_health_decisions_api_lite_system_health_incidents__incident_id__decisions_get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/incidents/{incident_id}/decisions",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Intelligence",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceKnowledge",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/intelligence",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/intelligence",
+      "operation_id": "system_health_intelligence_api_lite_system_health_intelligence_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/intelligence",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Policies",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligencePolicies",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/policies",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/policies",
+      "operation_id": "system_health_policies_api_lite_system_health_policies_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/policies",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Repairs",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/repairs",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/repairs",
+      "operation_id": "system_health_repairs_api_lite_system_health_repairs_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/repairs",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Resources",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceResources",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/resources",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/resources",
+      "operation_id": "system_health_resources_api_lite_system_health_resources_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/resources",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Summary",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceSummary",
+          "resolved": true,
+          "source_module": "src/lite/LiteHome.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceSummary",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/summary",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/summary",
+      "operation_id": "system_health_summary_api_lite_system_health_summary_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/summary",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite Activity Summary",
       "domain": "system",
       "frontend_clients": [
@@ -7522,6 +7937,101 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "System Health Diagnose",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceDiagnose",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+      "method": "POST",
+      "name": "POST /api/lite/system-health/incidents/{incident_id}/diagnose",
+      "operation_id": "system_health_diagnose_api_lite_system_health_incidents__incident_id__diagnose_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/incidents/{incident_id}/diagnose",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Preflight",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+      "method": "POST",
+      "name": "POST /api/lite/system-health/incidents/{incident_id}/preflight",
+      "operation_id": "system_health_preflight_api_lite_system_health_incidents__incident_id__preflight_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/incidents/{incident_id}/preflight",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Repair",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+      "method": "POST",
+      "name": "POST /api/lite/system-health/incidents/{incident_id}/repair",
+      "operation_id": "system_health_repair_api_lite_system_health_incidents__incident_id__repair_post",
+      "response_statuses": [
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/incidents/{incident_id}/repair",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Update Enterprise Member",
       "domain": "enterprise",
       "frontend_clients": [
@@ -7701,6 +8211,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "7673a5229970a26d674adef4aef562d5fe168827da0bac22d84941e627539d22"
+    "source_fingerprint": "f00412d7d2d01d10c54abb57750677918c1a3422c1d68f800f01a6f240cbc531"
   }
 }

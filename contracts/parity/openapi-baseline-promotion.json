@@ -10,12 +10,13 @@
     "add durable, per-human Home activity review cursor reads and monotonic review writes backed by the prepared projection",
     "add the bounded private Home activity-history read endpoint backed by the existing prepared projection; exhaustive pagination and cross-domain resolution remain deferred",
     "add registered, single-use Owner-approved photo_backup.bounded_acceptance.v1 operations with immutable target and scope binding, requester proof of possession, human Owner passkey approval, durable lifecycle, server-owned execution and sanitized evidence; generic maintenance remains disabled",
-    "add a protected Owner-facing Trusted automation clients pairing surface; pending pairing grants no operation authority and the fixed photo_backup.bounded_acceptance.v1 capability remains the only production capability"
+    "add a protected Owner-facing Trusted automation clients pairing surface; pending pairing grants no operation authority and the fixed photo_backup.bounded_acceptance.v1 capability remains the only production capability",
+    "add read-only System Health summary, incident history, diagnostics, diagnosis, preflight and generation-fenced repair-denial contracts with sanitized evidence"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
   "previous_sha256": "21b10835554b759b2cc77c3a7b98b135519d45b2efbf24701020701ff1b071be",
-  "promoted_sha256": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
+  "promoted_sha256": "38baff15a70648585d6011bf868a4d665931203c92b8affdd708f4d70a2f6fd8",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
@@ -24,7 +25,7 @@
     "runtime_routes_removed": false,
     "write_operations_added": true
   },
-  "source_revision": "feat/owner-operation-client-enrollment-ui@517f8b9c88765b5eb1201b56d86b69f0ef585f27",
+  "source_revision": "feat/azure-horizon-system-health-intelligence@f4bbf0e15d3f2b01c46a22002c1f2988587e03b3",
   "status": "promoted",
-  "validation_status": "dev-pc-focused-and-full-gates-passed; exact-candidate-isolated-requester-pairing-qualification-validated; physical-android-candidate-blocked-by-missing-authorized-private-transport-and-isolated-destination; live-production-transfer-pending-reviewed-release"
+  "validation_status": "dev-pc-focused-and-full-gates-passed; exact-candidate-isolated-system-health-qualification-validated; physical-android-system-health-ui-qualified-against-candidate-fixtures; installed-phone-backend-remains-main-and-does-not-expose-system-health; live-production-transfer-pending-reviewed-release"
 }

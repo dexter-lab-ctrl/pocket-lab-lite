@@ -53,6 +53,35 @@ def test_candidate_proxy_is_lite_api_only(path, allowed):
     assert candidate.is_allowed_api_path(path) is allowed
 
 
+@pytest.mark.parametrize(
+    "path,allowed",
+    [
+        ("/api/lite/system-health/incidents/health-0123456789abcdef01234567/diagnose", True),
+        ("/api/lite/system-health/incidents/health-0123456789abcdef01234567/repair", False),
+        ("/api/lite/system-health/incidents/health-0123456789abcdef01234567/preflight", False),
+        ("/api/lite/harness/browser/bridge", False),
+    ],
+)
+def test_candidate_mode_allows_only_diagnosis_write(path, allowed):
+    candidate = _module()
+    assert candidate.is_allowed_candidate_write(path) is allowed
+
+
+def test_candidate_api_target_is_loopback_tls_and_fail_closed(monkeypatch, tmp_path):
+    candidate = _module()
+    assert candidate.candidate_api_target() == ("http", candidate.CADDY_HTTP_LOCAL_PORT, None)
+    ca = tmp_path / "candidate-ca.pem"
+    ca.write_text("not a certificate", encoding="utf-8")
+    monkeypatch.setenv("POCKETLAB_CANDIDATE_API_LOCAL_PORT", "12345")
+    monkeypatch.setenv("POCKETLAB_CANDIDATE_API_SCHEME", "https")
+    monkeypatch.setenv("POCKETLAB_CANDIDATE_API_CA_FILE", str(ca))
+    with pytest.raises(candidate.CandidateServerError, match="candidate_api_ca_invalid"):
+        candidate.candidate_api_target()
+    monkeypatch.setenv("POCKETLAB_CANDIDATE_API_SCHEME", "http")
+    with pytest.raises(candidate.CandidateServerError, match="candidate_api_tls_required"):
+        candidate.candidate_api_target()
+
+
 def test_candidate_static_path_stays_inside_dist(tmp_path):
     candidate = _module()
     (tmp_path / "index.html").write_text("candidate", encoding="utf-8")

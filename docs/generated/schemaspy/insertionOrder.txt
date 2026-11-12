@@ -1,5 +1,6 @@
 schema_migrations
 synthetic_principals
+lite_system_health_incidents
 workflow_current_state
 device_enrollment_registry
 device_invite_lifecycle
@@ -45,6 +46,10 @@ human_credentials
 identity_audit_events
 lite_installed_release_identity
 lite_revision_events
+lite_system_health_diagnoses
+lite_system_health_events
+lite_system_health_repair_attempts
+lite_system_health_repair_denials
 owner_operation_challenges
 owner_operation_client_pairing_events
 owner_operation_events
@@ -79,6 +84,7 @@ device_heartbeats
 device_identity_guards
 domain_revisions
 lite_home_activity_read_cursors
+lite_system_health_observations
 phase3b_current_state
 phase3b_revision_events
 policy_continuation_events

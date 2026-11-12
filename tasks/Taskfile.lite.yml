@@ -176,6 +176,21 @@ tasks:
         {{if .OPA_BIN}}--opa-bin "{{.OPA_BIN}}"{{end}}
         {{if .EVIDENCE_DIR}}--evidence-dir "{{.EVIDENCE_DIR}}"{{end}}
 
+  lite:system-health:candidate:android:qualify:
+    desc: Run the narrow exact-SHA System Health candidate against a run-owned Server Phone root
+    vars:
+      CANDIDATE_SHA: '{{default "" .CANDIDATE_SHA}}'
+      BASE_SHA: '{{default "origin/main" .BASE_SHA}}'
+      NATS_SERVER_BIN: '{{default "" .NATS_SERVER_BIN}}'
+      EVIDENCE_DIR: '{{default "" .EVIDENCE_DIR}}'
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/run-system-health-android-qualification.py
+        --candidate-sha "{{.CANDIDATE_SHA}}"
+        --base-sha "{{.BASE_SHA}}"
+        {{if .NATS_SERVER_BIN}}--nats-server-bin "{{.NATS_SERVER_BIN}}"{{end}}
+        {{if .EVIDENCE_DIR}}--evidence-dir "{{.EVIDENCE_DIR}}"{{end}}
+
   lite:photo-backup:mocked:
     desc: Run mocked Photo Backup E2E workflows
     cmds:
@@ -385,6 +400,77 @@ tasks:
         --backup-root "{{.BACKUP_ROOT}}"
         --target-main-sha "{{.TARGET_MAIN_SHA}}"
         --target-schema "{{.TARGET_SCHEMA}}"
+
+  lite:backend:promotion:prepare:
+    desc: Prepare an immutable exact-SHA Android/Termux backend-runtime artifact; does not deploy or activate it
+    requires:
+      vars: [SOURCE_SHA, OUTPUT_DIR]
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py prepare
+        --source-sha "{{.SOURCE_SHA}}"
+        --output-dir "{{.OUTPUT_DIR}}"
+
+  lite:backend:promotion:verify:
+    desc: Verify backend-runtime artifact checksums, inventory, safe paths and migration contract
+    requires:
+      vars: [ARTIFACT, MANIFEST, CHECKSUMS]
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py verify
+        --artifact "{{.ARTIFACT}}"
+        --manifest "{{.MANIFEST}}"
+        --checksums "{{.CHECKSUMS}}"
+
+  lite:backend:promotion:qualify:isolate:
+    desc: Exercise backend promotion backup, restore, migration, auth and rollback in disposable state
+    requires:
+      vars: [ARTIFACT, MANIFEST, CHECKSUMS, WORKSPACE]
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py qualify-isolated
+        --artifact "{{.ARTIFACT}}"
+        --manifest "{{.MANIFEST}}"
+        --checksums "{{.CHECKSUMS}}"
+        --workspace "{{.WORKSPACE}}"
+
+  lite:backend:promotion:qualify:android:
+    desc: Transfer an exact-SHA backend artifact to an inactive Android/Termux cache, qualify it in disposable state, and collect read-only admission evidence
+    requires:
+      vars: [SOURCE_SHA]
+    vars:
+      DEVICE_ID: '{{default "pocket-lab-lite-server" .DEVICE_ID}}'
+      SSH_ALIAS: '{{default "pocketlab-termux" .SSH_ALIAS}}'
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/run-backend-runtime-promotion-android-qualification.py
+        --candidate-sha "{{.SOURCE_SHA}}"
+        --device-id "{{.DEVICE_ID}}"
+        --ssh-alias "{{.SSH_ALIAS}}"
+
+  lite:backend:promotion:preflight:
+    desc: Run fail-closed read-only production admission for a verified backend-runtime artifact
+    requires:
+      vars: [DATABASE, CURRENT_SHA, CANDIDATE_SHA, ARTIFACT_SHA256, DEVICE_ID, EXPECTED_DEVICE_ID, STAGING_ROOT, MANIFEST, OUTPUT]
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py preflight
+        --database "{{.DATABASE}}"
+        --current-sha "{{.CURRENT_SHA}}"
+        --candidate-sha "{{.CANDIDATE_SHA}}"
+        --artifact-sha256 "{{.ARTIFACT_SHA256}}"
+        --target-device-id "{{.DEVICE_ID}}"
+        --expected-device-id "{{.EXPECTED_DEVICE_ID}}"
+        --staging-root "{{.STAGING_ROOT}}"
+        --manifest "{{.MANIFEST}}"
+        --output "{{.OUTPUT}}"
+
+  lite:backend:promotion:reconcile:
+    desc: Reconcile incomplete backend promotion journals without repeating destructive operations
+    requires:
+      vars: [STATE_ROOT]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py reconcile --state-root "{{.STATE_ROOT}}"'
 
   lite:ui:perf:qualified:
     desc: Run renewable synthetic qualification-owner UI performance with bounded between-interaction session/bridge rotation

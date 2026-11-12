@@ -1378,6 +1378,138 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:get:/api/lite/system-health/apps/{app_id}",
+      "name": "GET /api/lite/system-health/apps/{app_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system-health/configuration-drift",
+      "name": "GET /api/lite/system-health/configuration-drift",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system-health/dependencies",
+      "name": "GET /api/lite/system-health/dependencies",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system-health/history",
+      "name": "GET /api/lite/system-health/history",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system-health/incidents",
+      "name": "GET /api/lite/system-health/incidents",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system-health/incidents/{incident_id}",
+      "name": "GET /api/lite/system-health/incidents/{incident_id}",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+      "name": "GET /api/lite/system-health/incidents/{incident_id}/decisions",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system-health/intelligence",
+      "name": "GET /api/lite/system-health/intelligence",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system-health/policies",
+      "name": "GET /api/lite/system-health/policies",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system-health/repairs",
+      "name": "GET /api/lite/system-health/repairs",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system-health/resources",
+      "name": "GET /api/lite/system-health/resources",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:get:/api/lite/system-health/summary",
+      "name": "GET /api/lite/system-health/summary",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:get:/api/lite/system/activity-summary",
       "name": "GET /api/lite/system/activity-summary",
       "note": "A test link does not by itself prove runtime verification.",
@@ -2755,6 +2887,39 @@
     {
       "entity": "api:post:/api/lite/security/scan",
       "name": "POST /api/lite/security/scan",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+      "name": "POST /api/lite/system-health/incidents/{incident_id}/diagnose",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+      "name": "POST /api/lite/system-health/incidents/{incident_id}/preflight",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+      "name": "POST /api/lite/system-health/incidents/{incident_id}/repair",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -4230,6 +4395,14 @@
       "verification_status": "unvalidated"
     },
     {
+      "entity": "domain:system-health",
+      "name": "System Health",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
       "entity": "domain:telemetry",
       "name": "Telemetry",
       "note": "A test link does not by itself prove runtime verification.",
@@ -4799,6 +4972,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "7673a5229970a26d674adef4aef562d5fe168827da0bac22d84941e627539d22"
+    "source_fingerprint": "f00412d7d2d01d10c54abb57750677918c1a3422c1d68f800f01a6f240cbc531"
   }
 }

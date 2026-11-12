@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pocket-lab-lite.invalid/schemas/runtime/backend-runtime-artifact.schema.json",
+  "title": "Pocket Lab Lite backend runtime promotion artifact",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema",
+    "product",
+    "artifact_type",
+    "source_commit",
+    "target",
+    "payload_roots",
+    "required_python",
+    "required_services",
+    "required_schema",
+    "feature_migrations",
+    "migration_contract",
+    "rollback",
+    "payload_inventory",
+    "payload_sha256",
+    "sanitized"
+  ],
+  "properties": {
+    "schema": {"const": "pocketlab.backend-runtime-artifact/v1"},
+    "product": {"const": "pocket-lab-lite"},
+    "artifact_type": {"const": "backend-runtime"},
+    "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "target": {
+      "type": "object",
+      "required": ["os", "architecture", "runtime"],
+      "properties": {
+        "os": {"const": "android-termux"},
+        "architecture": {"const": "aarch64"},
+        "runtime": {"const": "proot-ubuntu"}
+      }
+    },
+    "payload_roots": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "required_python": {
+      "type": "object",
+      "required": ["implementation", "minimum"],
+      "properties": {"implementation": {"const": "CPython"}, "minimum": {"type": "string"}}
+    },
+    "required_services": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "service_ownership": {"type": "object"},
+    "required_schema": {"type": "integer", "const": 44},
+    "feature_migrations": {"type": "array", "items": {"type": "integer"}, "const": [43, 44]},
+    "migration_contract": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["version", "name", "checksum"],
+        "properties": {
+          "version": {"type": "integer", "minimum": 1},
+          "name": {"type": "string"},
+          "checksum": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      },
+      "minItems": 44
+    },
+    "rollback": {
+      "type": "object",
+      "required": ["strategy", "automatic_after_writes", "fail_closed_after_writes"],
+      "properties": {
+        "strategy": {"const": "consistent_code_and_database_restore"},
+        "automatic_after_writes": {"const": false},
+        "fail_closed_after_writes": {"const": true}
+      }
+    },
+    "payload_inventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "size_bytes", "sha256", "mode"],
+        "properties": {
+          "path": {"type": "string", "pattern": "^(runtime|bootstrap/scripts|controller)/"},
+          "size_bytes": {"type": "integer", "minimum": 0},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "mode": {"type": "integer", "minimum": 0}
+        }
+      },
+      "minItems": 1
+    },
+    "payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "max_artifact_size_bytes": {"type": "integer", "minimum": 1},
+    "artifact_name": {"type": "string"},
+    "artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "artifact_size_bytes": {"type": "integer", "minimum": 1},
+    "sanitized": {"const": true}
+  }
+}

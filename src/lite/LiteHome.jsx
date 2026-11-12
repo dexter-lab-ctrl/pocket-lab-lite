@@ -34,6 +34,7 @@ import './components/homeActivityEvidence.css';
 import './components/homePanelRefinement.css';
 import './components/homeCommand.css';
 import './components/homePremiumRefinement.css';
+import './systemHealth.css';
 
 const HOME_WORKFLOW_STEPS = Object.freeze([
   { id: 'device', label: 'Device', icon: Smartphone },
@@ -152,6 +153,33 @@ export function HomeWorkspaceFlow({ overallTone, attentionCount, savedStateOnly,
   );
 }
 
+
+function HomeSystemHealthSummary({ onNavigate, backendReachable, saved }) {
+  const { data, loading, error } = useLiteQuery({
+    queryKey: ['lite', 'system-health', 'summary'],
+    path: '/api/lite/system-health/summary',
+    queryFn: liteApi.healthIntelligenceSummary,
+    enabled: backendReachable && !saved,
+    pollingMode: 'relaxed',
+    staleTime: 90000,
+  });
+  const current = backendReachable && !saved && data?.freshness === 'current';
+  return <GlassCard as="section" className="lite-home-system-health" aria-labelledby="lite-home-system-health-heading">
+    <div className="lite-home-section-title"><h2 id="lite-home-system-health-heading">System Health</h2></div>
+    <p className="lite-home-muted">{!current ? 'Current system health is not confirmed.' : data?.status === 'healthy' ? 'Observed services are healthy.' : data?.summary || 'Health information needs review.'}</p>
+    <div className="lite-home-system-health-facts">
+      <span><strong>{current ? data.healthy_services : '—'}</strong> Healthy services</span>
+      <span><strong>{current ? data.active_problems : '—'}</strong> Active problems</span>
+      <span><strong>{current ? data.automatic_repairs_running : '—'}</strong> Automatic repairs</span>
+      <span><strong>{current ? data.recent_verified_recoveries : '—'}</strong> Verified recoveries</span>
+    </div>
+    <button type="button" className="lite-home-text-action" onClick={() => onNavigate?.('system-health')} aria-label="Open System Health">
+      Open System Health <ChevronRight size={16} aria-hidden="true" />
+    </button>
+    {error ? <p className="lite-home-muted">Latest health information could not be loaded.</p> : null}
+    {loading && !data ? <p className="lite-home-muted">Reading stored health observations…</p> : null}
+  </GlassCard>;
+}
 
 const HOME_TILES = [
   { id: 'app_catalog', label: 'Apps', screen: 'catalog', icon: LayoutGrid },
@@ -371,6 +399,7 @@ export default function HomeScreen({
       error={Boolean(error)} lastUpdatedLabel={lastUpdatedLabel}
       onDetails={() => { setWorkspaceSection(null); setWorkspaceDetailsOpen(true); }} />
     <HomeOverviewGrid services={overview.services} status={status} saved={effectiveSavedStateOnly} onNavigate={goTo} />
+    <HomeSystemHealthSummary onNavigate={goTo} backendReachable={backendReachable} saved={effectiveSavedStateOnly} />
     <div className="lite-home-lower-grid">
       {!effectiveSavedStateOnly && overview.overallTone !== 'unknown' && attentionItems.some((item) => item.screen && item.screen !== 'home') ?
         <LiteNextSteps title="Needs your attention"

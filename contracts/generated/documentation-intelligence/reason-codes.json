@@ -1441,6 +1441,18 @@
       "user_message": "The requested Identity or Rules action could not continue."
     },
     {
+      "code": "incident_generation_changed",
+      "domain": "projections",
+      "http_status": 409,
+      "meaning": "A System Health action was submitted against an older incident generation and was blocked by generation fencing.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "The problem changed. Review the latest System Health evidence before retrying."
+    },
+    {
       "code": "independent_approval_satisfied",
       "domain": "rules",
       "http_status": 403,
@@ -3402,5 +3414,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "cf54062824a8d118c1a4fd32935e89ce4e1b3967c0c486dfff9aec653ec18424"
+  "source_fingerprint": "cc67fe12d736398e2208051a47c54e9393bbfdb4ac19a77141aeeb4497ac5829"
 }

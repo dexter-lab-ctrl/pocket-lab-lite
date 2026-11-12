@@ -134,6 +134,7 @@ generator_version: 3
 | `identity_setup_unavailable` | identity | Trusted owner-claim creation is unavailable because the server-side setup channel is not enabled. | error | yes | no | Owner claim creation is not enabled on this server. |
 | `identity_unavailable` | security | A Security result cannot be safely reused because the target, scanner, or policy identity could not be established. | warning | yes | no | Security result reuse is unavailable; the target will be scanned normally. |
 | `identity_username_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
+| `incident_generation_changed` | projections | A System Health action was submitted against an older incident generation and was blocked by generation fencing. | warning | yes | no | The problem changed. Review the latest System Health evidence before retrying. |
 | `independent_approval_satisfied` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |
 | `insufficient_storage` | system | There is not enough safe storage for the operation. | warning | yes | no | There is not enough safe storage for the operation. |
 | `interrupted` | system | The operation was interrupted. | warning | yes | no | The operation was interrupted. |

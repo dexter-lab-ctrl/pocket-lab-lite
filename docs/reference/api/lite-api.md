@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 1b1f2774eb33b172e89b697c75705270d8ee285a7fe9f690c1619bc82627afb0
+source_fingerprint: 48304cf52835f640d413c04711debd7502adb88b868ef049eab7aeb33e7b0f1a
 schema_revision: 1
 validation_status: generated
 ---
@@ -5294,6 +5294,308 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 - Summary: Get Lite Status
 - Deprecated: no
 - Tags: `lite`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-system-health-apps-app-id"></a>
+## GET `/api/lite/system-health/apps/{app_id}`
+
+- Operation ID: `system_health_app_diagnostics_api_lite_system_health_apps__app_id__get`
+- Summary: System Health App Diagnostics
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| app_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-system-health-configuration-drift"></a>
+## GET `/api/lite/system-health/configuration-drift`
+
+- Operation ID: `system_health_configuration_drift_api_lite_system_health_configuration_drift_get`
+- Summary: System Health Configuration Drift
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-system-health-dependencies"></a>
+## GET `/api/lite/system-health/dependencies`
+
+- Operation ID: `system_health_dependencies_api_lite_system_health_dependencies_get`
+- Summary: System Health Dependencies
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-system-health-history"></a>
+## GET `/api/lite/system-health/history`
+
+- Operation ID: `system_health_history_api_lite_system_health_history_get`
+- Summary: System Health History
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| limit | query | no | `integer` |
+| offset | query | no | `integer` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-system-health-incidents"></a>
+## GET `/api/lite/system-health/incidents`
+
+- Operation ID: `system_health_incidents_api_lite_system_health_incidents_get`
+- Summary: System Health Incidents
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| include_resolved | query | no | `boolean` |
+| limit | query | no | `integer` |
+| offset | query | no | `integer` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-system-health-incidents-incident-id"></a>
+## GET `/api/lite/system-health/incidents/{incident_id}`
+
+- Operation ID: `system_health_incident_api_lite_system_health_incidents__incident_id__get`
+- Summary: System Health Incident
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| incident_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-system-health-incidents-incident-id-decisions"></a>
+## GET `/api/lite/system-health/incidents/{incident_id}/decisions`
+
+- Operation ID: `system_health_decisions_api_lite_system_health_incidents__incident_id__decisions_get`
+- Summary: System Health Decisions
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| incident_id | path | yes | `string` |
+| limit | query | no | `integer` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-system-health-incidents-incident-id-diagnose"></a>
+## POST `/api/lite/system-health/incidents/{incident_id}/diagnose`
+
+- Operation ID: `system_health_diagnose_api_lite_system_health_incidents__incident_id__diagnose_post`
+- Summary: System Health Diagnose
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| incident_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-system-health-incidents-incident-id-preflight"></a>
+## POST `/api/lite/system-health/incidents/{incident_id}/preflight`
+
+- Operation ID: `system_health_preflight_api_lite_system_health_incidents__incident_id__preflight_post`
+- Summary: System Health Preflight
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| incident_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `RepairRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-system-health-incidents-incident-id-repair"></a>
+## POST `/api/lite/system-health/incidents/{incident_id}/repair`
+
+- Operation ID: `system_health_repair_api_lite_system_health_incidents__incident_id__repair_post`
+- Summary: System Health Repair
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| incident_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `RepairRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 409 | Successful Response | application/json: `object` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-system-health-intelligence"></a>
+## GET `/api/lite/system-health/intelligence`
+
+- Operation ID: `system_health_intelligence_api_lite_system_health_intelligence_get`
+- Summary: System Health Intelligence
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-system-health-policies"></a>
+## GET `/api/lite/system-health/policies`
+
+- Operation ID: `system_health_policies_api_lite_system_health_policies_get`
+- Summary: System Health Policies
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-system-health-repairs"></a>
+## GET `/api/lite/system-health/repairs`
+
+- Operation ID: `system_health_repairs_api_lite_system_health_repairs_get`
+- Summary: System Health Repairs
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-system-health-resources"></a>
+## GET `/api/lite/system-health/resources`
+
+- Operation ID: `system_health_resources_api_lite_system_health_resources_get`
+- Summary: System Health Resources
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-system-health-summary"></a>
+## GET `/api/lite/system-health/summary`
+
+- Operation ID: `system_health_summary_api_lite_system_health_summary_get`
+- Summary: System Health Summary
+- Deprecated: no
+- Tags: `lite-system-health`
 
 ### Responses
 

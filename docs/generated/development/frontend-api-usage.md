@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: e8e67519d3a9f33665f566819d9918b10ab351470ac03541f00129ccbc41e57d
+source_fingerprint: 168a86def213a12715f21fbbb4397f042943e6d38a222cda7859a3cf95a939f9
 schema_revision: 1
 validation_status: generated
 ---
@@ -37,6 +37,7 @@ validation_status: generated
 | src/lite/LiteHome.jsx | liteApi.homeActivityCursor | GET | `/api/lite/home/activity-cursor` | query | no | static |
 | src/lite/LiteHome.jsx | liteApi.reviewHomeActivityCursor | POST | `/api/lite/home/activity-cursor/review` | mutation | no | static |
 | src/lite/LiteHome.jsx | liteApi.homeActivityHistory | GET | `/api/lite/home/activity-history` | query | no | static |
+| src/lite/LiteHome.jsx | liteApi.healthIntelligenceSummary | GET | `/api/lite/system-health/summary` | query | no | static |
 | src/lite/LiteHome.jsx | liteApi.activitySummary | GET | `/api/lite/system/activity-summary` | query | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.loginIdentity | POST | `/api/lite/identity/login` | mutation | no | static |
 | src/lite/LiteIdentity.jsx | liteApi.logoutIdentity | POST | `/api/lite/identity/logout` | mutation | no | static |
@@ -100,6 +101,15 @@ validation_status: generated
 | src/lite/LiteSecurity.jsx | liteApi.securityProgress | GET | `/api/lite/security/progress` | query | no | static |
 | src/lite/LiteSecurity.jsx | liteApi.security | GET | `/api/lite/security/summary` | query | no | static |
 | src/lite/LiteSecurity.jsx | liteApi.securitySummary | GET | `/api/lite/security/summary` | query | no | static |
+| src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceDrift | GET | `/api/lite/system-health/configuration-drift` | query | no | static |
+| src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceDependencies | GET | `/api/lite/system-health/dependencies` | query | no | static |
+| src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceHistory | GET | `/api/lite/system-health/history` | query | no | static |
+| src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceIncidents | GET | `/api/lite/system-health/incidents` | query | no | static |
+| src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceDiagnose | POST | `/api/lite/system-health/incidents/{param}/diagnose` | mutation | no | dynamic |
+| src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceKnowledge | GET | `/api/lite/system-health/intelligence` | query | no | static |
+| src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligencePolicies | GET | `/api/lite/system-health/policies` | query | no | static |
+| src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceResources | GET | `/api/lite/system-health/resources` | query | no | static |
+| src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceSummary | GET | `/api/lite/system-health/summary` | query | no | static |
 | src/lite/catalog/AppCatalogScreen.jsx | liteApi.appLifecycleProfile | GET | `/api/lite/apps/lifecycle/{param}` | query | no | dynamic |
 | src/lite/catalog/AppCatalogScreen.jsx | liteApi.appActions | GET | `/api/lite/apps/photoprism/actions` | query | no | static |
 | src/lite/catalog/AppCatalogScreen.jsx | liteApi.photoprismStorageMappings | GET | `/api/lite/apps/photoprism/storage-mappings` | query | no | static |
@@ -214,6 +224,19 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/security/scan` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/security/summary` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/status` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/dependencies` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/history` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/incidents` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/incidents/:incidentId` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/incidents/:incidentId/decisions` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/incidents/:incidentId/diagnose` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/system-health/incidents/:incidentId/preflight` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/system-health/incidents/:incidentId/repair` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/intelligence` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/policies` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/repairs` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/resources` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/summary` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system/activity-summary` | mock | yes | static |
 | src/mocks/identityRulesCompatibilityHandlers.js | MSW handler | GET | `/api/lite/policy/decisions/:decisionId` | mock | yes | static |
 | src/mocks/identityRulesCompatibilityHandlers.js | MSW handler | GET | `/api/lite/policy/templates` | mock | yes | static |
@@ -427,6 +450,12 @@ validation_status: generated
 - `/api/lite/security/evidence/{run_id}`
 - `/api/lite/security/runs/{run_id}`
 - `/api/lite/security/scan`
+- `/api/lite/system-health/apps/{app_id}`
+- `/api/lite/system-health/incidents/{incident_id}`
+- `/api/lite/system-health/incidents/{incident_id}/decisions`
+- `/api/lite/system-health/incidents/{incident_id}/preflight`
+- `/api/lite/system-health/incidents/{incident_id}/repair`
+- `/api/lite/system-health/repairs`
 - `/api/lite/system/agent`
 - `/api/lite/system/health`
 - `/api/lite/system/nats-readiness`

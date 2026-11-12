@@ -15,12 +15,12 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 151 |
+| Development loop | 152 |
 | Documentation loop | 57 |
 | API-validation loop | 12 |
-| Runtime-evidence loop | 36 |
+| Runtime-evidence loop | 41 |
 | Security-analysis loop | 34 |
-| Release loop | 19 |
+| Release loop | 20 |
 | Recovery-diagnostics loop | 28 |
 
 ## `default`
@@ -3438,6 +3438,210 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Example:** `task lite:api:check`
 
+## `lite:backend:promotion:preflight`
+
+**Purpose:** Run fail-closed read-only production admission for a verified backend-runtime artifact
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py preflight --database "{{.DATABASE}}" --current-sha "{{.CURRENT_SHA}}" --candidate-sha "{{.CANDIDATE_SHA}}" --artifact-sha256 "{{.ARTIFACT_SHA256}}" --target-device-id "{{.DEVICE_ID}}" --expected-device-id "{{.EXPECTED_DEVICE_ID}}" --staging-root "{{.STAGING_ROOT}}" --manifest "{{.MANIFEST}}" --output "{{.OUTPUT}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/backend_runtime_promotion.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:backend:promotion:preflight`
+
+## `lite:backend:promotion:prepare`
+
+**Purpose:** Prepare an immutable exact-SHA Android/Termux backend-runtime artifact; does not deploy or activate it
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py prepare --source-sha "{{.SOURCE_SHA}}" --output-dir "{{.OUTPUT_DIR}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/backend_runtime_promotion.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:backend:promotion:prepare`
+
+## `lite:backend:promotion:qualify:android`
+
+**Purpose:** Transfer an exact-SHA backend artifact to an inactive Android/Termux cache, qualify it in disposable state, and collect read-only admission evidence
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/run-backend-runtime-promotion-android-qualification.py --candidate-sha "{{.SOURCE_SHA}}" --device-id "{{.DEVICE_ID}}" --ssh-alias "{{.SSH_ALIAS}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/run-backend-runtime-promotion-android-qualification.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:backend:promotion:qualify:android`
+
+## `lite:backend:promotion:qualify:isolate`
+
+**Purpose:** Exercise backend promotion backup, restore, migration, auth and rollback in disposable state
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py qualify-isolated --artifact "{{.ARTIFACT}}" --manifest "{{.MANIFEST}}" --checksums "{{.CHECKSUMS}}" --workspace "{{.WORKSPACE}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/backend_runtime_promotion.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:backend:promotion:qualify:isolate`
+
+## `lite:backend:promotion:reconcile`
+
+**Purpose:** Reconcile incomplete backend promotion journals without repeating destructive operations
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py reconcile --state-root "{{.STATE_ROOT}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/backend_runtime_promotion.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:backend:promotion:reconcile`
+
+## `lite:backend:promotion:verify`
+
+**Purpose:** Verify backend-runtime artifact checksums, inventory, safe paths and migration contract
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/backend_runtime_promotion.py verify --artifact "{{.ARTIFACT}}" --manifest "{{.MANIFEST}}" --checksums "{{.CHECKSUMS}}"`
+
+**Environment:** None source-discovered
+
+**Inputs:** scripts/dev/lite/backend_runtime_promotion.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** gate-defined
+
+**Example:** `task lite:backend:promotion:verify`
+
 ## `lite:bootstrap:check`
 
 **Purpose:** Validate Lite bootstrap profile selection and dry-run behavior
@@ -5817,6 +6021,40 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:setup:system`
+
+## `lite:system-health:candidate:android:qualify`
+
+**Purpose:** Run the narrow exact-SHA System Health candidate against a run-owned Server Phone root
+
+**Audience:** developer/operator
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} scripts/dev/lite/run-system-health-android-qualification.py --candidate-sha "{{.CANDIDATE_SHA}}" --base-sha "{{.BASE_SHA}}" {{if .NATS_SERVER_BIN}}--nats-server-bin "{{.NATS_SERVER_BIN}}"{{end}} {{if .EVIDENCE_DIR}}--evidence-dir "{{.EVIDENCE_DIR}}"{{end}}`
+
+**Environment:** NATS_SERVER_BIN
+
+**Inputs:** scripts/dev/lite/run-system-health-android-qualification.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:system-health:candidate:android:qualify`
 
 ## `lite:test:android`
 

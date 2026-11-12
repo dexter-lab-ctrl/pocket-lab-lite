@@ -674,6 +674,96 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Indexes | idx_lite_revision_events_retention, idx_lite_revision_events_replay, idx_lite_revision_events_domain_revision |
 | Confidence | inferred |
 
+## `lite_system_health_diagnoses`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | lite_system_health_diagnoses_incident, sqlite_autoindex_lite_system_health_diagnoses_1 |
+| Confidence | inferred |
+
+## `lite_system_health_events`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | lite_system_health_events_recent |
+| Confidence | inferred |
+
+## `lite_system_health_incidents`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | lite_system_health_incidents_target, lite_system_health_incidents_current, sqlite_autoindex_lite_system_health_incidents_1 |
+| Confidence | inferred |
+
+## `lite_system_health_observations`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | sqlite_autoindex_lite_system_health_observations_1 |
+| Confidence | inferred |
+
+## `lite_system_health_repair_attempts`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | lite_system_health_repairs_incident, sqlite_autoindex_lite_system_health_repair_attempts_2, sqlite_autoindex_lite_system_health_repair_attempts_1 |
+| Confidence | inferred |
+
+## `lite_system_health_repair_denials`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | lite_system_health_denials_recent, sqlite_autoindex_lite_system_health_repair_denials_2, sqlite_autoindex_lite_system_health_repair_denials_1 |
+| Confidence | inferred |
+
 ## `owner_approved_operations`
 
 Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.

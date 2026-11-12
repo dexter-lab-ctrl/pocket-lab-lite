@@ -14,7 +14,7 @@
     "scenario": "app-media-not-ready",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "64b5d775d98875eef0379628dc3559696527785b8ec59644e798d025561d8f31",
+    "source_fingerprint": "7a39528dd3174a2fa955c25bd4e22dad2263a19fd02545c077a8a9eb95d1cb34",
     "validation_status": "generated"
   }
 }
