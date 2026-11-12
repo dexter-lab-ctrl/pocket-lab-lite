@@ -21,11 +21,21 @@ bounded_revision() {
   [[ "${1:-}" =~ ^[A-Za-z0-9._-]{8,80}$ ]]
 }
 
+run_opa_policy_prep() {
+  local native_bash
+  native_bash="$(pocketlab_resolve_native_bash 2>/dev/null || true)"
+  [[ -n "$native_bash" ]] || {
+    log ERROR "Trusted native Bash is unavailable for OPA policy preparation" >&2
+    return 127
+  }
+  "$native_bash" "$OPA_POLICY_PREP" "$@"
+}
+
 stage_repository_candidate() {
   local required="${1:-0}" output revision
   if ! output="$(POCKETLAB_STATE_DIR="$POCKETLAB_STATE_DIR" \
       POCKETLAB_OPA_ACTIVE_POLICY_DIR="$POCKETLAB_OPA_ACTIVE_POLICY_DIR" \
-      "$OPA_POLICY_PREP" stage)"; then
+      run_opa_policy_prep stage)"; then
     if [[ "$required" == "1" ]]; then
       die "OPA repository baseline could not be staged"
     fi
@@ -130,11 +140,11 @@ run_under_activation_lock() {
       ;;
   esac
 
-  POCKETLAB_STATE_DIR="$POCKETLAB_STATE_DIR" "$OPA_POLICY_PREP" activate "$target"
+  POCKETLAB_STATE_DIR="$POCKETLAB_STATE_DIR" run_opa_policy_prep activate "$target"
   start_opa_process
   wait_for_exact_revision "$target"
   # known-good advances/restores only after exact health + metadata proof.
-  POCKETLAB_STATE_DIR="$POCKETLAB_STATE_DIR" "$OPA_POLICY_PREP" known-good "$target"
+  POCKETLAB_STATE_DIR="$POCKETLAB_STATE_DIR" run_opa_policy_prep known-good "$target"
   log INFO "OPA startup revision proved and known-good pointer synchronized"
 }
 
