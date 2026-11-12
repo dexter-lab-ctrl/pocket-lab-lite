@@ -39,12 +39,19 @@ esac
 remote_read_only() {
   local mode="${1:---read-only}"
   local verification_policy="${2:-strict}"
-  ssh "$SSH_ALIAS" bash -s -- "$mode" "$verification_policy" <<'REMOTE'
+  local remote_common_runtime="${POCKETLAB_PHONE_COMMON_RUNTIME:-}"
+  local remote_command
+  if [[ -n "$remote_common_runtime" ]]; then
+    remote_command="POCKETLAB_PHONE_COMMON_RUNTIME=$(printf '%q' "$remote_common_runtime") bash -s -- $(printf '%q' "$mode") $(printf '%q' "$verification_policy")"
+  else
+    remote_command="bash -s -- $(printf '%q' "$mode") $(printf '%q' "$verification_policy")"
+  fi
+  ssh "$SSH_ALIAS" "$remote_command" <<'REMOTE'
 set -Eeuo pipefail
 mode="$1"
 verification_policy="$2"
 
-common_runtime="$HOME/pocket-lab-lite/pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh"
+common_runtime="${POCKETLAB_PHONE_COMMON_RUNTIME:-$HOME/pocket-lab-lite/pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh}"
 [[ -r "$common_runtime" ]] || {
   echo "ERROR: Pocket Lab native runtime helper is missing: $common_runtime" >&2
   exit 1

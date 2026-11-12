@@ -10,6 +10,7 @@ SCRIPT = ROOT / "scripts" / "dev" / "check-lite-runtime-resilience-server-phone.
 def test_server_phone_runtime_preflights_fail_with_explicit_diagnostics():
     source = SCRIPT.read_text(encoding="utf-8")
 
+    assert "POCKETLAB_PHONE_COMMON_RUNTIME" in source
     expected = (
         "Termux:Boot entry missing or not executable",
         "external runtime guardian is not running",
