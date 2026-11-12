@@ -17,12 +17,14 @@ def test_boot_recovery_is_external_to_pm2_and_uses_resurrection_then_reconcile()
     installer = (SCRIPTS / "lite" / "install-boot-recovery.sh").read_text()
     reconcile = (SCRIPTS / "lite" / "reconcile-runtime.sh").read_text()
 
-    assert "pm2 resurrect" in guardian
+    assert "resurrect" in guardian
     assert "pocketlab-runtime-reconciler" in guardian
     assert "nohup" in installer
     assert 'BOOT_DIR="$HOME/.termux/boot"' in installer
     assert 'BOOT_FILE="$BOOT_DIR/pocketlab-lite"' in installer
+    assert 'NETWORK_BOOT_FILE="$BOOT_DIR/00-pocketlab-network-services"' in installer
     assert 'atomic_write "$BOOT_FILE" 0700' in installer
+    assert 'atomic_write "$NETWORK_BOOT_FILE" 0700' in installer
     assert "--reconcile-only" in reconcile
     assert "bootstrap.sh" not in reconcile
 
@@ -87,6 +89,8 @@ def test_boot_recovery_uses_the_native_termux_bash_interpreter():
     assert 'if [[ ! -x "$GUARDIAN" ]]' in installer
     assert "External runtime guardian is missing or not executable" in installer
     assert 'nohup "$GUARDIAN" --boot' not in installer
+    assert 'nohup "\\$PREFIX/bin/bash" "\\$PREFIX/bin/tailscaled-start"' in installer
+    assert "process_has_exact_executable" in installer
 
 
 def test_guardian_forces_desired_state_convergence_after_pm2_resurrection():
@@ -97,3 +101,28 @@ def test_guardian_forces_desired_state_convergence_after_pm2_resurrection():
     assert '[[ "${PM2_RESTORED_THIS_PASS:-0}" == "1" ]]' in guardian
     assert 'reason="pm2_resurrected_requires_convergence"' in guardian
     assert 'bash "$RECONCILE" --repair --reason "$reason"' in guardian
+
+
+def test_guardian_reconciles_a_live_but_empty_pm2_daemon_without_saving_empty_state():
+    guardian = (SCRIPTS / "lite" / "runtime-guardian.sh").read_text()
+
+    assert "pm2_has_processes" in guardian
+    assert "pm2_empty_requires_convergence" in guardian
+    assert "pm2_dump_has_processes" in guardian
+    assert "pm2_save_if_nonempty" in guardian
+    assert "pm2 save" not in guardian
+
+
+def test_startup_callers_use_native_runtime_helpers_for_pm2_and_tailscale():
+    common = (SCRIPTS / "lib" / "common.sh").read_text()
+    dashboard = (SCRIPTS / "start-dashboard.sh").read_text()
+    tailscale = (SCRIPTS / "install-tailscale.sh").read_text()
+    reconciler = (SCRIPTS / "lite" / "reconcile-runtime.sh").read_text()
+
+    assert "pocketlab_pm2_exec" in common
+    assert "tailscaled_start" in common
+    assert "pm2_save_if_nonempty" in dashboard
+    assert "pm2_save_if_nonempty" in reconciler
+    assert "tailscaled_start || log WARN" in tailscale
+    assert "pm2 save" not in dashboard
+    assert "pm2 save" not in reconciler

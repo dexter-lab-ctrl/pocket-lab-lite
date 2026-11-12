@@ -36,7 +36,7 @@ EOF
     local agent_version
     agent_version="$(pocketlab_source_version "$AGENT_DST")"
     pm2_ensure_versioned_process pocket-node-agent "$agent_version" bash -- -lc "source '$STATE_DIR/fleet-agent.env'; exec '$AGENT_DST'"
-    pm2 save >/dev/null || true
+    pm2_save_if_nonempty >/dev/null || true
   fi
   mark_done fleet_agent_installed
   log INFO "Pocket Lab NATS-backed fleet agent installed at $AGENT_DST"

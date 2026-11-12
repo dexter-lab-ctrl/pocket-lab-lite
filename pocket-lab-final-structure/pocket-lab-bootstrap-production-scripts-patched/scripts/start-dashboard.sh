@@ -142,8 +142,7 @@ tailscale_command(){
   return 1
 }
 tailscaled_is_running(){
-  if have pgrep && pgrep -f tailscaled >/dev/null 2>&1; then return 0; fi
-  ps -A 2>/dev/null | grep -v grep | grep -q tailscaled
+  pocketlab_process_has_executable tailscaled
 }
 start_tailscale_if_missing(){
   is_lite_profile || return 0
@@ -151,7 +150,7 @@ start_tailscale_if_missing(){
     log INFO "Lite remote access: tailscaled is already running"
   elif have tailscaled-start; then
     log INFO "Lite remote access: tailscaled is not running; starting with tailscaled-start"
-    tailscaled-start >/dev/null 2>&1 || log WARN "Lite remote access: tailscaled-start did not complete successfully"
+    tailscaled_start >/dev/null 2>&1 || log WARN "Lite remote access: tailscaled-start did not complete successfully"
     sleep 2
   elif have tailscaled; then
     log INFO "Lite remote access: tailscaled is not running; starting tailscaled directly"
@@ -159,7 +158,6 @@ start_tailscale_if_missing(){
     sleep 2
   else
     log WARN "Lite remote access: tailscaled is not installed; remote devices may stay offline"
-    return 0
   fi
 
   local ts_cmd ts_ip
@@ -917,7 +915,7 @@ wait_for_nats_ready(){
     sleep 1
   done
   if have timeout; then
-    timeout 15 pm2 logs pocket-nats --lines 80 --nostream || true
+    pm2_with_timeout 15 logs pocket-nats --lines 80 --nostream || true
   else
     pm2 logs pocket-nats --lines 80 --nostream || true
   fi
@@ -1125,7 +1123,7 @@ start_pm2_daemons(){
       log WARN "PRoot Ubuntu unavailable; skipping Loki/Promtail/Prometheus/Grafana PM2 processes"
     fi
   fi
-  pm2 save >/dev/null || true
+  pm2_save_if_nonempty >/dev/null || true
 }
 start_caddy_only(){
   SCRIPT_NAME="start-dashboard.sh"
@@ -1150,7 +1148,7 @@ start_caddy_only(){
     POCKETLAB_PM2_SERVICE_VERSION="$(caddy_installed_version)" pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
     reload_caddy_if_config_changed
   fi
-  pm2 save >/dev/null || true
+  pm2_save_if_nonempty >/dev/null || true
   log INFO "Caddy proxy configuration is updated and safe to rerun"
 }
 
@@ -1173,7 +1171,7 @@ start_node_agent_only(){
   POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" \
   POCKETLAB_NATS_NAME=pocketlab-node-agent \
     POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$AGENT_SERVER")" pm2_runtime_process pocket-node-agent "$AGENT_SERVER" --interpreter python3 --update-env
-  pm2 save >/dev/null || true
+  pm2_save_if_nonempty >/dev/null || true
   log INFO "Lite node-agent runtime converged without unrelated service reconciliation"
 }
 
@@ -1187,7 +1185,7 @@ start_runtime_reconciler_only(){
   POCKETLAB_RUNTIME_RECONCILE_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_SECONDS:-45}" \
   POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS:-120}" \
     POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$RUNTIME_RECONCILER_SERVER")" pm2_runtime_process pocketlab-runtime-reconciler "$RUNTIME_RECONCILER_SERVER" --interpreter python3 --update-env
-  pm2 save >/dev/null || true
+  pm2_save_if_nonempty >/dev/null || true
   log INFO "Lite runtime reconciler converged without unrelated service reconciliation"
 }
 

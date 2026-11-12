@@ -65,6 +65,34 @@ raise SystemExit(1)
 ' "$name" "$expected"
 }
 
+pm2_dump_has_processes() {
+  local pm2_home dump
+  pm2_home="${PM2_HOME:-$HOME/.pm2}"
+  dump="$pm2_home/dump.pm2"
+  [[ -s "$dump" ]] || return 1
+  python3 - "$dump" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+try:
+    value = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+except (OSError, ValueError):
+    raise SystemExit(1)
+if isinstance(value, list):
+    raise SystemExit(0 if value else 1)
+if isinstance(value, dict) and isinstance(value.get("apps"), list):
+    raise SystemExit(0 if value["apps"] else 1)
+raise SystemExit(1)
+PY
+}
+
+pm2_has_processes() {
+  local count
+  count="$(pm2_process_count 2>/dev/null || true)"
+  [[ "$count" =~ ^[1-9][0-9]*$ ]]
+}
+
 guardian_source_digest() {
   sha256sum "$0" | awk '{print $1}'
 }
@@ -85,22 +113,28 @@ reload_if_source_changed() {
 
 restore_pm2_if_needed() {
   PM2_RESTORED_THIS_PASS=0
-  pm2_alive && return 0
+  if pm2_alive && pm2_has_processes; then
+    return 0
+  fi
   local now
   now="$(date +%s)"
   if (( now - LAST_PM2_RESTORE < PM2_RESTORE_COOLDOWN )); then
-    return 1
+    return 0
+  fi
+  if pm2_alive && ! pm2_dump_has_processes; then
+    # The source-defined reconciler can rebuild an empty PM2 topology. Do not
+    # resurrect a missing/invalid dump and risk turning an empty recovery pass
+    # into an uncontrolled state replacement.
+    return 0
   fi
   LAST_PM2_RESTORE="$now"
-  log WARN "PM2 daemon unavailable; attempting saved-state resurrection"
-  if have timeout; then
-    timeout 45 pm2 resurrect >/dev/null 2>&1 || true
-  else
-    pm2 resurrect >/dev/null 2>&1 || true
-  fi
+  log WARN "PM2 topology unavailable; attempting bounded saved-state resurrection"
+  pm2_with_timeout 45 resurrect >/dev/null 2>&1 || true
   sleep 2
   if pm2_alive; then
-    PM2_RESTORED_THIS_PASS=1
+    if pm2_has_processes; then
+      PM2_RESTORED_THIS_PASS=1
+    fi
     return 0
   fi
   return 1
@@ -115,6 +149,8 @@ converge_if_needed() {
     # current source-defined desired state so missing/stale supervisors and
     # versioned process metadata are repaired in the same guardian pass.
     reason="pm2_resurrected_requires_convergence"
+  elif ! pm2_has_processes; then
+    reason="pm2_empty_requires_convergence"
   elif ! pm2_process_matches_source "pocketlab-runtime-reconciler" "$RUNTIME_RECONCILER_SERVER"; then
     reason="runtime_reconciler_missing_or_source_drift"
   elif ! pm2_process_matches_source "pocketlab-core-supervisor" "$CORE_SUPERVISOR_SERVER"; then
@@ -128,7 +164,7 @@ converge_if_needed() {
   }
   log WARN "Lite runtime guardian requesting convergence reason=$reason"
   bash "$RECONCILE" --repair --reason "$reason" || return 1
-  pm2 save >/dev/null 2>&1 || true
+  pm2_save_if_nonempty >/dev/null 2>&1 || true
 }
 
 main() {

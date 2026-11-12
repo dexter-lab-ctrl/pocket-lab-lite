@@ -39,10 +39,28 @@ esac
 remote_read_only() {
   local mode="${1:---read-only}"
   local verification_policy="${2:-strict}"
-  ssh "$SSH_ALIAS" bash -s -- "$mode" "$verification_policy" <<'REMOTE'
+  local remote_common_runtime="${POCKETLAB_PHONE_COMMON_RUNTIME:-}"
+  local remote_command
+  if [[ -n "$remote_common_runtime" ]]; then
+    remote_command="POCKETLAB_PHONE_COMMON_RUNTIME=$(printf '%q' "$remote_common_runtime") bash -s -- $(printf '%q' "$mode") $(printf '%q' "$verification_policy")"
+  else
+    remote_command="bash -s -- $(printf '%q' "$mode") $(printf '%q' "$verification_policy")"
+  fi
+  ssh "$SSH_ALIAS" "$remote_command" <<'REMOTE'
 set -Eeuo pipefail
 mode="$1"
 verification_policy="$2"
+
+common_runtime="${POCKETLAB_PHONE_COMMON_RUNTIME:-$HOME/pocket-lab-lite/pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh}"
+[[ -r "$common_runtime" ]] || {
+  echo "ERROR: Pocket Lab native runtime helper is missing: $common_runtime" >&2
+  exit 1
+}
+# The read-only qualification path consumes the same native Termux PM2 and
+# process-identity helpers as the installed recovery scripts. Sourcing this
+# file does not start services or alter PM2 state; it only establishes the
+# runtime helper functions and the repository's standard environment.
+source "$common_runtime"
 
 fail() {
   echo "ERROR: $*" >&2
@@ -55,7 +73,15 @@ legacy="vault mariadb gitea gitea-runner pocket-gatus gatus prometheus-db promet
 [[ -x "$HOME/.termux/boot/pocketlab-lite" ]] || fail "Termux:Boot entry missing or not executable: ~/.termux/boot/pocketlab-lite"
 echo "PASS Termux:Boot recovery entry installed"
 
-pgrep -f "[r]untime-guardian.sh" >/dev/null 2>&1 || fail "external runtime guardian is not running"
+guardian_running=0
+while IFS=$' \t' read -r guardian_pid guardian_executable guardian_rest; do
+  if [[ "$guardian_pid" =~ ^[0-9]+$ && "$guardian_executable" == */bash ]]; then
+    [[ "$guardian_rest" == *runtime-guardian.sh* ]] && guardian_running=1
+  elif [[ "$guardian_pid" =~ ^[0-9]+$ && "$guardian_rest" == *runtime-guardian.sh* ]]; then
+    guardian_running=1
+  fi
+done < <(ps -A -o pid=,args= 2>/dev/null || true)
+[[ "$guardian_running" == "1" ]] || fail "external runtime guardian is not running"
 echo "PASS external runtime guardian running"
 
 pm2_home="${PM2_HOME:-$HOME/.pm2}"
@@ -450,7 +476,7 @@ elif command -v tailscale >/dev/null 2>&1; then
 fi
 
 if [[ -n "$ts_cmd" ]]; then
-  if pgrep -f tailscaled >/dev/null 2>&1; then
+  if pocketlab_process_has_executable tailscaled; then
     ts_ip="$("$ts_cmd" ip -4 2>/dev/null | head -1 || true)"
     if [[ -n "$ts_ip" ]]; then
       nats_port="${POCKETLAB_LITE_NATS_PORT:-${POCKETLAB_PUBLIC_NATS_PORT:-4222}}"

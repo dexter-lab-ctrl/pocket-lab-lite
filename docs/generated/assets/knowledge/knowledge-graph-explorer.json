@@ -14770,6 +14770,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_termux_native_execution.py",
+      "name": "tests/backend/test_lite_termux_native_execution.py",
+      "source_refs": [
+        "tests/backend/test_lite_termux_native_execution.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_termux_runtime_documentation.py",
       "name": "tests/backend/test_lite_termux_runtime_documentation.py",
       "source_refs": [
