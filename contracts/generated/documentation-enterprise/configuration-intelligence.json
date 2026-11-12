@@ -6984,7 +6984,8 @@
     },
     {
       "affected_components": [
-        "bootstrap/runtime"
+        "bootstrap/runtime",
+        "repository tooling"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -7001,7 +7002,8 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh"
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh",
+        "tests/backend/test_lite_boot_recovery.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

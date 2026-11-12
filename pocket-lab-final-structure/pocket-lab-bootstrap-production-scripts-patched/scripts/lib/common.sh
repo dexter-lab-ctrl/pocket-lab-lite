@@ -41,7 +41,8 @@ export TERMUX_PREFIX="$PREFIX"
 # Resolve it relative to this checked-in helper instead of trusting PATH or a
 # caller-provided repository root.
 POCKETLAB_COMMON_SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-POCKETLAB_PM2_IDENTITY_HELPER="${POCKETLAB_PM2_IDENTITY_HELPER:-$POCKETLAB_COMMON_SCRIPT_DIR/../../../runtime/supervisors/pocketlab_pm2_identity.py}"
+POCKETLAB_PM2_IDENTITY_HELPER="$POCKETLAB_COMMON_SCRIPT_DIR/../../../runtime/supervisors/pocketlab_pm2_identity.py"
+readonly POCKETLAB_PM2_IDENTITY_HELPER
 
 mkdir -p "$STATE_DIR" "$LOG_DIR" "$RUN_DIR" "$LOCK_DIR" "$MARKER_DIR" "$TMP_ROOT" "$PREFIX/bin"
 

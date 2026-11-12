@@ -13372,7 +13372,7 @@
       "runtime_readers": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh"
       ],
-      "safe_default": "$POCKETLAB_COMMON_SCRIPT_DIR/../../../runtime/supervisors/pocketlab_pm2_identity.py",
+      "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
       "wsl2": true
     },

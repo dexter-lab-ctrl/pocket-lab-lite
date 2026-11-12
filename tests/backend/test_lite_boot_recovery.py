@@ -70,6 +70,14 @@ def test_guardian_fails_closed_on_ambiguous_pm2_identity():
     assert "pm2_normalization_required" in identity
 
 
+def test_pm2_identity_helper_path_is_source_owned_and_not_environment_overridable():
+    common = (SCRIPTS / "lib" / "common.sh").read_text()
+
+    assert 'POCKETLAB_PM2_IDENTITY_HELPER="$POCKETLAB_COMMON_SCRIPT_DIR/../../../runtime/supervisors/pocketlab_pm2_identity.py"' in common
+    assert "readonly POCKETLAB_PM2_IDENTITY_HELPER" in common
+    assert 'POCKETLAB_PM2_IDENTITY_HELPER:-' not in common
+
+
 def test_pm2_cli_calls_share_the_existing_mutation_lock():
     common = (SCRIPTS / "lib" / "common.sh").read_text()
 
