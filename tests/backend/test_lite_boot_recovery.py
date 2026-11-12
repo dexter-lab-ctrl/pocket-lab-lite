@@ -76,7 +76,17 @@ def test_boot_recovery_installer_restarts_existing_guardian_to_activate_current_
     installer = (SCRIPTS / "lite" / "install-boot-recovery.sh").read_text()
 
     assert 'pkill -f "[r]untime-guardian.sh"' in installer
-    assert 'nohup "$GUARDIAN" --boot' in installer
+    assert 'nohup "$PREFIX/bin/bash" "$GUARDIAN" --boot' in installer
+
+
+def test_boot_recovery_uses_the_native_termux_bash_interpreter():
+    installer = (SCRIPTS / "lite" / "install-boot-recovery.sh").read_text()
+
+    assert "#!${PREFIX}/bin/bash" in installer
+    assert 'if [[ ! -x "$PREFIX/bin/bash" ]]' in installer
+    assert 'if [[ ! -x "$GUARDIAN" ]]' in installer
+    assert "External runtime guardian is missing or not executable" in installer
+    assert 'nohup "$GUARDIAN" --boot' not in installer
 
 
 def test_guardian_forces_desired_state_convergence_after_pm2_resurrection():

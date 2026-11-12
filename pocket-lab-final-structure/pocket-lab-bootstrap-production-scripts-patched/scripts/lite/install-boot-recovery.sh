@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Install the repository-owned Termux:Boot entry and start the external PM2
 # guardian. No secrets are embedded in the generated boot file.
+#
+# The guardian source keeps a portable /usr/bin/env bash shebang for the
+# repository, but native Termux does not provide /usr/bin/env. Every supported
+# Android launch therefore invokes the Termux bash binary explicitly.
 set -Eeuo pipefail
 IFS=$'\n\t'
 
@@ -26,17 +30,25 @@ main() {
   chmod 700 "$BOOT_DIR" 2>/dev/null || true
 
   cat <<EOF | atomic_write "$BOOT_FILE" 0700
-#!/data/data/com.termux/files/usr/bin/bash
+#!${PREFIX}/bin/bash
 set -u
 export HOME="${HOME:-/data/data/com.termux/files/home}"
 export PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
 export PATH="$PREFIX/bin:$HOME/.local/bin:$PATH"
 mkdir -p "$LOG_DIR"
+if [[ ! -x "$PREFIX/bin/bash" ]]; then
+  printf '%s\n' "[ERROR] Termux bash is missing or not executable: $PREFIX/bin/bash" >> "$BOOT_LOG"
+  exit 1
+fi
+if [[ ! -x "$GUARDIAN" ]]; then
+  printf '%s\n' "[ERROR] External runtime guardian is missing or not executable: $GUARDIAN" >> "$BOOT_LOG"
+  exit 1
+fi
 sleep "${POCKETLAB_LITE_BOOT_DELAY_SECONDS:-8}"
 if [[ "${POCKETLAB_LITE_BOOT_WAKE_LOCK:-0}" == "1" ]] && command -v termux-wake-lock >/dev/null 2>&1; then
   termux-wake-lock >/dev/null 2>&1 || true
 fi
-nohup "$GUARDIAN" --boot >>"$BOOT_LOG" 2>&1 &
+nohup "$PREFIX/bin/bash" "$GUARDIAN" --boot >>"$BOOT_LOG" 2>&1 &
 EOF
 
   chmod 700 "$BOOT_FILE"
@@ -52,7 +64,9 @@ EOF
       sleep 0.25
     done
   fi
-  nohup "$GUARDIAN" --boot >>"$BOOT_LOG" 2>&1 &
+  # Use the native Termux interpreter explicitly; executing the portable
+  # guardian shebang directly fails on Android because /usr/bin/env is absent.
+  nohup "$PREFIX/bin/bash" "$GUARDIAN" --boot >>"$BOOT_LOG" 2>&1 &
 
   mark_done lite_boot_recovery_ready
   log INFO "Lite Android boot recovery installed. Termux:Boot will invoke the external PM2 guardian after Android boot."
