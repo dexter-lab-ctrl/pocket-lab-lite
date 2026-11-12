@@ -1,6 +1,6 @@
 # System Health P6 qualification handoff — executed with bounded evidence
 
-This handoff records the approved qualification session for PR #649. The Gate B continuation started at feature SHA `1ce603d5524824e11b6b47da415569452f2bc93c`; the prior UI candidate was `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; the backend-promotion candidate qualified below is `0b767dc662c8f7c37accb4bc5fbad71a5f31564f`; the final documentation-synchronized feature SHA is `613fab662f62c090f2fa7d7930315b4cb6c1e814`; base SHA: `cfd4194fd338aeae07580fa7f227d118bebdd907`. The exact candidate was staged in a run-owned, inactive Android/Termux cache on the physical Server Phone. Production `main`, PM2, Caddy, NATS and SQLite were not activated or modified. No source edits, commits or pushes were performed on the phone.
+This handoff records the approved qualification session for PR #649. The Gate B continuation started at feature SHA `1ce603d5524824e11b6b47da415569452f2bc93c`; the prior UI candidate was `8c21a4ff729f89064aa794c65bf8795beeef4ed4`; the backend-promotion candidate qualified below is `ad1857ca0855ab58168fa6826ab6ce3ca694a316`; the artifact SHA256 is `1afa2d12fc3d948f6d7644c8b666d99dae965297a277ea64a7161a19041de675`; the final documentation-synchronized feature SHA is `613fab662f62c090f2fa7d7930315b4cb6c1e814`; base SHA: `cfd4194fd338aeae07580fa7f227d118bebdd907`. The exact candidate was staged in a run-owned, inactive Android/Termux cache on the physical Server Phone. Production `main`, PM2, Caddy, NATS and SQLite were not activated or modified. No source edits, commits or pushes were performed on the phone.
 
 ## 1. Baseline/read-only review
 
@@ -9,7 +9,7 @@ This handoff records the approved qualification session for PR #649. The Gate B 
     git diff origin/main...HEAD --stat
     git diff --check
 
-Recorded exact base/head, local/remote parity, clean branch transitions and candidate manifest identity. The final documentation-synchronized feature SHA is `613fab662f62c090f2fa7d7930315b4cb6c1e814`; the UI/device candidate was `8c21a4ff729f89064aa794c65bf8795beeef4ed4` and the backend-promotion candidate was `0b767dc662c8f7c37accb4bc5fbad71a5f31564f`. No production rollout was performed.
+Recorded exact base/head, local/remote parity, clean branch transitions and candidate manifest identity. The final documentation-synchronized feature SHA is `613fab662f62c090f2fa7d7930315b4cb6c1e814`; the UI/device candidate was `8c21a4ff729f89064aa794c65bf8795beeef4ed4` and the backend-promotion candidate was `ad1857ca0855ab58168fa6826ab6ce3ca694a316`. No production rollout was performed.
 
 ## 2. Backend
 
@@ -69,7 +69,7 @@ Targeted backend/frontend tests, permission/redaction checks, exact-SHA ARM64/Te
 
 ## 10. Backend promotion and live admission evidence
 
-The new repository-owned backend promotion controller was qualified at `0b767dc662c8f7c37accb4bc5fbad71a5f31564f`. The deterministic artifact verified with 284 files, SHA256 sidecars, exact source SHA, Android/Termux aarch64 + PRoot Ubuntu target, schema 44 and migration checksums. The isolated phone-side run used a disposable SQLite database: backup with WAL-aware online copy, independent restore rehearsal, migrations `[43, 44]`, schema 44 integrity/quick-check/foreign-key validation, atomic pointer/database lifecycle, three consecutive simulated health observations, authorization replay rejection, health-failure rollback, write-observed fail-closed recovery and non-destructive restart reconciliation all passed. The temporary candidate cache was removed.
+The new repository-owned backend promotion controller was qualified at `ad1857ca0855ab58168fa6826ab6ce3ca694a316`. The deterministic artifact verified with 284 files, SHA256 sidecars, exact source SHA, Android/Termux aarch64 + PRoot Ubuntu target, schema 44 and migration checksums. The artifact SHA256 was `1afa2d12fc3d948f6d7644c8b666d99dae965297a277ea64a7161a19041de675`. The isolated phone-side run used a disposable SQLite database: backup with WAL-aware online copy, independent restore rehearsal, migrations `[43, 44]`, schema 44 integrity/quick-check/foreign-key validation, atomic pointer/database lifecycle, three consecutive simulated health observations, authorization replay rejection, health-failure rollback, write-observed fail-closed recovery and non-destructive restart reconciliation all passed. The temporary candidate cache was removed.
 
 The same run collected a read-only live admission snapshot against the installed phone runtime. PASS: protected device identity `pocket-lab-lite-server`, schema 42, SQLite integrity/quick-check, storage, memory, battery 94%, thermal maximum 48.1°C, all required PM2 services, Caddy/FastAPI health/readiness and worker heartbeat from the existing sanitized `/api/lite/runtime` contract. BLOCKED: external runtime guardian process absent. This is a real runtime readiness condition, not a harness assertion; the guardian script exists on the phone but its process was not running. The controller correctly refused production admission with exit 3 and did not activate or stop any service.
 
