@@ -37,6 +37,13 @@ MARKER_DIR="${MARKER_DIR:-$STATE_DIR/markers}"
 TMP_ROOT="${TMP_ROOT:-${TMPDIR:-$PREFIX/tmp}/pocket-lab}"
 export TERMUX_PREFIX="$PREFIX"
 
+# The PM2 identity helper is read-only and ships with the runtime supervisors.
+# Resolve it relative to this checked-in helper instead of trusting PATH or a
+# caller-provided repository root.
+POCKETLAB_COMMON_SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+POCKETLAB_PM2_IDENTITY_HELPER="$POCKETLAB_COMMON_SCRIPT_DIR/../../../runtime/supervisors/pocketlab_pm2_identity.py"
+readonly POCKETLAB_PM2_IDENTITY_HELPER
+
 mkdir -p "$STATE_DIR" "$LOG_DIR" "$RUN_DIR" "$LOCK_DIR" "$MARKER_DIR" "$TMP_ROOT" "$PREFIX/bin"
 
 SCRIPT_NAME="${SCRIPT_NAME:-$(basename "${BASH_SOURCE[-1]:-$0}")}"
@@ -161,10 +168,102 @@ pocketlab_pm2_exec() {
   "$node" "$cli" "$@"
 }
 
+# Populate bounded PM2 identity evidence.  The helper intentionally emits no
+# paths, environment values, socket names, or PM2 JSON; only sanitized reason
+# codes and numeric ownership facts are retained for the caller.
+pocketlab_pm2_identity_report() {
+  local jlist_file="${1:-}" pm2_home node output helper
+  pm2_home="${PM2_HOME:-$HOME/.pm2}"
+  node="$(pocketlab_resolve_native_node 2>/dev/null || true)"
+  helper="$POCKETLAB_PM2_IDENTITY_HELPER"
+  PM2_IDENTITY_STATE="unknown"
+  PM2_IDENTITY_REASONS="pm2_ownership_unknown"
+  PM2_IDENTITY_REASON="pm2_ownership_unknown"
+  PM2_IDENTITY_CANONICAL_PID=""
+  PM2_IDENTITY_PID_FILE_PID=""
+  PM2_IDENTITY_DAEMON_COUNT="0"
+  PM2_IDENTITY_SERVICE_PARENT_PIDS=""
+  export PM2_IDENTITY_STATE PM2_IDENTITY_REASONS PM2_IDENTITY_REASON
+
+  if [[ -z "$node" || ! -r "$helper" ]]; then
+    return 1
+  fi
+
+  local -a args=(
+    --pm2-home "$pm2_home"
+    --pid-file "$pm2_home/pm2.pid"
+    --expected-node "$node"
+    --proc-root /proc
+  )
+  [[ -n "$jlist_file" ]] && args+=(--jlist-file "$jlist_file")
+  output="$(python3 "$helper" "${args[@]}" 2>/dev/null || true)"
+  [[ -n "$output" ]] || return 1
+
+  local key value
+  while IFS='=' read -r key value; do
+    case "$key" in
+      state) PM2_IDENTITY_STATE="$value" ;;
+      reasons) PM2_IDENTITY_REASONS="$value" ;;
+      canonical_pid) PM2_IDENTITY_CANONICAL_PID="$value" ;;
+      pid_file_pid) PM2_IDENTITY_PID_FILE_PID="$value" ;;
+      daemon_count) PM2_IDENTITY_DAEMON_COUNT="$value" ;;
+      service_parent_pids) PM2_IDENTITY_SERVICE_PARENT_PIDS="$value" ;;
+    esac
+  done <<<"$output"
+  PM2_IDENTITY_REASON="${PM2_IDENTITY_REASONS%%,*}"
+  [[ -n "$PM2_IDENTITY_REASON" ]] || PM2_IDENTITY_REASON="pm2_ownership_unknown"
+  export PM2_IDENTITY_STATE PM2_IDENTITY_REASONS PM2_IDENTITY_REASON
+  return 0
+}
+
+pocketlab_pm2_identity_preflight() {
+  pocketlab_pm2_identity_report || return 1
+  case "${PM2_IDENTITY_STATE:-unknown}" in
+    ok|absent) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+pocketlab_pm2_identity_check() {
+  local jlist_file rc=0
+  mkdir -p "$TMP_ROOT"
+  jlist_file="$(mktemp "$TMP_ROOT/pm2-identity.XXXXXX")" || return 1
+  if ! pm2 jlist >"$jlist_file" 2>/dev/null; then
+    rm -f -- "$jlist_file"
+    PM2_IDENTITY_STATE="unknown"
+    PM2_IDENTITY_REASONS="pm2_ownership_unknown"
+    PM2_IDENTITY_REASON="pm2_ownership_unknown"
+    return 1
+  fi
+  pocketlab_pm2_identity_report "$jlist_file" || rc=1
+  rm -f -- "$jlist_file"
+  [[ "${PM2_IDENTITY_STATE:-unknown}" == "ok" ]] || rc=1
+  return "$rc"
+}
+
+pocketlab_pm2_uses_trusted_wrapper() {
+  [[ "$(declare -f pm2 2>/dev/null || true)" == *"pocketlab_pm2_exec"* ]]
+}
+
 # Shell callers source this file, so a function keeps all PM2 operations on
 # the native interpreter. Tests may replace the function with an isolated PM2
 # double after sourcing common.sh.
-pm2() { pocketlab_pm2_exec "$@"; }
+pm2() {
+  local owns_lock=0 rc=0
+  if [[ -z "${PM2_MUTATION_LOCK_DIR:-}" ]]; then
+    pm2_mutation_lock_acquire
+    owns_lock=1
+  fi
+  if pocketlab_pm2_exec "$@"; then
+    rc=0
+  else
+    rc=$?
+  fi
+  if (( owns_lock == 1 )); then
+    pm2_mutation_lock_release
+  fi
+  return "$rc"
+}
 
 pm2_with_timeout() {
   local seconds="${1:-}" node cli
@@ -179,11 +278,28 @@ pm2_with_timeout() {
   node="$(pocketlab_resolve_native_node 2>/dev/null || true)"
   cli="$(pocketlab_resolve_pm2_cli 2>/dev/null || true)"
   [[ -n "$node" && -n "$cli" ]] || return 127
-  if have timeout; then
-    timeout "$seconds" "$node" "$cli" "$@"
-  else
-    "$node" "$cli" "$@"
+  local owns_lock=0 rc=0
+  if [[ -z "${PM2_MUTATION_LOCK_DIR:-}" ]]; then
+    pm2_mutation_lock_acquire
+    owns_lock=1
   fi
+  if have timeout; then
+    if timeout "$seconds" "$node" "$cli" "$@"; then
+      rc=0
+    else
+      rc=$?
+    fi
+  else
+    if "$node" "$cli" "$@"; then
+      rc=0
+    else
+      rc=$?
+    fi
+  fi
+  if (( owns_lock == 1 )); then
+    pm2_mutation_lock_release
+  fi
+  return "$rc"
 }
 
 pm2_process_count() {
@@ -749,6 +865,9 @@ pm2_ensure_versioned_process() (
   trap pm2_mutation_lock_release EXIT
   local projected_exec version_snapshot current_version current_declared
   require_cmd pm2 python3 sha256sum
+  if pocketlab_pm2_uses_trusted_wrapper; then
+    pocketlab_pm2_identity_preflight || die "PM2 daemon ownership is ambiguous; refusing process convergence reason=${PM2_IDENTITY_REASON:-pm2_ownership_unknown}"
+  fi
   version="$(pm2_normalize_service_version "$version")" || die "PM2 service $name does not have an exact installed version"
   projected_exec="$(pm2_prepare_versioned_exec "$name" "$version" "$source_exec")"
   local POCKETLAB_SERVICE_VERSION="$version"
@@ -1128,6 +1247,9 @@ pm2_ensure_process() (
   # queued operation cannot attach another process's definition.
   pm2_mutation_lock_acquire
   trap pm2_mutation_lock_release EXIT
+  if pocketlab_pm2_uses_trusted_wrapper; then
+    pocketlab_pm2_identity_preflight || die "PM2 daemon ownership is ambiguous; refusing process convergence reason=${PM2_IDENTITY_REASON:-pm2_ownership_unknown}"
+  fi
   pm2_ensure_process_unlocked "$@"
 )
 

@@ -17,6 +17,9 @@ CORE_SUPERVISOR_SERVER="$ROOT_SCRIPT_DIR/../../runtime/supervisors/pocketlab_cor
 INTERVAL="${POCKETLAB_RUNTIME_GUARDIAN_SECONDS:-30}"
 PM2_RESTORE_COOLDOWN="${POCKETLAB_PM2_RESTORE_COOLDOWN_SECONDS:-60}"
 LAST_PM2_RESTORE=0
+PM2_IDENTITY_LOG_COOLDOWN="${POCKETLAB_PM2_IDENTITY_LOG_COOLDOWN_SECONDS:-300}"
+LAST_PM2_IDENTITY_LOG=0
+LAST_PM2_IDENTITY_REASON=""
 ONCE=0
 
 case "${1:-}" in
@@ -25,6 +28,24 @@ case "${1:-}" in
   *) die "Unknown runtime guardian argument: $1" ;;
 esac
 
+pm2_identity_refusal() {
+  local reason="${PM2_IDENTITY_REASON:-pm2_ownership_unknown}" now
+  now="$(date +%s)"
+  if [[ "$reason" != "$LAST_PM2_IDENTITY_REASON" ]] || (( now - LAST_PM2_IDENTITY_LOG >= PM2_IDENTITY_LOG_COOLDOWN )); then
+    log WARN "PM2 ownership is ambiguous; refusing automatic recovery reason=$reason"
+    LAST_PM2_IDENTITY_LOG="$now"
+    LAST_PM2_IDENTITY_REASON="$reason"
+  fi
+}
+
+pm2_identity_preflight() {
+  if ! pocketlab_pm2_identity_preflight; then
+    pm2_identity_refusal
+    return 1
+  fi
+  return 0
+}
+
 pm2_alive() {
   local pm2_home pid_file pid
   pm2_home="${PM2_HOME:-$HOME/.pm2}"
@@ -32,7 +53,9 @@ pm2_alive() {
   [[ -s "$pid_file" ]] || return 1
   pid="$(cat "$pid_file" 2>/dev/null || true)"
   [[ "$pid" =~ ^[0-9]+$ ]] || return 1
-  kill -0 "$pid" >/dev/null 2>&1
+  kill -0 "$pid" >/dev/null 2>&1 || return 1
+  pm2_identity_preflight || return 1
+  [[ "${PM2_IDENTITY_STATE:-unknown}" == "ok" ]]
 }
 
 pm2_process_matches_source() {
@@ -89,6 +112,7 @@ PY
 
 pm2_has_processes() {
   local count
+  pocketlab_pm2_identity_check || return 1
   count="$(pm2_process_count 2>/dev/null || true)"
   [[ "$count" =~ ^[1-9][0-9]*$ ]]
 }
@@ -113,7 +137,10 @@ reload_if_source_changed() {
 
 restore_pm2_if_needed() {
   PM2_RESTORED_THIS_PASS=0
-  if pm2_alive && pm2_has_processes; then
+  if ! pm2_identity_preflight; then
+    return 1
+  fi
+  if [[ "${PM2_IDENTITY_STATE:-unknown}" == "ok" ]] && pm2_has_processes; then
     return 0
   fi
   local now
@@ -121,7 +148,7 @@ restore_pm2_if_needed() {
   if (( now - LAST_PM2_RESTORE < PM2_RESTORE_COOLDOWN )); then
     return 0
   fi
-  if pm2_alive && ! pm2_dump_has_processes; then
+  if [[ "${PM2_IDENTITY_STATE:-unknown}" == "ok" ]] && ! pm2_dump_has_processes; then
     # The source-defined reconciler can rebuild an empty PM2 topology. Do not
     # resurrect a missing/invalid dump and risk turning an empty recovery pass
     # into an uncontrolled state replacement.
@@ -131,7 +158,10 @@ restore_pm2_if_needed() {
   log WARN "PM2 topology unavailable; attempting bounded saved-state resurrection"
   pm2_with_timeout 45 resurrect >/dev/null 2>&1 || true
   sleep 2
-  if pm2_alive; then
+  if ! pm2_identity_preflight; then
+    return 1
+  fi
+  if [[ "${PM2_IDENTITY_STATE:-unknown}" == "ok" ]]; then
     if pm2_has_processes; then
       PM2_RESTORED_THIS_PASS=1
     fi
@@ -142,8 +172,11 @@ restore_pm2_if_needed() {
 
 converge_if_needed() {
   local reason=""
+  pm2_identity_preflight || return 1
   if ! restore_pm2_if_needed; then
     reason="pm2_unavailable"
+  elif ! pm2_identity_preflight || [[ "${PM2_IDENTITY_STATE:-unknown}" != "ok" ]]; then
+    reason="pm2_ownership_unknown"
   elif [[ "${PM2_RESTORED_THIS_PASS:-0}" == "1" ]]; then
     # A resurrected dump is only a bootstrap snapshot. Immediately reconcile
     # current source-defined desired state so missing/stale supervisors and
