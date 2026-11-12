@@ -3938,6 +3938,421 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "System Health App Diagnostics",
+      "domain": "system-health",
+      "id": "api:get:/api/lite/system-health/apps/{app_id}",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/apps/{app_id}",
+      "operation_id": "system_health_app_diagnostics_api_lite_system_health_apps__app_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/apps/{app_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Configuration Drift",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceDrift",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/configuration-drift",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/configuration-drift",
+      "operation_id": "system_health_configuration_drift_api_lite_system_health_configuration_drift_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/configuration-drift",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Dependencies",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceDependencies",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/dependencies",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/dependencies",
+      "operation_id": "system_health_dependencies_api_lite_system_health_dependencies_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/dependencies",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health History",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceHistory",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/history",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/history",
+      "operation_id": "system_health_history_api_lite_system_health_history_get",
+      "response_statuses": [
+        "200",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/history",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Incidents",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceIncidents",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/incidents",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/incidents",
+      "operation_id": "system_health_incidents_api_lite_system_health_incidents_get",
+      "response_statuses": [
+        "200",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/incidents",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Incident",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/incidents/{incident_id}",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/incidents/{incident_id}",
+      "operation_id": "system_health_incident_api_lite_system_health_incidents__incident_id__get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/incidents/{incident_id}",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Decisions",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/incidents/{incident_id}/decisions",
+      "operation_id": "system_health_decisions_api_lite_system_health_incidents__incident_id__decisions_get",
+      "response_statuses": [
+        "200",
+        "404",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/incidents/{incident_id}/decisions",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Intelligence",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceKnowledge",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/intelligence",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/intelligence",
+      "operation_id": "system_health_intelligence_api_lite_system_health_intelligence_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/intelligence",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Policies",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligencePolicies",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/policies",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/policies",
+      "operation_id": "system_health_policies_api_lite_system_health_policies_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/policies",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Repairs",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/repairs",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/repairs",
+      "operation_id": "system_health_repairs_api_lite_system_health_repairs_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/repairs",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Resources",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceResources",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/resources",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/resources",
+      "operation_id": "system_health_resources_api_lite_system_health_resources_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/resources",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Summary",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceSummary",
+          "resolved": true,
+          "source_module": "src/lite/LiteHome.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceSummary",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/system-health/summary",
+      "method": "GET",
+      "name": "GET /api/lite/system-health/summary",
+      "operation_id": "system_health_summary_api_lite_system_health_summary_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/system-health/summary",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Get Lite Activity Summary",
       "domain": "system",
       "frontend_clients": [
@@ -7715,6 +8130,101 @@
       ],
       "tags": [
         "lite"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Diagnose",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceDiagnose",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+      "method": "POST",
+      "name": "POST /api/lite/system-health/incidents/{incident_id}/diagnose",
+      "operation_id": "system_health_diagnose_api_lite_system_health_incidents__incident_id__diagnose_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/incidents/{incident_id}/diagnose",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Preflight",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+      "method": "POST",
+      "name": "POST /api/lite/system-health/incidents/{incident_id}/preflight",
+      "operation_id": "system_health_preflight_api_lite_system_health_incidents__incident_id__preflight_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/incidents/{incident_id}/preflight",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "System Health Repair",
+      "domain": "system-health",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+      "method": "POST",
+      "name": "POST /api/lite/system-health/incidents/{incident_id}/repair",
+      "operation_id": "system_health_repair_api_lite_system_health_incidents__incident_id__repair_post",
+      "response_statuses": [
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/system-health/incidents/{incident_id}/repair",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-system-health"
       ],
       "type": "api"
     },
@@ -13196,6 +13706,31 @@
     {
       "confidence": "source-derived",
       "description": "Source-derived supporting domain discovered from generated contracts.",
+      "domain": "system-health",
+      "id": "domain:system-health",
+      "name": "System Health",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "contracts/generated/lite-openapi.json",
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "unvalidated",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "unvalidated",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "type": "domain"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Source-derived supporting domain discovered from generated contracts.",
       "domain": "telemetry",
       "id": "domain:telemetry",
       "name": "Telemetry",
@@ -16900,6 +17435,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "A System Health action was submitted against an older incident generation and was blocked by generation fencing.",
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:incident_generation_changed",
+      "name": "incident_generation_changed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The problem changed. Review the latest System Health evidence before retrying."
     },
     {
       "confidence": "source-derived",
@@ -22763,7 +23318,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/main.py:122"
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:123"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22784,7 +23339,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/main.py:194"
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:195"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -27467,6 +28022,161 @@
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "control_plane",
+      "id": "table:lite_system_health_diagnoses",
+      "indexes": [
+        "lite_system_health_diagnoses_incident",
+        "sqlite_autoindex_lite_system_health_diagnoses_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql"
+      ],
+      "name": "lite_system_health_diagnoses",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "evidence_freshness"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_events",
+      "indexes": [
+        "lite_system_health_events_recent"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+      ],
+      "name": "lite_system_health_events",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_incidents",
+      "indexes": [
+        "lite_system_health_incidents_target",
+        "lite_system_health_incidents_current",
+        "sqlite_autoindex_lite_system_health_incidents_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+      ],
+      "name": "lite_system_health_incidents",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "evidence_revision"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_observations",
+      "indexes": [
+        "sqlite_autoindex_lite_system_health_observations_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+      ],
+      "name": "lite_system_health_observations",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_repair_attempts",
+      "indexes": [
+        "lite_system_health_repairs_incident",
+        "sqlite_autoindex_lite_system_health_repair_attempts_2",
+        "sqlite_autoindex_lite_system_health_repair_attempts_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+      ],
+      "name": "lite_system_health_repair_attempts",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_repair_denials",
+      "indexes": [
+        "lite_system_health_denials_recent",
+        "sqlite_autoindex_lite_system_health_repair_denials_2",
+        "sqlite_autoindex_lite_system_health_repair_denials_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql"
+      ],
+      "name": "lite_system_health_repair_denials",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
       "id": "table:owner_approved_operations",
       "indexes": [
         "idx_owner_approved_operations_requester",
@@ -29052,6 +29762,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_backend_runtime_promotion.py",
+      "name": "tests/backend/test_lite_backend_runtime_promotion.py",
+      "source_refs": [
+        "tests/backend/test_lite_backend_runtime_promotion.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_backup_locations.py",
       "name": "tests/backend/test_lite_backup_locations.py",
       "source_refs": [
@@ -30396,6 +31116,26 @@
       "name": "tests/backend/test_lite_storage_fault_injection.py",
       "source_refs": [
         "tests/backend/test_lite_storage_fault_injection.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_system_health.py",
+      "name": "tests/backend/test_lite_system_health.py",
+      "source_refs": [
+        "tests/backend/test_lite_system_health.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_system_health_android_qualification.py",
+      "name": "tests/backend/test_lite_system_health_android_qualification.py",
+      "source_refs": [
+        "tests/backend/test_lite_system_health_android_qualification.py"
       ],
       "type": "test"
     },
@@ -31862,6 +32602,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-system-health.spec.ts",
+      "name": "tests/e2e/lite-system-health.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-system-health.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-test-helpers.ts",
       "name": "tests/e2e/lite-test-helpers.ts",
       "source_refs": [
@@ -33261,6 +34011,17 @@
       "type": "ui"
     },
     {
+      "confidence": "source-derived",
+      "domain": "platform",
+      "id": "ui:litesystemhealth",
+      "name": "LiteSystemHealth",
+      "source_refs": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "state_owner": "TanStack Query for live server state; Dexie safe snapshots; Zustand UI coordination; XState guided workflows where applicable",
+      "type": "ui"
+    },
+    {
       "blocks_promotion": "policy-dependent",
       "blocks_writes": "policy-dependent",
       "can_coexist_with": "Independent status dimensions may coexist unless an owning contract explicitly forbids the combination.",
@@ -34155,6 +34916,12 @@
         "table:identity_audit_events",
         "table:lite_home_activity_read_cursors",
         "table:lite_revision_events",
+        "table:lite_system_health_diagnoses",
+        "table:lite_system_health_events",
+        "table:lite_system_health_incidents",
+        "table:lite_system_health_observations",
+        "table:lite_system_health_repair_attempts",
+        "table:lite_system_health_repair_denials",
         "table:owner_approved_operations",
         "table:owner_claims",
         "table:owner_operation_challenges",
@@ -34733,7 +35500,8 @@
         "ui:liteidentityenterprise",
         "ui:litereleaseupdatecard",
         "ui:literevisionsyncbridge",
-        "ui:literulesenterprise"
+        "ui:literulesenterprise",
+        "ui:litesystemhealth"
       ],
       "prepared_state": [
         "domain:prepared_state",
@@ -34744,6 +35512,7 @@
         "domain:projections",
         "glossary:prepared-projection",
         "reason:generation_changed",
+        "reason:incident_generation_changed",
         "reason:invalid_domain",
         "reason:lease_active",
         "reason:no_active_generation",
@@ -35067,6 +35836,24 @@
         "reason:shutdown",
         "reason:submit_failed"
       ],
+      "system-health": [
+        "api:get:/api/lite/system-health/apps/{app_id}",
+        "api:get:/api/lite/system-health/configuration-drift",
+        "api:get:/api/lite/system-health/dependencies",
+        "api:get:/api/lite/system-health/history",
+        "api:get:/api/lite/system-health/incidents",
+        "api:get:/api/lite/system-health/incidents/{incident_id}",
+        "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+        "api:get:/api/lite/system-health/intelligence",
+        "api:get:/api/lite/system-health/policies",
+        "api:get:/api/lite/system-health/repairs",
+        "api:get:/api/lite/system-health/resources",
+        "api:get:/api/lite/system-health/summary",
+        "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+        "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+        "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+        "domain:system-health"
+      ],
       "telemetry": [
         "domain:telemetry",
         "subject:pocketlab.events.telemetry",
@@ -35103,6 +35890,7 @@
         "test:tests/backend/test_lite_app_projection_deadline.py",
         "test:tests/backend/test_lite_app_registry.py",
         "test:tests/backend/test_lite_app_runtime_reconciliation.py",
+        "test:tests/backend/test_lite_backend_runtime_promotion.py",
         "test:tests/backend/test_lite_backup_locations.py",
         "test:tests/backend/test_lite_boot_recovery.py",
         "test:tests/backend/test_lite_command_attention_audit_idempotency.py",
@@ -35238,6 +36026,8 @@
         "test:tests/backend/test_lite_sqlite_performance.py",
         "test:tests/backend/test_lite_startup_workload_isolation.py",
         "test:tests/backend/test_lite_storage_fault_injection.py",
+        "test:tests/backend/test_lite_system_health.py",
+        "test:tests/backend/test_lite_system_health_android_qualification.py",
         "test:tests/backend/test_lite_system_health_semantic_revision.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/backend/test_lite_ui_candidate_server.py",
@@ -35384,6 +36174,7 @@
         "test:tests/e2e/lite-safety-azure-visual-hardening.spec.ts",
         "test:tests/e2e/lite-safety-native-geometry.spec.ts",
         "test:tests/e2e/lite-security-runtime.spec.ts",
+        "test:tests/e2e/lite-system-health.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-ux-maturity.spec.ts",
         "test:tests/e2e/lite-visual-devices.spec.ts",
@@ -35686,6 +36477,18 @@
         "api:get:/api/lite/security/runs/{run_id}",
         "api:get:/api/lite/security/summary",
         "api:get:/api/lite/status",
+        "api:get:/api/lite/system-health/apps/{app_id}",
+        "api:get:/api/lite/system-health/configuration-drift",
+        "api:get:/api/lite/system-health/dependencies",
+        "api:get:/api/lite/system-health/history",
+        "api:get:/api/lite/system-health/incidents",
+        "api:get:/api/lite/system-health/incidents/{incident_id}",
+        "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+        "api:get:/api/lite/system-health/intelligence",
+        "api:get:/api/lite/system-health/policies",
+        "api:get:/api/lite/system-health/repairs",
+        "api:get:/api/lite/system-health/resources",
+        "api:get:/api/lite/system-health/summary",
         "api:get:/api/lite/system/activity-summary",
         "api:get:/api/lite/system/agent",
         "api:get:/api/lite/system/health",
@@ -35812,6 +36615,9 @@
         "api:post:/api/lite/security/apps/{app_id}/check",
         "api:post:/api/lite/security/check",
         "api:post:/api/lite/security/scan",
+        "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+        "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+        "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
         "api:put:/api/lite/enterprise/identity/members/{human_id}",
         "api:put:/api/lite/enterprise/identity/mode",
         "api:put:/api/lite/fleet/devices/{device_id}/display-model",
@@ -35927,6 +36733,7 @@
         "domain:runtime",
         "domain:security",
         "domain:system",
+        "domain:system-health",
         "domain:telemetry",
         "domain:testing",
         "domain:unknown",
@@ -36122,6 +36929,7 @@
         "reason:identity_setup_unavailable",
         "reason:identity_unavailable",
         "reason:identity_username_invalid",
+        "reason:incident_generation_changed",
         "reason:independent_approval_satisfied",
         "reason:insufficient_storage",
         "reason:interrupted",
@@ -36589,6 +37397,12 @@
         "table:lite_home_activity_read_cursors",
         "table:lite_installed_release_identity",
         "table:lite_revision_events",
+        "table:lite_system_health_diagnoses",
+        "table:lite_system_health_events",
+        "table:lite_system_health_incidents",
+        "table:lite_system_health_observations",
+        "table:lite_system_health_repair_attempts",
+        "table:lite_system_health_repair_denials",
         "table:owner_approved_operations",
         "table:owner_claims",
         "table:owner_operation_challenges",
@@ -36664,6 +37478,7 @@
         "test:tests/backend/test_lite_app_projection_deadline.py",
         "test:tests/backend/test_lite_app_registry.py",
         "test:tests/backend/test_lite_app_runtime_reconciliation.py",
+        "test:tests/backend/test_lite_backend_runtime_promotion.py",
         "test:tests/backend/test_lite_backup_locations.py",
         "test:tests/backend/test_lite_boot_recovery.py",
         "test:tests/backend/test_lite_command_attention_audit_idempotency.py",
@@ -36799,6 +37614,8 @@
         "test:tests/backend/test_lite_sqlite_performance.py",
         "test:tests/backend/test_lite_startup_workload_isolation.py",
         "test:tests/backend/test_lite_storage_fault_injection.py",
+        "test:tests/backend/test_lite_system_health.py",
+        "test:tests/backend/test_lite_system_health_android_qualification.py",
         "test:tests/backend/test_lite_system_health_semantic_revision.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/backend/test_lite_ui_candidate_server.py",
@@ -36945,6 +37762,7 @@
         "test:tests/e2e/lite-safety-azure-visual-hardening.spec.ts",
         "test:tests/e2e/lite-safety-native-geometry.spec.ts",
         "test:tests/e2e/lite-security-runtime.spec.ts",
+        "test:tests/e2e/lite-system-health.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-ux-maturity.spec.ts",
         "test:tests/e2e/lite-visual-devices.spec.ts",
@@ -37030,7 +37848,8 @@
         "ui:literevisionsyncbridge",
         "ui:literules",
         "ui:literulesenterprise",
-        "ui:litesecurity"
+        "ui:litesecurity",
+        "ui:litesystemhealth"
       ],
       "vocabulary": [
         "vocabulary:accepted-limitation",
@@ -38169,6 +38988,114 @@
           "type": "uses"
         }
       ],
+      "api:get:/api/lite/system-health/apps/{app_id}": [
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/system-health/configuration-drift": [
+        {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/system-health/dependencies": [
+        {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/system-health/history": [
+        {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/system-health/incidents": [
+        {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/system-health/incidents/{incident_id}": [
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/system-health/incidents/{incident_id}/decisions": [
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/system-health/intelligence": [
+        {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/system-health/policies": [
+        {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/system-health/repairs": [
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/system-health/resources": [
+        {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/system-health/summary": [
+        {
+          "source": "ui:litehome",
+          "type": "calls"
+        },
+        {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/system/activity-summary": [
         {
           "source": "ui:litehome",
@@ -39302,6 +40229,28 @@
       "api:post:/api/lite/security/scan": [
         {
           "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose": [
+        {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/system-health/incidents/{incident_id}/preflight": [
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/system-health/incidents/{incident_id}/repair": [
+        {
+          "source": "domain:system-health",
           "type": "owns"
         }
       ],
@@ -41422,6 +42371,12 @@
       "reason:identity_username_invalid": [
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "reason:incident_generation_changed": [
+        {
+          "source": "domain:projections",
           "type": "owns"
         }
       ],
@@ -44991,6 +45946,42 @@
           "type": "owns"
         }
       ],
+      "table:lite_system_health_diagnoses": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_events": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_incidents": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_observations": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_repair_attempts": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_repair_denials": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:owner_approved_operations": [
         {
           "source": "domain:control_plane",
@@ -46343,6 +47334,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:incident_generation_changed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:independent_approval_satisfied",
           "type": "verified_by"
         },
@@ -47569,6 +48564,54 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/system-health/apps/{app_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/configuration-drift",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/dependencies",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/history",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/incidents",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/incidents/{incident_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/intelligence",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/policies",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/repairs",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/resources",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/summary",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/system/activity-summary",
           "type": "verified_by"
         },
@@ -48070,6 +49113,18 @@
         },
         {
           "source": "api:post:/api/lite/security/scan",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
           "type": "verified_by"
         },
         {
@@ -49752,6 +50807,30 @@
       "test:tests/backend/test_lite_storage_fault_injection.py": [
         {
           "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_system_health.py": [
+        {
+          "source": "reason:authentication_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_system_health_android_qualification.py": [
+        {
+          "source": "reason:generation_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:incident_generation_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:shutdown",
           "type": "verified_by"
         }
       ],
@@ -51807,6 +52886,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:incident_generation_changed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:independent_approval_satisfied",
           "type": "verified_by"
         },
@@ -53018,6 +54101,10 @@
         },
         {
           "source": "reason:identity_username_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:incident_generation_changed",
           "type": "verified_by"
         },
         {
@@ -54729,6 +55816,54 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/system-health/apps/{app_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/configuration-drift",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/dependencies",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/history",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/incidents",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/incidents/{incident_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/intelligence",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/policies",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/repairs",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/resources",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/summary",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/system/activity-summary",
           "type": "verified_by"
         },
@@ -55230,6 +56365,18 @@
         },
         {
           "source": "api:post:/api/lite/security/scan",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
           "type": "verified_by"
         },
         {
@@ -55952,6 +57099,12 @@
       "ui:litesecurity": [
         {
           "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "ui:litesystemhealth": [
+        {
+          "source": "domain:platform",
           "type": "owns"
         }
       ]
@@ -57527,6 +58680,126 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/system-health/apps/{app_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/system-health/configuration-drift": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/system-health/dependencies": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/system-health/history": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/system-health/incidents": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/system-health/incidents/{incident_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/system-health/incidents/{incident_id}/decisions": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/system-health/intelligence": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/system-health/policies": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/system-health/repairs": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/system-health/resources": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/system-health/summary": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/system/activity-summary": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -58778,6 +60051,36 @@
         }
       ],
       "api:post:/api/lite/security/scan": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/system-health/incidents/{incident_id}/preflight": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/system-health/incidents/{incident_id}/repair": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -63249,6 +64552,30 @@
           "type": "owns"
         },
         {
+          "target": "table:lite_system_health_diagnoses",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_events",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_incidents",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_observations",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_repair_attempts",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_repair_denials",
+          "type": "owns"
+        },
+        {
           "target": "table:owner_approved_operations",
           "type": "owns"
         },
@@ -65347,6 +66674,10 @@
           "type": "owns"
         },
         {
+          "target": "ui:litesystemhealth",
+          "type": "owns"
+        },
+        {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
         },
@@ -65392,6 +66723,10 @@
       "domain:projections": [
         {
           "target": "reason:generation_changed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:incident_generation_changed",
           "type": "owns"
         },
         {
@@ -66788,6 +68123,68 @@
         },
         {
           "target": "reason:submit_failed",
+          "type": "owns"
+        }
+      ],
+      "domain:system-health": [
+        {
+          "target": "api:get:/api/lite/system-health/apps/{app_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/configuration-drift",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/dependencies",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/history",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/incidents",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/incidents/{incident_id}",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/intelligence",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/policies",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/repairs",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/resources",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/summary",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
           "type": "owns"
         }
       ],
@@ -68773,6 +70170,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_system_health.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -69446,6 +70847,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_storage_fault_injection.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_system_health.py",
           "type": "verified_by"
         },
         {
@@ -70165,6 +71570,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -70522,6 +71931,24 @@
       "reason:identity_username_invalid": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:incident_generation_changed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
           "type": "verified_by"
         },
         {
@@ -72531,6 +73958,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_workload_admission.py",
           "type": "verified_by"
         },
@@ -73533,6 +74964,10 @@
           "type": "calls"
         },
         {
+          "target": "api:get:/api/lite/system-health/summary",
+          "type": "calls"
+        },
+        {
           "target": "api:get:/api/lite/system/activity-summary",
           "type": "calls"
         },
@@ -73790,6 +75225,44 @@
         },
         {
           "target": "api:post:/api/lite/security/check",
+          "type": "calls"
+        }
+      ],
+      "ui:litesystemhealth": [
+        {
+          "target": "api:get:/api/lite/system-health/configuration-drift",
+          "type": "calls"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/dependencies",
+          "type": "calls"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/history",
+          "type": "calls"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/incidents",
+          "type": "calls"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/intelligence",
+          "type": "calls"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/policies",
+          "type": "calls"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/resources",
+          "type": "calls"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/summary",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
           "type": "calls"
         }
       ]
@@ -74236,6 +75709,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:02dfe2ab2dae6ffd",
+      "source": "api:get:/api/lite/system-health/incidents",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:03242d8a7167e7b0",
@@ -74394,6 +75876,15 @@
       "id": "rel:040a00d534e4e847",
       "source": "reason:identity_setup_rejected",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:04210c51bb4d8a5e",
+      "source": "api:get:/api/lite/system-health/configuration-drift",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -74559,6 +76050,15 @@
       "source": "journey:runtime-promotion",
       "target": "component:release-state",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:054bbdd8629822ae",
+      "source": "ui:litesystemhealth",
+      "target": "api:get:/api/lite/system-health/incidents",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -75577,6 +77077,24 @@
       "id": "rel:0c49d9e97df84e0c",
       "source": "requirement:architecture-06",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:0c5f65f27feecfa7",
+      "source": "ui:litesystemhealth",
+      "target": "api:get:/api/lite/system-health/intelligence",
+      "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:0c70d809358d3bf8",
+      "source": "api:get:/api/lite/system-health/summary",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -76980,6 +78498,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:146ecb2acf41b82f",
+      "source": "api:get:/api/lite/system-health/summary",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:1473c5fdb4bcf14d",
@@ -77917,6 +79444,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:1abaa733ab6ae2a5",
+      "source": "domain:system-health",
+      "target": "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_termux_runtime_documentation.py"
       ],
       "id": "rel:1ac30d5091f8d9ec",
@@ -77949,6 +79485,15 @@
       "id": "rel:1af19febab69a27b",
       "source": "component:browser",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:1af2c26409776fff",
+      "source": "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -78247,6 +79792,15 @@
       "id": "rel:1d0413c3a89cd015",
       "source": "reason:csrf_required",
       "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_system_health_android_qualification.py"
+      ],
+      "id": "rel:1d16170d30f19626",
+      "source": "reason:generation_changed",
+      "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
       "type": "verified_by"
     },
     {
@@ -78976,6 +80530,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:2247585abb85029f",
+      "source": "domain:system-health",
+      "target": "api:get:/api/lite/system-health/summary",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_fleet_multi_role_authorization.py"
       ],
       "id": "rel:2251487c18bc5aba",
@@ -79327,6 +80890,15 @@
       "id": "rel:247f58c6f86177e4",
       "source": "reason:fault_control_denied",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:249035e000f24d7f",
+      "source": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -80142,6 +81714,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:295654026a7fa100",
+      "source": "api:get:/api/lite/system-health/dependencies",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:295b22cb2869f396",
@@ -80699,6 +82280,15 @@
       "source": "component:worker",
       "target": "subject:pocketlab.events.command.retry_scheduled",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:2dc8d52889e94f71",
+      "source": "api:get:/api/lite/system-health/resources",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -81448,6 +83038,15 @@
       "source": "reason:restore_not_attempted",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:3305f045cab3cb3c",
+      "source": "domain:control_plane",
+      "target": "table:lite_system_health_diagnoses",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -82217,6 +83816,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:37ed63b5eca71e48",
+      "source": "domain:system-health",
+      "target": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:37f47c2021930e38",
@@ -82544,6 +84152,15 @@
       "source": "reason:fault_restart_not_acted",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:3996f16414e4cf46",
+      "source": "ui:litesystemhealth",
+      "target": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -85017,6 +86634,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:491bba30449b2f54",
+      "source": "domain:control_plane",
+      "target": "table:lite_system_health_events",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:49329090b74d6a55",
@@ -85386,6 +87012,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:4b6f01a99f4319b3",
+      "source": "reason:incident_generation_changed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:4b7323764320175c",
@@ -85482,6 +87117,15 @@
       "source": "domain:apps",
       "target": "api:post:/api/lite/apps/{app_id}/restore/preview",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:4c013b70ded41024",
+      "source": "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -85599,6 +87243,15 @@
       "source": "component:recovery-state",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:4d2524e737b4e579",
+      "source": "domain:system-health",
+      "target": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -85784,6 +87437,15 @@
       "source": "component:release-subprocess",
       "target": "test:tests/backend/conftest.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:4e72eda29443212e",
+      "source": "domain:system-health",
+      "target": "api:get:/api/lite/system-health/resources",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -86175,6 +87837,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:50b103b65b2a09e3",
+      "source": "domain:control_plane",
+      "target": "table:lite_system_health_repair_attempts",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:50d44999749372b6",
@@ -86371,6 +88042,15 @@
       "source": "domain:runbook",
       "target": "subject:pocketlab.events.runbook.approval_required",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:524f2a8259889762",
+      "source": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -86740,6 +88420,15 @@
       "source": "domain:devices",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:55326e845467b45a",
+      "source": "domain:control_plane",
+      "target": "table:lite_system_health_incidents",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -87488,6 +89177,15 @@
       "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
+      "id": "rel:59f4faa8abc40feb",
+      "source": "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
       "id": "rel:5a09af13764f35c6",
       "source": "api:post:/api/lite/recovery/locations/discover",
       "target": "test:tests/parity/test_api_contract_fences.py",
@@ -87710,6 +89408,15 @@
       "source": "component:backup-engine",
       "target": "threat-model:messaging-execution",
       "type": "protected_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:5b497a0277bc9702",
+      "source": "domain:system-health",
+      "target": "api:get:/api/lite/system-health/policies",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -88312,6 +90019,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:5fa8b9cfec4226a3",
+      "source": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_devices_durable_enrollment.py"
       ],
       "id": "rel:5faa1a01223a5e8e",
@@ -88744,6 +90460,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:6325a23721b7ae9b",
+      "source": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/parity/parity-model.json"
       ],
       "id": "rel:632973938fa6086e",
@@ -88874,6 +90599,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:63e54af60f76c158",
+      "source": "domain:system-health",
+      "target": "api:get:/api/lite/system-health/dependencies",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1980"
       ],
       "id": "rel:63ef7457476a5e43",
@@ -88888,6 +90622,15 @@
       "id": "rel:63fb36298b8943f4",
       "source": "domain:owner-operations",
       "target": "api:post:/api/lite/owner-operations/clients/challenge",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:63fe318f7feecd73",
+      "source": "domain:system-health",
+      "target": "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
       "type": "owns"
     },
     {
@@ -89964,12 +91707,30 @@
     },
     {
       "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:6bb1daf86a37072d",
+      "source": "ui:litesystemhealth",
+      "target": "api:get:/api/lite/system-health/history",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:6bcf6c6fd9dbe3d5",
       "source": "reason:runtime_contract_unavailable",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:6bd278d586fbf242",
+      "source": "domain:system-health",
+      "target": "api:get:/api/lite/system-health/apps/{app_id}",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -90835,6 +92596,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_system_health.py"
+      ],
+      "id": "rel:70b0ce2a25eebd29",
+      "source": "reason:authentication_required",
+      "target": "test:tests/backend/test_lite_system_health.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:70b53178ca8835c9",
@@ -91645,6 +93415,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:75f452d50aefb2de",
+      "source": "api:get:/api/lite/system-health/repairs",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_nats_required.py"
       ],
       "id": "rel:762f1b12592ebcc2",
@@ -91840,6 +93619,15 @@
       "source": "domain:devices",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:774dcc9af08446fc",
+      "source": "domain:system-health",
+      "target": "api:get:/api/lite/system-health/incidents/{incident_id}",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -92074,6 +93862,15 @@
       "source": "domain:identity",
       "target": "limitation:identity:gap-1",
       "type": "affected_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:7941e2ce2a61da75",
+      "source": "domain:system-health",
+      "target": "api:get:/api/lite/system-health/intelligence",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -93251,6 +95048,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteHome.jsx"
+      ],
+      "id": "rel:81a9a4567a467ddd",
+      "source": "ui:litehome",
+      "target": "api:get:/api/lite/system-health/summary",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:81a9eb5da72fca39",
@@ -93643,6 +95449,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:850f07bb44463ec6",
+      "source": "domain:system-health",
+      "target": "api:get:/api/lite/system-health/history",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:856446e68e8d7605",
@@ -93965,6 +95780,15 @@
       "id": "rel:87aa207ac56994f1",
       "source": "reason:webauthn_rp_id_mismatch",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:87b24376b3a090d7",
+      "source": "api:get:/api/lite/system-health/policies",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -94368,6 +96192,15 @@
       "source": "journey:device-enrollment",
       "target": "component:api-guards",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:8a36e35c201c21ed",
+      "source": "api:get:/api/lite/system-health/repairs",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -94828,6 +96661,24 @@
       "source": "component:tailscaled",
       "target": "troubleshooting:remote-access-not-ready",
       "type": "recovers_with"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:8cf00c320269bf2f",
+      "source": "api:get:/api/lite/system-health/apps/{app_id}",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_system_health_android_qualification.py"
+      ],
+      "id": "rel:8d4aa093b419b8dc",
+      "source": "reason:incident_generation_changed",
+      "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -96015,6 +97866,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:95fabbf3575d4249",
+      "source": "api:get:/api/lite/system-health/policies",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:9600fd6589b39ac2",
@@ -96100,6 +97960,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:9696b1c270d101af",
+      "source": "domain:system-health",
+      "target": "api:get:/api/lite/system-health/repairs",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:96ac8c0fa72631f8",
@@ -96169,6 +98038,15 @@
       "source": "component:lite-api",
       "target": "test:tests/backend/test_lite_phase3c_system_aggregates.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:97479bce28d04b8e",
+      "source": "domain:system-health",
+      "target": "api:get:/api/lite/system-health/incidents",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -97239,6 +99117,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_system_health.py"
+      ],
+      "id": "rel:9eef544b65a57eaf",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_system_health.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_fastapi_runtime_diagnostics.py"
       ],
       "id": "rel:9ef5d505e5fadb75",
@@ -97371,6 +99258,15 @@
       "source": "domain:rules",
       "target": "reason:policy_revision_mismatch",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:a01568115c065e68",
+      "source": "reason:incident_generation_changed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -97659,6 +99555,15 @@
       "source": "domain:harness",
       "target": "api:post:/api/lite/harness/principals",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:a26e2e4de3c43af1",
+      "source": "ui:litesystemhealth",
+      "target": "api:get:/api/lite/system-health/summary",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -97996,6 +99901,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:a43de55c4f06ff7b",
+      "source": "api:get:/api/lite/system-health/apps/{app_id}",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:a44210cd8ce6b6f1",
@@ -98149,6 +100063,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:a59aa4cf4edfb9e9",
+      "source": "api:get:/api/lite/system-health/incidents",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:a5b7ad55828f0756",
@@ -98254,6 +100177,15 @@
       "source": "reason:disabled",
       "target": "test:tests/backend/test_lite_photo_backup_reliability.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:a636927c75de4bfc",
+      "source": "domain:control_plane",
+      "target": "table:lite_system_health_observations",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -99857,6 +101789,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:b118a080d316a514",
+      "source": "ui:litesystemhealth",
+      "target": "api:get:/api/lite/system-health/dependencies",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:b11e000e2a533691",
@@ -100457,6 +102398,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:b5894d6dd25d3032",
+      "source": "api:get:/api/lite/system-health/configuration-drift",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py",
         "src/lite/LiteDevices.jsx"
       ],
@@ -101019,6 +102969,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:b9ff395b1e6a2310",
+      "source": "domain:platform",
+      "target": "ui:litesystemhealth",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_control_plane_sqlite_p3.py"
       ],
       "id": "rel:ba0635e705beab9d",
@@ -101214,6 +103173,15 @@
       "source": "journey:rollback",
       "target": "component:release-state",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:bb52182a29a170ca",
+      "source": "domain:system-health",
+      "target": "api:get:/api/lite/system-health/configuration-drift",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -101606,6 +103574,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:be0e5ecbe77a8ee7",
+      "source": "api:get:/api/lite/system-health/dependencies",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:be28bff52abd5863",
@@ -101638,6 +103615,15 @@
       "id": "rel:be42b64b0a4306ce",
       "source": "component:pm2",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:be5579d001359bba",
+      "source": "api:get:/api/lite/system-health/resources",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -102752,6 +104738,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_system_health_android_qualification.py"
+      ],
+      "id": "rel:c731b6ac0fbf8f12",
+      "source": "reason:shutdown",
+      "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:c7481d1b414dd632",
@@ -103745,6 +105740,24 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:cd90bbf57bee2092",
+      "source": "api:get:/api/lite/system-health/incidents/{incident_id}",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:cd91389627bcd571",
+      "source": "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:cd960a56329cddce",
@@ -103804,6 +105817,15 @@
       "id": "rel:cdea27cd05d0f4c1",
       "source": "api:get:/api/lite/apps/{app_id}/update",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:cdebf85c22de7db4",
+      "source": "reason:incident_generation_changed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -104897,6 +106919,15 @@
       "id": "rel:d4a590ee48f6383d",
       "source": "reason:disabled",
       "target": "test:tests/e2e/lite-home-panel-flow-visual-candidates.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:d4b34117e8335e7f",
+      "source": "api:get:/api/lite/system-health/history",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -106792,6 +108823,15 @@
       "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
+      "id": "rel:e1f4ee8638c73247",
+      "source": "api:get:/api/lite/system-health/intelligence",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
       "id": "rel:e211e3b0d1df4a93",
       "source": "api:get:/api/lite/system/agent",
       "target": "test:tests/parity/test_api_contract_fences.py",
@@ -107471,6 +109511,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:e6497b274f057eab",
+      "source": "domain:control_plane",
+      "target": "table:lite_system_health_repair_denials",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:e651434900050718",
@@ -107909,6 +109958,15 @@
       "source": "journey:security-review",
       "target": "component:security-coordinator",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:e8a38cd18b8b34d8",
+      "source": "api:get:/api/lite/system-health/intelligence",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -108393,6 +110451,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:ec667e3b1c403a32",
+      "source": "api:get:/api/lite/system-health/incidents/{incident_id}",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:ec73bf9a0811b099",
@@ -108525,6 +110592,15 @@
       "id": "rel:ed582a75a006ca5b",
       "source": "component:app-recovery-update",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:ed68ecc77fd5f9e8",
+      "source": "api:get:/api/lite/system-health/history",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -109339,6 +111415,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:f2f04971f4bb8e75",
+      "source": "ui:litesystemhealth",
+      "target": "api:get:/api/lite/system-health/resources",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_control_plane_sqlite_p3.py"
       ],
       "id": "rel:f2f55b4de7314ae9",
@@ -109973,6 +112058,15 @@
       "source": "ui:liteidentityenterprise",
       "target": "api:post:/api/lite/identity/step-up/options",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:f732b589f03a9e04",
+      "source": "domain:projections",
+      "target": "reason:incident_generation_changed",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -110975,6 +113069,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:fe7420ead0caf94b",
+      "source": "ui:litesystemhealth",
+      "target": "api:get:/api/lite/system-health/policies",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:fe8bd7e3198e7d81",
@@ -111074,6 +113177,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:ff76e3f40dd38c0f",
+      "source": "ui:litesystemhealth",
+      "target": "api:get:/api/lite/system-health/configuration-drift",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_api.py"
       ],
       "id": "rel:ff80f8fa8074054f",
@@ -111128,33 +113240,33 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "a4127f9a98d18909227202e6d335b5bf73b29d52e7784bb45cd71961e6725f9a",
+  "source_fingerprint": "c34dbc4f3d22e444c9c2a45b535ca4f886f43faa3233a3467298b89810faee83",
   "statistics": {
-    "entity_count": 1479,
+    "entity_count": 1507,
     "entity_type_counts": {
       "adr": 6,
-      "api": 256,
+      "api": 271,
       "capability": 5,
       "component": 58,
-      "domain": 50,
+      "domain": 51,
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 283,
+      "reason-code": 284,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
       "runtime-topology": 9,
       "subject": 221,
-      "table": 89,
-      "test": 331,
+      "table": 95,
+      "test": 335,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
-      "ui": 11,
+      "ui": 12,
       "vocabulary": 39
     },
-    "relation_count": 4117,
-    "source_count": 368
+    "relation_count": 4188,
+    "source_count": 372
   }
 }

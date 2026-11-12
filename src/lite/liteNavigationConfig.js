@@ -4,6 +4,7 @@ import {
   FileCheck,
   Fingerprint,
   LayoutGrid,
+  HeartPulse,
   Network,
   ShieldCheck,
 } from 'lucide-react';
@@ -19,6 +20,7 @@ const LITE_SCREEN_ICONS = Object.freeze({
   security: ShieldCheck,
   devices: Network,
   rules: FileCheck,
+  'system-health': HeartPulse,
   recovery: Database,
 });
 

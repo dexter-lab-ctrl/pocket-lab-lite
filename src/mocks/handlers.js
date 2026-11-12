@@ -1129,7 +1129,95 @@ function mockPremiumRecoveryProjection(name = 'healthy') {
   };
 }
 
+
+const MOCK_HEALTH_INCIDENT_ID = 'health-111111111111111111111111';
+function mockSystemHealthIncident(resolved = false) {
+  return {
+    incident_id: MOCK_HEALTH_INCIDENT_ID, source: 'nats', target_id: 'jetstream',
+    kind: 'health', state: resolved ? 'resolved' : 'detected',
+    severity: 'warning', generation: 1, recurrence_count: 0, observation_count: 2,
+    first_seen_at: mockIso(-600000), last_seen_at: mockIso(-60000),
+    resolved_at: resolved ? mockIso(-60000) : null, evidence_freshness: 'current',
+    summary: 'Command delivery needs attention.',
+    suspected_cause: '', verified_cause: '', cause_confidence: 'unconfirmed',
+    repair_available: false, repair_guidance: 'Review the existing protected recovery action.',
+  };
+}
+function mockSystemHealthSummary() {
+  const kind = rawScenario();
+  const stale = kind === 'system-health-stale';
+  const unknown = kind === 'system-health-unknown';
+  const attention = kind === 'system-health-attention';
+  const resolved = kind === 'system-health-resolved';
+  return {
+    status: stale || unknown ? 'unknown' : attention ? 'attention' : 'healthy',
+    checked_at: mockIso(), data_source: 'persisted_projection',
+    observed_services: unknown ? 0 : 8, healthy_services: stale || unknown ? 0 : attention ? 7 : 8,
+    active_problems: attention ? 1 : 0, critical_problems: 0,
+    unknown_services: stale ? 8 : unknown ? 0 : 0,
+    automatic_repairs_running: 0, recent_verified_recoveries: 0,
+    recent_resolutions: resolved ? [mockSystemHealthIncident(true)] : [],
+    freshness: stale ? 'stale' : unknown ? 'unavailable' : 'current',
+    summary: stale || unknown ? 'Health evidence is incomplete or stale.' : attention ? 'One or more services need attention.' : 'Observed services are healthy.',
+  };
+}
+
 export const handlers = [
+
+  http.get('/api/lite/system-health/summary', ({ request }) =>
+    HttpResponse.json(mockSystemHealthSummary(), { headers: liteSafeReadHeaders(request) })),
+  http.get('/api/lite/system-health/incidents', ({ request }) => {
+    const active = rawScenario() === 'system-health-attention';
+    const items = active ? [mockSystemHealthIncident()] : [];
+    return HttpResponse.json({ items, limit: 30, offset: 0, next_offset: null }, { headers: liteSafeReadHeaders(request) });
+  }),
+  http.get('/api/lite/system-health/incidents/:incidentId', ({ params }) =>
+    params.incidentId === MOCK_HEALTH_INCIDENT_ID
+      ? HttpResponse.json(mockSystemHealthIncident(rawScenario() === 'system-health-resolved'))
+      : HttpResponse.json({ detail: 'Problem not found' }, { status: 404 })),
+  http.get('/api/lite/system-health/history', () => HttpResponse.json({
+    items: rawScenario() === 'system-health-resolved' ? [mockSystemHealthIncident(true)] : [],
+    repairs: [], limit: 30, offset: 0, next_offset: null,
+  })),
+  http.get('/api/lite/system-health/dependencies', () => HttpResponse.json({
+    nodes: [{ source: 'nats', target_id: 'jetstream', status: rawScenario() === 'system-health-attention' ? 'degraded' : 'healthy', observed_at: mockIso(-60000), freshness: 'current', authority: 'verified_runtime' }],
+    edges: [{ upstream: 'nats', downstream: 'worker', authority: 'verified_contract', summary: 'Commands use NATS/JetStream.' }],
+    description: 'Contract edges are not live connectivity proof.',
+  })),
+  http.get('/api/lite/system-health/resources', () => HttpResponse.json({
+    signals: [], forecast: 'not_enough_information', model: 'deterministic_only',
+    explanation: 'Current history does not support a reliable forecast.',
+  })),
+  http.get('/api/lite/system-health/intelligence', () => HttpResponse.json({
+    recurring_components: [], diagnostics: 'deterministic', ai_provider: 'disabled',
+    evidence: 'sanitized_summary_only',
+  })),
+  http.get('/api/lite/system-health/policies', () => HttpResponse.json({
+    automatic_execution: 'existing_independent_guardians_only', engine_auto_repair: false, mode: 'fail_closed',
+    repair_catalog: [{ operation_id: 'runtime.consumer.reconnect', risk_class: 'A', availability: 'externally_managed', summary: 'Worker watchdog owns durable-consumer recovery.' }],
+  })),
+  http.get('/api/lite/system-health/repairs', () => HttpResponse.json({ operations: [], new_executor_enabled: false })),
+  http.get('/api/lite/system-health/incidents/:incidentId/decisions', () => HttpResponse.json({ diagnoses: [], repair_denials: [] })),
+  http.post('/api/lite/system-health/incidents/:incidentId/diagnose', ({ params }) =>
+    HttpResponse.json({
+      incident_id: params.incidentId, generation: 1, evidence_freshness: 'current',
+      observed_symptom: 'Command delivery needs attention.',
+      suspected_cause: 'Not established', verified_cause: null, cause_confidence: 'unknown',
+      affected_component: 'jetstream', supporting_signals: [], repair_available: false,
+      safe_next_step: 'Use existing protected recovery controls.',
+      what_changes: 'Nothing. Diagnosis reads persisted evidence only.',
+      what_does_not_change: 'No service restart, configuration update, or data change.',
+      recorded: true, diagnosis_id: 'diagnosis-mocked',
+    })),
+  http.post('/api/lite/system-health/incidents/:incidentId/preflight', () => HttpResponse.json({
+    allowed: false, status: 'blocked', reasons: ['system_health_executor_not_qualified'],
+    execution: 'not_started', verification: 'not_started',
+  })),
+  http.post('/api/lite/system-health/incidents/:incidentId/repair', () => HttpResponse.json({
+    detail: { status: 'blocked', reason_code: 'system_health_executor_not_qualified', recorded: true,
+      summary: 'No new System Health repair executor is enabled. Use the existing protected repair workflow.' },
+  }, { status: 409 })),
+
   http.get('/ready', () => HttpResponse.json(controlPlane(), { status: controlPlane().ready ? 200 : 503 })),
   http.get('/api', () => HttpResponse.json({ name: 'Pocket Lab FastAPI/NATS Control API', mode: 'msw' })),
   http.get('/api/nats/status', () => HttpResponse.json({ connected: controlPlane().nats, jetstream: controlPlane().jetstream, required: true, mode: 'msw' })),

@@ -144,6 +144,7 @@
         "domain:runbook",
         "domain:runtime",
         "domain:system",
+        "domain:system-health",
         "domain:telemetry",
         "domain:testing",
         "domain:unknown",
@@ -503,6 +504,18 @@
         "api:get:/api/lite/security/runs/{run_id}",
         "api:get:/api/lite/security/summary",
         "api:get:/api/lite/status",
+        "api:get:/api/lite/system-health/apps/{app_id}",
+        "api:get:/api/lite/system-health/configuration-drift",
+        "api:get:/api/lite/system-health/dependencies",
+        "api:get:/api/lite/system-health/history",
+        "api:get:/api/lite/system-health/incidents",
+        "api:get:/api/lite/system-health/incidents/{incident_id}",
+        "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+        "api:get:/api/lite/system-health/intelligence",
+        "api:get:/api/lite/system-health/policies",
+        "api:get:/api/lite/system-health/repairs",
+        "api:get:/api/lite/system-health/resources",
+        "api:get:/api/lite/system-health/summary",
         "api:get:/api/lite/system/activity-summary",
         "api:get:/api/lite/system/agent",
         "api:get:/api/lite/system/health",
@@ -629,6 +642,9 @@
         "api:post:/api/lite/security/apps/{app_id}/check",
         "api:post:/api/lite/security/check",
         "api:post:/api/lite/security/scan",
+        "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+        "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+        "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
         "api:put:/api/lite/enterprise/identity/members/{human_id}",
         "api:put:/api/lite/enterprise/identity/mode",
         "api:put:/api/lite/fleet/devices/{device_id}/display-model",
@@ -665,6 +681,7 @@
         "domain:runbook",
         "domain:runtime",
         "domain:system",
+        "domain:system-health",
         "domain:telemetry",
         "domain:testing",
         "domain:unknown",
@@ -710,6 +727,7 @@
         "domain:runbook",
         "domain:runtime",
         "domain:system",
+        "domain:system-health",
         "domain:telemetry",
         "domain:testing",
         "domain:unknown",
@@ -762,6 +780,12 @@
         "table:lite_home_activity_read_cursors",
         "table:lite_installed_release_identity",
         "table:lite_revision_events",
+        "table:lite_system_health_diagnoses",
+        "table:lite_system_health_events",
+        "table:lite_system_health_incidents",
+        "table:lite_system_health_observations",
+        "table:lite_system_health_repair_attempts",
+        "table:lite_system_health_repair_denials",
         "table:owner_approved_operations",
         "table:owner_claims",
         "table:owner_operation_challenges",
@@ -955,6 +979,7 @@
         "reason:identity_setup_unavailable",
         "reason:identity_unavailable",
         "reason:identity_username_invalid",
+        "reason:incident_generation_changed",
         "reason:independent_approval_satisfied",
         "reason:insufficient_storage",
         "reason:interrupted",
@@ -1322,6 +1347,7 @@
         "reason:identity_setup_unavailable",
         "reason:identity_unavailable",
         "reason:identity_username_invalid",
+        "reason:incident_generation_changed",
         "reason:independent_approval_satisfied",
         "reason:insufficient_storage",
         "reason:interrupted",
@@ -2075,6 +2101,22 @@
         "table:owner_operation_client_pairings"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+    },
+    {
+      "entities": [
+        "table:lite_system_health_events",
+        "table:lite_system_health_incidents",
+        "table:lite_system_health_observations",
+        "table:lite_system_health_repair_attempts"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+    },
+    {
+      "entities": [
+        "table:lite_system_health_diagnoses",
+        "table:lite_system_health_repair_denials"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql"
     },
     {
       "entities": [
@@ -2908,6 +2950,12 @@
     },
     {
       "entities": [
+        "ui:litesystemhealth"
+      ],
+      "source": "src/lite/LiteSystemHealth.jsx"
+    },
+    {
+      "entities": [
         "adr:adr-frontend-state-ownership"
       ],
       "source": "src/machines"
@@ -3080,6 +3128,12 @@
         "test:tests/backend/test_lite_app_runtime_reconciliation.py"
       ],
       "source": "tests/backend/test_lite_app_runtime_reconciliation.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_backend_runtime_promotion.py"
+      ],
+      "source": "tests/backend/test_lite_backend_runtime_promotion.py"
     },
     {
       "entities": [
@@ -3890,6 +3944,18 @@
         "test:tests/backend/test_lite_storage_fault_injection.py"
       ],
       "source": "tests/backend/test_lite_storage_fault_injection.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_system_health.py"
+      ],
+      "source": "tests/backend/test_lite_system_health.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_system_health_android_qualification.py"
+      ],
+      "source": "tests/backend/test_lite_system_health_android_qualification.py"
     },
     {
       "entities": [
@@ -4769,6 +4835,12 @@
     },
     {
       "entities": [
+        "test:tests/e2e/lite-system-health.spec.ts"
+      ],
+      "source": "tests/e2e/lite-system-health.spec.ts"
+    },
+    {
+      "entities": [
         "test:tests/e2e/lite-test-helpers.ts"
       ],
       "source": "tests/e2e/lite-test-helpers.ts"
@@ -4906,6 +4978,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "a4127f9a98d18909227202e6d335b5bf73b29d52e7784bb45cd71961e6725f9a"
+    "source_fingerprint": "c34dbc4f3d22e444c9c2a45b535ca4f886f43faa3233a3467298b89810faee83"
   }
 }

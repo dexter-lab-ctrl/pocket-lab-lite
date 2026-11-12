@@ -2385,7 +2385,7 @@
       "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
       "security_classification": "internal metadata",
       "source_owner": [
-        "pocket-lab-final-structure/runtime/api_fastapi/main.py:122"
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:123"
       ],
       "tests": [],
       "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -2422,7 +2422,7 @@
       "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
       "security_classification": "internal metadata",
       "source_owner": [
-        "pocket-lab-final-structure/runtime/api_fastapi/main.py:194"
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:195"
       ],
       "tests": [],
       "ui_state": "FastAPI projection only; browser never subscribes to NATS"

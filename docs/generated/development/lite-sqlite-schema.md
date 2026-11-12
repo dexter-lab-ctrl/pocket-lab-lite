@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: eb102a89bfce676dc9e4e717912f93517e9df8591cedb9a1eac917465846a70b
+source_fingerprint: 18d2d0704a382ae0772f3b59d9c3c79ce328be617294ee1d571189379aa5f2ee
 schema_revision: 1
 validation_status: generated
 ---
@@ -72,6 +72,12 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `lite_home_activity_read_cursors` | table | 3 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql |
 | `lite_installed_release_identity` | table | 18 | 0 | 2 | release | release runtime and identity services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql |
 | `lite_revision_events` | table | 10 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql |
+| `lite_system_health_diagnoses` | table | 9 | 0 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql |
+| `lite_system_health_events` | table | 6 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql |
+| `lite_system_health_incidents` | table | 16 | 0 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql |
+| `lite_system_health_observations` | table | 6 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql |
+| `lite_system_health_repair_attempts` | table | 15 | 1 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql |
+| `lite_system_health_repair_denials` | table | 10 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql |
 | `owner_approved_operations` | table | 28 | 2 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql |
 | `owner_claims` | table | 12 | 0 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
 | `owner_operation_challenges` | table | 12 | 0 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql |
@@ -1113,6 +1119,116 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `occurred_at` | TEXT | no | — | 0 |
 | `occurred_at_epoch_ms` | INTEGER | no | — | 0 |
 | `sanitized` | INTEGER | no | 1 | 0 |
+
+<a id="lite-system-health-diagnoses"></a>
+## `lite_system_health_diagnoses`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `diagnosis_id` | TEXT | yes | — | 1 |
+| `incident_id` | TEXT | no | — | 0 |
+| `incident_generation` | INTEGER | no | — | 0 |
+| `created_at` | TEXT | no | — | 0 |
+| `symptom` | TEXT | no | — | 0 |
+| `suspected_cause` | TEXT | no | — | 0 |
+| `confidence` | TEXT | no | — | 0 |
+| `evidence_freshness` | TEXT | no | — | 0 |
+| `recommended_action` | TEXT | no | — | 0 |
+
+<a id="lite-system-health-events"></a>
+## `lite_system_health_events`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `id` | INTEGER | yes | — | 1 |
+| `incident_id` | TEXT | no | — | 0 |
+| `generation` | INTEGER | no | — | 0 |
+| `event_type` | TEXT | no | — | 0 |
+| `created_at` | TEXT | no | — | 0 |
+| `safe_summary` | TEXT | no | — | 0 |
+
+<a id="lite-system-health-incidents"></a>
+## `lite_system_health_incidents`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `incident_id` | TEXT | yes | — | 1 |
+| `source` | TEXT | no | — | 0 |
+| `target_id` | TEXT | no | — | 0 |
+| `kind` | TEXT | no | — | 0 |
+| `state` | TEXT | no | — | 0 |
+| `severity` | TEXT | no | — | 0 |
+| `generation` | INTEGER | no | 1 | 0 |
+| `recurrence_count` | INTEGER | no | 0 | 0 |
+| `observation_count` | INTEGER | no | 1 | 0 |
+| `first_seen_at` | TEXT | no | — | 0 |
+| `last_seen_at` | TEXT | no | — | 0 |
+| `resolved_at` | TEXT | yes | — | 0 |
+| `evidence_revision` | TEXT | no | '' | 0 |
+| `summary` | TEXT | no | — | 0 |
+| `suspected_cause` | TEXT | no | '' | 0 |
+| `verified_cause` | TEXT | no | '' | 0 |
+
+<a id="lite-system-health-observations"></a>
+## `lite_system_health_observations`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `source` | TEXT | no | — | 1 |
+| `target_id` | TEXT | no | — | 2 |
+| `status` | TEXT | no | — | 0 |
+| `observed_at` | TEXT | no | — | 0 |
+| `source_revision` | TEXT | no | '' | 0 |
+| `summary` | TEXT | no | '' | 0 |
+
+<a id="lite-system-health-repair-attempts"></a>
+## `lite_system_health_repair_attempts`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `repair_id` | TEXT | yes | — | 1 |
+| `incident_id` | TEXT | no | — | 0 |
+| `incident_generation` | INTEGER | no | — | 0 |
+| `idempotency_key` | TEXT | no | — | 0 |
+| `operation_id` | TEXT | no | — | 0 |
+| `risk_class` | TEXT | no | — | 0 |
+| `execution_state` | TEXT | no | — | 0 |
+| `authorization_state` | TEXT | no | — | 0 |
+| `preflight_state` | TEXT | no | — | 0 |
+| `verification_state` | TEXT | no | — | 0 |
+| `requested_at` | TEXT | no | — | 0 |
+| `completed_at` | TEXT | yes | — | 0 |
+| `requested_by` | TEXT | no | — | 0 |
+| `safe_summary` | TEXT | no | — | 0 |
+| `outcome` | TEXT | no | 'not_executed' | 0 |
+
+<a id="lite-system-health-repair-denials"></a>
+## `lite_system_health_repair_denials`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `denial_id` | TEXT | yes | — | 1 |
+| `incident_id` | TEXT | no | — | 0 |
+| `incident_generation` | INTEGER | no | — | 0 |
+| `idempotency_digest` | TEXT | no | — | 0 |
+| `operation_id` | TEXT | no | — | 0 |
+| `risk_class` | TEXT | no | — | 0 |
+| `denied_at` | TEXT | no | — | 0 |
+| `actor_class` | TEXT | no | — | 0 |
+| `reason_code` | TEXT | no | — | 0 |
+| `safe_summary` | TEXT | no | — | 0 |
 
 <a id="owner-approved-operations"></a>
 ## `owner_approved_operations`

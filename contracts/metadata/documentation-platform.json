@@ -1009,6 +1009,21 @@
       "user_message": "The source generation changed during work."
     },
     {
+      "audit_severity": "warning",
+      "code": "incident_generation_changed",
+      "deprecated_aliases": [],
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 409,
+      "meaning": "A System Health action was submitted against an older incident generation and was blocked by generation fencing.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The problem changed. Review the latest System Health evidence before retrying."
+    },
+    {
       "audit_severity": "info",
       "code": "generic_policy_toggle_retired",
       "deprecated_aliases": [],

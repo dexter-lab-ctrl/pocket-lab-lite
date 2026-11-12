@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: ca493e6fa0b9e983c259e4e3081686c46e270219025449ab49745a718782ec40
+source_fingerprint: 5282d3001d5d2edc2ec9fb2a1f005df369e90f1f5601ed244539ba5ded577e12
 schema_revision: 1
 validation_status: generated
 ---
@@ -142,6 +142,7 @@ validation_status: generated
 | `identity_setup_unavailable` | identity | Trusted owner-claim creation is unavailable because the server-side setup channel is not enabled. | yes | no | 503 | error | structured reason/failure fields in Lite backend or contracts metadata |
 | `identity_unavailable` | security | A Security result cannot be safely reused because the target, scanner, or policy identity could not be established. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
 | `identity_username_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
+| `incident_generation_changed` | projections | A System Health action was submitted against an older incident generation and was blocked by generation fencing. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py |
 | `independent_approval_satisfied` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `insufficient_storage` | system | There is not enough safe storage for the operation. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `interrupted` | system | The operation was interrupted. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |

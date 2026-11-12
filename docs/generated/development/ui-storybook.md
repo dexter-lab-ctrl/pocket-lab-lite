@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 5b2e05c998165ca10ae3aea1626e7dcbe2b926ed5e5a0551240809e826df6984
+source_fingerprint: 85aa453f62ac831a1c79c1573308c76f09cd08327c5b0b0bab7029c39452a342
 schema_revision: 1
 validation_status: generated
 ---
@@ -660,6 +660,17 @@ Lite Storybook uses the production screen components, global Lite styling, deter
 - `GlobalUnifiedTechnicalDetails`
 - `GlobalUnifiedCompactMobile`
 - `GlobalUnifiedExpandedMobile`
+
+## LiteSystemHealth
+
+- `HealthyLightDesktop`
+- `HealthyDarkDesktop`
+- `AttentionDarkDesktop`
+- `AttentionLightMobile`
+- `StaleDarkMobile`
+- `NoEvidenceLightMobile`
+- `ResolvedDesktop`
+- `TwoHundredPercentText`
 
 ## LiteUx
 

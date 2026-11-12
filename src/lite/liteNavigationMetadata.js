@@ -32,6 +32,7 @@ export const LITE_SCREEN_METADATA = Object.freeze([
     }),
   }),
   Object.freeze({ id: 'rules', label: 'Rules' }),
+  Object.freeze({ id: 'system-health', label: 'System Health' }),
   Object.freeze({
     id: 'recovery',
     label: 'Recovery',
@@ -112,7 +113,14 @@ export function replaceLiteScreenLaunch(screenId, {
   const pathname = String(locationObject.pathname || '/');
   if (!['/', '/index.html'].includes(pathname)) return false;
   const normalized = normalizeLiteScreenId(screenId);
-  const nextUrl = createLiteScreenLaunchUrl(normalized);
+  let nextUrl = createLiteScreenLaunchUrl(normalized);
+  if (normalized === 'system-health') {
+    const existing = toLaunchUrl(locationObject);
+    const incident = String(existing.searchParams.get('incident') || '');
+    if (existing.searchParams.get(LITE_SCREEN_LAUNCH_PARAMETER) === 'system-health' && /^health-[a-f0-9]{24}$/.test(incident)) {
+      nextUrl += `&incident=${encodeURIComponent(incident)}`;
+    }
+  }
   try {
     historyObject.replaceState(
       { ...(historyObject.state || {}), pocketLabLiteScreen: normalized },

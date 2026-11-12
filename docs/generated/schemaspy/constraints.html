@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">46 Foreign Key Constraints</h3>
+                            <h3 class="box-title">47 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -108,62 +108,38 @@
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/auth_session_assurance.html'>auth_session_assurance</a><span>.session_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/auth_session_assurance.html'>auth_session_assurance</a><span>.credential_id</span></td>
+                                                    <td><a href='tables/assurance_execution_checkpoints.html'>assurance_execution_checkpoints</a><span>.run_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/auth_sessions.html'>auth_sessions</a><span>.session_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/webauthn_credentials.html'>webauthn_credentials</a><span>.credential_id</span></td>
+                                                    <td><a href='tables/assurance_runs.html'>assurance_runs</a><span>.run_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/owner_operation_clients.html'>owner_operation_clients</a><span>.created_by_human_id</span></td>
+                                                    <td><a href='tables/assurance_findings.html'>assurance_findings</a><span>.run_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/webauthn_users.html'>webauthn_users</a><span>.human_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                    <td><a href='tables/assurance_runs.html'>assurance_runs</a><span>.run_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -187,7 +163,253 @@
                                         </td>
                                         <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/assurance_scenarios.html'>assurance_scenarios</a><span>.run_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/assurance_runs.html'>assurance_runs</a><span>.run_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/assurance_tool_results.html'>assurance_tool_results</a><span>.run_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/assurance_runs.html'>assurance_runs</a><span>.run_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/auth_session_assurance.html'>auth_session_assurance</a><span>.session_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/auth_session_assurance.html'>auth_session_assurance</a><span>.credential_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/auth_sessions.html'>auth_sessions</a><span>.session_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/webauthn_credentials.html'>webauthn_credentials</a><span>.credential_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/auth_sessions.html'>auth_sessions</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_awareness_state.html'>device_awareness_state</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_health_attention.html'>device_health_attention</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_health_current.html'>device_health_current</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_health_transitions.html'>device_health_transitions</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_lifecycle_events.html'>device_lifecycle_events</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_lifecycle_transactions.html'>device_lifecycle_transactions</a><span>.device_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/device_lifecycle_transactions.html'>device_lifecycle_transactions</a><span>.event_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/device_lifecycle_events.html'>device_lifecycle_events</a><span>.event_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_removal_receipts.html'>device_removal_receipts</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_enrollment_registry.html'>device_enrollment_registry</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_system_profiles.html'>device_system_profiles</a><span>.node_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/enterprise_configuration.html'>enterprise_configuration</a><span>.updated_by_human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -217,67 +439,7 @@
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/assurance_findings.html'>assurance_findings</a><span>.run_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/assurance_runs.html'>assurance_runs</a><span>.run_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_removal_receipts.html'>device_removal_receipts</a><span>.device_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_enrollment_registry.html'>device_enrollment_registry</a><span>.device_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/policy_temporary_exceptions.html'>policy_temporary_exceptions</a><span>.created_by_human_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/policy_temporary_exceptions.html'>policy_temporary_exceptions</a><span>.human_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -295,97 +457,7 @@
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/security_scan_tool_runs.html'>security_scan_tool_runs</a><span>.run_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/security_scan_runs.html'>security_scan_runs</a><span>.run_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/security_scan_evidence_refs.html'>security_scan_evidence_refs</a><span>.run_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/security_scan_runs.html'>security_scan_runs</a><span>.run_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_awareness_state.html'>device_awareness_state</a><span>.device_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/security_database_restores.html'>security_database_restores</a><span>.backup_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/security_database_backups.html'>security_database_backups</a><span>.backup_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_health_current.html'>device_health_current</a><span>.device_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -403,25 +475,7 @@
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_health_transitions.html'>device_health_transitions</a><span>.device_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -445,85 +499,25 @@
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/device_lifecycle_events.html'>device_lifecycle_events</a><span>.device_id</span></td>
+                                                    <td><a href='tables/harness_sessions.html'>harness_sessions</a><span>.principal_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/owner_operation_client_pairing_events.html'>owner_operation_client_pairing_events</a><span>.pairing_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/owner_operation_client_pairings.html'>owner_operation_client_pairings</a><span>.pairing_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/policy_recovery_resolutions.html'>policy_recovery_resolutions</a><span>.requested_by_human_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/policy_recovery_resolutions.html'>policy_recovery_resolutions</a><span>.operation_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/policy_activation_operations.html'>policy_activation_operations</a><span>.operation_id</span></td>
+                                                    <td><a href='tables/synthetic_principals.html'>synthetic_principals</a><span>.principal_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/assurance_execution_checkpoints.html'>assurance_execution_checkpoints</a><span>.run_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/assurance_runs.html'>assurance_runs</a><span>.run_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -541,163 +535,7 @@
                                         </td>
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/policy_approvals.html'>policy_approvals</a><span>.approved_by_human_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/policy_approvals.html'>policy_approvals</a><span>.initiating_human_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/owner_approved_operations.html'>owner_approved_operations</a><span>.approved_by_human_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/owner_approved_operations.html'>owner_approved_operations</a><span>.requester_client_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/owner_operation_clients.html'>owner_operation_clients</a><span>.client_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_system_profiles.html'>device_system_profiles</a><span>.node_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/owner_operation_events.html'>owner_operation_events</a><span>.operation_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/owner_approved_operations.html'>owner_approved_operations</a><span>.operation_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/policy_decision_details.html'>policy_decision_details</a><span>.decision_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/policy_decisions.html'>policy_decisions</a><span>.decision_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/webauthn_credentials.html'>webauthn_credentials</a><span>.human_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_health_attention.html'>device_health_attention</a><span>.device_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/recovery_code_batches.html'>recovery_code_batches</a><span>.human_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -721,31 +559,121 @@
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/policy_runtime_state.html'>policy_runtime_state</a><span>.known_good_revision_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/policy_runtime_state.html'>policy_runtime_state</a><span>.active_revision_id</span></td>
+                                                    <td><a href='tables/lite_system_health_repair_attempts.html'>lite_system_health_repair_attempts</a><span>.incident_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/policy_revisions.html'>policy_revisions</a><span>.revision_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/policy_revisions.html'>policy_revisions</a><span>.revision_id</span></td>
+                                                    <td><a href='tables/lite_system_health_incidents.html'>lite_system_health_incidents</a><span>.incident_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/owner_approved_operations.html'>owner_approved_operations</a><span>.approved_by_human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/owner_approved_operations.html'>owner_approved_operations</a><span>.requester_client_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/owner_operation_clients.html'>owner_operation_clients</a><span>.client_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/owner_operation_client_pairing_events.html'>owner_operation_client_pairing_events</a><span>.pairing_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/owner_operation_client_pairings.html'>owner_operation_client_pairings</a><span>.pairing_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/owner_operation_client_pairings.html'>owner_operation_client_pairings</a><span>.reviewed_by_human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/owner_operation_clients.html'>owner_operation_clients</a><span>.created_by_human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/owner_operation_events.html'>owner_operation_events</a><span>.operation_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/owner_approved_operations.html'>owner_approved_operations</a><span>.operation_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -775,30 +703,15 @@
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/assurance_scenarios.html'>assurance_scenarios</a><span>.run_id</span></td>
+                                                    <td><a href='tables/policy_approvals.html'>policy_approvals</a><span>.approved_by_human_id</span></td>
                                                 </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/assurance_runs.html'>assurance_runs</a><span>.run_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/auth_sessions.html'>auth_sessions</a><span>.human_id</span></td>
+                                                    <td><a href='tables/policy_approvals.html'>policy_approvals</a><span>.initiating_human_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -807,21 +720,6 @@
                                                 <tr>
                                                     <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
                                                 </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/enterprise_configuration.html'>enterprise_configuration</a><span>.updated_by_human_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
                                                 </tr>
@@ -829,30 +727,33 @@
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/security_scan_findings.html'>security_scan_findings</a><span>.run_id</span></td>
+                                                    <td><a href='tables/policy_decision_details.html'>policy_decision_details</a><span>.decision_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/security_scan_runs.html'>security_scan_runs</a><span>.run_id</span></td>
+                                                    <td><a href='tables/policy_decisions.html'>policy_decisions</a><span>.decision_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/owner_operation_client_pairings.html'>owner_operation_client_pairings</a><span>.reviewed_by_human_id</span></td>
+                                                    <td><a href='tables/policy_recovery_resolutions.html'>policy_recovery_resolutions</a><span>.requested_by_human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_recovery_resolutions.html'>policy_recovery_resolutions</a><span>.operation_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -861,29 +762,14 @@
                                                 <tr>
                                                     <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
                                                 </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_activation_operations.html'>policy_activation_operations</a><span>.operation_id</span></td>
+                                                </tr>
                                             </table>
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/security_scan_progress_events.html'>security_scan_progress_events</a><span>.run_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/security_scan_runs.html'>security_scan_runs</a><span>.run_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -907,7 +793,109 @@
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/policy_runtime_state.html'>policy_runtime_state</a><span>.known_good_revision_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_runtime_state.html'>policy_runtime_state</a><span>.active_revision_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/policy_revisions.html'>policy_revisions</a><span>.revision_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_revisions.html'>policy_revisions</a><span>.revision_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/policy_temporary_exceptions.html'>policy_temporary_exceptions</a><span>.created_by_human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/policy_temporary_exceptions.html'>policy_temporary_exceptions</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/recovery_code_batches.html'>recovery_code_batches</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/recovery_codes.html'>recovery_codes</a><span>.batch_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/recovery_code_batches.html'>recovery_code_batches</a><span>.batch_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/security_database_restores.html'>security_database_restores</a><span>.backup_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/security_database_backups.html'>security_database_backups</a><span>.backup_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -925,49 +913,79 @@
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/device_lifecycle_transactions.html'>device_lifecycle_transactions</a><span>.device_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/device_lifecycle_transactions.html'>device_lifecycle_transactions</a><span>.event_id</span></td>
+                                                    <td><a href='tables/security_scan_evidence_refs.html'>security_scan_evidence_refs</a><span>.run_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/device_current_state.html'>device_current_state</a><span>.device_id</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><a href='tables/device_lifecycle_events.html'>device_lifecycle_events</a><span>.event_id</span></td>
+                                                    <td><a href='tables/security_scan_runs.html'>security_scan_runs</a><span>.run_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/assurance_tool_results.html'>assurance_tool_results</a><span>.run_id</span></td>
+                                                    <td><a href='tables/security_scan_findings.html'>security_scan_findings</a><span>.run_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/assurance_runs.html'>assurance_runs</a><span>.run_id</span></td>
+                                                    <td><a href='tables/security_scan_runs.html'>security_scan_runs</a><span>.run_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/security_scan_progress_events.html'>security_scan_progress_events</a><span>.run_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/security_scan_runs.html'>security_scan_runs</a><span>.run_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
+                                        <td></td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/security_scan_tool_runs.html'>security_scan_tool_runs</a><span>.run_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/security_scan_runs.html'>security_scan_runs</a><span>.run_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -997,37 +1015,37 @@
                                         </td>
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/harness_sessions.html'>harness_sessions</a><span>.principal_id</span></td>
+                                                    <td><a href='tables/webauthn_credentials.html'>webauthn_credentials</a><span>.human_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/synthetic_principals.html'>synthetic_principals</a><span>.principal_id</span></td>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
-                                    <tr>
+<tr>
                                         <td></td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/recovery_codes.html'>recovery_codes</a><span>.batch_id</span></td>
+                                                    <td><a href='tables/webauthn_users.html'>webauthn_users</a><span>.human_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/recovery_code_batches.html'>recovery_code_batches</a><span>.batch_id</span></td>
+                                                    <td><a href='tables/human_identities.html'>human_identities</a><span>.human_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>

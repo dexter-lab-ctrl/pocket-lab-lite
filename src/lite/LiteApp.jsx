@@ -730,8 +730,8 @@ function LiteAppShell() {
         onNavigate: commitScreenNavigation,
       }
       : activeScreenId === 'catalog'
-        ? { onOpenWorkspace: openWorkspace }
-        : {}
+        ? { onOpenWorkspace: openWorkspace, onNavigate: commitScreenNavigation }
+        : { onNavigate: commitScreenNavigation }
   ), [
     activeScreenId,
     backendReachable,

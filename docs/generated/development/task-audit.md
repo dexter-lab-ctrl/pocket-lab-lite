@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 5b2e05c998165ca10ae3aea1626e7dcbe2b926ed5e5a0551240809e826df6984
+source_fingerprint: 85aa453f62ac831a1c79c1573308c76f09cd08327c5b0b0bab7029c39452a342
 schema_revision: 1
 validation_status: generated
 ---
@@ -138,6 +138,12 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:api:read-latency`
 - `lite:api:schemathesis`
 - `lite:api:schemathesis:discovery`
+- `lite:backend:promotion:preflight`
+- `lite:backend:promotion:prepare`
+- `lite:backend:promotion:qualify:android`
+- `lite:backend:promotion:qualify:isolate`
+- `lite:backend:promotion:reconcile`
+- `lite:backend:promotion:verify`
 - `lite:bootstrap:check`
 - `lite:browser:detect`
 - `lite:check`
@@ -336,6 +342,7 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:storybook`
 - `lite:storybook:build`
 - `lite:storybook:screenshots`
+- `lite:system-health:candidate:android:qualify`
 - `lite:test:a11y`
 - `lite:test:android`
 - `lite:test:app-governance`

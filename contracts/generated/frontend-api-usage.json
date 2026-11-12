@@ -219,6 +219,20 @@
         ],
         "method": "GET",
         "mocked": false,
+        "owner": "liteApi.healthIntelligenceSummary",
+        "resolved": true,
+        "route": "/api/lite/system-health/summary",
+        "source_module": "src/lite/LiteHome.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteHome.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
         "owner": "liteApi.activitySummary",
         "resolved": true,
         "route": "/api/lite/system/activity-summary",
@@ -1091,6 +1105,132 @@
         "resolved": true,
         "route": "/api/lite/security/summary",
         "source_module": "src/lite/LiteSecurity.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteSystemHealth.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.healthIntelligenceDrift",
+        "resolved": true,
+        "route": "/api/lite/system-health/configuration-drift",
+        "source_module": "src/lite/LiteSystemHealth.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteSystemHealth.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.healthIntelligenceDependencies",
+        "resolved": true,
+        "route": "/api/lite/system-health/dependencies",
+        "source_module": "src/lite/LiteSystemHealth.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteSystemHealth.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.healthIntelligenceHistory",
+        "resolved": true,
+        "route": "/api/lite/system-health/history",
+        "source_module": "src/lite/LiteSystemHealth.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteSystemHealth.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.healthIntelligenceIncidents",
+        "resolved": true,
+        "route": "/api/lite/system-health/incidents",
+        "source_module": "src/lite/LiteSystemHealth.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteSystemHealth.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.healthIntelligenceDiagnose",
+        "resolved": true,
+        "route": "/api/lite/system-health/incidents/{param}/diagnose",
+        "source_module": "src/lite/LiteSystemHealth.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteSystemHealth.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.healthIntelligenceKnowledge",
+        "resolved": true,
+        "route": "/api/lite/system-health/intelligence",
+        "source_module": "src/lite/LiteSystemHealth.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteSystemHealth.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.healthIntelligencePolicies",
+        "resolved": true,
+        "route": "/api/lite/system-health/policies",
+        "source_module": "src/lite/LiteSystemHealth.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteSystemHealth.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.healthIntelligenceResources",
+        "resolved": true,
+        "route": "/api/lite/system-health/resources",
+        "source_module": "src/lite/LiteSystemHealth.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/LiteSystemHealth.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.healthIntelligenceSummary",
+        "resolved": true,
+        "route": "/api/lite/system-health/summary",
+        "source_module": "src/lite/LiteSystemHealth.jsx",
         "usage": "query"
       },
       {
@@ -2609,6 +2749,175 @@
         "mocked": true,
         "owner": "MSW handler",
         "resolved": true,
+        "route": "/api/lite/system-health/dependencies",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/system-health/history",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/system-health/incidents",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/system-health/incidents/:incidentId",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/system-health/incidents/:incidentId/decisions",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/system-health/incidents/:incidentId/diagnose",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/system-health/incidents/:incidentId/preflight",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/system-health/incidents/:incidentId/repair",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/system-health/intelligence",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/system-health/policies",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/system-health/repairs",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/system-health/resources",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/system-health/summary",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
         "route": "/api/lite/system/activity-summary",
         "source_module": "src/mocks/handlers.js",
         "usage": "mock"
@@ -3577,6 +3886,12 @@
       "/api/lite/security/evidence/{run_id}",
       "/api/lite/security/runs/{run_id}",
       "/api/lite/security/scan",
+      "/api/lite/system-health/apps/{app_id}",
+      "/api/lite/system-health/incidents/{incident_id}",
+      "/api/lite/system-health/incidents/{incident_id}/decisions",
+      "/api/lite/system-health/incidents/{incident_id}/preflight",
+      "/api/lite/system-health/incidents/{incident_id}/repair",
+      "/api/lite/system-health/repairs",
       "/api/lite/system/agent",
       "/api/lite/system/health",
       "/api/lite/system/nats-readiness",
@@ -3588,7 +3903,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "af8f55f4d74adf3441b65e0f339d4b1f13ddd9c062f98274dc3068b2d406e25e",
+    "aggregate_fingerprint": "2f9e6479e37999c19e7261a74baf90e07e539f7eb99aeae8c577a686ece2e063",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3598,21 +3913,21 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
-      "contracts/metadata/documentation-platform.json": "8581a61d27860c218bdb1e23d6b806cc3c8512685be07712338a277b1fee22e2",
+      "contracts/generated/lite-openapi.json": "38baff15a70648585d6011bf868a4d665931203c92b8affdd708f4d70a2f6fd8",
+      "contracts/metadata/documentation-platform.json": "4f70f5af5a679b2c402f663b011bfa1f14050527a3f2cd38d68b9b08b4f9372d",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a",
-      "src/lib/liteApi.js": "fd0665bc72800c06c3de1887bc158b6d0d19b3ba7c5ca8bd7972fe251be80bdd",
+      "src/lib/liteApi.js": "5212a0635b43fd3e37893435a70dddcd7ebf1bf446bffebddf496de9d66a6bea",
       "src/lite/LiteActionProgress.jsx": "880d1bf891c3f76ef42e4565c01b0d2a39a9660a6f2d0ac9f909f0fce458f5a5",
-      "src/lite/LiteApp.jsx": "f04507386c922ebb006573603ab06d8c6c8b53e1f59309b34fff78e6eaa4daaf",
+      "src/lite/LiteApp.jsx": "809ff822ef1b6aa8d570f985a824240f5052d67a964d2cf71f8878ba33010b62",
       "src/lite/LiteAzureHorizon.stories.jsx": "a2ee55a0c896d4e6047164e8d08979241fe08c2a382992c87247cfd823811bf4",
       "src/lite/LiteCatalog.jsx": "8e58b8d66a504532ae3a8f97a63b4cb5b058e172f11c167bb11c2484e02e4902",
       "src/lite/LiteCatalog.stories.jsx": "8e0f8e0a2a4964187ec27a466152bf74b39d2e36184c31801dfc418793e492c8",
       "src/lite/LiteDesignSystemP0.test.jsx": "6bba968bf49b96e65585f33b9a43df4e16b821f33bb6c2764c0c0421a7d43993",
-      "src/lite/LiteDevices.jsx": "35e7bd24fd4ec7495d2572b4501bbf7d67ed0ebefb2fbc695073ef44f7342552",
+      "src/lite/LiteDevices.jsx": "ab0f20d897c5aa26c132c9bd27fe77540fb414923992d56cc039764d8da8bda5",
       "src/lite/LiteDevices.stories.jsx": "1c65d09941343fb754748f57fcb9fb5200037f22f60741727f39d7a9a3d8bcab",
       "src/lite/LiteHelp.jsx": "06af915a9e7f9781ac852804a5d7ab40f5a061c12c8b80b3c888b11b94167a4c",
-      "src/lite/LiteHome.jsx": "4fd06e56c54e696455ede81a5d6385ecb91face8a860a7e2b1ae9a081abfee18",
+      "src/lite/LiteHome.jsx": "e85d67bcacf7fa4b2273d7090b98b477ed191aaf8bff094ddc23cfceacbcd648",
       "src/lite/LiteHome.stories.jsx": "61e87703baafbcbde1f6a730480c5f264eae1af00073962dc95827993dcd66b6",
       "src/lite/LiteHome.test.jsx": "cdc0c9f72794de08810f46903caef1a46e136b06286217ee8b58594c8e26ab5a",
       "src/lite/LiteHomeAzure.test.jsx": "304fb3af4c3a39909f9710801c44c22d690cfb4d91271f3deb1d6ebcbf36d1b1",
@@ -3628,7 +3943,7 @@
       "src/lite/LiteP2.stories.jsx": "f66e0f95c35fb98e41958542676821d9dfd89331e5ebfc3ba7de6a575ea47577",
       "src/lite/LiteP3.stories.jsx": "f6d4a3d8e0e3a6f2b97e3462098fc84c9f99ddbaddeae5844c1ed9eb0926005e",
       "src/lite/LitePrimitives.stories.jsx": "c4b0683344593c453a08ef2c79967c7b52b0d6fda1320dd6f8091452ad714751",
-      "src/lite/LiteRecovery.jsx": "747284285d1a4429c1f5b49a1c1a51153c963cd09c050c1ec4f1d0a17364cb47",
+      "src/lite/LiteRecovery.jsx": "3a170deef2da85044ae3fc4e536b2aaf72cb0e49ed32ebd74a961b01e2707ea9",
       "src/lite/LiteRecovery.stories.jsx": "348e3d81b92b75e3c9c29680ffe65d8f9110cd57fcfc21ef030ffdfcd7f05c3e",
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "c42cd0646545ddd7107a1321e9f565fb70ea8a1215bafb23cbf9dd4a413acf89",
@@ -3637,15 +3952,18 @@
       "src/lite/LiteRules.stories.jsx": "4c671240afa9895c5b7474dde6bc4d22c9a68d3b9157297451f3027c4664050c",
       "src/lite/LiteRulesEnterprise.jsx": "ed437ba7996952a42a79f4f5cf1373f24ceae897c0e8068e1c57b4861f018e19",
       "src/lite/LiteScreenBoundary.jsx": "34c27301bd03cf3f5555738c61c6d5d3b313a772fd08a8115c8508888b53d5e1",
-      "src/lite/LiteSecurity.jsx": "7c4ad63648039c6303b821d5ade9a6ebf8c849ded9542543386bfa67103e2752",
+      "src/lite/LiteSecurity.jsx": "8c316074e2fdfa67405fbafb678c06aad9e97adaeb9c30181a95f95ed5ea4074",
       "src/lite/LiteSecurity.stories.jsx": "447e7d25c5669fa9b1af095afc6bc75bf70c1461bc37b3df9ccc23ac24fd29d0",
       "src/lite/LiteServiceWorkerUpdateNotice.jsx": "450c8d4f9d858bcfd2781e55ae52101c8f37bc57deceb1dbe847c775ffc2288a",
+      "src/lite/LiteSystemHealth.jsx": "dbf58c33f4d9324fda5e3de6b9ab52924195d5066441a0ba6e101d82416fcc55",
+      "src/lite/LiteSystemHealth.stories.jsx": "cd0f4c3089c8df13b20bbdd7698d663cad52cc743689dacaab8f40697ae70fb5",
+      "src/lite/LiteSystemHealth.test.jsx": "2ea14e4f0d44f1878be2b8be53dc0fc5e8321e7190a851f5659a1eb3ca1433a7",
       "src/lite/LiteToastHost.jsx": "4f06f72d896b56b05e9e4e9bded54c077128cff3a52bb6a3ecf2a52a83214995",
       "src/lite/LiteUi.jsx": "45d242fb51c6441659d51face499e55500541ce49e6b50f04710726e777b3b83",
       "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "f093c59d1866f706dbeb2f54472d42e67fcfce624c99bd342c5c5297ce63f4ac",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "5080d0e76c6f70f183bd9202e9259b8c3e2f8905b7527f036ee2e2b5443a28bc"
+      "src/mocks/handlers.js": "213931b23ad569ef94aafda0d98ac5b165c185bb3bdc642458a2c4dcfd50ea06"
     },
     "validation_state": "generated"
   }

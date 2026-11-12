@@ -553,6 +553,54 @@
         "title": "GET /api/lite/status",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-status"
       },
+      "endpoint:GET:/api/lite/system-health/apps/{app_id}": {
+        "title": "GET /api/lite/system-health/apps/{app_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-apps-app-id"
+      },
+      "endpoint:GET:/api/lite/system-health/configuration-drift": {
+        "title": "GET /api/lite/system-health/configuration-drift",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-configuration-drift"
+      },
+      "endpoint:GET:/api/lite/system-health/dependencies": {
+        "title": "GET /api/lite/system-health/dependencies",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-dependencies"
+      },
+      "endpoint:GET:/api/lite/system-health/history": {
+        "title": "GET /api/lite/system-health/history",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-history"
+      },
+      "endpoint:GET:/api/lite/system-health/incidents": {
+        "title": "GET /api/lite/system-health/incidents",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-incidents"
+      },
+      "endpoint:GET:/api/lite/system-health/incidents/{incident_id}": {
+        "title": "GET /api/lite/system-health/incidents/{incident_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-incidents-incident-id"
+      },
+      "endpoint:GET:/api/lite/system-health/incidents/{incident_id}/decisions": {
+        "title": "GET /api/lite/system-health/incidents/{incident_id}/decisions",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-incidents-incident-id-decisions"
+      },
+      "endpoint:GET:/api/lite/system-health/intelligence": {
+        "title": "GET /api/lite/system-health/intelligence",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-intelligence"
+      },
+      "endpoint:GET:/api/lite/system-health/policies": {
+        "title": "GET /api/lite/system-health/policies",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-policies"
+      },
+      "endpoint:GET:/api/lite/system-health/repairs": {
+        "title": "GET /api/lite/system-health/repairs",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-repairs"
+      },
+      "endpoint:GET:/api/lite/system-health/resources": {
+        "title": "GET /api/lite/system-health/resources",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-resources"
+      },
+      "endpoint:GET:/api/lite/system-health/summary": {
+        "title": "GET /api/lite/system-health/summary",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-summary"
+      },
       "endpoint:GET:/api/lite/system/activity-summary": {
         "title": "GET /api/lite/system/activity-summary",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-activity-summary"
@@ -1056,6 +1104,18 @@
       "endpoint:POST:/api/lite/security/scan": {
         "title": "POST /api/lite/security/scan",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-security-scan"
+      },
+      "endpoint:POST:/api/lite/system-health/incidents/{incident_id}/diagnose": {
+        "title": "POST /api/lite/system-health/incidents/{incident_id}/diagnose",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-system-health-incidents-incident-id-diagnose"
+      },
+      "endpoint:POST:/api/lite/system-health/incidents/{incident_id}/preflight": {
+        "title": "POST /api/lite/system-health/incidents/{incident_id}/preflight",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-system-health-incidents-incident-id-preflight"
+      },
+      "endpoint:POST:/api/lite/system-health/incidents/{incident_id}/repair": {
+        "title": "POST /api/lite/system-health/incidents/{incident_id}/repair",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-system-health-incidents-incident-id-repair"
       },
       "endpoint:PUT:/api/lite/enterprise/identity/members/{human_id}": {
         "title": "PUT /api/lite/enterprise/identity/members/{human_id}",
@@ -2469,6 +2529,10 @@
         "title": "identity_username_invalid",
         "url": "../../docs/generated/development/reason-codes.md#identity-username-invalid"
       },
+      "reason:incident_generation_changed": {
+        "title": "incident_generation_changed",
+        "url": "../../docs/generated/development/reason-codes.md#incident-generation-changed"
+      },
       "reason:independent_approval_satisfied": {
         "title": "independent_approval_satisfied",
         "url": "../../docs/generated/development/reason-codes.md#independent-approval-satisfied"
@@ -3369,6 +3433,36 @@
         "schema_url": "../../docs/generated/schemaspy/tables/lite_revision_events.html",
         "title": "lite_revision_events"
       },
+      "table:lite_system_health_diagnoses": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-diagnoses",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_diagnoses.html",
+        "title": "lite_system_health_diagnoses"
+      },
+      "table:lite_system_health_events": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-events",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_events.html",
+        "title": "lite_system_health_events"
+      },
+      "table:lite_system_health_incidents": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-incidents",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_incidents.html",
+        "title": "lite_system_health_incidents"
+      },
+      "table:lite_system_health_observations": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-observations",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_observations.html",
+        "title": "lite_system_health_observations"
+      },
+      "table:lite_system_health_repair_attempts": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-repair-attempts",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_repair_attempts.html",
+        "title": "lite_system_health_repair_attempts"
+      },
+      "table:lite_system_health_repair_denials": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-repair-denials",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_repair_denials.html",
+        "title": "lite_system_health_repair_denials"
+      },
       "table:owner_approved_operations": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#owner-approved-operations",
         "schema_url": "../../docs/generated/schemaspy/tables/owner_approved_operations.html",
@@ -3597,7 +3691,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "2e75e21c8afdff88295c526083730156646476424d45fb9692453d3df0bfdae6",
+    "aggregate_fingerprint": "a05c26472b10326b1b4c35617bc3e70b64f27643f46e65c38412c5c309025603",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3607,8 +3701,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "ba5d78f12a18902f47a5c390e7c2ade4a6cc9188176bdee47cf293eada12c549",
-      "contracts/metadata/documentation-platform.json": "8581a61d27860c218bdb1e23d6b806cc3c8512685be07712338a277b1fee22e2",
+      "contracts/generated/lite-openapi.json": "38baff15a70648585d6011bf868a4d665931203c92b8affdd708f4d70a2f6fd8",
+      "contracts/metadata/documentation-platform.json": "4f70f5af5a679b2c402f663b011bfa1f14050527a3f2cd38d68b9b08b4f9372d",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -3652,6 +3746,8 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql": "af84425c0179761b47ab078dec5d27fec1696742145b80c9b2148ed4c7276dc2",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql": "926786b6f279ee6cf4bbeb5cd92032c6ce04921d19118d0f8f99557264cb58fe",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql": "af04a2a6d07ecf1925c797fb645409ea57a2fa4390c89c95a27b60dd58d79320",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql": "594bda04b30d11c55d165efb547ebe788fdeae68d06fad8b8def8c2818552831",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql": "d43f1bc6fa85609fea10132b21199200d414ba5d0fdd7baaa2591ce2a183c2c8",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },
     "validation_state": "generated"

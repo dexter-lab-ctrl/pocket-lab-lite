@@ -141,6 +141,18 @@ generator_version: 3
 | `GET /api/lite/security/runs/{run_id}` | security | — | get_lite_security_run_api_lite_security_runs__run_id__get | contract-derived |
 | `GET /api/lite/security/summary` | security | LiteSecurity | get_lite_security_summary_api_lite_security_summary_get | contract-derived |
 | `GET /api/lite/status` | home | — | get_lite_status_api_lite_status_get | contract-derived |
+| `GET /api/lite/system-health/apps/{app_id}` | system-health | — | system_health_app_diagnostics_api_lite_system_health_apps__app_id__get | contract-derived |
+| `GET /api/lite/system-health/configuration-drift` | system-health | LiteSystemHealth | system_health_configuration_drift_api_lite_system_health_configuration_drift_get | contract-derived |
+| `GET /api/lite/system-health/dependencies` | system-health | LiteSystemHealth | system_health_dependencies_api_lite_system_health_dependencies_get | contract-derived |
+| `GET /api/lite/system-health/history` | system-health | LiteSystemHealth | system_health_history_api_lite_system_health_history_get | contract-derived |
+| `GET /api/lite/system-health/incidents` | system-health | LiteSystemHealth | system_health_incidents_api_lite_system_health_incidents_get | contract-derived |
+| `GET /api/lite/system-health/incidents/{incident_id}` | system-health | — | system_health_incident_api_lite_system_health_incidents__incident_id__get | contract-derived |
+| `GET /api/lite/system-health/incidents/{incident_id}/decisions` | system-health | — | system_health_decisions_api_lite_system_health_incidents__incident_id__decisions_get | contract-derived |
+| `GET /api/lite/system-health/intelligence` | system-health | LiteSystemHealth | system_health_intelligence_api_lite_system_health_intelligence_get | contract-derived |
+| `GET /api/lite/system-health/policies` | system-health | LiteSystemHealth | system_health_policies_api_lite_system_health_policies_get | contract-derived |
+| `GET /api/lite/system-health/repairs` | system-health | — | system_health_repairs_api_lite_system_health_repairs_get | contract-derived |
+| `GET /api/lite/system-health/resources` | system-health | LiteSystemHealth | system_health_resources_api_lite_system_health_resources_get | contract-derived |
+| `GET /api/lite/system-health/summary` | system-health | LiteHome, LiteSystemHealth | system_health_summary_api_lite_system_health_summary_get | contract-derived |
 | `GET /api/lite/system/activity-summary` | system | LiteHome | get_lite_activity_summary_api_lite_system_activity_summary_get | contract-derived |
 | `GET /api/lite/system/agent` | system | — | get_lite_system_agent_api_lite_system_agent_get | contract-derived |
 | `GET /api/lite/system/health` | system | — | get_lite_system_health_api_lite_system_health_get | contract-derived |
@@ -267,6 +279,9 @@ generator_version: 3
 | `POST /api/lite/security/apps/{app_id}/check` | security | LiteSecurity | check_lite_security_app_api_lite_security_apps__app_id__check_post | contract-derived |
 | `POST /api/lite/security/check` | security | LiteSecurity | check_lite_security_api_lite_security_check_post | contract-derived |
 | `POST /api/lite/security/scan` | security | — | scan_lite_security_api_lite_security_scan_post | contract-derived |
+| `POST /api/lite/system-health/incidents/{incident_id}/diagnose` | system-health | LiteSystemHealth | system_health_diagnose_api_lite_system_health_incidents__incident_id__diagnose_post | contract-derived |
+| `POST /api/lite/system-health/incidents/{incident_id}/preflight` | system-health | — | system_health_preflight_api_lite_system_health_incidents__incident_id__preflight_post | contract-derived |
+| `POST /api/lite/system-health/incidents/{incident_id}/repair` | system-health | — | system_health_repair_api_lite_system_health_incidents__incident_id__repair_post | contract-derived |
 | `PUT /api/lite/enterprise/identity/members/{human_id}` | enterprise | — | update_enterprise_member_api_lite_enterprise_identity_members__human_id__put | contract-derived |
 | `PUT /api/lite/enterprise/identity/mode` | enterprise | — | update_enterprise_mode_api_lite_enterprise_identity_mode_put | contract-derived |
 | `PUT /api/lite/fleet/devices/{device_id}/display-model` | devices | — | update_lite_device_display_model_api_lite_fleet_devices__device_id__display_model_put | contract-derived |
@@ -279,7 +294,7 @@ generator_version: 3
 | --- | --- |
 | LiteApp | GET /api/lite/apps/{app_id}/actions, GET /api/lite/catalog |
 | LiteDevices | GET /api/lite/devices/{device_id}/removal-assessment, GET /api/lite/fleet, GET /api/lite/fleet/devices/{node_id}/restart-agent/status, POST /api/lite/fleet/add-device, POST /api/lite/fleet/devices/{node_id}/restart-agent, POST /api/lite/fleet/remove-device |
-| LiteHome | GET /api/lite/home/activity-cursor, GET /api/lite/home/activity-history, GET /api/lite/system/activity-summary, POST /api/lite/home/activity-cursor/review |
+| LiteHome | GET /api/lite/home/activity-cursor, GET /api/lite/home/activity-history, GET /api/lite/system-health/summary, GET /api/lite/system/activity-summary, POST /api/lite/home/activity-cursor/review |
 | LiteIdentity | GET /api/lite/identity/owner-claim/status, POST /api/lite/identity/login, POST /api/lite/identity/logout, POST /api/lite/identity/owner-claim/consume, POST /api/lite/identity/owner-claim/passkey/options, POST /api/lite/identity/owner-claim/passkey/verify, POST /api/lite/identity/passkeys/registration/options, POST /api/lite/identity/passkeys/registration/verify, POST /api/lite/identity/password, POST /api/lite/identity/recover, POST /api/lite/identity/recovery/regenerate, POST /api/lite/identity/sessions/revoke-others, POST /api/lite/identity/setup, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify, POST /api/lite/owner-operations/clients/pairings/{pairing_id}/approve, POST /api/lite/owner-operations/clients/pairings/{pairing_id}/reject, POST /api/lite/owner-operations/clients/{client_id}/revoke, POST /api/lite/owner-operations/pending/{operation_id}/approve, POST /api/lite/owner-operations/pending/{operation_id}/reject, PUT /api/lite/identity/passkeys/{credential_id} |
 | LiteIdentityEnterprise | POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
 | LiteRecovery | GET /api/lite/recovery/apps, GET /api/lite/recovery/database, GET /api/lite/recovery/details, GET /api/lite/recovery/locations, GET /api/lite/recovery/summary, POST /api/lite/apps/{app_id}/backup, POST /api/lite/recovery/backup, POST /api/lite/recovery/backups/{backup_id}/verify, POST /api/lite/recovery/database/backup, POST /api/lite/recovery/database/backups/{backup_id}/preview, POST /api/lite/recovery/database/backups/{backup_id}/restore, POST /api/lite/recovery/database/backups/{backup_id}/verify, POST /api/lite/recovery/locations/discover, POST /api/lite/recovery/locations/forget, POST /api/lite/recovery/locations/select, POST /api/lite/recovery/restore, POST /api/lite/recovery/restore/preview |
@@ -288,3 +303,4 @@ generator_version: 3
 | LiteRules | GET /api/lite/policy, GET /api/lite/policy/decisions/{decision_id}, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
 | LiteRulesEnterprise | GET /api/lite/fleet, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
 | LiteSecurity | GET /api/lite/security/evidence/{run_id}/summary, GET /api/lite/security/freshness, GET /api/lite/security/history, GET /api/lite/security/profiles/{profile}, GET /api/lite/security/progress, GET /api/lite/security/summary, POST /api/lite/security/apps/{app_id}/check, POST /api/lite/security/check |
+| LiteSystemHealth | GET /api/lite/system-health/configuration-drift, GET /api/lite/system-health/dependencies, GET /api/lite/system-health/history, GET /api/lite/system-health/incidents, GET /api/lite/system-health/intelligence, GET /api/lite/system-health/policies, GET /api/lite/system-health/resources, GET /api/lite/system-health/summary, POST /api/lite/system-health/incidents/{incident_id}/diagnose |
