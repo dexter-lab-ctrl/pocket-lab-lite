@@ -54,6 +54,38 @@ def test_guardian_checks_pm2_pid_without_cli_autostart():
     assert "pm2 ping" not in block
 
 
+def test_guardian_fails_closed_on_ambiguous_pm2_identity():
+    guardian = (SCRIPTS / "lite" / "runtime-guardian.sh").read_text()
+    common = (SCRIPTS / "lib" / "common.sh").read_text()
+    identity = (ROOT / "pocket-lab-final-structure" / "runtime" / "supervisors" / "pocketlab_pm2_identity.py").read_text()
+
+    assert "pocketlab_pm2_identity_preflight" in guardian
+    assert "pocketlab_pm2_identity_check" in guardian
+    assert "refusing automatic recovery" in guardian
+    assert "pm2_ownership_unknown" in guardian
+    assert "POCKETLAB_PM2_IDENTITY_HELPER" in common
+    assert "pm2_duplicate_daemon" in identity
+    assert "pm2_pidfile_owner_mismatch" in identity
+    assert "pm2_ipc_owner_mismatch" in identity
+    assert "pm2_normalization_required" in identity
+
+
+def test_pm2_cli_calls_share_the_existing_mutation_lock():
+    common = (SCRIPTS / "lib" / "common.sh").read_text()
+
+    pm2_start = common.index("pm2() {")
+    pm2_end = common.index("\npm2_with_timeout()", pm2_start)
+    pm2_block = common[pm2_start:pm2_end]
+    timeout_start = common.index("pm2_with_timeout()")
+    timeout_end = common.index("\npm2_process_count()", timeout_start)
+    timeout_block = common[timeout_start:timeout_end]
+
+    assert "pm2_mutation_lock_acquire" in pm2_block
+    assert "pm2_mutation_lock_release" in pm2_block
+    assert "pm2_mutation_lock_acquire" in timeout_block
+    assert "pm2_mutation_lock_release" in timeout_block
+
+
 def test_guardian_compares_running_supervisors_to_current_source_versions():
     guardian = (SCRIPTS / "lite" / "runtime-guardian.sh").read_text()
 

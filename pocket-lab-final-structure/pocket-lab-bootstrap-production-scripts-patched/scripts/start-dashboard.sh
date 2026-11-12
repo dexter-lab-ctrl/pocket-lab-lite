@@ -998,6 +998,7 @@ configure_lite_runtime_limits(){
 pm2_runtime_process(){
   local name="$1"
   shift
+  pocketlab_pm2_identity_preflight || die "PM2 daemon ownership is ambiguous; refusing service convergence reason=${PM2_IDENTITY_REASON:-pm2_ownership_unknown}"
   if is_lite_profile; then
     local version="${POCKETLAB_PM2_SERVICE_VERSION:-}"
     [[ -n "$version" ]] || die "Lite PM2 service $name is missing an exact installed version"
@@ -1124,6 +1125,7 @@ start_pm2_daemons(){
     fi
   fi
   pm2_save_if_nonempty >/dev/null || true
+  pocketlab_pm2_identity_check || die "PM2 daemon ownership is ambiguous after service convergence reason=${PM2_IDENTITY_REASON:-pm2_ownership_unknown}"
 }
 start_caddy_only(){
   SCRIPT_NAME="start-dashboard.sh"

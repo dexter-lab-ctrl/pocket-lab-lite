@@ -2891,6 +2891,24 @@
         "pocket-lab-final-structure"
       ],
       "deprecated_aliases": [],
+      "name": "POCKETLAB_COMMON_SCRIPT_DIR",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
       "name": "POCKETLAB_COMPONENT_ROLE",
       "production": true,
       "required": false,
@@ -13347,6 +13365,42 @@
         "pocket-lab-final-structure"
       ],
       "deprecated_aliases": [],
+      "name": "POCKETLAB_PM2_IDENTITY_HELPER",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh"
+      ],
+      "safe_default": "$POCKETLAB_COMMON_SCRIPT_DIR/../../../runtime/supervisors/pocketlab_pm2_identity.py",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_PM2_IDENTITY_LOG_COOLDOWN_SECONDS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/runtime-guardian.sh"
+      ],
+      "safe_default": "300",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "pocket-lab-final-structure"
+      ],
+      "deprecated_aliases": [],
       "name": "POCKETLAB_PM2_LOG_CEILING_BYTES",
       "production": true,
       "required": false,
@@ -19481,7 +19535,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "0ebd025e80d094e16b58ac148f8f5c00f219b3622b8a424b7515fb3491eac474",
+    "aggregate_fingerprint": "8124ce7c73b5bc9964ced5cba6d0a7bee6b6fb00e7de9c28a1073b1caf9f20fe",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -19670,6 +19724,7 @@
       "pocket-lab-final-structure/runtime/core/state/models.py": "6d5302fae1cecb9e48894b87d17763184fc8f0b2ce50eff7757ee0abe31b05ec",
       "pocket-lab-final-structure/runtime/core/state/repositories.py": "7fa7398cc80a7fd71da065e9baba3ef669f75a72b9335b2baeed8c50544eaab4",
       "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py": "db78fbf5745772bee5f2197911f13d2021d71ec4b19b9710c276e907e7a48852",
+      "pocket-lab-final-structure/runtime/supervisors/pocketlab_pm2_identity.py": "896a4dd144099f419de690f06841275539e4ecf34e0f09c63e972429a6166733",
       "pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_contract.py": "0d751cf8345da21491459869a36ba6f61b7fde1759a0dbe40e24d68dee300520",
       "pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_reconciler.py": "07e97629aea24545b4afe4a5be8490f60d10f708f0640d00954e811cc06fae1d",
       "pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_registry.py": "fd6ff72d2fe3a76f542fc1a065c3b2ef9726974bcc46d9a85b545c5aa3c207e2",
@@ -19712,7 +19767,7 @@
       "scripts/dev/check-lite-production-gate-server-phone.sh": "e44952cc6762156e0906ae64fcb59536a2a7dc361781f47c760caa58c6fc8253",
       "scripts/dev/check-lite-projection-registry-server-phone.sh": "a059c7407c5908c7cae746e2a8dd5800307d41aa4e3f9c929f8551d0557c8dcc",
       "scripts/dev/check-lite-release-validation-server-phone.sh": "1e14649b61aee9c43e01d6fdb1400e6bd1f27b4e58a85cce77eac08c6d127e36",
-      "scripts/dev/check-lite-runtime-resilience-server-phone.sh": "88c11c630abe416f01b997d1c0b8435a31d3e93d1a2f2f09533ca92d426a5d79",
+      "scripts/dev/check-lite-runtime-resilience-server-phone.sh": "347c130b823989d9fd816d67703f0c752861cce1368c3dfe6ac5a15cd2421a83",
       "scripts/dev/check-lite-runtime-resilience.sh": "45fec9d5176267cc76806506d32bdb4b52d07242cbe0088b3b59a0c462403518",
       "scripts/dev/check-lite-security-p2b-reboot-generation-server-phone.sh": "a6e617ec18067dd0b790085689dfa4d0a542d20a58ff4f80e7b6fb88954a707c",
       "scripts/dev/check-lite-security-s6-backend-gate-server-phone.sh": "a4d21ba8ff14564f99d3d06fa512a5999cb39b393658bd387ed22d9327f79b59",

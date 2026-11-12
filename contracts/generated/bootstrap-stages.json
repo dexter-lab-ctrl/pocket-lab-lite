@@ -428,7 +428,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "1376bac58ee179910b072657403ece0ebe41fddbe5aee0e416599a8a8628ece8",
+    "aggregate_fingerprint": "a947f661fa0be5da9878660d1042b1c09e2e3f5d2c8421df3719a28425d4474e",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -450,7 +450,7 @@
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-boot-recovery.sh": "930581d9e9fe3d4359405574367bc60220c93002a99fc55f46d83f4e279045e9",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/seed-gitops-repo.sh": "1905104bdba9ea90b6828be3e3b518bae8aabb2b57c08d6f880b4788984834ed",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh": "7fbb8e7bb70c7105703e0336480ebdf24703eb5da91739df605455a1eeb0bc3f",
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "e13bcc84df3b541a4228c8a74c923cfe5387f1807d6a95ae67e26e1143ad64a9",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "cd08e70a93705f5995175486ba2c434203f856ba77748174ca3e67872499e0cf",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-gitea.sh": "3088ba7778e6c65d20300de6207a435aa941b200433393f9a723c50b4a9bf183",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },
