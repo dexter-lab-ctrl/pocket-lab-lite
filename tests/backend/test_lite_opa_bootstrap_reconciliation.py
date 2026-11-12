@@ -207,10 +207,15 @@ def _prepare_runtime_harness(tmp_path: Path) -> tuple[Path, dict[str, str], Path
     action_log = tmp_path / "actions.log"
     (lib / "common.sh").write_text(
         """#!/usr/bin/env bash
-log() { :; }
+log() { printf '%s\\n' "$*" >&2; }
 die() { printf '%s\\n' \"$*\" >&2; exit 1; }
 require_cmd() { local c; for c in \"$@\"; do command -v \"$c\" >/dev/null 2>&1 || die \"missing $c\"; done; }
-pm2_start_or_restart() { printf 'pm2:%s\\n' \"$1\" >> \"$FAKE_ACTION_LOG\"; return 0; }
+pocketlab_resolve_native_bash() {
+  local candidate=\"${FAKE_NATIVE_BASH:-$(command -v bash)}\"
+  [[ -x \"$candidate\" ]] || return 1
+  printf '%s\\n' \"$candidate\"
+}
+pm2_ensure_versioned_process() { printf 'pm2:%s\\n' \"$1\" >> \"$FAKE_ACTION_LOG\"; return 0; }
 """,
         encoding="utf-8",
     )
@@ -312,8 +317,72 @@ def test_start_dashboard_delegates_opa_startup_to_governed_runner() -> None:
     assert 'bash "$OPA_RUNTIME_START"' in source
     assert '"$OPA_POLICY_PREP" activate "$staged_revision"' not in source
     assert '"$OPA_POLICY_PREP" known-good "$staged_revision"' not in source
-    assert 'pm2_start_or_restart pocket-opa "$(command -v opa)"' in runtime
+    assert 'run_opa_policy_prep stage' in runtime
+    assert 'run_opa_policy_prep activate "$target"' in runtime
+    assert 'run_opa_policy_prep known-good "$target"' in runtime
+    assert '"$OPA_POLICY_PREP" stage' not in runtime
+    assert '"$OPA_POLICY_PREP" activate' not in runtime
+    assert '"$OPA_POLICY_PREP" known-good' not in runtime
+    assert 'pm2_ensure_versioned_process pocket-opa "$(opa_installed_version)"' in runtime
     assert '--interpreter bash -- run --server --addr=127.0.0.1:8181' in runtime
+
+
+def test_opa_policy_preparation_uses_native_bash_when_env_interpreter_is_unavailable(tmp_path: Path) -> None:
+    runtime, env, action_log = _prepare_runtime_harness(tmp_path)
+    prepare = runtime.parent / "prepare-opa-policy.sh"
+    missing_env = tmp_path / "missing-env"
+    prepare.write_text(
+        prepare.read_text(encoding="utf-8").replace(
+            "#!/usr/bin/env bash",
+            f"#!{missing_env} bash",
+            1,
+        ),
+        encoding="utf-8",
+    )
+
+    direct_failed = False
+    try:
+        direct = subprocess.run(
+            [str(prepare), "stage"],
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        direct_failed = True
+    else:
+        direct_failed = direct.returncode != 0
+    assert direct_failed
+
+    result = _run_runtime_under_lock(
+        runtime,
+        env,
+        mode="baseline_bootstrap",
+        staged_revision="plr-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    )
+    assert result.returncode == 0, result.stderr
+    assert action_log.read_text(encoding="utf-8").splitlines() == [
+        "stage",
+        "activate:plr-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "pm2:pocket-opa",
+        "known-good:plr-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    ]
+
+
+def test_opa_policy_preparation_fails_closed_when_native_bash_is_unavailable(tmp_path: Path) -> None:
+    runtime, env, action_log = _prepare_runtime_harness(tmp_path)
+    env["FAKE_NATIVE_BASH"] = str(tmp_path / "missing-bash")
+
+    result = _run_runtime_under_lock(
+        runtime,
+        env,
+        mode="baseline_bootstrap",
+        staged_revision="plr-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    )
+    assert result.returncode != 0
+    assert "Trusted native Bash is unavailable" in result.stderr
+    assert not action_log.exists() or not action_log.read_text(encoding="utf-8").strip()
 
 
 def test_opa_startup_resolver_preserves_personal_baseline_without_durable_state(tmp_path: Path) -> None:
