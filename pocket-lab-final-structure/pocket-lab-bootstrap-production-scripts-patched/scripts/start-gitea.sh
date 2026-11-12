@@ -207,7 +207,7 @@ main() {
   bootstrap_repos "$ui_pass"
   configure_act_runner
   start_act_runner_pm2
-  pm2 save >/dev/null || true
+  pm2_save_if_nonempty >/dev/null || true
   mark_done gitea_ready
   log INFO "Gitea and act_runner are ready and safe to rerun"
 }

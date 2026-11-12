@@ -146,7 +146,7 @@ main() {
     # PM2 daemon recovery, consuming a restart-budget slot without improving
     # the desired state. Keep the dedicated PhotoPrism fault path above for
     # scoped recovery while treating the dashboard pass as authoritative here.
-    pm2 save >/dev/null 2>&1 || true
+    pm2_save_if_nonempty >/dev/null 2>&1 || true
     write_evidence "converged"
     log INFO "Pocket Lab Lite runtime converged"
     return 0

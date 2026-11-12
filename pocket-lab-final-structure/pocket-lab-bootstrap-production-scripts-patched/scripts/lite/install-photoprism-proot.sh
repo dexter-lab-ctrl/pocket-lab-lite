@@ -354,7 +354,7 @@ reconcile_runtime(){
   route="$(route_health)"
   mark_route_health "$route"
   write_summary "succeeded" "PhotoPrism runtime is reconciled." "${version:-detected-or-unknown}" "healthy" "$route"
-  pm2 save >/dev/null 2>&1 || true
+  pm2_save_if_nonempty >/dev/null 2>&1 || true
 }
 
 install_runtime(){

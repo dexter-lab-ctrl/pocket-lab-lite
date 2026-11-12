@@ -104,7 +104,7 @@ TAILSCALE_HOSTNAME=${TAILSCALE_HOSTNAME}
 ENVEOF
 
   if have tailscaled-start; then
-    tailscaled-start || log WARN "tailscaled-start returned non-zero"
+    tailscaled_start || log WARN "tailscaled-start returned non-zero"
   fi
 
   sleep 2

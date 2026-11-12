@@ -71,6 +71,199 @@ log() { printf '[%s] [%s] [%s] %s\n' "$(timestamp)" "${1:-INFO}" "$SCRIPT_NAME" 
 die() { log FATAL "$*" >&2; exit 1; }
 have() { command -v "$1" >/dev/null 2>&1; }
 
+# Native Termux does not provide /usr/bin/env. Several package-managed
+# entrypoints (notably PM2 and tailscaled-start) retain portable env-based
+# shebangs, so executing those files directly fails during Termux:Boot even
+# though the native Node/Bash runtimes are installed. Keep this compatibility
+# boundary in one shared helper rather than teaching each recovery caller a
+# different interpreter workaround.
+pocketlab_realpath() {
+  local path="$1"
+  if [[ -e "$path" || -L "$path" ]]; then
+    readlink -f -- "$path" 2>/dev/null || printf '%s\n' "$path"
+  fi
+}
+
+pocketlab_path_candidate() {
+  local candidate="$1" resolved
+  [[ -n "$candidate" && -e "$candidate" && -x "$candidate" ]] || return 1
+  resolved="$(pocketlab_realpath "$candidate")"
+  [[ -n "$resolved" && -e "$resolved" && -x "$resolved" ]] || return 1
+  printf '%s\n' "$resolved"
+}
+
+pocketlab_native_path_allowed() {
+  local path="$1"
+  if ! is_termux; then
+    return 0
+  fi
+  case "$path" in
+    "$PREFIX"/*|"$HOME/.local/"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+pocketlab_resolve_native_bash() {
+  local candidate resolved
+  for candidate in "${POCKETLAB_NATIVE_BASH:-}" "$PREFIX/bin/bash" "$HOME/.local/bin/bash"; do
+    [[ -n "$candidate" ]] || continue
+    resolved="$(pocketlab_path_candidate "$candidate" 2>/dev/null || true)"
+    [[ -n "$resolved" ]] || continue
+    pocketlab_native_path_allowed "$resolved" || continue
+    printf '%s\n' "$resolved"
+    return 0
+  done
+  return 1
+}
+
+pocketlab_resolve_native_node() {
+  local candidate resolved
+  for candidate in "${POCKETLAB_NATIVE_NODE:-}" "$PREFIX/bin/node" "$HOME/.local/bin/node"; do
+    [[ -n "$candidate" ]] || continue
+    resolved="$(pocketlab_path_candidate "$candidate" 2>/dev/null || true)"
+    [[ -n "$resolved" ]] || continue
+    pocketlab_native_path_allowed "$resolved" || continue
+    printf '%s\n' "$resolved"
+    return 0
+  done
+  if ! is_termux; then
+    candidate="$(PATH="$PATH" type -P node 2>/dev/null || true)"
+    resolved="$(pocketlab_path_candidate "$candidate" 2>/dev/null || true)"
+    [[ -n "$resolved" ]] && { printf '%s\n' "$resolved"; return 0; }
+  fi
+  return 1
+}
+
+pocketlab_resolve_pm2_cli() {
+  local candidate resolved
+  for candidate in "${POCKETLAB_PM2_CLI:-}" "$PREFIX/bin/pm2" "$HOME/.local/bin/pm2"; do
+    [[ -n "$candidate" ]] || continue
+    resolved="$(pocketlab_path_candidate "$candidate" 2>/dev/null || true)"
+    [[ -n "$resolved" ]] || continue
+    pocketlab_native_path_allowed "$resolved" || continue
+    printf '%s\n' "$resolved"
+    return 0
+  done
+  if ! is_termux; then
+    candidate="$(PATH="$PATH" type -P pm2 2>/dev/null || true)"
+    resolved="$(pocketlab_path_candidate "$candidate" 2>/dev/null || true)"
+    [[ -n "$resolved" ]] && { printf '%s\n' "$resolved"; return 0; }
+  fi
+  return 1
+}
+
+pocketlab_pm2_exec() {
+  local node cli
+  node="$(pocketlab_resolve_native_node 2>/dev/null || true)"
+  cli="$(pocketlab_resolve_pm2_cli 2>/dev/null || true)"
+  [[ -n "$node" ]] || { printf '%s\n' "Pocket Lab PM2 requires a trusted native Node interpreter" >&2; return 127; }
+  [[ -n "$cli" ]] || { printf '%s\n' "Pocket Lab PM2 CLI is missing or outside the trusted runtime path" >&2; return 127; }
+  "$node" "$cli" "$@"
+}
+
+# Shell callers source this file, so a function keeps all PM2 operations on
+# the native interpreter. Tests may replace the function with an isolated PM2
+# double after sourcing common.sh.
+pm2() { pocketlab_pm2_exec "$@"; }
+
+pm2_with_timeout() {
+  local seconds="${1:-}" node cli
+  [[ "$seconds" =~ ^[0-9]+$ ]] || { printf '%s\n' "PM2 timeout requires integer seconds" >&2; return 2; }
+  shift
+  # Isolated tests commonly replace pm2 with a shell function. Do not bypass
+  # that test double with an external timeout process.
+  if [[ "$(declare -f pm2 2>/dev/null || true)" != *"pocketlab_pm2_exec"* ]]; then
+    pm2 "$@"
+    return $?
+  fi
+  node="$(pocketlab_resolve_native_node 2>/dev/null || true)"
+  cli="$(pocketlab_resolve_pm2_cli 2>/dev/null || true)"
+  [[ -n "$node" && -n "$cli" ]] || return 127
+  if have timeout; then
+    timeout "$seconds" "$node" "$cli" "$@"
+  else
+    "$node" "$cli" "$@"
+  fi
+}
+
+pm2_process_count() {
+  pm2 jlist 2>/dev/null | python3 -c '
+import json, sys
+try:
+    value = json.load(sys.stdin)
+except Exception:
+    raise SystemExit(1)
+if not isinstance(value, list):
+    raise SystemExit(1)
+print(len(value))
+'
+}
+
+pm2_save_if_nonempty() {
+  local count
+  count="$(pm2_process_count 2>/dev/null || true)"
+  [[ "$count" =~ ^[1-9][0-9]*$ ]] || return 0
+  pm2 save "$@"
+}
+
+pocketlab_resolve_tailscaled_start() {
+  local candidate resolved
+  for candidate in "${POCKETLAB_TAILSCALED_START:-}" "$PREFIX/bin/tailscaled-start" "$HOME/.local/bin/tailscaled-start"; do
+    [[ -n "$candidate" ]] || continue
+    resolved="$(pocketlab_path_candidate "$candidate" 2>/dev/null || true)"
+    [[ -n "$resolved" ]] || continue
+    pocketlab_native_path_allowed "$resolved" || continue
+    printf '%s\n' "$resolved"
+    return 0
+  done
+  if ! is_termux; then
+    candidate="$(PATH="$PATH" type -P tailscaled-start 2>/dev/null || true)"
+    resolved="$(pocketlab_path_candidate "$candidate" 2>/dev/null || true)"
+    [[ -n "$resolved" ]] && { printf '%s\n' "$resolved"; return 0; }
+  fi
+  return 1
+}
+
+tailscaled_start() {
+  local helper bash_path
+  helper="$(pocketlab_resolve_tailscaled_start 2>/dev/null || true)"
+  [[ -n "$helper" ]] || { printf '%s\n' "tailscaled-start is missing or outside the trusted runtime path" >&2; return 127; }
+  if is_termux; then
+    bash_path="$(pocketlab_resolve_native_bash 2>/dev/null || true)"
+    [[ -n "$bash_path" ]] || return 127
+    "$bash_path" "$helper" "$@"
+  else
+    "$helper" "$@"
+  fi
+}
+
+pocketlab_resolve_known_executable() {
+  local candidate="$1" resolved
+  if [[ "$candidate" == */* ]]; then
+    resolved="$(pocketlab_path_candidate "$candidate" 2>/dev/null || true)"
+  elif is_termux; then
+    resolved="$(pocketlab_path_candidate "$PREFIX/bin/$candidate" 2>/dev/null || true)"
+  else
+    resolved="$(PATH="$PATH" type -P "$candidate" 2>/dev/null || true)"
+    resolved="$(pocketlab_path_candidate "$resolved" 2>/dev/null || true)"
+  fi
+  [[ -n "$resolved" ]] || return 1
+  printf '%s\n' "$resolved"
+}
+
+pocketlab_process_has_executable() {
+  local expected pid executable rest proc_executable
+  expected="$(pocketlab_resolve_known_executable "$1" 2>/dev/null || true)"
+  [[ -n "$expected" ]] || return 1
+  while IFS=$' \t' read -r pid executable rest; do
+    [[ "$pid" =~ ^[0-9]+$ ]] || continue
+    [[ "$executable" == "$expected" ]] && return 0
+    proc_executable="$(readlink -f -- "/proc/$pid/exe" 2>/dev/null || true)"
+    [[ "$proc_executable" == "$expected" ]] && return 0
+  done < <(ps -A -o pid=,args= 2>/dev/null || true)
+  return 1
+}
+
 ensure_root_dirs() {
   mkdir -p "$STATE_DIR" "$LOG_DIR" "$RUN_DIR" "$LOCK_DIR" "$MARKER_DIR" "$TMP_ROOT" "$PREFIX/bin" \
     "$POCKET_LAB_BASE_DIR" "$POCKET_LAB_API_DIR"
