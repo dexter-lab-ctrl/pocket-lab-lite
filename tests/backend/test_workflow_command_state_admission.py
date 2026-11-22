@@ -5,7 +5,6 @@ command-state identity. These tests never operate on a production database.
 """
 from __future__ import annotations
 
-import json
 import sqlite3
 
 import pytest
@@ -72,15 +71,35 @@ def test_uncorrelated_worker_event_is_not_a_command(command_writer, kind):
     assert conn.execute("SELECT COUNT(*) FROM workflow_command_state").fetchone()[0] == 0
 
 
-def test_correlated_worker_error_retains_explicit_command_identity(command_writer):
+@pytest.mark.parametrize("kind", ["worker.error", "worker.ignored", "worker.maintenance_deferred"])
+def test_correlated_worker_events_retain_explicit_command_identity(command_writer, kind):
     writer, conn = command_writer
-    writer._record_command(conn, event("worker.error", data={
+    writer._record_command(conn, event(kind, data={
         "command_id": "cmd-1", "subject": "pocketlab.commands.test", "error": "safe-test-error",
     }))
     assert conn.execute("SELECT command_id FROM workflow_command_state").fetchone()[0] == "cmd-1"
 
 
-@pytest.mark.parametrize("kind", ["command.queued", "command.succeeded", "command.failed", "command.dead_lettered"])
+def test_generic_worker_diagnostic_with_command_fields_is_not_a_command(command_writer):
+    writer, conn = command_writer
+    writer._record_command(conn, event("worker.diagnostic", data={
+        "command_id": "copied-command-id", "command_subject": "pocketlab.commands.test",
+        "message": "diagnostic metadata is not a lifecycle transition",
+    }))
+    assert conn.execute("SELECT COUNT(*) FROM workflow_command_state").fetchone()[0] == 0
+
+
+@pytest.mark.parametrize("kind", [
+    "command.queued",
+    "command.received",
+    "command.worker_claimed",
+    "command.running",
+    "command.succeeded",
+    "command.failed",
+    "command.retry_scheduled",
+    "command.deferred",
+    "command.dead_lettered",
+])
 def test_command_transitions_remain_persisted(command_writer, kind):
     writer, conn = command_writer
     writer._record_command(conn, event(kind, subject="pocketlab.commands.test",

@@ -60,6 +60,15 @@ def _utc_now() -> str:
     return deps.now_utc_iso()
 
 
+_CORRELATED_WORKER_COMMAND_EVENTS = frozenset(
+    {
+        "worker.error",
+        "worker.ignored",
+        "worker.maintenance_deferred",
+    }
+)
+
+
 class _WorkflowDeferred(RuntimeError):
     """Internal safe-boundary deferral; the event is returned to the inbox."""
 
@@ -303,11 +312,16 @@ class WorkflowProjectionProcess:
         # Only real command transitions belong in command-state persistence.
         # Worker liveness and unrelated errors may carry a generic data.subject,
         # trace_id, or event id; none is sufficient to invent a command record.
-        # Preserve explicitly correlated worker errors and fleet requests.
+        # Preserve only worker events whose event contract is explicitly
+        # command-related. A generic diagnostic carrying copied command fields
+        # must not amplify SQLite command-state writes.
         explicit_command_id = str(data.get("command_id") or "").strip()
         command_transition = event_type.startswith("command.")
         fleet_request = event_type == "fleet.node_command_requested"
-        correlated_event = bool(explicit_command_id and command_subject)
+        correlated_event = (
+            event_type in _CORRELATED_WORKER_COMMAND_EVENTS
+            and bool(explicit_command_id and command_subject)
+        )
         if not (command_transition or fleet_request or correlated_event):
             return
         if not command_subject and not (command_transition or fleet_request):
