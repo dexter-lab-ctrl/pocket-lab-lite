@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: bc1ebc24d4c03e257b336a767a69e30f2eff7a7db5aa9f7030934db58a307453
+source_fingerprint: cbaef8623075e0a630e8713dcb1c87dfd314bc9d60488cc480a6f7b4b6d3d3ce
 schema_revision: 1
 validation_status: generated
 ---
@@ -173,6 +173,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_COMMAND_MISSING_TARGET_GRACE_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py |
 | `POCKETLAB_COMMAND_RETRY_BASE_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py |
 | `POCKETLAB_COMMAND_RETRY_MAX_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py |
+| `POCKETLAB_COMMON_SCRIPT_DIR` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh |
 | `POCKETLAB_COMPONENT_ROLE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_runtime_services.py |
 | `POCKETLAB_CONTROL_ORIGIN` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_CONTROL_PROJECTION_START_DELAY_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py |
@@ -729,6 +730,8 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_PM2_BIN` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_runtime.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py, scripts/dev/lite/run-isolated-runtime-qualification.py |
 | `POCKETLAB_PM2_CLI` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh |
 | `POCKETLAB_PM2_HOME` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-isolated-runtime-qualification.py |
+| `POCKETLAB_PM2_IDENTITY_HELPER` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh |
+| `POCKETLAB_PM2_IDENTITY_LOG_COOLDOWN_SECONDS` | configuration | 300 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/runtime-guardian.sh |
 | `POCKETLAB_PM2_LOG_CEILING_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_contract.py |
 | `POCKETLAB_PM2_LOG_CLEANUP_INTERVAL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_contract.py |
 | `POCKETLAB_PM2_LOG_FILE_CEILING_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_contract.py |

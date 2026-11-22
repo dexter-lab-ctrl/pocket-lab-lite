@@ -89,6 +89,10 @@ pm2_home="${PM2_HOME:-$HOME/.pm2}"
 pm2_pid="$(cat "$pm2_home/pm2.pid" 2>/dev/null || true)"
 [[ "$pm2_pid" =~ ^[0-9]+$ ]] || fail "PM2 pid file does not contain a numeric PID"
 kill -0 "$pm2_pid" >/dev/null 2>&1 || fail "PM2 daemon PID $pm2_pid is not running"
+if ! pocketlab_pm2_identity_check; then
+  fail "PM2 daemon ownership check failed: ${PM2_IDENTITY_REASONS:-pm2_ownership_unknown}"
+fi
+echo "PASS canonical PM2 daemon ownership and IPC identity"
 echo "PASS PM2 daemon running"
 
 api_stable=0
