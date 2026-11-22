@@ -226,6 +226,12 @@ pocketlab_pm2_identity_preflight() {
 
 pocketlab_pm2_identity_check() {
   local jlist_file rc=0
+  # PM2's read-only CLI can start a daemon when no live identity is present.
+  # Establish the process/pidfile identity without invoking PM2 first, and
+  # refuse both absent and ambiguous ownership before collecting jlist data.
+  if ! pocketlab_pm2_identity_preflight || [[ "${PM2_IDENTITY_STATE:-unknown}" != "ok" ]]; then
+    return 1
+  fi
   mkdir -p "$TMP_ROOT"
   jlist_file="$(mktemp "$TMP_ROOT/pm2-identity.XXXXXX")" || return 1
   if ! pm2 jlist >"$jlist_file" 2>/dev/null; then

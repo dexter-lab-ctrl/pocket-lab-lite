@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import shlex
+import subprocess
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -92,6 +94,38 @@ def test_pm2_cli_calls_share_the_existing_mutation_lock():
     assert "pm2_mutation_lock_release" in pm2_block
     assert "pm2_mutation_lock_acquire" in timeout_block
     assert "pm2_mutation_lock_release" in timeout_block
+
+
+def test_read_only_pm2_identity_check_never_invokes_cli_without_a_live_daemon(tmp_path):
+    common = SCRIPTS / "lib" / "common.sh"
+    marker = tmp_path / "pm2-called"
+    script = "\n".join(
+        (
+            "set -Eeuo pipefail",
+            f"export HOME={shlex.quote(str(tmp_path))}",
+            f"export PREFIX={shlex.quote(str(tmp_path / 'prefix'))}",
+            f"export STATE_DIR={shlex.quote(str(tmp_path / 'state'))}",
+            f"export TMP_ROOT={shlex.quote(str(tmp_path / 'tmp'))}",
+            "export POCKETLAB_NATIVE_NODE=/bin/sh",
+            f"source {shlex.quote(str(common))}",
+            "pm2() {",
+            f"  printf '%s\\n' \"$*\" > {shlex.quote(str(marker))}",
+            "  printf '%s\\n' '[]'",
+            "}",
+            "if pocketlab_pm2_identity_check; then",
+            "  exit 1",
+            "fi",
+            f"test \"${{PM2_IDENTITY_STATE:-unknown}}\" = absent",
+            f"test ! -e {shlex.quote(str(marker))}",
+        )
+    )
+    result = subprocess.run(
+        ["bash", "-c", script],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
 
 
 def test_guardian_compares_running_supervisors_to_current_source_versions():
