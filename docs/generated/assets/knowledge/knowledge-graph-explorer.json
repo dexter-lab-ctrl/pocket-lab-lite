@@ -8955,7 +8955,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:277",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:284",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:830",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:302",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:311",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1434",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:43",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:678"
@@ -9707,7 +9707,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:906",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:381"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:407"
       ],
       "type": "subject"
     },
@@ -15038,6 +15038,17 @@
       "name": "tests/backend/test_vault_operations.py",
       "source_refs": [
         "tests/backend/test_vault_operations.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_workflow_command_state_admission.py",
+      "name": "tests/backend/test_workflow_command_state_admission.py",
+      "source_refs": [
+        "tests/backend/test_workflow_command_state_admission.py"
       ],
       "type": "test"
     },
@@ -24976,7 +24987,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:381"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:407"
       ],
       "id": "rel:1e7d32348e151f96",
       "source": "component:projection-subprocesses",
@@ -73345,7 +73356,7 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:302"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:311"
       ],
       "id": "rel:f14dbfbaac305a1d",
       "source": "component:projection-subprocesses",
