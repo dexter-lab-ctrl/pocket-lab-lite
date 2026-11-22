@@ -17982,6 +17982,7 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh",
+        "tests/backend/test_lite_boot_recovery.py",
         "tests/backend/test_lite_termux_native_execution.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"

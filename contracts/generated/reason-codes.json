@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "ac7dd5acee59ab7bda6ed9909568a7049ebc5a78393b3b97282ece93914a80ea",
+    "aggregate_fingerprint": "aa210ebf78300d123c8ecd1723bed0f8ce884876c06746e326d6245c3dffab66",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -154,7 +154,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/runtime_diagnostics.py": "249951b8609c4d19e51a57493756152a064dc6bf4480bd0ea78606b068072925",
       "pocket-lab-final-structure/runtime/api_fastapi/services/runtime_snapshot_store.py": "e7bad3a33a6afad9c5613ddc8e75826ba62fd0f150bb142576c828883c964221",
       "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py": "8b38469e72f0e45e0acadcdb7021566866a34e3554e3ba8dec5162d13195350f",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py": "febd4bf86527f2bcbe9a85b5a960ff6a095905c91cc10dfdd799b2c69b19c8e6",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py": "4c04d20f82755df4a13c98a441b190ba94223a8251942608aab210ea544c8825",
       "pocket-lab-final-structure/runtime/api_fastapi/services/workload_admission.py": "c2345e2eff89f36e46051437dd607f9b975b4c7c9ba711603dd7bb4e450c157f",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },

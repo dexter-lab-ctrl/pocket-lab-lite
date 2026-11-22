@@ -44,7 +44,7 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:277",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:284",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:830",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:302",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:311",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1434",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:43",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:678"
@@ -2234,7 +2234,7 @@
       "security_classification": "internal metadata",
       "source_owner": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:906",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:381"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:407"
       ],
       "tests": [],
       "ui_state": "FastAPI projection only; browser never subscribes to NATS"

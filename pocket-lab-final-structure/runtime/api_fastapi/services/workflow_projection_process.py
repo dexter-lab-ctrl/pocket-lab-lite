@@ -60,6 +60,15 @@ def _utc_now() -> str:
     return deps.now_utc_iso()
 
 
+_CORRELATED_WORKER_COMMAND_EVENTS = frozenset(
+    {
+        "worker.error",
+        "worker.ignored",
+        "worker.maintenance_deferred",
+    }
+)
+
+
 class _WorkflowDeferred(RuntimeError):
     """Internal safe-boundary deferral; the event is returned to the inbox."""
 
@@ -300,9 +309,26 @@ class WorkflowProjectionProcess:
         event_type = str(event.get("type") or "")
         data = event.get("data") if isinstance(event.get("data"), dict) else {}
         command_subject = str(data.get("command_subject") or data.get("subject") or (subject if subject.startswith("pocketlab.commands.") else ""))
-        if not command_subject and not event_type.startswith("command."):
+        # Only real command transitions belong in command-state persistence.
+        # Worker liveness and unrelated errors may carry a generic data.subject,
+        # trace_id, or event id; none is sufficient to invent a command record.
+        # Preserve only worker events whose event contract is explicitly
+        # command-related. A generic diagnostic carrying copied command fields
+        # must not amplify SQLite command-state writes.
+        explicit_command_id = str(data.get("command_id") or "").strip()
+        command_transition = event_type.startswith("command.")
+        fleet_request = event_type == "fleet.node_command_requested"
+        correlated_event = (
+            event_type in _CORRELATED_WORKER_COMMAND_EVENTS
+            and bool(explicit_command_id and command_subject)
+        )
+        if not (command_transition or fleet_request or correlated_event):
             return
-        command_id = str(data.get("command_id") or data.get("job_id") or data.get("run_id") or event.get("trace_id") or event.get("id") or "")
+        if not command_subject and not (command_transition or fleet_request):
+            return
+        if event_type in {"worker.heartbeat", "worker.started"}:
+            return
+        command_id = str(explicit_command_id or (data.get("job_id") if command_transition or fleet_request else "") or (data.get("run_id") if command_transition or fleet_request else "") or (event.get("trace_id") if command_transition or fleet_request else "") or (event.get("id") if command_transition or fleet_request else "") or "")
         if not command_id:
             return
         now = str(event.get("time") or _utc_now())

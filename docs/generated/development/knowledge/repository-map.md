@@ -16,7 +16,7 @@ generator_version: 3
 
 > Need physical repository structure, execution ownership, Uses/Used-by, symbols, and bounded impact? Open the separate [Codebase Map](codebase-map.md). This Repository Map retains reverse source→Knowledge semantics.
 
-<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>21</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>110</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>24</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>334</strong><small>mapped sources</small></div></div>
+<div class="pl-repo-summary"><div><span>architecture</span><strong>1</strong><small>mapped sources</small></div><div><span>contracts</span><strong>21</strong><small>mapped sources</small></div><div><span>docs</span><strong>3</strong><small>mapped sources</small></div><div><span>pocket-lab-final-structure</span><strong>110</strong><small>mapped sources</small></div><div><span>runbooks</span><strong>5</strong><small>mapped sources</small></div><div><span>scripts</span><strong>7</strong><small>mapped sources</small></div><div><span>src</span><strong>24</strong><small>mapped sources</small></div><div><span>tasks</span><strong>1</strong><small>mapped sources</small></div><div><span>tests</span><strong>335</strong><small>mapped sources</small></div></div>
 
 ## architecture
 
@@ -422,6 +422,7 @@ generator_version: 3
 <article class="pl-repository-card"><code>tests/backend/test_security.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/backend/test_security.py</span></div></article>
 <article class="pl-repository-card"><code>tests/backend/test_state_migration.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/backend/test_state_migration.py</span></div></article>
 <article class="pl-repository-card"><code>tests/backend/test_vault_operations.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/backend/test_vault_operations.py</span></div></article>
+<article class="pl-repository-card"><code>tests/backend/test_workflow_command_state_admission.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/backend/test_workflow_command_state_admission.py</span></div></article>
 <article class="pl-repository-card"><code>tests/backend/test_workflow_projection_process_isolation.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/backend/test_workflow_projection_process_isolation.py</span></div></article>
 <article class="pl-repository-card"><code>tests/backend/test_workflows.py</code><div class="pl-chip-list"><span class="pl-chip">test:tests/backend/test_workflows.py</span></div></article>
 <article class="pl-repository-card"><code>tests/dev/browser-resolver.test.mjs</code><div class="pl-chip-list"><span class="pl-chip">test:tests/dev/browser-resolver.test.mjs</span></div></article>
