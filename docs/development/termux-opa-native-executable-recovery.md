@@ -26,9 +26,10 @@ revision proof. It adds one shared, fail-closed resolver that:
 - unwraps only a literal absolute-path `exec ... "$@"` hand-off to a trusted
   managed payload;
 - launches a script wrapper with its resolved interpreter only when no literal
-  native payload is available;
+  native payload is available, after checking canonical ownership and
+  non-writable group/other permissions; and
 - rejects missing payloads, unexpected formats, path escapes, and resolution
-  cycles; and
+  cycles, and rejects executable or interpreter replacement after resolution;
 - passes a native payload to PM2 with the repository's existing
   `interpreter: "none"` contract.
 

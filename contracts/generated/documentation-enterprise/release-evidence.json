@@ -403,7 +403,7 @@
   "fingerprints": {
     "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
     "asyncapi": "a1e88b7738f226a9c384bf1c562cd96c5863d96fd16088c0ddb2de828cf0fd67",
-    "documentation": "a16eb4d9f23038b983da42a4e5ed164162b3cfa72d41194eb8e5cfc3768506dd",
+    "documentation": "ec11ae61824190c53d741d18a2f47ea3ff2c27dfccf562c3a6846f9844d2a0e1",
     "openapi": "38baff15a70648585d6011bf868a4d665931203c92b8affdd708f4d70a2f6fd8",
     "operational_health": "aec7541d4a33d25f00eac9e13b5bbf03fcd516bd9437b4d7dbb068e71689b59e"
   },

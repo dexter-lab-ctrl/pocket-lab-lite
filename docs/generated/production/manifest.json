@@ -32,10 +32,10 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "85aa453f62ac831a1c79c1573308c76f09cd08327c5b0b0bab7029c39452a342",
+  "source_fingerprint": "9b121648622db93ba5997d925bd47394d7d7648ee0c300c2e9548123866a5b37",
   "source_fingerprints": {
     ".github/workflows/docs-security-supply-chain.yml": "b5ce9661a2c0673d9e9c2a3be9b19e958b4046543816728556a581a2f338fa27",
-    ".github/workflows/lite-quality.yml": "3da2b99fc807aed2f2bcb4370b905b077c25d5dce1c65e3f887c101653fbfef0",
+    ".github/workflows/lite-quality.yml": "632cb4ca2948b5910e5e7ece6a7e0fee6a614c6ea6e3d1d8d7e0dd0c894afb82",
     ".github/workflows/release-dist.yml": "80f86c31e76d5b3924829b42c8a19e8dff2aac84e35983bacd8d3ff7a9d0d48e",
     ".storybook/main.js": "1ce5636bf52c4e6f059bc5131295af8a829d1a0f0529a0974ae7f6cf5f0bea4c",
     ".storybook/preview.jsx": "0c5b91d3aac0a122aec8a0994bbc6043dbb8216c84b26bbc420654e3f794b795",

@@ -409,6 +409,72 @@ def test_opa_resolution_accepts_trusted_wrapper_interpreter_on_ubuntu(tmp_path: 
     assert fields[2].endswith("/bash")
 
 
+def test_opa_resolution_accepts_owner_owned_termux_script_fallback_without_executing_it(tmp_path: Path) -> None:
+    wrapper = tmp_path / "prefix" / "bin" / "opa-wrapper"
+    marker = tmp_path / "resolver-executed"
+    wrapper.parent.mkdir(parents=True, exist_ok=True)
+    wrapper.write_text(
+        "#!/usr/bin/env bash\n"
+        f"touch {marker}\n",
+        encoding="utf-8",
+    )
+    wrapper.chmod(0o755)
+    result = _resolve_opa_candidate(tmp_path, wrapper, termux=True)
+    assert result.returncode == 0, result.stderr
+    fields = result.stdout.strip().split("\t")
+    assert fields[0] == "script"
+    assert fields[1] == str(wrapper)
+    assert fields[2].endswith("/bash")
+    assert len(fields[3]) == 129
+    assert not marker.exists()
+
+
+def test_opa_resolution_rejects_group_writable_termux_script_fallback(tmp_path: Path) -> None:
+    wrapper = tmp_path / "prefix" / "bin" / "opa-wrapper"
+    wrapper.parent.mkdir(parents=True, exist_ok=True)
+    wrapper.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    wrapper.chmod(0o775)
+    result = _resolve_opa_candidate(tmp_path, wrapper, termux=True)
+    assert result.returncode != 0
+
+
+def test_opa_execute_resolution_rejects_executable_replacement(tmp_path: Path) -> None:
+    candidate = tmp_path / "prefix" / "bin" / "opa"
+    candidate.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2("/bin/true", candidate)
+    candidate.chmod(0o755)
+    marker = tmp_path / "replacement-executed"
+    script = f"""
+set -Eeuo pipefail
+source {COMMON!s}
+resolution="$(pocketlab_resolve_opa_command)"
+printf '#!/usr/bin/env bash\\ntouch {marker}\\n' > "$POCKETLAB_OPA_BIN"
+chmod 0755 "$POCKETLAB_OPA_BIN"
+if pocketlab_execute_resolution "$resolution" version; then
+  exit 1
+fi
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "POCKETLAB_OPA_BIN": str(candidate),
+            "TERMUX_VERSION": "1",
+            "HOME": str(tmp_path / "home"),
+            "PREFIX": str(tmp_path / "prefix"),
+        }
+    )
+    result = subprocess.run(
+        ["bash", "-c", script],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert not marker.exists()
+
+
 def _write_termux_opa_wrapper(tmp_path: Path, target: Path) -> Path:
     prefix = tmp_path / "prefix"
     wrapper = prefix / "bin" / "opa"

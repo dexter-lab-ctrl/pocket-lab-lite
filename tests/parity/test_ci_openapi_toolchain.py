@@ -120,6 +120,12 @@ def test_ci_installs_playwright_managed_chromium_for_browser_tests() -> None:
     assert npm_ci_index < browser_install_index
     assert browser_install_index < storybook_index
 
+
+def test_quick_docs_does_not_reinstall_playwright_with_os_dependencies() -> None:
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+    quick_docs = workflow.split("\n  quick-and-docs:\n", 1)[1]
+    assert quick_docs.count("npx playwright install --with-deps chromium") == 1
+
 def test_supply_chain_ci_installs_documentation_python_dependencies() -> None:
     workflow = Path(
         ".github/workflows/docs-security-supply-chain.yml"

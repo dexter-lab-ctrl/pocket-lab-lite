@@ -72,9 +72,10 @@ print(match.group(1) if match else "")
 
 start_opa_process() {
   local resolution="$(pocketlab_resolve_opa_command 2>/dev/null || true)"
-  local mode executable interpreter
-  IFS=$'\t' read -r mode executable interpreter <<<"$resolution"
+  local mode executable interpreter fingerprint
+  IFS=$'\t' read -r mode executable interpreter fingerprint <<<"$resolution"
   [[ -n "$resolution" && -n "$executable" ]] || die "OPA is missing or outside the trusted runtime path"
+  pocketlab_execute_resolution "$resolution" version >/dev/null 2>&1 || die "OPA executable changed during startup resolution"
   if [[ "$mode" == "native" ]]; then
     pm2_ensure_versioned_process pocket-opa "$(opa_installed_version)" "$executable" \
       -- run --server --addr=127.0.0.1:8181 \
