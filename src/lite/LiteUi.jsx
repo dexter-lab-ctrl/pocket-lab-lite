@@ -977,7 +977,7 @@ export function LiteActionRow({ label, value = '', summary = '', action, disable
       </div>
       <div className="lite-action-row-trailing">
         {value ? <span>{friendlyLiteText(value)}</span> : null}
-        {action?.label ? <LiteButton onClick={action.onClick} disabled={Boolean(action.disabled)} busy={Boolean(action.busy)} disabledReason={disabledReason || action.disabledReason || ''} tone={action.tone || 'secondary'} ariaLabel={action.ariaLabel || action.label}>{action.label}</LiteButton> : null}
+        {action?.label ? <LiteButton onClick={action.onClick} haptic={Boolean(action.haptic)} disabled={Boolean(action.disabled)} busy={Boolean(action.busy)} disabledReason={disabledReason || action.disabledReason || ''} tone={action.tone || 'secondary'} ariaLabel={action.ariaLabel || action.label}>{action.label}</LiteButton> : null}
       </div>
     </div>
   );
