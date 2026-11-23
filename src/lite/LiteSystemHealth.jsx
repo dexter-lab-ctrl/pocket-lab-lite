@@ -186,8 +186,18 @@ export default function LiteSystemHealth({ onNavigate }) {
     staleTime: 120_000, pollingMode: 'relaxed',
   });
   const current = useMemo(() => systemHealthPresentation(summaryQuery.data, summaryQuery.savedStateOnly || summaryQuery.backendReachable === false), [summaryQuery.data, summaryQuery.savedStateOnly, summaryQuery.backendReachable]);
-  const items = incidentsQuery.data?.items || [];
-  const selected = items.find((item) => item.incident_id === selectedIncident) || null;
+  const items = Array.isArray(incidentsQuery.data?.items) ? incidentsQuery.data.items : [];
+  const readOnly = summaryQuery.savedStateOnly || summaryQuery.backendReachable === false;
+  const groups = useMemo(() => groupHealthIncidents(items, readOnly), [items, readOnly]);
+  const counts = healthCounts(summaryQuery.data, groups, readOnly);
+  const selectedQuery = useLiteQuery({
+    queryKey: ['lite', 'system-health', 'incident', selectedIncident],
+    path: selectedIncident ? '/api/lite/system-health/incidents/' + selectedIncident : '/api/lite/system-health/incidents',
+    queryFn: () => liteApi.healthIntelligenceIncident(selectedIncident),
+    enabled: open && Boolean(selectedIncident) && !readOnly,
+    staleTime: 90_000, pollingMode: 'relaxed',
+  });
+  const selected = items.find((item) => item.incident_id === selectedIncident) || selectedQuery.data || null;
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get('incident');
@@ -212,7 +222,7 @@ export default function LiteSystemHealth({ onNavigate }) {
     }
   };
   const diagnose = async (item = selected) => {
-    if (!item || diagnosing || summaryQuery.savedStateOnly || !summaryQuery.backendReachable) return;
+    if (!item || diagnosing || readOnly || incidentEvidenceState(item) !== 'current') return;
     setDiagnosing(true); setDiagnosisError(false);
     try { setDiagnosis(await liteApi.healthIntelligenceDiagnose(item.incident_id)); }
     catch { setDiagnosisError(true); setDiagnosis(null); }
@@ -227,69 +237,136 @@ export default function LiteSystemHealth({ onNavigate }) {
     }
   };
   return <div className="lite-system-health-page" data-system-health-page="true">
-    <PageHeader eyebrow="Self-hosted workspace" title="System Health" description="Understand problems, recovery and service readiness."
+    <PageHeader eyebrow="Self-hosted workspace" title="System Health" description="Your workspace health — what needs attention and what to do next."
       actions={<LiteRefreshButton scope="system-health" refresh={() => { summaryQuery.refresh(); incidentsQuery.refresh(); }}
         refreshing={summaryQuery.refreshing || incidentsQuery.refreshing} error={summaryQuery.error} cacheStatus={summaryQuery.cacheStatus} />} />
-    <GlassCard as="section" className={'lite-system-health-hero is-' + current.state} aria-label="System Health overview">
+    <GlassCard as="section" className={'lite-system-health-hero is-' + current.state} aria-label="System Health overview"
+      data-health-overview={current.state}>
       <span className="lite-system-health-kicker"><HeartPulse size={19} aria-hidden="true" /> Health overview</span>
       <h2>{current.title}</h2><p>{current.detail}</p>
-      <div className="lite-system-health-metrics">
-        <div><strong>{summaryQuery.data?.freshness === 'current' ? summaryQuery.data?.healthy_services ?? '—' : '—'}</strong><span>Confirmed healthy</span></div>
-        <div><strong>{summaryQuery.data?.active_problems ?? '—'}</strong><span>Active problems</span></div>
-        <div><strong>{summaryQuery.data?.automatic_repairs_running ?? '—'}</strong><span>Automatic repairs</span></div>
+      <div className="lite-system-health-metrics" aria-label="Health evidence counts">
+        <div><strong>{counts.healthy}</strong><span>Healthy signals</span></div>
+        <div><strong>{counts.current}</strong><span>Current concerns</span></div>
+        <div><strong>{counts.saved}</strong><span>Older unresolved records</span></div>
       </div>
-      <p className="lite-system-health-muted" role="status">{current.state === 'saved' ? 'Showing saved information; live status not confirmed.' : summaryQuery.data?.freshness === 'current' ? 'Based on recent persisted backend observations.' : 'Waiting for trustworthy health observations.'}</p>
+      <p className="lite-system-health-muted" role="status">
+        {current.state === 'saved' ? 'Saved information only · Live state not confirmed.' :
+          summaryQuery.data?.freshness === 'current' ? 'Based on recent persisted backend observations.' :
+            'Current observations are not sufficient to confirm health.'}
+      </p>
     </GlassCard>
-    <section className="lite-system-health-problems" aria-label="Active System Health problems">
-      <div className="lite-system-health-section-head"><h2>Active Problems</h2><span>{items.length ? items.length + ' reported' : 'No confirmed list'}</span></div>
-      {incidentsQuery.error ? <StateSurface tone="degraded" title="Problems are unavailable" description="Pocket Lab could not load the current incident list." /> :
-        !incidentsQuery.data && incidentsQuery.loading ? <StateSurface tone="empty" title="Loading recent problems" description="Reading persisted health records." /> :
-        items.length ? items.slice(0, 4).map(item => <SystemHealthIncidentCard key={item.incident_id} incident={item}
-          onDiagnose={viewIncident} onDetails={(i) => viewIncident(i, 'incidents')} />) :
-        <StateSurface tone="empty" title={current.state === 'ready' ? 'No problems observed' : 'No current problem records'} description={current.state === 'ready' ? 'Current saved health signals did not identify a problem.' : 'No incident records are available yet. Unknown is not healthy.'} />}
+    <section className="lite-system-health-problems" aria-label="Current System Health concerns">
+      <div className="lite-system-health-section-head"><h2>What needs attention</h2><span>{typeof counts.current === 'number' ? counts.current + ' current' : 'Not confirmed'}</span></div>
+      {incidentsQuery.error ? <StateSurface tone="degraded" title="Concerns unavailable" description="Pocket Lab could not load incident records." /> :
+        !incidentsQuery.data && incidentsQuery.loading ? <StateSurface tone="empty" title="Loading health records" description="Reading persisted health observations." /> :
+        groups.current.length ? groups.current.slice(0, 4).map(item => <SystemHealthIncidentCard key={item.incident_id} incident={item}
+          onDiagnose={viewIncident} onDetails={(i) => viewIncident(i, 'diagnostics')} />) :
+        <StateSurface tone="empty" title={current.state === 'ready' ? 'No current concerns observed' : 'No current concern confirmed'}
+          description={current.state === 'ready' ? 'Recent observations are healthy; this does not confirm a repair.'
+            : 'Saved concerns and unknown health are reviewed separately. No current issue is confirmed here.'} />}
+      {groups.current.length > 4 ? <LiteButton haptic tone="secondary" onClick={() => { setSection('incidents'); setOpen(true); }}>
+        Review more concerns</LiteButton> : null}
     </section>
+    {(groups.saved.length > 0 || counts.saved > 0 || current.state === 'saved') && <GlassCard as="section" className="lite-system-health-history-preview"
+      data-health-saved-preview="true">
+      <div className="lite-system-health-section-head"><h2>Earlier observations</h2><Clock3 size={19} aria-hidden="true" /></div>
+      <p>{typeof counts.saved === 'number' && counts.saved > 0 ? counts.saved + ' unresolved record(s) need a fresh check.' :
+        'Previously saved information is available. Current conditions have not been confirmed.'}</p>
+      <LiteButton haptic tone="secondary" onClick={() => { setSection('incidents'); setOpen(true); }}>Review saved concerns <ChevronRight size={16} aria-hidden="true" /></LiteButton>
+    </GlassCard>}
     <GlassCard as="section" className="lite-system-health-history-preview">
-      <div className="lite-system-health-section-head"><h2>Recovery activity</h2><Clock3 size={19} aria-hidden="true" /></div>
-      <p>{summaryQuery.data?.recent_resolutions?.length ? 'Recent problems were observed healthy. This does not prove a repair succeeded.' : 'No verified repair outcomes are available yet.'}</p>
-      <LiteButton tone="secondary" onClick={() => { setSection('history'); setOpen(true); }}>Recovery history <ChevronRight size={16} aria-hidden="true" /></LiteButton>
+      <div className="lite-system-health-section-head"><h2>Recovery &amp; History</h2><Clock3 size={19} aria-hidden="true" /></div>
+      <p>{summaryQuery.data?.recent_resolutions?.length
+        ? 'Earlier problems were observed healthy. A healthy observation alone does not prove that a repair succeeded.'
+        : 'Review recorded recovery activity and available history. No unverified repair is presented as successful.'}</p>
+      <LiteButton haptic tone="secondary" onClick={() => { setSection('history'); setOpen(true); }}>Review history <ChevronRight size={16} aria-hidden="true" /></LiteButton>
     </GlassCard>
-    <LiteButton tone="primary" className="lite-system-health-manage-button" onClick={() => { setSection(null); setOpen(true); }}>Manage System Health</LiteButton>
+    <LiteButton haptic tone="primary" className="lite-system-health-manage-button" onClick={() => { setSection(null); setOpen(true); }}>Manage System Health</LiteButton>
     <LiteDetailsPanel open={open} onClose={close} variant="home" className="lite-system-health-manage" desktopGeometry={geometry} mobileSnap bodyRef={navigation.bodyRef}
       bodyClassName="lite-home-workspace-details-scroll lite-home-panel-scroll" title="System Health Manage"
       description="Current evidence, diagnosis and reviewed recovery paths.">
       <HomeGroupedSections groups={SECTIONS} section={section} defaultSection="overview" onSectionChange={setSection}
-        navigation={navigation} title="System Health">
-        {(!section || section === 'overview') ? <section aria-label="Health overview details">
-          <LiteActionRow label="Health state" value={summaryQuery.data?.status || 'Unknown'} summary={current.detail} />
-          <LiteActionRow label="Reported services" value={String(summaryQuery.data?.observed_services ?? 'Unknown')} />
-          <LiteActionRow label="Evidence freshness" value={summaryQuery.data?.freshness || 'Unavailable'} />
-          <LiteActionRow label="Unknown services" value={String(summaryQuery.data?.unknown_services ?? 'Unknown')} />
+        navigation={navigation} title="System Health" haptic>
+        {(!section || section === 'overview') ? <section className="lite-system-health-manage-section" aria-label="Health overview details">
+          <div className="lite-system-health-manage-intro"><h3>{current.title}</h3><p>{current.detail}</p></div>
+          <LiteActionRow label="Current concerns" value={String(counts.current)} summary="Supported by recent observations only." />
+          <LiteActionRow label="Saved unresolved concerns" value={String(counts.saved)} summary="Still unresolved, but not currently confirmed." />
+          <LiteActionRow label="Healthy observations" value={String(counts.healthy)} />
+          <LiteActionRow label="Evidence freshness" value={summaryQuery.data?.freshness === 'current' ? 'Recent' :
+            summaryQuery.data?.freshness === 'stale' ? 'Saved' : 'Not confirmed'} />
+          <p className="lite-system-health-muted">Historical concerns are never silently treated as resolved. This view does not run repairs.</p>
         </section> : null}
-        {section === 'incidents' ? <section><EvidenceRows rows={items} />{selected ? <LiteButton onClick={() => setSection('diagnostics')}>Open diagnosis <ChevronRight size={16} /></LiteButton> : null}</section> : null}
+        {section === 'incidents' ? <section className="lite-system-health-manage-section">
+          <h3>Current confirmed concerns</h3>
+          {groups.current.length ? groups.current.slice(0, 30).map(item => <LiteActionRow key={item.incident_id}
+            label={componentLabel(item.source, item.target_id)} value={item.severity === 'critical' ? 'Critical' : 'Review needed'}
+            summary={item.summary || 'Current evidence needs review.'} onClick={() => viewIncident(item, 'diagnostics')} />)
+            : <StateSurface tone="empty" title="No current concern confirmed" description="Unknown and saved evidence are not treated as current problems." />}
+          <h3>Saved concerns requiring revalidation</h3>
+          {groups.saved.length ? groups.saved.slice(0, 30).map(item => <LiteActionRow key={item.incident_id}
+            label={componentLabel(item.source, item.target_id)} value="Recheck needed"
+            summary="Previously reported, but current status is not established."
+            onClick={() => viewIncident(item, 'diagnostics')} />)
+            : <p className="lite-system-health-muted">No older unresolved records in the loaded page.</p>}
+          {incidentsQuery.data?.next_offset != null ? <p className="lite-system-health-muted">Additional historical records exist. Use the bounded history view for more records.</p> : null}
+        </section> : null}
         {section === 'diagnostics' ? <DetailContent incident={selected} diagnosis={diagnosis} diagnosing={diagnosing} diagnosisError={diagnosisError}
-          onDiagnose={() => diagnose(selected)} onOpenArea={onNavigate ? (destination) => { close(); onNavigate(destination); } : null} /> : null}
-        {section === 'repairs' ? <section><p className="lite-system-health-muted">Automatic recovery remains owned by existing guardians and watchdogs. No additional repair executor is enabled.</p>
-          {(policies.data?.repair_catalog || []).map((item) => <LiteActionRow key={item.operation_id} label={item.operation_id} value={item.risk_class}
-            summary={item.summary + ' ' + item.availability} />)}</section> : null}
-        {section === 'history' ? <section><EvidenceRows rows={history.data?.items || []} />
-          {(history.data?.repairs || []).length ? <p>Saved repair attempts: {history.data.repairs.length}</p> : <p className="lite-system-health-muted">No verified System Health repair attempts are recorded.</p>}</section> : null}
-        {section === 'dependencies' ? <section className="lite-system-health-dependencies"><p className="lite-system-health-muted">Relationships describe reviewed contracts, not live connectivity.</p>
-          {(dependencies.data?.edges || []).map((edge, i) => <LiteActionRow key={i} label={edge.upstream + ' → ' + edge.downstream}
-            value={edge.authority === 'verified_contract' ? 'Contract' : 'Inferred'} summary={edge.summary} />)}
-          <EvidenceRows rows={dependencies.data?.nodes || []} /></section> : null}
-        {section === 'resources' ? <section><p className="lite-system-health-muted">Predictive forecast: {resources.data?.forecast === 'not_enough_information' ? 'Not enough information' : 'Unavailable'}.</p><EvidenceRows rows={resources.data?.signals || []} /></section> : null}
-        {section === 'policies' ? <section><LiteActionRow label="Automatic repair" value="Existing supervisors only" summary="New System Health automatic operations remain disabled." />
-          <LiteActionRow label="Sensitive operations" value="Confirmation required" summary="Database restore and identity changes never auto-execute." />
-          <EvidenceRows rows={(policies.data?.repair_catalog || []).map(item => ({ target_id: item.operation_id, status: item.availability }))} /></section> : null}
-        {section === 'drift' ? <section>
-          <p className="lite-system-health-muted">Unexpected process states require review; an observed mismatch does not authorize overwriting configuration.</p>
-          <EvidenceRows rows={(drift.data?.observations || []).map(item => ({ target_id: item.component, status: item.observed_status, summary: item.explanation }))} />
-          <LiteActionRow label="Automatic configuration reconciliation" value="Disabled" summary="Existing runtime owner and authorization must confirm any repair." />
+          onDiagnose={() => diagnose(selected)} readOnly={readOnly} onOpenArea={onNavigate ? (destination) => { close(); onNavigate(destination); } : null} /> : null}
+        {section === 'repairs' ? <section className="lite-system-health-manage-section">
+          <p className="lite-system-health-muted">Existing supervisors and protected recovery workflows own execution. This workspace has no new repair executor.</p>
+          {(policies.data?.repair_catalog || []).map((item) => <LiteActionRow key={item.operation_id}
+            label={recoveryOperationLabel(item.operation_id)}
+            value={recoveryAvailabilityLabel(item.availability)}
+            summary={item.availability === 'guided_existing_flow' ? 'Review the existing controls and their current eligibility.' :
+              item.availability === 'externally_managed' ? 'Managed by an existing guardian; this button does not execute a repair.' :
+                item.availability === 'never_automatic' ? 'Use the protected preview and confirmation workflow.' :
+                  'No action is currently available.'} />)}
         </section> : null}
-        {section === 'details' ? <section><LiteActionRow label="Diagnosis engine" value="Deterministic" />
-          <LiteActionRow label="Optional AI assistance" value="Unavailable" summary="No cloud AI dependency is required." />
-          <LiteActionRow label="Recurring components" value={String(intelligence.data?.recurring_components?.length ?? 'Unknown')} />
-          <p className="lite-system-health-muted">Only sanitized incidents and safe status metadata are displayed. Raw backend troubleshooting records remain private.</p></section> : null}
+        {section === 'history' ? <section className="lite-system-health-manage-section">
+          <h3>Previous observations</h3>
+          <EvidenceRows rows={history.data?.items || []} emptyMessage="No previous incident records are available." />
+          <h3>Recorded repair attempts</h3>
+          {(history.data?.repairs || []).length ? history.data.repairs.slice(0, 30).map((item, i) =>
+            <LiteActionRow key={item.repair_id || i} label={recoveryOperationLabel(item.operation_id)}
+              value={item.execution_state === 'failed' ? 'Repair failed' : item.execution_state === 'blocked' ? 'Repair blocked' :
+                item.verification_state === 'verified' && item.execution_state === 'completed' ? 'Repair verified' :
+                  'Outcome not verified'}
+              summary={item.safe_summary || 'Recorded attempt. Execution and verification must be independently confirmed.'} />)
+            : <p className="lite-system-health-muted">No verified System Health repair attempts are recorded.</p>}
+        </section> : null}
+        {section === 'dependencies' ? <section className="lite-system-health-manage-section">
+          <p className="lite-system-health-muted">These relationships describe documented dependencies, not proof of live connectivity.</p>
+          {(dependencies.data?.edges || []).map((edge, i) => <LiteActionRow key={i}
+            label={componentLabel(edge.upstream, edge.upstream) + ' → ' + componentLabel(edge.downstream, edge.downstream)}
+            value={edge.authority === 'verified_contract' ? 'Documented relationship' : 'Possible relationship'}
+            summary={edge.summary} />)}
+          <EvidenceRows rows={dependencies.data?.nodes || []} />
+        </section> : null}
+        {section === 'resources' ? <section className="lite-system-health-manage-section">
+          <p className="lite-system-health-muted">A reliable trend forecast is not available from this evidence.</p>
+          <EvidenceRows rows={resources.data?.signals || []} />
+        </section> : null}
+        {section === 'policies' ? <section className="lite-system-health-manage-section">
+          <LiteActionRow label="Automatic recovery" value="Existing guardians only" summary="No new System Health automatic operation is enabled." />
+          <LiteActionRow label="Sensitive operations" value="Protected" summary="Data restoration and identity changes require governed steps." />
+          {(policies.data?.repair_catalog || []).map(item => <LiteActionRow key={item.operation_id}
+            label={recoveryOperationLabel(item.operation_id)} value={recoveryAvailabilityLabel(item.availability)} />)}
+        </section> : null}
+        {section === 'drift' ? <section className="lite-system-health-manage-section">
+          <p className="lite-system-health-muted">A mismatch in observed process state does not prove configuration drift or authorize changing settings.</p>
+          <EvidenceRows rows={(drift.data?.observations || []).map(item => ({ ...item, target_id: item.component, source: 'processes', status: item.observed_status }))} />
+          <LiteActionRow label="Automatic configuration changes" value="Not available" summary="The runtime owner and authorization must approve any future repair." />
+        </section> : null}
+        {section === 'details' ? <section className="lite-system-health-manage-section">
+          <LiteActionRow label="Cause assessment" value="Deterministic" />
+          <LiteActionRow label="Cloud AI" value="Not required" summary="This experience relies on backend-owned observations." />
+          <LiteActionRow label="Recurring components" value={String(intelligence.data?.recurring_components?.length ?? 'Not confirmed')} />
+          <details className="lite-system-health-disclosure">
+            <summary>Evidence and technical identifiers</summary>
+            <p>Source IDs, incident generations and evidence revisions are retained in the backend and shown in individual issue details for troubleshooting.</p>
+          </details>
+          <p className="lite-system-health-muted">Raw evidence, logs, credentials and private paths remain backend-only.</p>
+        </section> : null}
       </HomeGroupedSections>
     </LiteDetailsPanel>
   </div>;
