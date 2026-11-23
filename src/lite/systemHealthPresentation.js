@@ -69,7 +69,8 @@ export function healthStatusLabel(value) {
     unavailable: 'Unavailable', unhealthy: 'Needs attention',
     offline: 'Offline', stopped: 'Stopped', critical: 'Critical',
     errored: 'Error reported', failed: 'Failed', warning: 'Review needed',
-    resolved: 'Observed healthy', stale: 'Saved observation',
+    resolved: 'Observed healthy', current: 'Recent observation', saved: 'Saved observation',
+    stale: 'Saved observation',
     unknown: 'Not confirmed', blocked: 'Blocked',
     agent_stopped_without_supervisor: 'Agent stopped, no supervisor',
   };
