@@ -15,9 +15,7 @@ const outputDir = resolve(process.env.LITE_SYSTEM_HEALTH_ANDROID_OUTPUT_DIR || `
 let browser;
 let page;
 let context;
-const requests = [];
-const responses = [];
-const requestFailures = [];
+const pageObservations = new Map();
 
 function fail(message) {
   throw new Error(String(message));
@@ -109,36 +107,68 @@ async function main() {
   const candidateOrigin = new URL(baseUrl).origin;
   const existingCandidatePages = context.pages().filter((candidatePage) => candidatePage.url().startsWith(candidateOrigin));
   page = existingCandidatePages[existingCandidatePages.length - 1] || await context.newPage();
-  await activateCandidatePage();
-  page.on('request', (request) => {
-    const path = safePath(request.url());
-    if (path.startsWith('/api/lite/system-health/')) requests.push({ method: request.method(), path });
-  });
-  page.on('response', (response) => {
-    const path = safePath(response.url());
-    if (!path.startsWith('/api/lite/system-health/')) return;
-    const headers = response.headers();
-    responses.push({ method: response.request().method(), path, status: response.status(), candidate_sha: headers['x-pocket-lab-candidate-sha'] || '' });
-  });
-  page.on('requestfailed', (request) => {
-    const path = safePath(request.url());
-    if (path.startsWith('/api/lite/')) requestFailures.push({ method: request.method(), path, failure: 'request_failed' });
-  });
+  const candidatePages = [...new Set([...existingCandidatePages, page])];
 
-  await page.goto(new URL('/?pocketlab_qualification_bootstrap=1', base).toString(), { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  await page.evaluate(async () => {
-    const registrations = await navigator.serviceWorker?.getRegistrations?.() || [];
-    await Promise.all(registrations.map((registration) => registration.unregister()));
-    if ('caches' in window) {
-      const names = await caches.keys();
-      await Promise.all(names.map((name) => caches.delete(name)));
+  function observeCandidatePage(candidatePage) {
+    if (pageObservations.has(candidatePage)) return pageObservations.get(candidatePage);
+    const observation = { requests: [], responses: [], requestFailures: [] };
+    pageObservations.set(candidatePage, observation);
+    candidatePage.on('request', (request) => {
+      const path = safePath(request.url());
+      if (path.startsWith('/api/lite/system-health/')) observation.requests.push({ method: request.method(), path });
+    });
+    candidatePage.on('response', (response) => {
+      const path = safePath(response.url());
+      if (!path.startsWith('/api/lite/system-health/')) return;
+      const headers = response.headers();
+      observation.responses.push({ method: response.request().method(), path, status: response.status(), candidate_sha: headers['x-pocket-lab-candidate-sha'] || '' });
+    });
+    candidatePage.on('requestfailed', (request) => {
+      const path = safePath(request.url());
+      if (path.startsWith('/api/lite/')) observation.requestFailures.push({ method: request.method(), path, failure: 'request_failed' });
+    });
+    return observation;
+  }
+
+  // Android Chrome can retain several exact-origin candidate tabs. A tab can
+  // expose truthful DOM and manifest responses while remaining a background
+  // target that never starts the app's API requests. Try every retained
+  // candidate target, preferring the most recently exposed one, and keep the
+  // target that actually renders System Health in the foreground.
+  let manifest;
+  let selectedObservation;
+  let selectedCandidate = false;
+  let lastCandidateError;
+  for (const candidatePage of [...candidatePages].reverse()) {
+    page = candidatePage;
+    observeCandidatePage(candidatePage);
+    try {
+      await activateCandidatePage(candidatePage);
+      await candidatePage.goto(new URL('/?pocketlab_qualification_bootstrap=1', base).toString(), { waitUntil: 'domcontentloaded', timeout: 30_000 });
+      await candidatePage.evaluate(async () => {
+        const registrations = await navigator.serviceWorker?.getRegistrations?.() || [];
+        await Promise.all(registrations.map((registration) => registration.unregister()));
+        if ('caches' in window) {
+          const names = await caches.keys();
+          await Promise.all(names.map((name) => caches.delete(name)));
+        }
+      });
+      const candidateManifest = await proveManifest(expectedCommit);
+      const landing = await candidatePage.goto(new URL('/?screen=system-health', base).toString(), { waitUntil: 'domcontentloaded', timeout: 30_000 });
+      if (!landing?.ok() || landing.headers()['x-pocket-lab-candidate-sha'] !== expectedCommit) fail('Android System Health page did not prove the exact candidate SHA');
+      if (await candidatePage.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content') !== expectedCommit) fail('Android System Health metadata did not prove the exact candidate SHA');
+      await waitForSystemHealth();
+      manifest = candidateManifest;
+      selectedObservation = pageObservations.get(candidatePage);
+      selectedCandidate = true;
+      break;
+    } catch (error) {
+      lastCandidateError = error;
     }
-  });
-  const manifest = await proveManifest(expectedCommit);
-  const landing = await page.goto(new URL('/?screen=system-health', base).toString(), { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  if (!landing?.ok() || landing.headers()['x-pocket-lab-candidate-sha'] !== expectedCommit) fail('Android System Health page did not prove the exact candidate SHA');
-  if (await page.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content') !== expectedCommit) fail('Android System Health metadata did not prove the exact candidate SHA');
-  await waitForSystemHealth();
+  }
+  if (!selectedCandidate) {
+    fail(`Android Chrome candidate tabs did not expose a foreground System Health page: ${String(lastCandidateError?.message || lastCandidateError || 'unknown target error').slice(0, 240)}`);
+  }
   await page.screenshot({ path: resolve(outputDir, 'system-health-landing.png'), fullPage: true });
 
   const incident = page.locator('[data-health-incident]').first();
@@ -156,6 +186,7 @@ async function main() {
   if (!(await fixButton.isDisabled())) fail('System Health Fix action was not disabled');
   await page.screenshot({ path: resolve(outputDir, 'system-health-diagnosis.png'), fullPage: true });
 
+  const { requests, responses, requestFailures } = selectedObservation;
   const forbiddenWrites = requests.filter((item) => item.method === 'POST' && (item.path.endsWith('/repair') || item.path.endsWith('/preflight')));
   if (forbiddenWrites.length) fail('Android System Health UI attempted an unauthorized repair or preflight write');
   if (requestFailures.length) fail('Android System Health API request failed');

@@ -199,3 +199,6 @@ def test_physical_system_health_qualifier_activates_android_target():
     source = UI_SCRIPT.read_text(encoding="utf-8")
     assert "bringToFront" in source
     assert "Page.bringToFront" in source
+    assert "context.pages()" in source
+    assert "candidatePages" in source
+    assert "foreground System Health page" in source
