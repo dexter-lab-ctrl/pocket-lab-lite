@@ -11,7 +11,7 @@ import { useLitePanelSectionNavigation } from './hooks/useLitePanelSectionNaviga
 import HomeGroupedSections from './components/HomeGroupedSections.jsx';
 import './components/azureHome.css';
 import './components/homeCommand.css';
-import { componentLabel, healthStatusLabel, healthTimestamp, healthCounts, groupHealthIncidents, incidentEvidenceState, recoveryDestination, recoveryOperationLabel, recoveryAvailabilityLabel, INCIDENT_STATE_LABELS, systemHealthPresentation } from './systemHealthPresentation.js';
+import { componentLabel, safeTechnicalIdentifier, healthStatusLabel, healthTimestamp, healthCounts, groupHealthIncidents, incidentEvidenceState, recoveryDestination, recoveryOperationLabel, recoveryAvailabilityLabel, INCIDENT_STATE_LABELS, systemHealthPresentation } from './systemHealthPresentation.js';
 import './systemHealth.css';
 
 const SECTIONS = Object.freeze([
@@ -36,7 +36,7 @@ const SECTIONS = Object.freeze([
 ]);
 export { systemHealthPresentation };
 
-export function SystemHealthIncidentCard({ incident, onDiagnose, onDetails, saved = false }) {
+export function SystemHealthIncidentCard({ incident, onDiagnose, saved = false }) {
   const evidenceState = incidentEvidenceState(incident, saved);
   const older = evidenceState !== 'current';
   return <GlassCard as="article" className="lite-system-health-incident" data-health-incident={incident.incident_id}
@@ -57,7 +57,6 @@ export function SystemHealthIncidentCard({ incident, onDiagnose, onDetails, save
     </p>
     <div className="lite-system-health-actions">
       <LiteButton haptic tone="secondary" onClick={() => onDiagnose(incident)}>Review issue</LiteButton>
-      <LiteButton haptic tone="secondary" onClick={() => onDetails(incident)}>View details</LiteButton>
     </div>
   </GlassCard>;
 }
@@ -124,12 +123,12 @@ function DetailContent({ incident, diagnosis, diagnosing, diagnosisError, onDiag
     <details className="lite-system-health-disclosure">
       <summary>Advanced technical details</summary>
       <dl className="lite-system-health-tech-facts">
-        <div><dt>Incident ID</dt><dd>{incident.incident_id}</dd></div>
-        <div><dt>Source</dt><dd>{incident.source}</dd></div>
-        <div><dt>Target ID</dt><dd>{incident.target_id}</dd></div>
+        <div><dt>Incident ID</dt><dd>{safeTechnicalIdentifier(incident.incident_id)}</dd></div>
+        <div><dt>Source</dt><dd>{safeTechnicalIdentifier(incident.source)}</dd></div>
+        <div><dt>Target ID</dt><dd>{safeTechnicalIdentifier(incident.target_id)}</dd></div>
         <div><dt>Generation</dt><dd>{incident.generation}</dd></div>
-        <div><dt>Evidence revision</dt><dd>{incident.evidence_revision || 'Not available'}</dd></div>
-        <div><dt>Observation freshness</dt><dd>{incident.observation_freshness || incident.evidence_freshness || 'Unknown'}</dd></div>
+        <div><dt>Evidence revision</dt><dd>{safeTechnicalIdentifier(String(incident.evidence_revision || ''))}</dd></div>
+        <div><dt>Observation freshness</dt><dd>{healthStatusLabel(incident.observation_freshness || incident.evidence_freshness)}</dd></div>
       </dl>
     </details>
     <p className="lite-system-health-muted">Only sanitized metadata is displayed. No repair executor is enabled here; checking a cause cannot restart a service, overwrite settings or restore data.</p>
@@ -260,7 +259,7 @@ export default function LiteSystemHealth({ onNavigate }) {
       {incidentsQuery.error ? <StateSurface tone="degraded" title="Concerns unavailable" description="Pocket Lab could not load incident records." /> :
         !incidentsQuery.data && incidentsQuery.loading ? <StateSurface tone="empty" title="Loading health records" description="Reading persisted health observations." /> :
         groups.current.length ? groups.current.slice(0, 4).map(item => <SystemHealthIncidentCard key={item.incident_id} incident={item}
-          onDiagnose={viewIncident} onDetails={(i) => viewIncident(i, 'diagnostics')} />) :
+          onDiagnose={viewIncident} />) :
         <StateSurface tone="empty" title={current.state === 'ready' ? 'No current concerns observed' : 'No current concern confirmed'}
           description={current.state === 'ready' ? 'Recent observations are healthy; this does not confirm a repair.'
             : 'Saved concerns and unknown health are reviewed separately. No current issue is confirmed here.'} />}
