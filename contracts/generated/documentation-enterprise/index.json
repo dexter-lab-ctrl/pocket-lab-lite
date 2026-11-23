@@ -21547,8 +21547,8 @@
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
           "scripts/dev/lite/run-isolated-runtime-qualification.py",
           "tests/backend/test_lite_opa_bootstrap_reconciliation.py",
-          "tests/backend/test_lite_policy_lifecycle_p2_2.py",
-          "tests/backend/test_opa_policy_staging.py"
+          "tests/backend/test_lite_pm2_version_projection.py",
+          "tests/backend/test_lite_policy_lifecycle_p2_2.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -49445,7 +49445,7 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "a1e88b7738f226a9c384bf1c562cd96c5863d96fd16088c0ddb2de828cf0fd67",
-        "documentation": "f6d2cbfa6708f04694e6ce31555cb3d1411abbf60ac97b819f4c3bb360c1111f",
+        "documentation": "a16eb4d9f23038b983da42a4e5ed164162b3cfa72d41194eb8e5cfc3768506dd",
         "openapi": "38baff15a70648585d6011bf868a4d665931203c92b8affdd708f4d70a2f6fd8",
         "operational_health": "aec7541d4a33d25f00eac9e13b5bbf03fcd516bd9437b4d7dbb068e71689b59e"
       },
@@ -125105,5 +125105,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "695ad66b7118815aa28201d12b6b29d2052076baf77c2ee63803f5eebccd7004"
+  "source_fingerprint": "cc42ca3936bece896594ba6539b56755a2863f39f5645b313bb66563fc4dfddd"
 }

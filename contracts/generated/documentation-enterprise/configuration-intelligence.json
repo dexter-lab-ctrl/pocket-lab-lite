@@ -19389,8 +19389,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
         "tests/backend/test_lite_opa_bootstrap_reconciliation.py",
-        "tests/backend/test_lite_policy_lifecycle_p2_2.py",
-        "tests/backend/test_opa_policy_staging.py"
+        "tests/backend/test_lite_pm2_version_projection.py",
+        "tests/backend/test_lite_policy_lifecycle_p2_2.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

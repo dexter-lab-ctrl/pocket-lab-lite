@@ -412,20 +412,26 @@ def test_opa_version_resolver_extracts_version_from_combined_output(tmp_path: Pa
     start = source.index("opa_installed_version() {")
     end = source.index("start_opa_process() {", start)
     resolver = source[start:end]
+    fake_opa = tmp_path / "opa"
+    fake_opa.write_text(
+        """#!/bin/bash
+if [[ "${1:-}" == "version" ]]; then
+  printf 'Version: 1.19.0\\nBuild Commit: test\\n' >&2
+  exit 0
+fi
+exit 1
+""",
+        encoding="utf-8",
+    )
+    fake_opa.chmod(0o755)
     shell = f"""
 set -Eeuo pipefail
 export POCKET_LAB_ALLOW_NON_TERMUX=1
 export HOME="$TEST_HOME"
 export PREFIX="$TEST_PREFIX"
+export POCKETLAB_OPA_BIN="$TEST_OPA"
 source "$COMMON_PATH"
 {resolver}
-opa() {{
-  if [[ "${{1:-}}" == "version" ]]; then
-    printf 'Version: 1.19.0\\nBuild Commit: test\\n' >&2
-    return 0
-  fi
-  return 1
-}}
 opa_installed_version
 """
     env = os.environ.copy()
@@ -433,6 +439,7 @@ opa_installed_version
         {
             "TEST_HOME": str(tmp_path / "home"),
             "TEST_PREFIX": str(tmp_path / "prefix"),
+            "TEST_OPA": str(fake_opa),
             "COMMON_PATH": str(COMMON),
         }
     )

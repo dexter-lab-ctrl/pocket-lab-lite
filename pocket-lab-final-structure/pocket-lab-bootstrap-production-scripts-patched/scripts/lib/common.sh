@@ -244,13 +244,6 @@ pocketlab_execute_resolution() {
 
 pocketlab_opa_exec() {
   local resolution
-  # Isolated shell tests may provide an `opa` function without installing a
-  # filesystem candidate.  Live runtime callers always resolve the candidate
-  # from the installed executable and wrapper contract below.
-  if [[ "$(type -t opa 2>/dev/null || true)" == "function" ]]; then
-    opa "$@"
-    return $?
-  fi
   resolution="$(pocketlab_resolve_opa_command 2>/dev/null || true)"
   [[ -n "$resolution" ]] || { printf '%s\n' 'OPA is missing or outside the trusted runtime path.' >&2; return 127; }
   pocketlab_execute_resolution "$resolution" "$@"
