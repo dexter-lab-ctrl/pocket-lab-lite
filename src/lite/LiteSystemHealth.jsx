@@ -300,13 +300,13 @@ export default function LiteSystemHealth({ onNavigate }) {
           <h3>Current confirmed concerns</h3>
           {groups.current.length ? groups.current.slice(0, 30).map(item => <LiteActionRow key={item.incident_id}
             label={componentLabel(item.source, item.target_id)} value={item.severity === 'critical' ? 'Critical' : 'Review needed'}
-            summary={item.summary || 'Current evidence needs review.'} onClick={() => viewIncident(item, 'diagnostics')} />)
+            summary={item.summary || 'Current evidence needs review.'} action={{ label: 'Review issue', haptic: true, onClick: () => viewIncident(item, 'diagnostics') }} />)
             : <StateSurface tone="empty" title="No current concern confirmed" description="Unknown and saved evidence are not treated as current problems." />}
           <h3>Saved concerns requiring revalidation</h3>
           {groups.saved.length ? groups.saved.slice(0, 30).map(item => <LiteActionRow key={item.incident_id}
             label={componentLabel(item.source, item.target_id)} value="Recheck needed"
             summary="Previously reported, but current status is not established."
-            onClick={() => viewIncident(item, 'diagnostics')} />)
+            action={{ label: 'Review issue', haptic: true, onClick: () => viewIncident(item, 'diagnostics') }} />)
             : <p className="lite-system-health-muted">No older unresolved records in the loaded page.</p>}
           {incidentsQuery.data?.next_offset != null ? <p className="lite-system-health-muted">Additional historical records exist. Use the bounded history view for more records.</p> : null}
         </section> : null}
