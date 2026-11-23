@@ -7,6 +7,7 @@ with existing supervisors/agents/workers, not this module.
 from __future__ import annotations
 
 import hashlib
+import re
 import uuid
 import sqlite3
 from datetime import datetime, timezone
@@ -16,7 +17,7 @@ from contextlib import closing
 from ..db.connection import begin_immediate, connection, open_fast_read_connection
 
 ACTIVE = frozenset({"detected", "diagnosing", "diagnosed", "repair_available", "repairing", "verifying", "blocked", "failed", "manual_attention_required"})
-UNHEALTHY = frozenset({"errored", "read_only", "recovery_required", "watch", "elevated", "storage_pressure", "degraded", "unavailable", "unhealthy", "critical", "offline", "stopped", "missing", "errored", "failed", "attention", "pressure"})
+UNHEALTHY = frozenset({"errored", "read_only", "recovery_required", "watch", "elevated", "storage_pressure", "degraded", "unavailable", "unhealthy", "critical", "offline", "stopped", "missing", "errored", "failed", "attention", "pressure", "agent_stopped_without_supervisor"})
 HEALTHY = frozenset({"normal", "healthy", "online", "ready", "running", "connected"})
 UNKNOWN = frozenset({"unknown", "stale", "unverified", "pending", "unsupported", "not_ready"})
 OBSERVATION_MAX_AGE_SECONDS = 300
@@ -59,6 +60,24 @@ def _safe(value: Any, limit: int = 180) -> str:
     return "".join(c for c in value if 32 <= ord(c) <= 126)[:limit]
 
 
+# Projections contain lists of typed records, never iterable device names.
+# Reject unsafe identities but allow legitimately short identifiers.
+_TARGET_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,119}\\Z")
+
+
+def _target_id(value: Any, limit: int = 100) -> str:
+    if not isinstance(value, str) or len(value) > limit:
+        return ""
+    return value if _TARGET_ID.fullmatch(value) else ""
+
+
+def _records(payload: dict[str, Any], field: str) -> list[dict[str, Any]]:
+    entries = payload.get(field)
+    if not isinstance(entries, list):
+        return []
+    return [item for item in entries[:64] if isinstance(item, dict)]
+
+
 def _status(value: Any) -> str:
     normalized = _safe(value, 32).lower()
     return normalized if normalized in UNHEALTHY | HEALTHY | UNKNOWN | {"watch", "elevated", "recovering", "maintenance", "active", "read_only"} else "unknown"
@@ -92,15 +111,13 @@ def _observations(domain: str, payload: dict[str, Any]):
     if not source or not isinstance(payload, dict):
         return
     if domain == "system.health":
-        for target, value in sorted((payload.get("components") or {}).items()):
+        for target, value in sorted((payload.get("components") if isinstance(payload.get("components"), dict) else {}).items()):
             if target in {"api", "nats", "processes", "agent", "supervisor", "remote_access", "storage", "sqlite", "telemetry"}:
                 yield ("system", target, _status(value), "Component health requires review.")
         return
     if domain in {"system.agent", "system.supervisor"}:
-        for item in (payload.get("items") or [])[:64]:
-            if not isinstance(item, dict):
-                continue
-            target = _safe(item.get("device_id"), 100)
+        for item in _records(payload, "items"):
+            target = _target_id(item.get("device_id"))
             if not target:
                 continue
             raw = item.get("connection_state") if domain == "system.agent" else item.get("state")
@@ -114,10 +131,8 @@ def _observations(domain: str, payload: dict[str, Any]):
             lite_app_registry.app_definition(app_id).process: app_id
             for app_id in lite_app_registry.app_ids()
         }
-        for item in (payload.get("items") or [])[:64]:
-            if not isinstance(item, dict):
-                continue
-            target = _safe(item.get("name"), 100)
+        for item in _records(payload, "items"):
+            target = _target_id(item.get("name"))
             status = _status(item.get("status"))
             if target and item.get("expected"):
                 yield (source, target, status, "Required process needs attention.")
@@ -127,23 +142,25 @@ def _observations(domain: str, payload: dict[str, Any]):
                 yield ("app", registered[target], status, "Registered app process needs review.")
         return
     if domain == "system.telemetry_thresholds":
-        for item in (payload.get("devices") or [])[:64]:
-            if isinstance(item, dict):
-                device_id = _safe(item.get("device_id"), 100)
-                if device_id:
-                    yield (source, device_id, _status(item.get("status")), "Device resource or connectivity signal needs review.")
+        for item in _records(payload, "devices"):
+            device_id = _target_id(item.get("device_id"))
+            if device_id:
+                yield (source, device_id, _status(item.get("status")), "Device resource or connectivity signal needs review.")
         return
     if domain == "system.nats_remote":
         yield (source, "jetstream", _status(payload.get("status")), "Command delivery needs attention.")
-        for name, item in sorted((payload.get("durable_consumer_health") or {}).items()):
-            if isinstance(item, dict):
-                yield (source, "consumer:" + _safe(name, 60), "healthy" if item.get("healthy") else "degraded", "Command consumer readiness needs attention.")
+        for name, item in sorted((payload.get("durable_consumer_health") if isinstance(payload.get("durable_consumer_health"), dict) else {}).items(), key=lambda pair: str(pair[0])):
+            consumer_id = _target_id(name, 60)
+            if consumer_id and isinstance(item, dict) and isinstance(item.get("healthy"), bool):
+                yield (source, "consumer:" + consumer_id, "healthy" if item["healthy"] else "degraded", "Command consumer readiness needs attention.")
         return
     yield (source, source, _status(payload.get("status")), "System health signal needs review.")
 
 
 def ingest_projection(domain: str, payload: dict[str, Any]) -> int:
     """Call only after a worker-owned projection commit; never from a GET."""
+    if not isinstance(payload, dict):
+        return 0
     observations = list(_observations(domain, payload) or [])
     if not observations:
         return 0
