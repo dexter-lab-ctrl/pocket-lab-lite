@@ -91,5 +91,5 @@ def test_policy_staging_keeps_semantic_gates() -> None:
 
     assert 'fmt --check-result "$policy_file"' in source
     assert 'fmt --fail --check-result "$policy_file"' not in source
-    assert '"$OPA_BIN" check --strict "$SOURCE_DIR"' in source
-    assert '"$OPA_BIN" test --fail-on-empty "$SOURCE_DIR"' in source
+    assert 'opa_run check --strict "$SOURCE_DIR"' in source
+    assert 'opa_run test --fail-on-empty "$SOURCE_DIR"' in source

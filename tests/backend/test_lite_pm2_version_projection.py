@@ -109,6 +109,8 @@ def test_opa_and_photoprism_use_versioned_pm2_projection():
     photoprism = PHOTOPRISM.read_text(encoding="utf-8")
     assert "opa_installed_version" in opa
     assert "pm2_ensure_versioned_process pocket-opa" in opa
+    assert "-- run --server --addr=127.0.0.1:8181" in opa
+    assert "--interpreter bash -- run --server --addr=127.0.0.1:8181" not in opa
     assert "photoprism_pm2_version" in photoprism
     assert 'pm2_ensure_versioned_process "$PROCESS_NAME" "$version"' in photoprism
 
