@@ -106,7 +106,9 @@ async function main() {
   if (!contexts.length) fail('Android Chrome exposed no browser context');
   context = contexts[0];
   await context.setExtraHTTPHeaders({ 'X-Pocket-Lab-Qualification-Bridge': bridge });
-  page = await context.newPage();
+  const candidateOrigin = new URL(baseUrl).origin;
+  const existingCandidatePages = context.pages().filter((candidatePage) => candidatePage.url().startsWith(candidateOrigin));
+  page = existingCandidatePages[existingCandidatePages.length - 1] || await context.newPage();
   await activateCandidatePage();
   page.on('request', (request) => {
     const path = safePath(request.url());
