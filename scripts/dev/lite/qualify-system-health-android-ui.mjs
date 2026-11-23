@@ -174,16 +174,14 @@ async function main() {
   const incident = page.locator('[data-health-incident]').first();
   const incidentId = await incident.getAttribute('data-health-incident');
   if (!/^health-[0-9a-f]{24}$/.test(String(incidentId || ''))) fail('Android System Health did not expose a generation-bound incident');
-  await incident.getByRole('button', { name: 'Diagnose & Fix', exact: true }).click();
+  await incident.getByRole('button', { name: 'Review issue', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.waitFor({ state: 'visible', timeout: 10_000 });
   await Promise.all([
     page.waitForResponse((response) => response.request().method() === 'POST' && safePath(response.url()) === `/api/lite/system-health/incidents/${incidentId}/diagnose` && response.status() === 200, { timeout: 30_000 }),
     dialog.getByRole('button', { name: 'Check cause', exact: true }).click(),
   ]);
-  const fixButton = dialog.getByRole('button', { name: /^Fix/ });
-  await fixButton.waitFor({ state: 'visible', timeout: 10_000 });
-  if (!(await fixButton.isDisabled())) fail('System Health Fix action was not disabled');
+  if (await dialog.getByRole('button', { name: /^Fix/ }).count()) fail('System Health exposed an unsupported Fix action');
   await page.screenshot({ path: resolve(outputDir, 'system-health-diagnosis.png'), fullPage: true });
 
   const { requests, responses, requestFailures } = selectedObservation;
@@ -205,7 +203,7 @@ async function main() {
     android_chrome: { browser: String(version.Browser || ''), protocol_version: String(version['Protocol-Version'] || ''), package: String(version['Android-Package'] || ''), websocket_loopback: true },
     candidate_manifest: manifest,
     candidate_api_backend_verified: true,
-    system_health: { landing: true, active_incident: incidentId, diagnosis_post_status: 200, manage_open: true, fix_disabled: true, repair_execution: false, preflight_execution: false, home_return: true },
+    system_health: { landing: true, active_incident: incidentId, review_issue_open: true, diagnosis_post_status: 200, manage_open: true, recovery_action_exposed: false, repair_execution: false, preflight_execution: false, home_return: true },
     api_response_count: responses.length,
     api_response_paths: [...new Set(responses.map((item) => item.path))].sort(),
     screenshots: ['system-health-landing.png', 'system-health-diagnosis.png', 'home-system-health-summary.png'],
