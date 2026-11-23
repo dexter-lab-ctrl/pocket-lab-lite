@@ -11,6 +11,14 @@ export const COMPONENT_NAMES = Object.freeze({
   worker: 'Command worker', caddy: 'Secure web access', app: 'App',
 });
 
+const PROCESS_NAMES = Object.freeze({
+  'pocket-api': 'Pocket Lab API', 'pocket-worker': 'Command worker',
+  'pocket-nats': 'Command service', 'pocket-node-agent': 'Device agent',
+  'pocketlab-core-supervisor': 'Agent supervisor',
+  'pocket-telemetry': 'Device monitoring', 'caddy-proxy': 'Secure web access',
+  'pocketlab-app-photoprism': 'PhotoPrism',
+});
+
 export const RECOVERY_ACTION_LABELS = Object.freeze({
   'runtime.consumer.reconnect': 'Restore command connection',
   'device.agent.recover': 'Recover device agent',
@@ -44,10 +52,14 @@ export function componentLabel(source, targetId) {
     return `Device · ${targetId}`;
   }
   if (source === 'nats' && targetId.startsWith('consumer:')) return 'Command consumer';
-  if (source === 'processes') return 'Service · ' + targetId;
-  if (source === 'app') return 'App · ' + targetId;
+  if (source === 'processes') return PROCESS_NAMES[targetId] || 'Running service';
+  if (source === 'app') return targetId === 'photoprism' ? 'PhotoPrism' : 'App';
   if (source === 'system') return COMPONENT_NAMES[targetId] || 'System component';
   return sourceName;
+}
+
+export function safeTechnicalIdentifier(value) {
+  return typeof value === 'string' && SAFE_LABEL.test(value) ? value : 'Unavailable';
 }
 
 export function healthStatusLabel(value) {
