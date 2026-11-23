@@ -30,6 +30,7 @@ export function LiteRefreshButton({
   tone = 'secondary',
   className = '',
   scope = 'global',
+  haptic = false,
 }) {
   const beginRefresh = useLiteUiStore((state) => state.beginRefresh);
   const finishRefresh = useLiteUiStore((state) => state.finishRefresh);
@@ -56,6 +57,7 @@ export function LiteRefreshButton({
     <div className={`lite-refresh-control ${stale ? 'is-stale' : 'is-live'} ${className}`.trim()} data-lite-perf-primitive="refresh-control">
       <LiteButton
         onClick={handleClick}
+        haptic={haptic}
         tone={tone}
         disabled={disabled}
         busy={isRefreshing}
