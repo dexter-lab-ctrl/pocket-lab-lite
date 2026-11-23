@@ -4,7 +4,7 @@ import { LiteButton } from '../LiteUi.jsx';
 
 // Harmless contextual navigation. Existing FastAPI-backed System Health is
 // canonical; this component does not invent an incident or submit a repair.
-export default function LiteSystemHealthEntry({ onNavigate, label = 'Diagnose & Fix', className = '' }) {
+export default function LiteSystemHealthEntry({ onNavigate, label = 'Review System Health', className = '' }) {
   if (typeof onNavigate !== 'function') return null;
   return <div className={`lite-system-health-context-entry ${className}`.trim()}>
     <LiteButton haptic tone="secondary" onClick={() => onNavigate('system-health')}
