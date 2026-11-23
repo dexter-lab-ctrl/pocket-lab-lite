@@ -51,7 +51,7 @@ function safePath(url) {
 async function waitForSystemHealth() {
   await page.locator('[data-system-health-page="true"]').waitFor({ state: 'visible', timeout: 30_000 });
   await page.locator('[data-health-incident]').first().waitFor({ state: 'visible', timeout: 30_000 });
-  await page.getByRole('heading', { name: 'Active Problems', exact: true }).waitFor({ state: 'visible', timeout: 10_000 });
+  await page.getByRole('heading', { name: 'What needs attention', exact: true }).waitFor({ state: 'visible', timeout: 10_000 });
 }
 
 async function activateCandidatePage() {

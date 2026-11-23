@@ -202,3 +202,4 @@ def test_physical_system_health_qualifier_activates_android_target():
     assert "context.pages()" in source
     assert "candidatePages" in source
     assert "foreground System Health page" in source
+    assert "What needs attention" in source
