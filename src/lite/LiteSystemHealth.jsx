@@ -66,8 +66,7 @@ function EvidenceRows({ rows = [], emptyMessage = 'No authoritative records are 
     ? rows.slice(0, 30).map((row, i) => <LiteActionRow key={row.incident_id || row.target_id || i}
       label={componentLabel(row.source, row.target_id || row.component)}
       value={row.state ? (INCIDENT_STATE_LABELS[row.state] || healthStatusLabel(row.state)) : healthStatusLabel(row.status || row.observed_status)}
-      summary={row.evidence_freshness === 'stale' || row.freshness === 'stale' || row.concern_state === 'saved_concern'
-        ? 'Saved record. Check current conditions before acting.' : row.summary || ''}
+      summary={row.summary || ''}
       attention={row.status === 'unavailable' || row.state === 'failed'} />)
     : <StateSurface tone="empty" title="Nothing recorded" description={emptyMessage} />;
 }
@@ -302,9 +301,10 @@ export default function LiteSystemHealth({ onNavigate }) {
             summary={item.summary || 'Current evidence needs review.'} action={{ label: 'Review issue', haptic: true, onClick: () => viewIncident(item, 'diagnostics') }} />)
             : <StateSurface tone="empty" title="No current concern confirmed" description="Unknown and saved evidence are not treated as current problems." />}
           <h3>Saved concerns requiring revalidation</h3>
+          <p className="lite-system-health-muted">These records are unresolved, but their current condition is not confirmed. Review a fresh status before recovery.</p>
           {groups.saved.length ? groups.saved.slice(0, 30).map(item => <LiteActionRow key={item.incident_id}
             label={componentLabel(item.source, item.target_id)} value="Recheck needed"
-            summary="Previously reported, but current status is not established."
+            summary={item.summary || 'A previous concern is recorded.'}
             action={{ label: 'Review issue', haptic: true, onClick: () => viewIncident(item, 'diagnostics') }} />)
             : <p className="lite-system-health-muted">No older unresolved records in the loaded page.</p>}
           {incidentsQuery.data?.next_offset != null ? <p className="lite-system-health-muted">Additional historical records exist. Use the bounded history view for more records.</p> : null}
