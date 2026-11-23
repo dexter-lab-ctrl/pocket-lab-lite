@@ -27,7 +27,7 @@ html[data-lite-theme] .lite-system-health-manage-button{width:fit-content;max-wi
 html[data-lite-theme] .lite-system-health-detail{display:grid;gap:1rem;min-width:0}
 html[data-lite-theme] .lite-system-health-detail h3{font-weight:650;overflow-wrap:anywhere}
 html[data-lite-theme] .lite-system-health-dependencies .lite-action-row{overflow-wrap:anywhere}
-@media (max-width:700px){html[data-lite-theme] .lite-system-health-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:.45rem}
+@media (max-width:700px){html[data-lite-theme] .lite-system-health-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
 html[data-lite-theme] .lite-system-health-metrics>div{padding:.65rem .5rem}
 html[data-lite-theme] .lite-system-health-metrics strong{font-size:1.24rem}
 html[data-lite-theme] .lite-system-health-metrics span{font-size:.72rem;line-height:1.25}
@@ -44,3 +44,152 @@ html[data-lite-theme] .lite-home-system-health-facts strong{font-size:1.1rem;col
 html[data-lite-theme] .lite-system-health-context-entry{display:flex;justify-content:flex-end;min-width:0;padding:.15rem 0}
 html[data-lite-theme] .lite-system-health-context-entry button{min-height:44px}
 @media(max-width:700px){html[data-lite-theme] .lite-home-system-health-facts{grid-template-columns:repeat(2,minmax(0,1fr))}html[data-lite-theme] .lite-system-health-context-entry button{width:100%}}
+
+/* H4 — System Health uses the same token-backed density and spacing rhythm as
+   Apps' premium Manage surface. Geometry is invariant across light and dark. */
+html[data-lite-theme] .lite-system-health-page {
+  gap:clamp(1rem,1.6vw,1.4rem);
+}
+html[data-lite-theme] .lite-system-health-hero,
+html[data-lite-theme] .lite-system-health-incident,
+html[data-lite-theme] .lite-system-health-history-preview {
+  gap:.85rem;
+  padding:clamp(1rem,1.65vw,1.45rem);
+}
+html[data-lite-theme] .lite-system-health-incident-head {
+  min-width:0;
+}
+html[data-lite-theme] .lite-system-health-incident-head :is(h3,p),
+html[data-lite-theme] .lite-system-health-detail :is(h3,h4,p),
+html[data-lite-theme] .lite-system-health-manage-section :is(h3,p,dd) {
+  min-width:0;
+  max-width:100%;
+  overflow-wrap:anywhere;
+  white-space:normal;
+}
+html[data-lite-theme] .lite-system-health-manage-section,
+html[data-lite-theme] .lite-system-health-manage-intro,
+html[data-lite-theme] .lite-system-health-detail-block {
+  display:grid;
+  gap:.75rem;
+  min-width:0;
+}
+html[data-lite-theme] .lite-system-health-manage-section {
+  padding:.25rem 0 .85rem;
+  align-content:start;
+}
+html[data-lite-theme] .lite-system-health-manage-section > h3,
+html[data-lite-theme] .lite-system-health-detail-block > h4 {
+  margin:.35rem 0 0;
+  font-size:1rem;
+  font-weight:650;
+  line-height:1.35;
+}
+html[data-lite-theme] .lite-system-health-manage-intro {
+  padding:1rem;
+  background:var(--azure-surface);
+  color:var(--azure-text);
+  border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-card);
+}
+html[data-lite-theme] .lite-system-health-manage-intro p,
+html[data-lite-theme] .lite-system-health-detail-block p {
+  margin:0;
+  line-height:1.55;
+  color:var(--azure-muted);
+}
+html[data-lite-theme] .lite-system-health-detail-block {
+  padding:.95rem 1rem;
+  background:var(--azure-surface);
+  border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-card);
+}
+html[data-lite-theme] .lite-system-health-detail > .lite-system-health-state {
+  justify-self:start;
+}
+html[data-lite-theme] .lite-system-health-disclosure {
+  min-width:0;
+  border:1px solid var(--azure-border);
+  border-radius:var(--azure-radius-control);
+  background:var(--azure-raised);
+  color:var(--azure-text);
+  padding:.8rem 1rem;
+}
+html[data-lite-theme] .lite-system-health-disclosure > summary {
+  cursor:pointer;
+  font-weight:600;
+  min-height:44px;
+  display:list-item;
+  align-content:center;
+  overflow-wrap:anywhere;
+}
+html[data-lite-theme] .lite-system-health-disclosure > :not(summary) {
+  margin-top:.65rem;
+}
+html[data-lite-theme] .lite-system-health-tech-facts {
+  display:grid;
+  gap:0;
+  margin:0;
+}
+html[data-lite-theme] .lite-system-health-tech-facts > div {
+  display:flex;
+  justify-content:space-between;
+  gap:1rem;
+  padding:.7rem 0;
+  border-top:1px solid var(--azure-border);
+}
+html[data-lite-theme] .lite-system-health-tech-facts dt {
+  color:var(--azure-muted);
+}
+html[data-lite-theme] .lite-system-health-tech-facts dd {
+  margin:0;
+  text-align:end;
+  word-break:break-word;
+}
+html[data-lite-theme] .lite-system-health-actions > button {
+  min-height:44px;
+}
+html[data-lite-theme] .lite-system-health-manage :is(.lite-home-settings-index,.lite-home-settings-detail) {
+  min-width:0;
+  max-width:100%;
+}
+html[data-lite-theme] .lite-system-health-manage :is(.lite-home-settings-section-content,.lite-home-settings-group,.lite-action-row) {
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+@media (max-width:700px) {
+  html[data-lite-theme] .lite-system-health-page {
+    gap:1rem;
+  }
+  html[data-lite-theme] .lite-system-health-metrics {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:.65rem;
+  }
+  html[data-lite-theme] .lite-system-health-metrics > div:last-child {
+    grid-column:1 / -1;
+  }
+  html[data-lite-theme] .lite-system-health-actions > button {
+    flex:1 1 100%;
+  }
+  html[data-lite-theme] .lite-system-health-manage-section {
+    padding:.25rem 0 .75rem;
+  }
+  html[data-lite-theme] .lite-system-health-detail-block {
+    padding:.85rem;
+  }
+}
+@media (max-width:360px) {
+  html[data-lite-theme] .lite-system-health-metrics {
+    grid-template-columns:minmax(0,1fr);
+  }
+  html[data-lite-theme] .lite-system-health-metrics > div:last-child {
+    grid-column:auto;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  html[data-lite-theme] .lite-system-health-manage .lite-system-health-disclosure,
+  html[data-lite-theme] .lite-system-health-manage .lite-system-health-detail-block {
+    transition:none;
+    animation:none;
+  }
+}
