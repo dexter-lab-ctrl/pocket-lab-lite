@@ -37,6 +37,13 @@ def test_candidate_manifest_rejects_non_commit_identity():
         candidate.candidate_manifest("not-a-sha")
 
 
+def test_candidate_manifest_can_identify_a_devpc_isolated_runtime(monkeypatch):
+    candidate = _module()
+    monkeypatch.setenv("POCKETLAB_CANDIDATE_RUNTIME_TRANSPORT", "devpc_loopback_isolated_candidate")
+    manifest = candidate.candidate_manifest("a" * 40)
+    assert manifest["runtime_transport"] == "devpc_loopback_isolated_candidate"
+
+
 @pytest.mark.parametrize(
     "path,allowed",
     [

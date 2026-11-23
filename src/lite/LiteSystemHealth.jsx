@@ -280,7 +280,7 @@ export default function LiteSystemHealth({ onNavigate }) {
       <LiteButton haptic tone="secondary" onClick={() => { setSection('history'); setOpen(true); }}>Review history <ChevronRight size={16} aria-hidden="true" /></LiteButton>
     </GlassCard>
     <LiteButton haptic tone="primary" className="lite-system-health-manage-button" onClick={() => { setSection(null); setOpen(true); }}>Manage System Health</LiteButton>
-    <LiteDetailsPanel open={open} onClose={close} variant="home" className="lite-system-health-manage" desktopGeometry={geometry} mobileSnap hapticNavigation bodyRef={navigation.bodyRef}
+    <LiteDetailsPanel open={open} onClose={close} variant="home" className="lite-home-details-panel lite-system-health-manage" desktopGeometry={geometry} mobileSnap hapticNavigation bodyRef={navigation.bodyRef}
       bodyClassName="lite-home-workspace-details-scroll lite-home-panel-scroll" title="System Health Manage"
       description="Current evidence, diagnosis and reviewed recovery paths.">
       <HomeGroupedSections groups={SECTIONS} section={section} defaultSection="overview" onSectionChange={setSection}

@@ -8,7 +8,9 @@ const cdpUrl = String(process.env.LITE_ANDROID_CDP_URL || 'http://127.0.0.1:1922
 const baseUrl = String(process.env.LITE_BASE_URL || 'http://127.0.0.1:18765').trim();
 const commit = String(process.env.LITE_PERF_SOURCE_COMMIT || '').trim().toLowerCase();
 const bridge = String(process.env.POCKETLAB_HARNESS_BROWSER_BRIDGE || '').trim();
-const outputDir = resolve(process.env.LITE_SYSTEM_HEALTH_ANDROID_OUTPUT_DIR || '.pocketlab-dev/validation/pr649-system-health-android-ui');
+const qualificationId = String(process.env.LITE_SYSTEM_HEALTH_ANDROID_QUALIFICATION_ID || 'pr656-system-health-android-ui').trim().toLowerCase();
+const expectedRuntimeTransport = String(process.env.LITE_EXPECTED_RUNTIME_TRANSPORT || 'ssh_loopback_to_isolated_phone_candidate').trim().toLowerCase();
+const outputDir = resolve(process.env.LITE_SYSTEM_HEALTH_ANDROID_OUTPUT_DIR || `.pocketlab-dev/validation/${qualificationId}`);
 
 let browser;
 let page;
@@ -61,7 +63,7 @@ async function proveManifest(expectedCommit) {
   });
   if (!response?.ok()) fail('Android candidate manifest was not reachable');
   const manifest = JSON.parse(await page.locator('body').innerText());
-  if (manifest.source_commit !== expectedCommit || manifest.sanitized !== true || manifest.runtime_transport !== 'ssh_loopback_to_isolated_phone_candidate') {
+  if (manifest.source_commit !== expectedCommit || manifest.sanitized !== true || manifest.runtime_transport !== expectedRuntimeTransport) {
     fail('Android candidate manifest did not prove the isolated exact-SHA runtime');
   }
   if (response.headers()['x-pocket-lab-candidate-sha'] !== expectedCommit) fail('Android manifest response SHA header was incorrect');
@@ -70,6 +72,8 @@ async function proveManifest(expectedCommit) {
 
 async function main() {
   const expectedCommit = exactCommit();
+  if (!/^[a-z][a-z0-9_-]{2,79}$/.test(qualificationId)) fail('Android System Health qualification ID is invalid');
+  if (!/^[a-z][a-z0-9_-]{2,79}$/.test(expectedRuntimeTransport)) fail('Android candidate runtime transport is invalid');
   const cdp = localEndpoint(cdpUrl, 'LITE_ANDROID_CDP_URL', 19222);
   const base = localEndpoint(baseUrl, 'LITE_BASE_URL', 18765);
   if (bridge.length < 32 || bridge.length > 128 || /[\r\n]/.test(bridge)) fail('A short-lived browser bridge is required');
@@ -160,7 +164,7 @@ async function main() {
     screenshots: ['system-health-landing.png', 'system-health-diagnosis.png', 'home-system-health-summary.png'],
     sanitized: true,
   };
-  const evidencePath = resolve(outputDir, `pr649-system-health-android-ui-${expectedCommit.slice(0, 12)}.json`);
+  const evidencePath = resolve(outputDir, `${qualificationId}-${expectedCommit.slice(0, 12)}.json`);
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
   console.log(JSON.stringify({ status: 'PASS', evidence: basename(evidencePath), candidate_sha: expectedCommit, android_chrome: evidence.android_chrome, system_health: evidence.system_health }, null, 2));
 }

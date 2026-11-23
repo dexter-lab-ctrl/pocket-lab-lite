@@ -95,12 +95,12 @@ test('review issue discloses a cause narrative without enabling repair', async (
   expect(repairWrites).toEqual([]);
 });
 
-test('previous unresolved evidence stays unconfirmed in saved-only scenario', async ({ page }) => {
+test('previous unresolved evidence stays saved and unconfirmed in saved-only scenario', async ({ page }) => {
   await installScenario(page, 'system-health-saved-only');
   await page.goto('/?screen=system-health');
   await waitForLiteScreenToSettle(page, 'system-health');
   const screen = page.locator('[data-system-health-page="true"]');
-  await expect(screen.locator('[data-health-overview="unknown"]')).toBeVisible();
+  await expect(screen.locator('[data-health-overview="saved"]')).toBeVisible();
   await expect(screen.locator('[data-health-saved-preview="true"]')).toBeVisible();
   await expect(screen.locator('[data-health-concern="current"]')).toHaveCount(0);
   await expect(screen.getByRole('button', { name: /Diagnose & Fix/i })).toHaveCount(0);
@@ -181,6 +181,7 @@ test('System Health haptic uses shared native feedback and respects reduced moti
   expect(await page.evaluate(() => (window as Window & { __hapticCount?: number }).__hapticCount)).toBeGreaterThan(0);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const before = await page.evaluate(() => (window as Window & { __hapticCount?: number }).__hapticCount);
-  await page.getByRole('button', { name: 'Close', exact: false }).first().click();
+  await page.getByRole('dialog', { name: /System Health Manage/i })
+    .getByRole('button', { name: /Close/i }).click();
   expect(await page.evaluate(() => (window as Window & { __hapticCount?: number }).__hapticCount)).toBe(before);
 });
