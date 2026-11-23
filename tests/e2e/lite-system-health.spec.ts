@@ -122,7 +122,6 @@ test('System Health Manage supports keyboard entry and Escape dismissal', async 
   await page.keyboard.press('Enter');
   const panel = page.getByRole('dialog', { name: /System Health Manage/i });
   await expect(panel).toBeVisible();
-  await panel.getByRole('button', { name: 'Advanced Diagnostics', exact: false }).count();
   await page.keyboard.press('Escape');
   await expect(panel).not.toBeVisible();
 });
@@ -151,4 +150,37 @@ test('reduced-motion and accessible detail disclosure remain usable', async ({ p
   const report = await new AxeBuilder({ page }).include('[data-system-health-page="true"]').analyze();
   expect(report.violations.filter(v => ['critical', 'serious'].includes(v.impact || ''))).toEqual([]);
   await expect(panel).toBeVisible();
+});
+
+test('Manage itself passes serious/critical Axe checks including portal content', async ({ page }) => {
+  await installScenario(page, 'system-health-mixed');
+  await page.goto('/?screen=system-health');
+  await waitForLiteScreenToSettle(page, 'system-health');
+  await page.getByRole('button', { name: 'Manage System Health' }).click();
+  const panel = page.getByRole('dialog', { name: /System Health Manage/i });
+  await expect(panel).toBeVisible();
+  const report = await new AxeBuilder({ page }).include('[role="dialog"]').analyze();
+  expect(report.violations.filter(v => ['critical', 'serious'].includes(v.impact || ''))).toEqual([]);
+});
+
+test('System Health haptic uses shared native feedback and respects reduced motion', async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as Window & { __hapticCount?: number }).__hapticCount = 0;
+    Object.defineProperty(navigator, 'vibrate', {
+      configurable: true,
+      value: () => {
+        (window as Window & { __hapticCount?: number }).__hapticCount! += 1;
+        return true;
+      },
+    });
+  });
+  await installScenario(page, 'system-health-attention');
+  await page.goto('/?screen=system-health');
+  await waitForLiteScreenToSettle(page, 'system-health');
+  await page.getByRole('button', { name: 'Manage System Health' }).click();
+  expect(await page.evaluate(() => (window as Window & { __hapticCount?: number }).__hapticCount)).toBeGreaterThan(0);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const before = await page.evaluate(() => (window as Window & { __hapticCount?: number }).__hapticCount);
+  await page.getByRole('button', { name: 'Close', exact: false }).first().click();
+  expect(await page.evaluate(() => (window as Window & { __hapticCount?: number }).__hapticCount)).toBe(before);
 });
