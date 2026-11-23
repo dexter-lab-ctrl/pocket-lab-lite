@@ -111,7 +111,12 @@ def _observations(domain: str, payload: dict[str, Any]):
     if not source or not isinstance(payload, dict):
         return
     if domain == "system.health":
-        for target, value in sorted((payload.get("components") if isinstance(payload.get("components"), dict) else {}).items()):
+        components = payload.get("components") if isinstance(payload.get("components"), dict) else {}
+        for target in ("agent", "api", "nats", "processes", "remote_access",
+                       "sqlite", "storage", "supervisor", "telemetry"):
+            if target not in components:
+                continue
+            value = components[target]
             if target in {"api", "nats", "processes", "agent", "supervisor", "remote_access", "storage", "sqlite", "telemetry"}:
                 yield ("system", target, _status(value), "Component health requires review.")
         return
