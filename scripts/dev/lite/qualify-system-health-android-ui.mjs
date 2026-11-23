@@ -56,6 +56,19 @@ async function waitForSystemHealth() {
   await page.getByRole('heading', { name: 'Active Problems', exact: true }).waitFor({ state: 'visible', timeout: 10_000 });
 }
 
+async function activateCandidatePage() {
+  await page.bringToFront().catch(() => {});
+  if (!context || !page) return;
+  try {
+    const session = await context.newCDPSession(page);
+    await session.send('Page.bringToFront').catch(() => {});
+    await session.detach().catch(() => {});
+  } catch {
+    // Android Chrome may not expose a detachable Page session for every target.
+    // Playwright's bringToFront above remains the normal activation path.
+  }
+}
+
 async function proveManifest(expectedCommit) {
   const response = await page.goto(new URL('/__pocketlab_qualification__/candidate.json', baseUrl).toString(), {
     waitUntil: 'domcontentloaded',
@@ -94,6 +107,7 @@ async function main() {
   context = contexts[0];
   await context.setExtraHTTPHeaders({ 'X-Pocket-Lab-Qualification-Bridge': bridge });
   page = await context.newPage();
+  await activateCandidatePage();
   page.on('request', (request) => {
     const path = safePath(request.url());
     if (path.startsWith('/api/lite/system-health/')) requests.push({ method: request.method(), path });
