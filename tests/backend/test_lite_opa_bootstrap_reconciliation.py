@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -16,6 +17,7 @@ START_DASHBOARD = ROOT / "pocket-lab-final-structure/pocket-lab-bootstrap-produc
 HEALTH = ROOT / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh"
 OPA_STARTUP_RESOLVER = ROOT / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py"
 OPA_RUNTIME_START = ROOT / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh"
+COMMON = ROOT / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh"
 
 
 def _run_helper(
@@ -215,7 +217,19 @@ pocketlab_resolve_native_bash() {
   [[ -x \"$candidate\" ]] || return 1
   printf '%s\\n' \"$candidate\"
 }
-pm2_ensure_versioned_process() { printf 'pm2:%s\\n' \"$1\" >> \"$FAKE_ACTION_LOG\"; return 0; }
+pocketlab_resolve_opa_command() {
+  printf 'script\t%s\t%s' "$(command -v opa)" "$(command -v bash)"
+}
+pocketlab_execute_resolution() {
+  local resolution="$1" mode executable interpreter
+  shift
+  IFS=$'\t' read -r mode executable interpreter <<<"$resolution"
+  [[ "$mode" == script ]] || return 127
+  "$interpreter" "$executable" "$@"
+}
+pocketlab_opa_exec() { opa "$@"; }
+pm2_normalize_service_version() { printf '%s' "$1"; }
+pm2_ensure_versioned_process() { printf 'pm2:%s\\n' "$1" >> "$FAKE_ACTION_LOG"; return 0; }
 """,
         encoding="utf-8",
     )
@@ -239,7 +253,12 @@ printf '%s:%s\\n' \"$action\" \"$revision\" >> \"$FAKE_ACTION_LOG\"
 
     for name in ("opa", "pm2"):
         executable = fake_bin / name
-        executable.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+        executable.write_text(
+            "#!/usr/bin/env bash\n"
+            "[[ " + "${1:-}" + " == version ]] && { echo 'Version: 1.19.0'; exit 0; }\n"
+            "exit 0\n",
+            encoding="utf-8",
+        )
         executable.chmod(0o755)
     curl = fake_bin / "curl"
     curl.write_text(
@@ -324,7 +343,185 @@ def test_start_dashboard_delegates_opa_startup_to_governed_runner() -> None:
     assert '"$OPA_POLICY_PREP" activate' not in runtime
     assert '"$OPA_POLICY_PREP" known-good' not in runtime
     assert 'pm2_ensure_versioned_process pocket-opa "$(opa_installed_version)"' in runtime
-    assert '--interpreter bash -- run --server --addr=127.0.0.1:8181' in runtime
+    assert 'pocketlab_resolve_opa_command' in runtime
+    assert 'pocketlab_opa_exec' in runtime
+    assert '--interpreter bash -- run --server --addr=127.0.0.1:8181' not in runtime
+
+
+def _resolve_opa_candidate(
+    tmp_path: Path,
+    candidate: Path,
+    *,
+    termux: bool,
+) -> subprocess.CompletedProcess[str]:
+    home = tmp_path / "home"
+    prefix = tmp_path / "prefix"
+    (prefix / "bin").mkdir(parents=True, exist_ok=True)
+    home.mkdir(parents=True, exist_ok=True)
+    bash_copy = prefix / "bin" / "bash"
+    shutil.copy2("/bin/bash", bash_copy)
+    bash_copy.chmod(0o755)
+    env = os.environ.copy()
+    env.update(
+        {
+            "HOME": str(home),
+            "PREFIX": str(prefix),
+            "POCKETLAB_OPA_BIN": str(candidate),
+        }
+    )
+    if termux:
+        env["TERMUX_VERSION"] = "1"
+    else:
+        env.pop("TERMUX_VERSION", None)
+    script = f"""
+set -Eeuo pipefail
+source {COMMON!s}
+pocketlab_resolve_opa_command
+"""
+    return subprocess.run(
+        ["bash", "-c", script],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def test_opa_resolution_accepts_native_ubuntu_executable(tmp_path: Path) -> None:
+    result = _resolve_opa_candidate(tmp_path, Path("/bin/true"), termux=False)
+    assert result.returncode == 0, result.stderr
+    fields = result.stdout.strip().split("\t")
+    assert fields[0] == "native"
+    assert fields[1]
+    assert len(fields) >= 2
+
+
+def test_opa_resolution_accepts_trusted_wrapper_interpreter_on_ubuntu(tmp_path: Path) -> None:
+    wrapper = tmp_path / "opa-wrapper"
+    wrapper.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    wrapper.chmod(0o755)
+    result = _resolve_opa_candidate(tmp_path, wrapper, termux=False)
+    assert result.returncode == 0, result.stderr
+    fields = result.stdout.strip().split("\t")
+    assert fields[0] == "script"
+    assert fields[1] == str(wrapper)
+    assert fields[2].endswith("/bash")
+
+
+def test_opa_resolution_accepts_owner_owned_termux_script_fallback_without_executing_it(tmp_path: Path) -> None:
+    wrapper = tmp_path / "prefix" / "bin" / "opa-wrapper"
+    marker = tmp_path / "resolver-executed"
+    wrapper.parent.mkdir(parents=True, exist_ok=True)
+    wrapper.write_text(
+        "#!/usr/bin/env bash\n"
+        f"touch {marker}\n",
+        encoding="utf-8",
+    )
+    wrapper.chmod(0o755)
+    result = _resolve_opa_candidate(tmp_path, wrapper, termux=True)
+    assert result.returncode == 0, result.stderr
+    fields = result.stdout.strip().split("\t")
+    assert fields[0] == "script"
+    assert fields[1] == str(wrapper)
+    assert fields[2].endswith("/bash")
+    assert len(fields[3]) == 129
+    assert not marker.exists()
+
+
+def test_opa_resolution_rejects_group_writable_termux_script_fallback(tmp_path: Path) -> None:
+    wrapper = tmp_path / "prefix" / "bin" / "opa-wrapper"
+    wrapper.parent.mkdir(parents=True, exist_ok=True)
+    wrapper.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    wrapper.chmod(0o775)
+    result = _resolve_opa_candidate(tmp_path, wrapper, termux=True)
+    assert result.returncode != 0
+
+
+def test_opa_execute_resolution_rejects_executable_replacement(tmp_path: Path) -> None:
+    candidate = tmp_path / "prefix" / "bin" / "opa"
+    candidate.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2("/bin/true", candidate)
+    candidate.chmod(0o755)
+    marker = tmp_path / "replacement-executed"
+    script = f"""
+set -Eeuo pipefail
+source {COMMON!s}
+resolution="$(pocketlab_resolve_opa_command)"
+printf '#!/usr/bin/env bash\\ntouch {marker}\\n' > "$POCKETLAB_OPA_BIN"
+chmod 0755 "$POCKETLAB_OPA_BIN"
+if pocketlab_execute_resolution "$resolution" version; then
+  exit 1
+fi
+"""
+    env = os.environ.copy()
+    env.update(
+        {
+            "POCKETLAB_OPA_BIN": str(candidate),
+            "TERMUX_VERSION": "1",
+            "HOME": str(tmp_path / "home"),
+            "PREFIX": str(tmp_path / "prefix"),
+        }
+    )
+    result = subprocess.run(
+        ["bash", "-c", script],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert not marker.exists()
+
+
+def _write_termux_opa_wrapper(tmp_path: Path, target: Path) -> Path:
+    prefix = tmp_path / "prefix"
+    wrapper = prefix / "bin" / "opa"
+    wrapper.parent.mkdir(parents=True, exist_ok=True)
+    wrapper.write_text(
+        "#!/usr/bin/env bash\n"
+        f'exec "{target}" "$@"\n',
+        encoding="utf-8",
+    )
+    wrapper.chmod(0o755)
+    return wrapper
+
+
+def test_opa_resolution_unwraps_broken_env_termux_launcher_to_native_payload(tmp_path: Path) -> None:
+    target = tmp_path / "home" / ".pocket_lab" / "bin" / "opa-v1.19.0-linux-arm64-static"
+    target.parent.mkdir(parents=True)
+    shutil.copy2("/bin/true", target)
+    target.chmod(0o755)
+    wrapper = _write_termux_opa_wrapper(tmp_path, target)
+    result = _resolve_opa_candidate(tmp_path, wrapper, termux=True)
+    assert result.returncode == 0, result.stderr
+    fields = result.stdout.strip().split("\t")
+    assert fields[:2] == ["native", str(target)]
+
+
+def test_opa_resolution_rejects_missing_underlying_payload(tmp_path: Path) -> None:
+    missing = tmp_path / "home" / ".pocket_lab" / "bin" / "missing-opa"
+    wrapper = _write_termux_opa_wrapper(tmp_path, missing)
+    result = _resolve_opa_candidate(tmp_path, wrapper, termux=True)
+    assert result.returncode != 0
+    assert not result.stdout.strip()
+
+
+def test_opa_resolution_rejects_unexpected_format_and_untrusted_termux_path(tmp_path: Path) -> None:
+    unexpected = tmp_path / "prefix" / "bin" / "opa-unexpected"
+    unexpected.parent.mkdir(parents=True, exist_ok=True)
+    unexpected.write_text("not an executable format\n", encoding="utf-8")
+    unexpected.chmod(0o755)
+    malformed = _resolve_opa_candidate(tmp_path / "unexpected", unexpected, termux=True)
+    assert malformed.returncode != 0
+
+    untrusted = tmp_path / "outside" / "opa"
+    untrusted.parent.mkdir(parents=True)
+    shutil.copy2("/bin/true", untrusted)
+    untrusted.chmod(0o755)
+    rejected = _resolve_opa_candidate(tmp_path / "untrusted", untrusted, termux=True)
+    assert rejected.returncode != 0
 
 
 def test_opa_policy_preparation_uses_native_bash_when_env_interpreter_is_unavailable(tmp_path: Path) -> None:

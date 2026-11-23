@@ -5,15 +5,23 @@ IFS=$'\n\t'
 
 SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="${POCKETLAB_REPO_ROOT:-$(CDPATH='' cd -- "$SCRIPT_DIR/../../../.." && pwd)}"
+# shellcheck disable=SC1091
+source "$SCRIPT_DIR/../lib/common.sh"
 STATE_DIR="${POCKETLAB_STATE_DIR:-${POCKETLAB_BASE_DIR:-$HOME/.pocket_lab}/state}"
 SOURCE_DIR="${POCKETLAB_OPA_POLICY_SOURCE_DIR:-$REPO_ROOT/security/policies/opa/pocketlab}"
-OPA_BIN="${POCKETLAB_OPA_BIN:-$(command -v opa || true)}"
+OPA_RESOLUTION="$(pocketlab_resolve_opa_command 2>/dev/null || true)"
+IFS=$'\t' read -r OPA_MODE OPA_BIN OPA_INTERPRETER <<<"$OPA_RESOLUTION"
 ACTION="${1:-stage}"
 REQUESTED_REVISION="${2:-}"
 
 [[ -n "$OPA_BIN" && -x "$OPA_BIN" ]] || { printf '%s\n' 'OPA is not installed; protected changes remain fail-closed.' >&2; exit 1; }
+[[ -n "$OPA_RESOLUTION" ]] || { printf '%s\n' 'OPA is outside the trusted runtime path; protected changes remain fail-closed.' >&2; exit 1; }
 [[ -d "$SOURCE_DIR" ]] || { printf '%s\n' 'OPA policy source directory is missing.' >&2; exit 1; }
 case "$ACTION" in stage|activate|known-good) ;; *) printf '%s\n' 'Usage: prepare-opa-policy.sh [stage|activate|known-good] [revision]' >&2; exit 64;; esac
+
+opa_run() {
+  pocketlab_execute_resolution "$OPA_RESOLUTION" "$@"
+}
 
 opa_root="$STATE_DIR/opa"; stage_root="$opa_root/stage"
 mkdir -p "$stage_root"; chmod 700 "$opa_root" "$stage_root"
@@ -45,8 +53,8 @@ mapfile -d '' source_files < <(find "$SOURCE_DIR" -type f -name '*.rego' -print0
 # failure. Verify that OPA can format and parse each module, then rely on the
 # strict compile and policy test gates below for semantic admission. Using
 # `fmt --fail` here made a style-only diff block governed source reconciliation.
-for policy_file in "${source_files[@]}"; do "$OPA_BIN" fmt --check-result "$policy_file" >/dev/null; done
-"$OPA_BIN" check --strict "$SOURCE_DIR"; "$OPA_BIN" test --fail-on-empty "$SOURCE_DIR"
+for policy_file in "${source_files[@]}"; do opa_run fmt --check-result "$policy_file" >/dev/null; done
+opa_run check --strict "$SOURCE_DIR"; opa_run test --fail-on-empty "$SOURCE_DIR"
 default_template_json='{"parameters":{},"template_id":"baseline","template_version":"1"}'
 template_json="${POCKETLAB_POLICY_TEMPLATE_JSON:-$default_template_json}"
 template_digest="$(printf '%s' "$template_json" | sha256sum | awk '{print $1}')"
@@ -60,7 +68,7 @@ mkdir -p "$tmp"
 for policy_file in "${source_files[@]}"; do rel="${policy_file#"$SOURCE_DIR"/}"; mkdir -p "$tmp/$(dirname -- "$rel")"; install -m 0644 "$policy_file" "$tmp/$rel"; done
 printf '%s\n' "$template_json" > "$tmp/template.json"
 printf 'package pocketlab.meta\n\nrevision := "%s"\n' "$revision" > "$tmp/revision.rego"
-"$OPA_BIN" fmt -w "$tmp/revision.rego"; "$OPA_BIN" check --strict "$tmp"
+opa_run fmt -w "$tmp/revision.rego"; opa_run check --strict "$tmp"
 printf '%s\n' "$revision" > "$tmp/revision.txt"
 python3 - "$tmp" "$revision" <<'PY'
 import hashlib, json, pathlib, sys

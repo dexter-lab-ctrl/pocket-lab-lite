@@ -57,7 +57,7 @@ stage_repository_candidate() {
 
 opa_installed_version() {
   local output raw
-  output="$(opa version 2>&1 || true)"
+  output="$(pocketlab_opa_exec version 2>&1 || true)"
   raw="$(printf '%s\n' "$output" | python3 -c '
 import re, sys
 text=sys.stdin.read()
@@ -71,9 +71,22 @@ print(match.group(1) if match else "")
 }
 
 start_opa_process() {
-  pm2_ensure_versioned_process pocket-opa "$(opa_installed_version)" "$(command -v opa)" \
-    --interpreter bash -- run --server --addr=127.0.0.1:8181 \
-    "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
+  local resolution="$(pocketlab_resolve_opa_command 2>/dev/null || true)"
+  local mode executable interpreter fingerprint
+  IFS=$'\t' read -r mode executable interpreter fingerprint <<<"$resolution"
+  [[ -n "$resolution" && -n "$executable" ]] || die "OPA is missing or outside the trusted runtime path"
+  pocketlab_execute_resolution "$resolution" version >/dev/null 2>&1 || die "OPA executable changed during startup resolution"
+  if [[ "$mode" == "native" ]]; then
+    pm2_ensure_versioned_process pocket-opa "$(opa_installed_version)" "$executable" \
+      -- run --server --addr=127.0.0.1:8181 \
+      "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
+  elif [[ "$mode" == "script" && -n "$interpreter" ]]; then
+    pm2_ensure_versioned_process pocket-opa "$(opa_installed_version)" "$executable" \
+      --interpreter "$interpreter" -- run --server --addr=127.0.0.1:8181 \
+      "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
+  else
+    die "OPA executable resolution has an unsupported format"
+  fi
 }
 
 wait_for_exact_revision() {
@@ -149,7 +162,7 @@ run_under_activation_lock() {
 }
 
 main() {
-  require_cmd python3 opa pm2 curl
+  require_cmd python3 pm2 curl
   [[ -f "$OPA_STARTUP_RESOLVER" ]] || die "OPA startup authority resolver is missing: $OPA_STARTUP_RESOLVER"
   [[ -f "$OPA_POLICY_PREP" ]] || die "OPA policy preparation script is missing: $OPA_POLICY_PREP"
 

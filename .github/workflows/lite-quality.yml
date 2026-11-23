@@ -191,9 +191,8 @@ jobs:
         run: |
           task lite:check:quick
           task lite:test:storybook
-      - name: Install CI Chromium and run mocked integration
+      - name: Run mocked integration and documentation browser
         run: |
-          npx playwright install --with-deps chromium
           VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-mocked.spec.ts tests/e2e/lite-parity.spec.ts tests/e2e/lite-accessibility.spec.ts --project=mocked-desktop --project=mocked-mobile
           task lite:test:docs
       - name: Redaction and evidence

@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 531,
+  "page_count": 532,
   "page_types": [
     "overview",
     "guide",
@@ -5534,6 +5534,29 @@
       "source_or_generator": "development/premium-rules-center.md",
       "title": "Premium Rules Center — qualification record",
       "url": "/development/premium-rules-center/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/termux-opa-native-executable-recovery.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "recovery",
+      "generated": false,
+      "id": "page:development/termux-opa-native-executable-recovery",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/termux-opa-native-executable-recovery.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/termux-opa-native-executable-recovery.md",
+      "title": "Termux OPA native executable recovery",
+      "url": "/development/termux-opa-native-executable-recovery/"
     },
     {
       "additional_audiences": [
@@ -18574,7 +18597,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "8c8b6be3680a836a62f03a72fdc1a2d45c0b376f41211b687e65feae8aa1f397",
+  "source_fingerprint": "d71351be1e03a4cd8287ebb930516dc147a072ba5ae297450bb54ff285b4ed6c",
   "top_level": [
     "start-here",
     "use",

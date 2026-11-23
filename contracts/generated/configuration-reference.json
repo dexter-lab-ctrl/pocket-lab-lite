@@ -12343,11 +12343,11 @@
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
-        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_analysis.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py"
       ],
-      "safe_default": "$(command -v opa || true)",
+      "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
       "wsl2": true
     },

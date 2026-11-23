@@ -110,6 +110,201 @@ pocketlab_native_path_allowed() {
   esac
 }
 
+# OPA is installed either as a native executable or as a small package
+# launcher.  The launcher used by the Termux package may have a portable
+# /usr/bin/env shebang even though the native interpreter and the versioned
+# static OPA binary are both present.  Keep the OPA-specific trust boundary
+# separate from the generic PM2/Node/Bash boundary: the pinned OPA payload is
+# also installed below $HOME/.pocket_lab/bin.
+pocketlab_opa_path_allowed() {
+  local path="$1"
+  if ! is_termux; then
+    return 0
+  fi
+  case "$path" in
+    "$PREFIX"/*|"$HOME/.local/"*|"$HOME/.pocket_lab/bin/"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# OPA launchers and interpreters must be owned by root or the current runtime
+# user and must not be writable by group/other.  Canonicalizing the path first
+# prevents a trusted-looking symlink from widening this boundary.
+pocketlab_opa_file_trusted() {
+  local path="$1" owner mode uid
+  [[ -f "$path" && -x "$path" ]] || return 1
+  owner="$(stat -c '%u' -- "$path" 2>/dev/null || true)"
+  mode="$(stat -c '%a' -- "$path" 2>/dev/null || true)"
+  uid="$(id -u 2>/dev/null || true)"
+  [[ "$owner" =~ ^[0-9]+$ && "$uid" =~ ^[0-9]+$ && "$mode" =~ ^[0-7]{3,4}$ ]] || return 1
+  [[ "$owner" == "0" || "$owner" == "$uid" ]] || return 1
+  (( (8#$mode & 022) == 0 )) || return 1
+}
+
+pocketlab_opa_resolution_fingerprint() {
+  local executable="$1" interpreter="${2:--}" executable_hash interpreter_hash
+  executable_hash="$(sha256sum -- "$executable" 2>/dev/null | awk 'NR == 1 { print $1 }')"
+  [[ "$executable_hash" =~ ^[0-9a-f]{64}$ ]] || return 1
+  if [[ "$interpreter" == "-" ]]; then
+    printf '%s:-\n' "$executable_hash"
+    return 0
+  fi
+  interpreter_hash="$(sha256sum -- "$interpreter" 2>/dev/null | awk 'NR == 1 { print $1 }')"
+  [[ "$interpreter_hash" =~ ^[0-9a-f]{64}$ ]] || return 1
+  printf '%s:%s\n' "$executable_hash" "$interpreter_hash"
+}
+
+pocketlab_resolve_script_interpreter() {
+  local script="$1" first_line shebang token interpreter resolved
+  first_line="$(LC_ALL=C head -n 1 -- "$script" 2>/dev/null || true)"
+  [[ "$first_line" == '#!'* ]] || return 1
+  shebang="${first_line#\#!}"
+  local -a parts=()
+  IFS=' ' read -r -a parts <<<"$shebang"
+  [[ "${#parts[@]}" -gt 0 ]] || return 1
+  interpreter="${parts[0]}"
+  if [[ "$interpreter" == "/usr/bin/env" || "$interpreter" == "/bin/env" ]]; then
+    interpreter=""
+    for token in "${parts[@]:1}"; do
+      [[ "$token" == "-S" || "$token" == -* ]] && continue
+      interpreter="$token"
+      break
+    done
+    [[ -n "$interpreter" ]] || return 1
+    resolved="$(pocketlab_resolve_known_executable "$interpreter" 2>/dev/null || true)"
+  else
+    resolved="$(pocketlab_path_candidate "$interpreter" 2>/dev/null || true)"
+  fi
+  [[ -n "$resolved" ]] || return 1
+  pocketlab_native_path_allowed "$resolved" || return 1
+  pocketlab_opa_file_trusted "$resolved" || return 1
+  printf '%s\n' "$resolved"
+}
+
+# Read-only wrapper inspection.  Only a literal `exec <absolute-path> "$@"`
+# hand-off is eligible for unwrapping; arbitrary shell is never evaluated.
+pocketlab_wrapper_exec_target() {
+  local script="$1"
+  python3 - "$script" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+try:
+    lines = Path(sys.argv[1]).read_text(encoding="utf-8").splitlines()
+except (OSError, UnicodeError):
+    raise SystemExit(1)
+
+pattern = re.compile(
+    r'^\s*exec\s+(?:"([^"]+)"|\'([^\']+)\'|([^\s]+))\s+"?\$@"?\s*$'
+)
+for line in lines:
+    match = pattern.match(line)
+    if match:
+        print(next(value for value in match.groups() if value is not None))
+        raise SystemExit(0)
+raise SystemExit(1)
+PY
+}
+
+pocketlab_resolve_opa_executable() {
+  local candidate="$1" depth="${2:-0}" resolved first_line interpreter target target_resolved fingerprint
+  (( depth < 8 )) || return 1
+  resolved="$(pocketlab_path_candidate "$candidate" 2>/dev/null || true)"
+  [[ -n "$resolved" ]] || return 1
+  pocketlab_opa_path_allowed "$resolved" || return 1
+  pocketlab_opa_file_trusted "$resolved" || return 1
+
+  # ELF is the only format that may be launched as a bare OPA executable.
+  # This prevents a shell wrapper from being passed to PM2 as a native binary.
+  if [[ "$(LC_ALL=C od -An -tx1 -N4 -- "$resolved" 2>/dev/null | tr -d ' \n')" == "7f454c46" ]]; then
+    fingerprint="$(pocketlab_opa_resolution_fingerprint "$resolved" - 2>/dev/null || true)"
+    [[ -n "$fingerprint" ]] || return 1
+    printf 'native\t%s\t-\t%s\n' "$resolved" "$fingerprint"
+    return 0
+  fi
+
+  first_line="$(LC_ALL=C head -n 1 -- "$resolved" 2>/dev/null || true)"
+  [[ "$first_line" == '#!'* ]] || return 1
+  interpreter="$(pocketlab_resolve_script_interpreter "$resolved" 2>/dev/null || true)"
+  [[ -n "$interpreter" ]] || return 1
+
+  # A package wrapper that exposes a literal executable hand-off is reduced to
+  # the underlying trusted payload.  If the declared payload is missing or
+  # outside the allowed runtime roots, fail closed instead of running a
+  # partially interpreted wrapper.
+  if target="$(pocketlab_wrapper_exec_target "$resolved" 2>/dev/null)"; then
+    [[ "$target" == /* ]] || return 1
+    target_resolved="$(pocketlab_path_candidate "$target" 2>/dev/null || true)"
+    [[ -n "$target_resolved" ]] || return 1
+    pocketlab_opa_path_allowed "$target_resolved" || return 1
+    [[ "$target_resolved" != "$resolved" ]] || return 1
+    pocketlab_resolve_opa_executable "$target_resolved" "$((depth + 1))"
+    return $?
+  fi
+
+  # A trusted script wrapper without a literal hand-off remains executable,
+  # but its native interpreter is returned explicitly for PM2 and policy
+  # probes.  A native binary is never invoked through this path.
+  fingerprint="$(pocketlab_opa_resolution_fingerprint "$resolved" "$interpreter" 2>/dev/null || true)"
+  [[ -n "$fingerprint" ]] || return 1
+  printf 'script\t%s\t%s\t%s\n' "$resolved" "$interpreter" "$fingerprint"
+}
+
+pocketlab_resolve_opa_command() {
+  local candidate="${POCKETLAB_OPA_BIN:-}"
+  if [[ -z "$candidate" ]]; then
+    if is_termux; then
+      candidate="$(pocketlab_resolve_known_executable opa 2>/dev/null || true)"
+    else
+      candidate="$(PATH="$PATH" type -P opa 2>/dev/null || true)"
+    fi
+  fi
+  [[ -n "$candidate" ]] || return 1
+  pocketlab_resolve_opa_executable "$candidate"
+}
+
+pocketlab_execute_resolution() {
+  local resolution="$1" mode executable interpreter fingerprint current_executable current_interpreter current_fingerprint target
+  shift
+  IFS=$'\t' read -r mode executable interpreter fingerprint <<<"$resolution"
+  [[ -n "$executable" && -n "$fingerprint" ]] || { printf '%s\n' 'Invalid trusted OPA executable resolution' >&2; return 127; }
+  current_executable="$(pocketlab_path_candidate "$executable" 2>/dev/null || true)"
+  [[ "$current_executable" == "$executable" ]] || { printf '%s\n' 'OPA executable changed or escaped its trusted path' >&2; return 126; }
+  pocketlab_opa_path_allowed "$current_executable" || return 126
+  pocketlab_opa_file_trusted "$current_executable" || return 126
+  case "$mode" in
+    native)
+      [[ "$interpreter" == "-" ]]
+      [[ "$(LC_ALL=C od -An -tx1 -N4 -- "$current_executable" 2>/dev/null | tr -d ' \n')" == "7f454c46" ]]
+      current_fingerprint="$(pocketlab_opa_resolution_fingerprint "$current_executable" - 2>/dev/null || true)"
+      [[ "$current_fingerprint" == "$fingerprint" ]] || { printf '%s\n' 'OPA native executable changed after resolution' >&2; return 126; }
+      "$current_executable" "$@"
+      ;;
+    script)
+      [[ -n "$interpreter" && "$interpreter" != "-" ]]
+      current_interpreter="$(pocketlab_path_candidate "$interpreter" 2>/dev/null || true)"
+      [[ "$current_interpreter" == "$interpreter" ]] || { printf '%s\n' 'OPA interpreter changed or escaped its trusted path' >&2; return 126; }
+      pocketlab_native_path_allowed "$current_interpreter" || return 126
+      pocketlab_opa_file_trusted "$current_interpreter" || return 126
+      [[ "$(pocketlab_resolve_script_interpreter "$current_executable" 2>/dev/null || true)" == "$current_interpreter" ]]
+      target="$(pocketlab_wrapper_exec_target "$current_executable" 2>/dev/null || true)"
+      [[ -z "$target" ]]
+      current_fingerprint="$(pocketlab_opa_resolution_fingerprint "$current_executable" "$current_interpreter" 2>/dev/null || true)"
+      [[ "$current_fingerprint" == "$fingerprint" ]] || { printf '%s\n' 'OPA script wrapper or interpreter changed after resolution' >&2; return 126; }
+      "$current_interpreter" "$current_executable" "$@"
+      ;;
+    *) printf '%s\n' 'Invalid trusted OPA executable resolution' >&2; return 127 ;;
+  esac
+}
+
+pocketlab_opa_exec() {
+  local resolution
+  resolution="$(pocketlab_resolve_opa_command 2>/dev/null || true)"
+  [[ -n "$resolution" ]] || { printf '%s\n' 'OPA is missing or outside the trusted runtime path.' >&2; return 127; }
+  pocketlab_execute_resolution "$resolution" "$@"
+}
+
 pocketlab_resolve_native_bash() {
   local candidate resolved
   for candidate in "${POCKETLAB_NATIVE_BASH:-}" "$PREFIX/bin/bash" "$HOME/.local/bin/bash"; do
