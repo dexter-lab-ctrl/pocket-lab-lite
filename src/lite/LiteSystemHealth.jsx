@@ -11,80 +11,128 @@ import { useLitePanelSectionNavigation } from './hooks/useLitePanelSectionNaviga
 import HomeGroupedSections from './components/HomeGroupedSections.jsx';
 import './components/azureHome.css';
 import './components/homeCommand.css';
+import { componentLabel, healthStatusLabel, healthTimestamp, healthCounts, groupHealthIncidents, incidentEvidenceState, recoveryDestination, recoveryOperationLabel, recoveryAvailabilityLabel, INCIDENT_STATE_LABELS, systemHealthPresentation } from './systemHealthPresentation.js';
 import './systemHealth.css';
 
 const SECTIONS = Object.freeze([
-  { label: 'Health', items: [
-    { id: 'overview', label: 'Overview', description: 'Current evidence and readiness', icon: HeartPulse },
-    { id: 'incidents', label: 'Active Problems', description: 'Reported issues that need review', icon: AlertTriangle },
-    { id: 'diagnostics', label: 'Diagnostics', description: 'Evidence-backed cause assessment', icon: ClipboardCheck },
-    { id: 'repairs', label: 'Repairs', description: 'Approved options and execution ownership', icon: Wrench },
+  { label: 'Overview', items: [
+    { id: 'overview', label: 'Health overview', description: 'Freshness and what deserves attention', icon: HeartPulse },
   ] },
-  { label: 'Review', items: [
-    { id: 'history', label: 'Recovery History', description: 'Persisted outcomes and recurrence', icon: Clock3 },
-    { id: 'dependencies', label: 'Dependencies', description: 'Contract relationships and evidence', icon: GitBranch },
-    { id: 'resources', label: 'Resource Intelligence', description: 'Current resource signals', icon: Cpu },
-    { id: 'policies', label: 'Policies', description: 'Safety rules and authority', icon: ShieldCheck },
-    { id: 'drift', label: 'Configuration', description: 'Review suspected runtime mismatches', icon: Settings2 },
-    { id: 'details', label: 'Technical Details', description: 'Sanitized diagnostic metadata', icon: Settings2 },
+  { label: 'Problems & Diagnosis', items: [
+    { id: 'incidents', label: 'Problems & Diagnosis', description: 'Current and saved concerns', icon: AlertTriangle },
+    { id: 'diagnostics', label: 'Issue details', description: 'What happened and what to review next', icon: ClipboardCheck },
+  ] },
+  { label: 'Recovery & History', items: [
+    { id: 'history', label: 'Recovery & History', description: 'Observed outcomes and recorded attempts', icon: Clock3 },
+    { id: 'repairs', label: 'Recovery options', description: 'Existing, controlled recovery paths', icon: Wrench },
+  ] },
+  { label: 'Advanced Diagnostics', items: [
+    { id: 'dependencies', label: 'Dependencies', description: 'Documented service relationships', icon: GitBranch },
+    { id: 'resources', label: 'Resource signals', description: 'Saved device and storage signals', icon: Cpu },
+    { id: 'policies', label: 'Repair policies', description: 'Authorization and availability', icon: ShieldCheck },
+    { id: 'drift', label: 'Configuration review', description: 'Observed states, not automatic changes', icon: Settings2 },
+    { id: 'details', label: 'Technical details', description: 'Sanitized diagnostic metadata', icon: Settings2 },
   ] },
 ]);
+export { systemHealthPresentation };
 
-export function systemHealthPresentation(payload, saved = false) {
-  if (!payload || typeof payload !== 'object') return { state: 'unknown', title: 'System status is not confirmed', detail: 'No current System Health information is available.' };
-  const freshness = saved ? 'saved' : String(payload.freshness || 'unknown');
-  if (saved || freshness === 'stale' || freshness === 'saved') return { state: 'saved', title: 'Showing saved information', detail: 'Live health has not been confirmed. Reconnect or refresh to check again.' };
-  if (freshness !== 'current') return { state: 'unknown', title: 'System status needs confirmation', detail: payload.summary || 'Not enough current evidence to confirm health.' };
-  if (payload.status === 'attention') return { state: 'attention', title: 'Some services need attention', detail: payload.summary || 'Review active problems before changing services.' };
-  if (payload.status === 'healthy' && Number(payload.unknown_services || 0) === 0) return { state: 'ready', title: 'Observed services are healthy', detail: payload.summary || 'Current observations show no detected problems.' };
-  return { state: 'unknown', title: 'System status needs confirmation', detail: payload.summary || 'Not enough current evidence to confirm health.' };
-}
-
-export function SystemHealthIncidentCard({ incident, onDiagnose, onDetails }) {
-  const stale = incident.evidence_freshness !== 'current';
-  return <GlassCard as="article" className="lite-system-health-incident" data-health-incident={incident.incident_id}>
+export function SystemHealthIncidentCard({ incident, onDiagnose, onDetails, saved = false }) {
+  const evidenceState = incidentEvidenceState(incident, saved);
+  const older = evidenceState !== 'current';
+  return <GlassCard as="article" className="lite-system-health-incident" data-health-incident={incident.incident_id}
+    data-health-concern={evidenceState}>
     <div className="lite-system-health-incident-head">
       <span className="lite-system-health-health-icon"><AlertTriangle size={19} aria-hidden="true" /></span>
-      <div><h3>{incident.target_id || 'Affected service'}</h3><p>{incident.summary || 'The latest observation needs attention.'}</p></div>
-      <span className={'lite-system-health-state is-' + (stale ? 'unknown' : incident.severity === 'critical' ? 'attention' : 'watch')}>{stale ? 'Saved' : incident.severity === 'critical' ? 'Critical' : 'Needs attention'}</span>
+      <div>
+        <h3>{componentLabel(incident.source, incident.target_id)}</h3>
+        <p>{older ? 'A previous concern was recorded; the current condition is not confirmed.' : (incident.summary || 'A current observation needs review.')}</p>
+      </div>
+      <span className={'lite-system-health-state is-' + (older ? 'unknown' : incident.severity === 'critical' ? 'attention' : 'watch')}>
+        {older ? 'Recheck needed' : incident.severity === 'critical' ? 'Critical' : 'Review needed'}
+      </span>
     </div>
-    <p className="lite-system-health-muted">{stale ? 'Evidence is no longer current.' : 'Based on a committed backend health observation.'}</p>
+    <p className="lite-system-health-muted">
+      {older ? 'Saved concern · Last reported ' : 'Current observation · Last reported '}
+      {healthTimestamp(incident.last_seen_at)}
+    </p>
     <div className="lite-system-health-actions">
-      <LiteButton tone="secondary" onClick={() => onDiagnose(incident)}>Diagnose &amp; Fix</LiteButton>
-      <LiteButton tone="secondary" onClick={() => onDetails(incident)}>Details</LiteButton>
+      <LiteButton haptic tone="secondary" onClick={() => onDiagnose(incident)}>Review issue</LiteButton>
+      <LiteButton haptic tone="secondary" onClick={() => onDetails(incident)}>View details</LiteButton>
     </div>
   </GlassCard>;
 }
 
-function EvidenceRows({ rows = [] }) {
-  return rows.length ? rows.map((row, i) => <LiteActionRow key={row.incident_id || row.target_id || i}
-    label={row.target_id || row.source || 'Component'}
-    value={row.status || row.state || 'Not confirmed'}
-    summary={row.freshness === 'stale' || row.evidence_freshness === 'stale' ? 'Saved observation — current state unknown' : row.summary || ''}
-    attention={row.status === 'unavailable' || row.state === 'failed'} />)
-    : <StateSurface tone="empty" title="Not enough information" description="No authoritative records are available for this view." />;
+function EvidenceRows({ rows = [], emptyMessage = 'No authoritative records are available for this view.' }) {
+  return Array.isArray(rows) && rows.length
+    ? rows.slice(0, 30).map((row, i) => <LiteActionRow key={row.incident_id || row.target_id || i}
+      label={componentLabel(row.source, row.target_id || row.component)}
+      value={row.state ? (INCIDENT_STATE_LABELS[row.state] || healthStatusLabel(row.state)) : healthStatusLabel(row.status || row.observed_status)}
+      summary={row.evidence_freshness === 'stale' || row.freshness === 'stale' || row.concern_state === 'saved_concern'
+        ? 'Saved record. Check current conditions before acting.' : row.summary || ''}
+      attention={row.status === 'unavailable' || row.state === 'failed'} />)
+    : <StateSurface tone="empty" title="Nothing recorded" description={emptyMessage} />;
 }
 
-function DetailContent({ incident, diagnosis, diagnosing, diagnosisError, onDiagnose, onOpenArea }) {
-  if (!incident) return <StateSurface tone="empty" title="Choose a problem" description="Select a reported problem to review its evidence and safe next steps." />;
+function DetailContent({ incident, diagnosis, diagnosing, diagnosisError, onDiagnose, onOpenArea, readOnly = false }) {
+  if (!incident) return <StateSurface tone="empty" title="Choose a problem" description="Select a concern to review what was observed and what to do next." />;
+  const evidenceState = incidentEvidenceState(incident, readOnly);
+  const isCurrent = evidenceState === 'current';
+  const destination = recoveryDestination(incident.source);
+  const verifiedCause = typeof diagnosis?.verified_cause === 'string' && diagnosis.verified_cause
+    ? diagnosis.verified_cause : null;
   return <section className="lite-system-health-detail" aria-label="Problem details">
-    <h3>{incident.target_id}</h3>
-    <p>{incident.summary}</p>
-    <LiteActionRow label="Observed state" value={incident.state} summary={incident.evidence_freshness === 'current' ? 'Current saved projection' : 'Evidence is stale. Current status is not confirmed.'} />
-    <LiteActionRow label="What Pocket Lab checked" value={incident.source} summary="The last persisted worker-owned health signal; no live process inspection happens in this panel." />
-    <LiteActionRow label="Likely cause" value={diagnosis?.cause_confidence || 'Not established'} summary={diagnosis?.suspected_cause || 'No verified root cause has been established.'} />
-    <LiteActionRow label="What changed" value="Nothing" summary="Diagnosis does not restart or reconfigure services." />
-    <LiteActionRow label="How recovery was verified" value={incident.state === 'resolved' ? 'Observed healthy' : 'Not verified'} summary="A healthy observation is not proof of a completed repair." />
-    <p className="lite-system-health-muted">Saved for troubleshooting: sanitized incident metadata only. Raw evidence is backend-only.</p>
-    {diagnosisError ? <StateSurface tone="degraded" title="Diagnosis unavailable" description="Pocket Lab could not confirm the latest diagnosis." /> : null}
-    {diagnosis?.supporting_signals?.length ? <EvidenceRows rows={diagnosis.supporting_signals} /> : null}
-    <div className="lite-system-health-actions">
-      <LiteButton disabled={diagnosing || incident.evidence_freshness !== 'current'} busy={diagnosing}
-        disabledReason={incident.evidence_freshness !== 'current' ? 'Evidence is stale' : ''} onClick={onDiagnose} tone="primary">Check cause</LiteButton>
-      <LiteButton disabled disabledReason="No new System Health repair executor is qualified">Fix</LiteButton>
-      {onOpenArea ? <LiteButton tone="secondary" onClick={() => onOpenArea(incident.source === 'agent' || incident.source === 'supervisor' ? 'devices' : incident.source === 'security' ? 'security' : incident.source === 'storage' ? 'recovery' : 'catalog')}>Open existing recovery controls</LiteButton> : null}
+    <h3>{componentLabel(incident.source, incident.target_id)}</h3>
+    <span className={'lite-system-health-state is-' + (isCurrent ? 'watch' : 'unknown')}>
+      {isCurrent ? 'Current concern' : evidenceState === 'resolved' ? 'Observed healthy' : 'Saved concern'}
+    </span>
+    <div className="lite-system-health-detail-block">
+      <h4>What happened</h4>
+      <p>{incident.summary || 'A saved health observation was recorded.'}</p>
     </div>
-    <p className="lite-system-health-muted">No configuration overwrite, restart, app update or database restore is performed by this view.</p>
+    <div className="lite-system-health-detail-block">
+      <h4>What we know</h4>
+      <p>{isCurrent ? 'The latest matching observation reports an unhealthy state.' :
+        evidenceState === 'resolved' ? 'A subsequent healthy observation was recorded. That does not establish a completed repair.' :
+          'The previous concern remains unresolved; the current condition needs revalidation.'}</p>
+      <p className="lite-system-health-muted">Last reported {healthTimestamp(incident.last_seen_at)} · {INCIDENT_STATE_LABELS[incident.state] || 'Status not confirmed'}</p>
+    </div>
+    <div className="lite-system-health-detail-block">
+      <h4>Cause assessment</h4>
+      {verifiedCause ? <p>Verified cause: {verifiedCause}</p> :
+        diagnosis?.cause_confidence === 'inferred'
+          ? <p>Possible contributing factor: {diagnosis.suspected_cause || 'Not established'}. This is not a verified root cause.</p>
+          : <p>No verified root cause has been established.</p>}
+    </div>
+    {diagnosisError ? <StateSurface tone="degraded" title="Diagnosis unavailable" description="Pocket Lab could not record a current cause assessment." /> : null}
+    {diagnosis?.supporting_signals?.length ? <details className="lite-system-health-disclosure">
+      <summary>Supporting observations</summary>
+      <EvidenceRows rows={diagnosis.supporting_signals} />
+    </details> : null}
+    <div className="lite-system-health-detail-block">
+      <h4>Recommended next step</h4>
+      <p>{isCurrent ? 'Check the cause or review the component in its existing protected controls.' :
+        'Review a fresh status before requesting any recovery action.'}</p>
+    </div>
+    <div className="lite-system-health-actions">
+      <LiteButton haptic disabled={diagnosing || !isCurrent || readOnly} busy={diagnosing}
+        disabledReason={!isCurrent || readOnly ? 'Current evidence is required' : ''} onClick={onDiagnose} tone="primary">Check cause</LiteButton>
+      {destination && onOpenArea ? <LiteButton haptic tone="secondary" onClick={() => onOpenArea(destination)}>
+        {destination === 'devices' ? 'Open device controls' : destination === 'catalog' ? 'Open app controls' :
+          destination === 'recovery' ? 'Review recovery options' : 'Open safety controls'}
+      </LiteButton> : null}
+    </div>
+    <details className="lite-system-health-disclosure">
+      <summary>Advanced technical details</summary>
+      <dl className="lite-system-health-tech-facts">
+        <div><dt>Incident ID</dt><dd>{incident.incident_id}</dd></div>
+        <div><dt>Source</dt><dd>{incident.source}</dd></div>
+        <div><dt>Target ID</dt><dd>{incident.target_id}</dd></div>
+        <div><dt>Generation</dt><dd>{incident.generation}</dd></div>
+        <div><dt>Evidence revision</dt><dd>{incident.evidence_revision || 'Not available'}</dd></div>
+        <div><dt>Observation freshness</dt><dd>{incident.observation_freshness || incident.evidence_freshness || 'Unknown'}</dd></div>
+      </dl>
+    </details>
+    <p className="lite-system-health-muted">Only sanitized metadata is displayed. No repair executor is enabled here; checking a cause cannot restart a service, overwrite settings or restore data.</p>
   </section>;
 }
 
