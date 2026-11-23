@@ -1,6 +1,6 @@
 # System Health — Azure Horizon H0–H6 experience hardening
 
-**State:** SOURCE IMPLEMENTATION AUTHORED — NOT VALIDATED. **Base:** `main` at `a9f8b2d7625fd84f82dffee5f44bcee20225661e`. **Feature:** `feat/azure-horizon-system-health-experience-hardening`. This document describes source changes, not a qualified runtime.
+**State:** SOURCE IMPLEMENTATION AND BOUNDED QUALIFICATION RECORDED; PERFORMANCE REMAINS INCONCLUSIVE. **Base:** `main` at `a9f8b2d7625fd84f82dffee5f44bcee20225661e`. **Feature:** `feat/azure-horizon-system-health-experience-hardening`. The qualified UI candidate source SHA was `1ee1662490cb863891a082393f8c2b3b279544ae`; production was not changed.
 
 ## H0 — Source findings and scope
 
@@ -50,20 +50,25 @@ Spacing uses the Apps premium reference's restrained card density and section rh
 
 `LiteButton`'s existing `haptic` behavior is reused on eligible System Health actions. The existing shared action row and grouped navigation add opt-in access to the same `triggerLiteHaptic` helper. Unsupported vibration or reduced-motion environments do not vibrate. Haptics are never triggered by background refresh or state transitions.
 
-## H5 — Qualification source authored; NOT RUN
+## H5 — Qualification evidence
 
-- Backend: target parsing, malformed projections, short identities, fresh/saved/critical counts, unknown lifecycle, observed-not-repaired, repair denial.
-- Frontend: map known IDs to meaningful labels, unknown fallbacks, evidence grouping, counts, action destinations and no stale green.
-- Storybook: healthy, critical, unknown, stale, mixed, offline, no incidents, many incidents, recovery outcomes, long/malformed target, light/dark, desktop/mobile.
-- Playwright: current/saved issue cards, narrative, disclosure, safe action semantics, deep links, keyboard dismissal, Axe and 320–1440px responsive matrix.
-- Visual: light/dark at 320, 360, 390, 430, tablet, 1024, 1280, 1440 and Manage desktop/mobile screenshots. Baselines have **not** been captured or approved.
-- Performance future observations: no new live polling, prepared reads, bounded history, no new background collector, stable viewport layout, ARM64 browser memory.
+The following evidence was captured on the feature branch before documentation regeneration:
 
-See [qualification handoff](qualification-handoff-h0-h6.md). No build, tests, docs generation, screenshot, CI troubleshooting, or Android runtime qualification occurred in this source session.
+| Surface | Result | Evidence |
+|---|---|---|
+| Backend syntax and focused System Health tests | PASS | `py_compile`; focused and related qualification suites: 71 passed |
+| Frontend System Health tests | PASS | Vitest: 2 files, 13 tests |
+| Production build and Storybook | PASS | `npm run build`; `npm run build-storybook` |
+| Mocked desktop/mobile and Axe | PASS | System Health Playwright: 42/42; portal-mounted Manage Axe included |
+| Responsive visual suite | APPROVED | 42/42; 40 reviewed canonical light/dark desktop/mobile snapshots |
+| Physical Android Chrome UI | PASS | Exact candidate `1ee1662490cb863891a082393f8c2b3b279544ae`; Manage, diagnosis `200`, Home return, no repair/preflight |
+| Android performance and baseline attribution | INCONCLUSIVE/BLOCKED | System Health-only collector reached exact current APIs but safe-read state remained saved; no threshold or classifier was weakened |
+
+The physical run used the Dev-PC-hosted isolated candidate and synthetic qualification Owner harness. It is not production Server Phone backend evidence. The System Health performance residual is retained rather than converted into an unsupported result.
 
 ## H6 — Documentation and PR
 
-This source document, source audit, additive contract notes and qualification handoff are committed to the feature branch. A detailed Draft PR describes exact changes, reuse, risks, qualification and rollback. Existing PR #649 historical qualification evidence is retained unchanged.
+This source document, source audit, additive contract notes and qualification handoff record the bounded qualification above. Canonical generated documentation was regenerated only after source and device evidence converged. A detailed Draft PR describes exact changes, reuse, risks, qualification and rollback. Existing PR #649 historical qualification evidence is retained unchanged.
 
 ## Security and future P4
 
@@ -74,7 +79,8 @@ P4 controlled self-healing is deliberately **NOT IMPLEMENTED**. A future separat
 ## Known residuals
 
 - Production historical device labels require separate read-only provenance; there is no cleanup in H0–H6.
-- Screenshot appearance, 320px/desktop geometry, light/dark parity, focus and haptics await qualification.
-- New visual specs require human-approved baseline creation in a later session.
+- Hardware vibration and ARM64 production-backend behavior were not independently qualified; the physical browser consumed the Dev-PC candidate.
+- Android System Health performance remains inconclusive because the safe-read path stayed in saved presentation after repeated harness isolation. Absolute and baseline-normalized performance are not claimed.
+- CI exact-head status and final generated-documentation/repository-gate output are recorded in the PR continuation and must remain separate from local PASS evidence.
 - Existing APIs retain legacy unresolved counts for compatibility; clients must use the new additive fields for current concern counters.
 - Storybook/Playwright fixtures are synthetic and cannot prove live device recovery.

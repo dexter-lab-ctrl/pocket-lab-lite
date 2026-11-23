@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: ffab1e245c23c25f1e82cab39164d74f507ecc72880f1d1e2afdf8fd9333d85a
+source_fingerprint: cb55a9f10b9c73025c5623d4c150a18e91e3a2b75990388518d7bc93477b5a92
 schema_revision: 1
 validation_status: generated
 ---
@@ -165,6 +165,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_CANDIDATE_API_CA_FILE` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-system-health-android-ui-qualification.py, scripts/dev/lite/ui_performance_candidate_server.py |
 | `POCKETLAB_CANDIDATE_API_LOCAL_PORT` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-system-health-android-ui-qualification.py, scripts/dev/lite/ui_performance_candidate_server.py |
 | `POCKETLAB_CANDIDATE_API_SCHEME` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-system-health-android-ui-qualification.py, scripts/dev/lite/ui_performance_candidate_server.py |
+| `POCKETLAB_CANDIDATE_RUNTIME_TRANSPORT` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/ui_performance_candidate_server.py |
 | `POCKETLAB_COMMANDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py, scripts/dev/lite/run-isolated-runtime-qualification.py, scripts/docs/generate_asyncapi_contract.py, scripts/docs/generate_event_docs.py |
 | `POCKETLAB_COMMAND_ACK_WAIT_SECONDS` | configuration | 60 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py, pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py |
 | `POCKETLAB_COMMAND_EVENT_MAX_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |

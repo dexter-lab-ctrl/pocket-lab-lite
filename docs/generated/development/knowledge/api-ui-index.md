@@ -146,7 +146,7 @@ generator_version: 3
 | `GET /api/lite/system-health/dependencies` | system-health | LiteSystemHealth | system_health_dependencies_api_lite_system_health_dependencies_get | contract-derived |
 | `GET /api/lite/system-health/history` | system-health | LiteSystemHealth | system_health_history_api_lite_system_health_history_get | contract-derived |
 | `GET /api/lite/system-health/incidents` | system-health | LiteSystemHealth | system_health_incidents_api_lite_system_health_incidents_get | contract-derived |
-| `GET /api/lite/system-health/incidents/{incident_id}` | system-health | — | system_health_incident_api_lite_system_health_incidents__incident_id__get | contract-derived |
+| `GET /api/lite/system-health/incidents/{incident_id}` | system-health | LiteSystemHealth | system_health_incident_api_lite_system_health_incidents__incident_id__get | contract-derived |
 | `GET /api/lite/system-health/incidents/{incident_id}/decisions` | system-health | — | system_health_decisions_api_lite_system_health_incidents__incident_id__decisions_get | contract-derived |
 | `GET /api/lite/system-health/intelligence` | system-health | LiteSystemHealth | system_health_intelligence_api_lite_system_health_intelligence_get | contract-derived |
 | `GET /api/lite/system-health/policies` | system-health | LiteSystemHealth | system_health_policies_api_lite_system_health_policies_get | contract-derived |
@@ -303,4 +303,4 @@ generator_version: 3
 | LiteRules | GET /api/lite/policy, GET /api/lite/policy/decisions/{decision_id}, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
 | LiteRulesEnterprise | GET /api/lite/fleet, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
 | LiteSecurity | GET /api/lite/security/evidence/{run_id}/summary, GET /api/lite/security/freshness, GET /api/lite/security/history, GET /api/lite/security/profiles/{profile}, GET /api/lite/security/progress, GET /api/lite/security/summary, POST /api/lite/security/apps/{app_id}/check, POST /api/lite/security/check |
-| LiteSystemHealth | GET /api/lite/system-health/configuration-drift, GET /api/lite/system-health/dependencies, GET /api/lite/system-health/history, GET /api/lite/system-health/incidents, GET /api/lite/system-health/intelligence, GET /api/lite/system-health/policies, GET /api/lite/system-health/resources, GET /api/lite/system-health/summary, POST /api/lite/system-health/incidents/{incident_id}/diagnose |
+| LiteSystemHealth | GET /api/lite/system-health/configuration-drift, GET /api/lite/system-health/dependencies, GET /api/lite/system-health/history, GET /api/lite/system-health/incidents, GET /api/lite/system-health/incidents/{incident_id}, GET /api/lite/system-health/intelligence, GET /api/lite/system-health/policies, GET /api/lite/system-health/resources, GET /api/lite/system-health/summary, POST /api/lite/system-health/incidents/{incident_id}/diagnose |

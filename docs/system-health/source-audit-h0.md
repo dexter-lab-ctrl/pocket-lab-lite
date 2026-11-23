@@ -1,6 +1,6 @@
 # H0 — System Health source and evidence audit
 
-**Source basis:** GitHub `main` at `a9f8b2d7625fd84f82dffee5f44bcee20225661e`, 23 November 2026. **Status:** SOURCE-INSPECTED; qualification NOT RUN. This audit is not a physical Android observation.
+**Source basis:** GitHub `main` at `a9f8b2d7625fd84f82dffee5f44bcee20225661e`, 23 November 2026. **Status:** SOURCE-INSPECTED; implementation and bounded qualification completed against candidate `1ee1662490cb863891a082393f8c2b3b279544ae`. This audit remains source-led and does not convert isolated candidate evidence into production evidence.
 
 ## Confirmed findings
 
@@ -39,6 +39,10 @@ Writes: committed Phase 3B projection updates → `lite_phase3b_projections.comm
 
 **New source:** `src/lite/systemHealthPresentation.js` is required because generic component primitives must not encode System Health evidence semantics. No second theme, sheet, state store or execution pathway was introduced.
 
-## Limitations
+## Qualification result and limitations
 
-No screenshots were supplied as viewable images in this session. Historical suspicious identities, Android UI geometry, light/dark parity, focus, CI, NATS operation, and server-device behavior remain **UNVALIDATED**. No production SQLite repair, pruning or migration is authorized.
+The focused backend, frontend, Storybook, mocked desktop/mobile Playwright and Axe coverage passed on the feature branch. The focused System Health visual suite passed after review of representative light/dark desktop/mobile captures; 40 canonical snapshots were approved. The physical Android Chrome System Health qualifier consumed the Dev-PC-hosted exact candidate `1ee1662490cb863891a082393f8c2b3b279544ae` through the standard-user CDP path, opened Manage and diagnosis, returned a `200` diagnosis response, returned to Home, and observed no repair or preflight execution.
+
+The Android System Health-only performance collector is **INCONCLUSIVE/BLOCKED**. The isolated backend returned current persisted-projection data and exact candidate headers, but the Android browser safe-read path continued to present the data as saved after origin, service-worker and baseline-phase isolation. No frame or baseline-attribution result was promoted to PASS, no PR #588/#589 threshold was weakened, and no application performance change was made. The phone’s production checkout and services were observed read-only and were not used as the candidate backend.
+
+Historical short identities remain unmodified. No production SQLite repair, pruning, migration, PM2 change or deployment was authorized.

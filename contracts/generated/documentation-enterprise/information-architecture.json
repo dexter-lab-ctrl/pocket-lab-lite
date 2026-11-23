@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 532,
+  "page_count": 535,
   "page_types": [
     "overview",
     "guide",
@@ -17502,6 +17502,52 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "system-health/experience-hardening-h0-h6.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:system-health/experience-hardening-h0-h6",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "system-health/experience-hardening-h0-h6.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "system-health/experience-hardening-h0-h6.md",
+      "title": "System Health — Azure Horizon H0–H6 experience hardening",
+      "url": "/system-health/experience-hardening-h0-h6/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "system-health/qualification-handoff-h0-h6.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:system-health/qualification-handoff-h0-h6",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "system-health/qualification-handoff-h0-h6.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "system-health/qualification-handoff-h0-h6.md",
+      "title": "System Health H0–H6 qualification handoff",
+      "url": "/system-health/qualification-handoff-h0-h6/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "system-health/qualification-handoff.md"
       ],
       "confidence": "source-derived",
@@ -17520,6 +17566,29 @@
       "source_or_generator": "system-health/qualification-handoff.md",
       "title": "System Health P6 qualification handoff — executed with bounded evidence",
       "url": "/system-health/qualification-handoff/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "system-health/source-audit-h0.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:system-health/source-audit-h0",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "evidence",
+      "path": "system-health/source-audit-h0.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "system-health/source-audit-h0.md",
+      "title": "H0 — System Health source and evidence audit",
+      "url": "/system-health/source-audit-h0/"
     },
     {
       "additional_audiences": [],
@@ -18597,7 +18666,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "d71351be1e03a4cd8287ebb930516dc147a072ba5ae297450bb54ff285b4ed6c",
+  "source_fingerprint": "36ab24cf3a8cafd6a23eb3cbfba4cea54c575dd5d998ae5492f51c00cd95dd9b",
   "top_level": [
     "start-here",
     "use",

@@ -4108,6 +4108,13 @@
       "domain": "system-health",
       "frontend_clients": [
         {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceIncident",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -32632,6 +32639,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-system-health-visual.spec.ts",
+      "name": "tests/e2e/lite-system-health-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-system-health-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-system-health.spec.ts",
       "name": "tests/e2e/lite-system-health.spec.ts",
       "source_refs": [
@@ -36207,6 +36224,7 @@
         "test:tests/e2e/lite-safety-azure-visual-hardening.spec.ts",
         "test:tests/e2e/lite-safety-native-geometry.spec.ts",
         "test:tests/e2e/lite-security-runtime.spec.ts",
+        "test:tests/e2e/lite-system-health-visual.spec.ts",
         "test:tests/e2e/lite-system-health.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-ux-maturity.spec.ts",
@@ -37798,6 +37816,7 @@
         "test:tests/e2e/lite-safety-azure-visual-hardening.spec.ts",
         "test:tests/e2e/lite-safety-native-geometry.spec.ts",
         "test:tests/e2e/lite-security-runtime.spec.ts",
+        "test:tests/e2e/lite-system-health-visual.spec.ts",
         "test:tests/e2e/lite-system-health.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
         "test:tests/e2e/lite-ux-maturity.spec.ts",
@@ -39071,6 +39090,10 @@
         }
       ],
       "api:get:/api/lite/system-health/incidents/{incident_id}": [
+        {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
         {
           "source": "domain:system-health",
           "type": "owns"
@@ -55308,6 +55331,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-system-health-visual.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-ux-maturity.spec.ts": [
         {
           "source": "domain:identity",
@@ -71022,6 +71051,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/e2e/lite-system-health-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/e2e/lite-visual-devices.spec.ts",
           "type": "verified_by"
         },
@@ -75279,6 +75312,10 @@
         },
         {
           "target": "api:get:/api/lite/system-health/incidents",
+          "type": "calls"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/incidents/{incident_id}",
           "type": "calls"
         },
         {
@@ -91068,6 +91105,15 @@
     },
     {
       "evidence": [
+        "tests/e2e/lite-system-health-visual.spec.ts"
+      ],
+      "id": "rel:672bdec54f65fba9",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-system-health-visual.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:67320e2680842603",
@@ -99266,6 +99312,15 @@
       "id": "rel:9f950198b4aa30e7",
       "source": "ui:liteapp",
       "target": "api:get:/api/lite/catalog",
+      "type": "calls"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:9f95b0a082e21868",
+      "source": "ui:litesystemhealth",
+      "target": "api:get:/api/lite/system-health/incidents/{incident_id}",
       "type": "calls"
     },
     {
@@ -113276,9 +113331,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "ba0c91342ef40541d1c3299c9fa223875c7b75561e76678534f275b8a700d7ac",
+  "source_fingerprint": "142966514a650e2fe3e399067009ac1400606df89fd0c288d573913d91867969",
   "statistics": {
-    "entity_count": 1510,
+    "entity_count": 1511,
     "entity_type_counts": {
       "adr": 6,
       "api": 271,
@@ -113295,14 +113350,14 @@
       "runtime-topology": 9,
       "subject": 221,
       "table": 95,
-      "test": 338,
+      "test": 339,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 12,
       "vocabulary": 39
     },
-    "relation_count": 4188,
-    "source_count": 375
+    "relation_count": 4190,
+    "source_count": 376
   }
 }

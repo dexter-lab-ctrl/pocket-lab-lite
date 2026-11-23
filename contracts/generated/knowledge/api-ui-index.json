@@ -83,6 +83,9 @@
       "api:get:/api/lite/system-health/incidents": [
         "ui:litesystemhealth"
       ],
+      "api:get:/api/lite/system-health/incidents/{incident_id}": [
+        "ui:litesystemhealth"
+      ],
       "api:get:/api/lite/system-health/intelligence": [
         "ui:litesystemhealth"
       ],
@@ -329,6 +332,7 @@
         "api:get:/api/lite/system-health/dependencies",
         "api:get:/api/lite/system-health/history",
         "api:get:/api/lite/system-health/incidents",
+        "api:get:/api/lite/system-health/incidents/{incident_id}",
         "api:get:/api/lite/system-health/intelligence",
         "api:get:/api/lite/system-health/policies",
         "api:get:/api/lite/system-health/resources",
@@ -343,6 +347,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "ba0c91342ef40541d1c3299c9fa223875c7b75561e76678534f275b8a700d7ac"
+    "source_fingerprint": "142966514a650e2fe3e399067009ac1400606df89fd0c288d573913d91867969"
   }
 }

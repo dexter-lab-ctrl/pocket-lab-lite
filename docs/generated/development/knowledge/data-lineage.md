@@ -45,6 +45,7 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `GET /api/lite/system-health/dependencies` | ui:litesystemhealth | — | unvalidated |
 | `GET /api/lite/system-health/history` | ui:litesystemhealth | — | unvalidated |
 | `GET /api/lite/system-health/incidents` | ui:litesystemhealth | — | unvalidated |
+| `GET /api/lite/system-health/incidents/{incident_id}` | ui:litesystemhealth | — | unvalidated |
 | `GET /api/lite/system-health/intelligence` | ui:litesystemhealth | — | unvalidated |
 | `GET /api/lite/system-health/policies` | ui:litesystemhealth | — | unvalidated |
 | `GET /api/lite/system-health/resources` | ui:litesystemhealth | — | unvalidated |
