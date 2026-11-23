@@ -62,7 +62,7 @@ def _safe(value: Any, limit: int = 180) -> str:
 
 # Projections contain lists of typed records, never iterable device names.
 # Reject unsafe identities but allow legitimately short identifiers.
-_TARGET_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,119}\\Z")
+_TARGET_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,119}")
 
 
 def _target_id(value: Any, limit: int = 100) -> str:
@@ -231,8 +231,14 @@ def _read(sql: str, params: tuple = ()) -> list[dict[str, Any]]:
 
 def incidents(*, include_resolved: bool = False, limit: int = 40, offset: int = 0) -> dict[str, Any]:
     limit, offset = max(1, min(int(limit), 100)), max(0, min(int(offset), 10000))
-    where = "" if include_resolved else "WHERE state != 'resolved'"
-    items = _read(f"SELECT * FROM lite_system_health_incidents {where} ORDER BY last_seen_at DESC, incident_id LIMIT ? OFFSET ?", (limit, offset))
+    where = "" if include_resolved else "WHERE i.state != 'resolved'"
+    items = _read(
+        "SELECT i.*, o.status AS latest_observation_status, o.observed_at AS latest_observed_at "
+        "FROM lite_system_health_incidents i LEFT JOIN lite_system_health_observations o "
+        "ON o.source=i.source AND o.target_id=i.target_id "
+        + where + " ORDER BY i.last_seen_at DESC, i.incident_id LIMIT ? OFFSET ?",
+        (limit, offset),
+    )
     return {"items": [public_incident(item) for item in items], "limit": limit, "offset": offset, "next_offset": offset + len(items) if len(items) == limit else None}
 
 
@@ -242,6 +248,16 @@ def public_incident(item: dict[str, Any]) -> dict[str, Any]:
     result = dict(item)
     result["evidence_freshness"] = freshness(item.get("last_seen_at"))
     result["cause_confidence"] = "unconfirmed" if not item.get("verified_cause") else "verified"
+    observation_freshness = freshness(item.get("latest_observed_at"))
+    result["observation_freshness"] = observation_freshness
+    # An unresolved incident is current only with a fresh unhealthy observation.
+    # An unconfirmed or healthy signal cannot silently close a historical event.
+    result["concern_state"] = (
+        "resolved_observation" if item.get("state") == "resolved"
+        else "current_concern" if observation_freshness == "current"
+        and item.get("latest_observation_status") in UNHEALTHY
+        else "saved_concern"
+    )
     result["repair_available"] = False  # Explicitly off until owned command handlers are qualified.
     result["repair_guidance"] = "Review the existing protected recovery action for this component."
     return result
@@ -259,23 +275,42 @@ def freshness(timestamp: str | None) -> str:
 
 
 def incident(incident_id: str) -> dict[str, Any] | None:
-    rows = _read("SELECT * FROM lite_system_health_incidents WHERE incident_id=? LIMIT 1", (incident_id,))
+    rows = _read(
+        "SELECT i.*, o.status AS latest_observation_status, o.observed_at AS latest_observed_at "
+        "FROM lite_system_health_incidents i LEFT JOIN lite_system_health_observations o "
+        "ON o.source=i.source AND o.target_id=i.target_id WHERE i.incident_id=? LIMIT 1",
+        (incident_id,),
+    )
     return public_incident(rows[0]) if rows else None
 
 
 def summary() -> dict[str, Any]:
     signals = _read("SELECT source,target_id,status,observed_at FROM lite_system_health_observations ORDER BY source,target_id LIMIT 256")
-    active = _read("SELECT state,severity FROM lite_system_health_incidents WHERE state!='resolved' LIMIT 256")
+    active = _read("SELECT source,target_id,state,severity FROM lite_system_health_incidents WHERE state!='resolved' LIMIT 256")
     recent = _read("SELECT incident_id,state,summary,resolved_at FROM lite_system_health_incidents WHERE state='resolved' ORDER BY resolved_at DESC LIMIT 5")
     fresh = [s for s in signals if freshness(s["observed_at"]) == "current"]
     healthy = sum(1 for s in fresh if s["status"] in HEALTHY)
     unhealthy = sum(1 for s in fresh if s["status"] in UNHEALTHY)
     unknown_count = len(signals) - len(fresh) + sum(s["status"] not in (HEALTHY | UNHEALTHY) for s in fresh)
-    status = "unknown" if not signals or not fresh else "attention" if unhealthy or active else "unknown" if unknown_count else "healthy"
+    signal_by_target = {(s["source"], s["target_id"]): s for s in signals}
+    current = [
+        item for item in active
+        if (signal := signal_by_target.get((item["source"], item["target_id"])))
+        and freshness(signal["observed_at"]) == "current"
+        and signal["status"] in UNHEALTHY
+    ]
+    saved_count = len(active) - len(current)
+    status = ("unknown" if not signals or not fresh else
+              "attention" if unhealthy or current else
+              "unknown" if unknown_count or saved_count else "healthy")
     return {
         "status": status, "checked_at": _now(), "data_source": "persisted_projection",
         "observed_services": len(signals), "healthy_services": healthy,
+        # Legacy fields preserve unresolved-incident semantics for old clients.
         "active_problems": len(active), "critical_problems": sum(a["severity"] == "critical" for a in active),
+        "current_problems": len(current), "saved_problems": saved_count,
+        "current_critical_problems": sum(a["severity"] == "critical" for a in current),
+        "unresolved_critical_problems": sum(a["severity"] == "critical" for a in active),
         "unknown_services": unknown_count, "automatic_repairs_running": 0,
         "recent_verified_recoveries": 0,  # Healthy observation is not verified repair recovery.
         "recent_resolutions": recent,
