@@ -195,3 +195,25 @@ def cancel_request(context: dict, request_id: str) -> dict:
             health._event(conn,row["incident_id"],row["incident_generation"],"recovery_cancelled","Owner cancelled before execution.")
             audit(conn,actor,"recovery_cancelled",request_id)
             return health._public_recovery_request(dict(conn.execute("SELECT * FROM lite_system_health_recovery_requests WHERE request_id=?",(request_id,)).fetchone()))
+
+
+def resource_preference_enabled() -> bool:
+    import os
+    from . import lite_infrastructure_operations as ops
+    if os.environ.get("POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE", "0") != "0":
+        return False
+    if os.environ.get("POCKETLAB_ENVIRONMENT", "").strip().casefold() == "qualification":
+        return os.environ.get("POCKETLAB_SYSTEM_HEALTH_RESOURCE_ADAPTER") == "1"
+    return ({"resource.defer", "resource.resume"} <= ops.PRODUCTION_QUALIFIED_OPERATIONS
+            and os.environ.get("POCKETLAB_SYSTEM_HEALTH_PRODUCTION_ASSISTED") == "1"
+            and preferences()["recovery_mode"] == "assisted")
+
+
+def refresh_resource_preference() -> None:
+    """Existing worker watchdog calls this at its bounded reconciliation cadence."""
+    from .adaptive_runtime import ADAPTIVE_RUNTIME
+    try:
+        mode = preferences()["resource_mode"] if resource_preference_enabled() else "balanced"
+    except Exception:
+        mode = "balanced"
+    ADAPTIVE_RUNTIME.set_resource_preference(mode)
