@@ -106,6 +106,8 @@ def system_health_policies(request: Request):
     from ..services import lite_infrastructure_authority as authority
     from ..db.connection import connection
     result = health.policy()
+    from ..services import lite_infrastructure_automation as automation
+    result["selective_automation"] = automation.public()
     try:
         with connection() as conn:
             authority.require_owner(conn, context)
@@ -394,3 +396,22 @@ def system_health_cancel_maintenance(command_id: str, request: Request):
         return maintenance.cancel_queued(context,command_id)
     except (PermissionError,LookupError,ValueError) as exc:
         _control_error(exc)
+
+
+class AutomaticPolicyRequest(BaseModel):
+    model_config={"extra":"forbid"}
+    expected_revision: int=Field(ge=0)
+    enabled: bool
+    confirm: bool
+
+
+@router.put("/automatic-policy")
+def system_health_automatic_policy(payload: AutomaticPolicyRequest,request: Request):
+    context=_require_authenticated(request,write=True)
+    from ..services import lite_infrastructure_automation as automation
+    try:
+        return automation.save(context,**payload.model_dump())
+    except (PermissionError,ValueError) as exc:
+        _control_error(exc)
+    except lite_policy_opa.PolicyDecisionError as exc:
+        raise HTTPException(exc.status_code,detail={"reason_code":exc.reason_code,"message":exc.message}) from exc

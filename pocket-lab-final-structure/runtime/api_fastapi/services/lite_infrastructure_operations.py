@@ -101,6 +101,7 @@ OPERATIONS = (
 # Promotion is a reviewed source change after exact-candidate qualification.
 # No environment flag or preference can qualify an operation.
 PRODUCTION_QUALIFIED_OPERATIONS: frozenset[str] = frozenset()
+PRODUCTION_QUALIFIED_AUTOMATIC_OPERATIONS: frozenset[str] = frozenset()
 
 
 MAINTENANCE_OPERATIONS = frozenset({"storage.evidence.preview", "storage.evidence.retention", "sqlite.checkpoint.passive", "recovery.database.rehearse", "projection.reconcile", "storage.logs.preview", "storage.logs.cleanup", "storage.temp.preview", "storage.temp.cleanup"})
