@@ -247,6 +247,7 @@ export const liteApi = {
   healthIntelligenceSummary: safeGet('/api/lite/system-health/summary'),
   healthIntelligenceIncidents: (limit = 30, offset = 0) => readJson(`/api/lite/system-health/incidents?limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}`),
   healthIntelligenceIncident: (incidentId) => readJson(`/api/lite/system-health/incidents/${encodeURIComponent(incidentId)}`),
+  healthIntelligenceDecisions: (incidentId) => readJson(`/api/lite/system-health/incidents/${encodeURIComponent(incidentId)}/decisions`),
   healthIntelligenceHistory: (limit = 30, offset = 0) => readJson(`/api/lite/system-health/history?limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}`),
   healthIntelligenceDependencies: () => readJson('/api/lite/system-health/dependencies'),
   healthIntelligenceResources: () => readJson('/api/lite/system-health/resources'),

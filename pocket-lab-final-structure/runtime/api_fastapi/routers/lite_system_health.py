@@ -108,6 +108,9 @@ def system_health_repairs(request: Request):
 def system_health_diagnose(incident_id: str, request: Request):
     # State-changing audit of diagnosis is explicitly authenticated.
     _require_authenticated(request, write=True)
+    found = health.incident(incident_id)
+    if found is not None and not found["current_monitoring"]:
+        raise HTTPException(409, detail={"reason_code": "historical_record", "summary": "Review earlier evidence; this device is no longer monitored."})
     result = health.record_diagnosis(incident_id)
     if result is None:
         raise HTTPException(404, detail={"status": "not_found", "summary": "This problem was not found."})

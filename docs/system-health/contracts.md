@@ -4,6 +4,10 @@
 
 **PR #656 H0–H6 qualification provenance:** source candidate `b65d83c2f83229e3abd59e01b33aaecaa5797734`; Dev-PC-hosted isolated FastAPI/NATS/OPA candidate; short-lived synthetic qualification Owner; standard-user Android Chrome CDP `1.3`; candidate runtime transport `devpc_loopback_isolated_candidate`. Focused backend/UI/Storybook/mocked Playwright/Axe and reviewed visual snapshots passed. The saved-state correction preserves `X-PocketLab-Read-Nonce` through the candidate proxy and revalidates the System Health summary on mount; focused regressions cover both saved-to-fresh and fresh-to-saved transitions. Physical System Health UI passed for the exact candidate, including Manage, diagnosis `200`, Home return and no repair/preflight execution. The bounded Android System Health-only performance collector completed three repetitions over nine interactions; all nine comparisons are retained as `MIXED` residuals with zero absolute target/gate passes and no `APP_INCREMENTAL_COST` classification. No production Server Phone source, SQLite, PM2, credentials or services were changed, and no production deployment occurred.
 
+## P4 membership boundary (source implementation; qualification deferred)
+
+See [P4 controlled recovery and device lifecycle](p4-device-lifecycle.md) for the additive membership contract, blocked executor decision and future qualification. Historical PR #649 and #656 evidence above does not qualify P4.
+
 ## Incident and freshness
 
 Canonical incident: incident_id = hash(source + target), source, target_id, kind, state, severity, generation, recurrence_count, observation_count, first_seen_at, last_seen_at, resolved_at, evidence_revision, summary, suspected_cause and verified_cause. States: detected, diagnosing, diagnosed, repair_available, repairing, verifying, resolved, blocked, failed, manual_attention_required.

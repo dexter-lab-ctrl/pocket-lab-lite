@@ -498,8 +498,10 @@ def repair_preflight(incident_id: str, operation_id: str, expected_generation: i
         reasons.append("protected_host_membership_conflict")
     if found["state"] == "resolved":
         reasons.append("incident_already_resolved")
-    if found["evidence_freshness"] != "current":
+    if found["evidence_freshness"] != "current" or found["observation_freshness"] != "current":
         reasons.append("evidence_not_current")
+    if found.get("latest_observation_status") not in UNHEALTHY:
+        reasons.append("unhealthy_evidence_not_confirmed")
     # The watchdog has no qualified requestable command/verification contract.
     # Do not add an enable switch that can bypass this structural blocker.
     reasons.append("system_health_executor_not_qualified")
@@ -523,16 +525,18 @@ def record_repair_denial(incident_id: str, operation_id: str, expected_generatio
     assessment = repair_preflight(incident_id, operation_id, expected_generation)
     if assessment is None:
         return None
+    actor_class = actor_class if actor_class in {"human", "service", "test"} else "unknown"
     digest = hashlib.sha256(idempotency_key.encode("utf-8")).hexdigest()
     denial_id = "denial-" + uuid.uuid4().hex
     with connection() as conn:
         with begin_immediate(conn):
             previous = conn.execute(
-                "SELECT incident_id,operation_id,reason_code FROM lite_system_health_repair_denials "
+                "SELECT incident_id,incident_generation,operation_id,actor_class,reason_code FROM lite_system_health_repair_denials "
                 "WHERE idempotency_digest=?", (digest,)
             ).fetchone()
             if previous is not None:
-                if previous["incident_id"] != incident_id or previous["operation_id"] != operation_id:
+                if (previous["incident_id"] != incident_id or previous["operation_id"] != operation_id
+                        or previous["incident_generation"] != expected_generation or previous["actor_class"] != actor_class):
                     return {**assessment, "reasons": ["idempotency_conflict"], "recorded": False}
                 return {**assessment, "reasons": [previous["reason_code"]], "recorded": True,
                         "idempotent_replay": True}
@@ -556,7 +560,24 @@ def record_repair_denial(incident_id: str, operation_id: str, expected_generatio
 
 
 def decision_history(incident_id: str, *, limit: int = 20) -> dict[str, Any]:
+    limit = max(1, min(limit, 50))
     return {
+        "events": _read(
+            "SELECT generation,event_type,created_at,safe_summary FROM lite_system_health_events "
+            "WHERE incident_id=? ORDER BY id DESC LIMIT ?", (incident_id, limit),
+        ),
+        "repairs": _read(
+            "SELECT repair_id,incident_generation,operation_id,execution_state,verification_state,"
+            "requested_at,completed_at,safe_summary,outcome FROM lite_system_health_repair_attempts "
+            "WHERE incident_id=? ORDER BY requested_at DESC LIMIT ?", (incident_id, limit),
+        ),
+        "removal_receipts": _read(
+            "SELECT r.receipt_id,r.removal_status,r.reason_code,r.created_at "
+            "FROM lite_system_health_incidents i JOIN device_removal_receipts r ON r.device_id=i.target_id "
+            "WHERE i.incident_id=? AND i.source IN ('agent','supervisor','telemetry') "
+            "AND r.sanitized=1 ORDER BY r.created_at_epoch_ms DESC,r.receipt_id DESC LIMIT ?",
+            (incident_id, limit),
+        ),
         "diagnoses": _read(
             "SELECT diagnosis_id,incident_id,incident_generation,created_at,suspected_cause,"
             "confidence,evidence_freshness,recommended_action FROM lite_system_health_diagnoses "

@@ -80,7 +80,7 @@ function EvidenceRows({ rows = [], emptyMessage = 'No authoritative records are 
     : <StateSurface tone="empty" title="Nothing recorded" description={emptyMessage} />;
 }
 
-function DetailContent({ incident, diagnosis, diagnosing, diagnosisError, onDiagnose, onOpenArea, readOnly = false }) {
+function DetailContent({ incident, diagnosis, diagnosing, diagnosisError, onDiagnose, onOpenArea, decisions, readOnly = false }) {
   if (!incident) return <StateSurface tone="empty" title="Choose a problem" description="Select a concern to review what was observed and what to do next." />;
   const evidenceState = incidentEvidenceState(incident, readOnly);
   const isCurrent = evidenceState === 'current';
@@ -129,6 +129,21 @@ function DetailContent({ incident, diagnosis, diagnosing, diagnosisError, onDiag
           destination === 'recovery' ? 'Review recovery options' : 'Open safety controls'}
       </LiteButton> : null}
     </div>
+    {historical && <section className="lite-system-health-detail-block" aria-label="Earlier evidence">
+      <h4>Earlier evidence</h4>
+      <p className="lite-system-health-muted">Removal and recovery are separate events. Only recorded outcomes are shown.</p>
+      {(decisions?.removal_receipts || []).map((receipt) => <LiteActionRow key={receipt.receipt_id}
+        label="Device removal recorded" value={healthTimestamp(receipt.created_at)} />)}
+      {(decisions?.diagnoses || []).map((entry) => <LiteActionRow key={entry.diagnosis_id}
+        label="Earlier cause assessment" value={healthTimestamp(entry.created_at)} summary={entry.suspected_cause || 'Not established'} />)}
+      {(decisions?.repair_denials || []).map((entry) => <LiteActionRow key={entry.denial_id}
+        label="Recovery blocked" value={healthTimestamp(entry.denied_at)} summary={entry.safe_summary} />)}
+      {(decisions?.repairs || []).map((entry) => <LiteActionRow key={entry.repair_id}
+        label={recoveryOperationLabel(entry.operation_id)}
+        value={entry.execution_state === 'completed' && entry.verification_state === 'verified' ? 'Recovery verified' : 'Outcome not verified'}
+        summary={entry.safe_summary} />)}
+      {!decisions && <p className="lite-system-health-muted">Earlier decisions are not available yet.</p>}
+    </section>}
     <details className="lite-system-health-disclosure">
       <summary>Advanced technical details</summary>
       <dl className="lite-system-health-tech-facts">
@@ -207,6 +222,13 @@ export default function LiteSystemHealth({ onNavigate }) {
     staleTime: 90_000, pollingMode: 'relaxed',
   });
   const selected = (selectedQuery.data?.incident_id === selectedIncident ? selectedQuery.data : null) || items.find((item) => item.incident_id === selectedIncident) || (history.data?.items || []).find((item) => item.incident_id === selectedIncident) || null;
+  const decisions = useLiteQuery({
+    queryKey: ['lite', 'system-health', 'decisions', selectedIncident],
+    path: selectedIncident ? '/api/lite/system-health/incidents/' + selectedIncident + '/decisions' : '/api/lite/system-health/incidents',
+    queryFn: () => liteApi.healthIntelligenceDecisions(selectedIncident),
+    enabled: open && section === 'diagnostics' && Boolean(selectedIncident) && selected?.current_monitoring === false && !readOnly,
+    staleTime: 120_000, pollingMode: 'off',
+  });
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get('incident');
@@ -321,7 +343,7 @@ export default function LiteSystemHealth({ onNavigate }) {
           {incidentsQuery.data?.next_offset != null ? <p className="lite-system-health-muted">Additional historical records exist. Use the bounded history view for more records.</p> : null}
         </section> : null}
         {section === 'diagnostics' ? <DetailContent incident={selected} diagnosis={diagnosis} diagnosing={diagnosing} diagnosisError={diagnosisError}
-          onDiagnose={() => diagnose(selected)} readOnly={readOnly} onOpenArea={onNavigate ? (destination) => { close(); onNavigate(destination); } : null} /> : null}
+          onDiagnose={() => diagnose(selected)} decisions={decisions.data} readOnly={readOnly} onOpenArea={onNavigate ? (destination) => { close(); onNavigate(destination); } : null} /> : null}
         {section === 'repairs' ? <section className="lite-system-health-manage-section">
           <p className="lite-system-health-muted">Existing supervisors and protected recovery workflows own execution. Requests from System Health are blocked until an independently verifiable recovery contract is qualified.</p>
           {(policies.data?.repair_catalog || []).map((item) => <LiteActionRow key={item.operation_id}

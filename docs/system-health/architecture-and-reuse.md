@@ -110,3 +110,10 @@ No new background polling thread, heavyweight ML library, continuous process sam
 - Qualify remaining deferred fault scenarios and independently measure hardware haptics.
 
 **Final state: SOURCE IMPLEMENTATION AND GUARDED PROMOTION WORKFLOW PROVIDED — EXACT-SHA ARM64/TERMUX CANDIDATE, ISOLATED MIGRATIONS, MOCKED UI AND ANDROID CHROME-TO-CANDIDATE UI QUALIFIED — PRODUCTION ACTIVATION NOT PERFORMED; LIVE ADMISSION BLOCKED BY THE MISSING EXTERNAL GUARDIAN — DRAFT PR REQUIRED.**
+
+
+## P4 source implementation (not qualified)
+
+See [P4 controlled recovery and device lifecycle](p4-device-lifecycle.md). The
+durable enrollment registry now constrains device-scoped System Health reads;
+the watchdog remains the independent recovery owner. No new executor is enabled.
