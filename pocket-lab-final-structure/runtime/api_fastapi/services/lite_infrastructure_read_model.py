@@ -12,7 +12,7 @@ from typing import Any
 from . import lite_system_health as health
 
 DOMAINS = (
-    "system.health", "system.processes", "system.nats_remote", "system.agent", "system.supervisor",
+    "system.health", "system.status", "system.processes", "system.nats_remote", "system.agent", "system.supervisor",
     "system.remote_access", "system.storage_pressure", "system.sqlite_health",
     "system.telemetry_thresholds", "system.activity_current",
     "system.activity_history", "security.summary", "security.progress",
@@ -26,7 +26,7 @@ STATUS = frozenset({
     "active", "idle", "queued", "accepted", "working", "in_progress", "pending",
     "cancelled", "succeeded", "blocked", "undeliverable", "timed_out",
     "verified", "not_verified", "not_configured", "not_run", "ok", "wal",
-    "partial", "stale", "saved", "expired", "completed", "disabled",
+    "partial", "stale", "saved", "expired", "completed", "disabled", "stable", "converging", "repairing", "mismatch",
 })
 SERVICE_IDENTITIES = (
     ("api", "Control API", "pocket-api", "api", "system.health"),
@@ -101,6 +101,9 @@ def _services(snapshots: dict) -> list[dict]:
     system = snapshots.get("system.health", {})
     nats = snapshots.get("system.nats_remote", {})
     components = _dict(system.get("components"))
+    runtime = _dict(snapshots.get("system.status", {}).get("runtime"))
+    runtime_services = {item.get("process"):item for item in _items(runtime.get("services")) if isinstance(item.get("process"),str)}
+    runtime_stamp = {"updated_at":runtime.get("observed_at")}
     # Only fixed managed-service names; no arbitrary process labels or PIDs.
     known = {item.get("service_id") or item.get("name"): item for item in _items(processes.get("items"), 128)
              if isinstance(item.get("service_id") or item.get("name"), str)}
@@ -119,6 +122,10 @@ def _services(snapshots: dict) -> list[dict]:
         # Process online is not functional readiness. A stopped known process
         # is a valid observation, but only independent component evidence
         # may show operational readiness.
+        owner = runtime_services.get(process,{})
+        if owner and _freshness(runtime_stamp) == "current":
+            readiness = _enum(owner.get("health"))
+            row = runtime_stamp
         status = readiness
         if process_freshness == "current" and state in {"stopped", "errored", "failed", "missing"}:
             status = state
@@ -128,6 +135,9 @@ def _services(snapshots: dict) -> list[dict]:
             "freshness": _freshness(row) if status != "unknown" else "unknown",
             "process_status": state, "process_freshness": process_freshness,
             "functional_readiness": readiness,
+            "configuration_match": _flag(owner.get("desired_state_match")) if owner else "unknown",
+            "configuration_freshness": _freshness(runtime_stamp) if owner else "unknown",
+            "restart_budget_remaining": _count(owner.get("restart_budget_remaining")) if owner else None,
         })
     return output
 
@@ -186,6 +196,9 @@ def infrastructure() -> dict:
         _field({}, "Local network reachability", "unknown"),
         _field({}, "Secure access certificates", "unknown"),
     ]
+    runtime = _dict(snapshots.get("system.status",{}).get("runtime"))
+    runtime_stamp = {"updated_at":runtime.get("observed_at")}
+    logs = _dict(runtime.get("log_policy"))
     storage_rows = [
         _field(storage, "Storage pressure", storage.get("status")),
         _field(storage, "Available space band", storage.get("free_space_band")),
@@ -195,6 +208,9 @@ def infrastructure() -> dict:
         _number(storage, "Total capacity (MiB)", storage.get("total_capacity_mib")),
         _number(storage, "Available capacity (MiB)", storage.get("free_capacity_mib")),
         _number(storage, "Database WAL (MiB)", storage.get("wal_size_mib")),
+        _number(runtime_stamp, "Managed log bytes", logs.get("pm2_log_bytes")),
+        _number(runtime_stamp, "Managed log ceiling (bytes)", logs.get("pm2_log_ceiling_bytes")),
+        _field(runtime_stamp, "Managed log policy", _flag(logs.get("within_policy"))),
         _number({}, "Reclaimable storage (bytes)", None),
     ]
     database = [
@@ -226,10 +242,15 @@ def infrastructure() -> dict:
         _field(telemetry, "Charging", _dict(telemetry.get("capabilities")).get("charging")),
         _field({}, "Resource preference", "unknown"),
     ]
+    policy_rows = health._read("SELECT active_revision_id,known_good_revision_id FROM policy_runtime_state WHERE state_id=1")
+    policy_pending = health._read("SELECT 1 FROM policy_activation_operations WHERE state IN ('pending','validating','switching','restarting','verifying','rolling_back','uncertain') LIMIT 1")
+    policy = policy_rows[0] if policy_rows else {}
+    policy_record = "unknown" if not policy.get("active_revision_id") else "ready" if policy.get("active_revision_id")==policy.get("known_good_revision_id") and not policy_pending else "not_ready"
     security_rows = [
         _field(security, "Safety evidence", security.get("status")),
         _field(progress, "Safety operation", progress.get("status")),
         _field({}, "Active policy integrity", "unknown"),
+        _field({"updated_at":health._now()} if policy else {}, "Durable policy pointer agreement (not loaded policy proof)", policy_record),
         _field({}, "Vulnerability database freshness", "unknown"),
         _field({}, "System clock reliability", "unknown"),
     ]
@@ -254,6 +275,7 @@ def infrastructure() -> dict:
             "reason": "Preference is recorded separately from effective scheduler behavior.",
         },
         "retry_available": False, "cancellation_available": False,
+        "configuration": [_field(runtime_stamp, "Desired runtime state", runtime.get("state"))],
         "sanitized": True,
     }
 
