@@ -80,8 +80,8 @@ def save_preferences(context: dict, *, expected_revision: int, recovery_mode: st
 def bind_request(conn, request_id: str, context: dict, confirmed: bool) -> None:
     actor, session, auth = context.get("actor") or {}, context.get("session") or {}, context.get("authorization") or {}
     session_id = session.get("session_id") if actor.get("type") == "human" else (context.get("harness") or {}).get("session_id")
-    role = auth.get("role")
-    if not session_id or role not in {"Owner", "Admin", "Operator"} or not session.get("authenticated"):
+    role = "Qualification" if actor.get("type") == "qualification" and (context.get("harness") or {}).get("profile") == "qualification-owner" else auth.get("role")
+    if not session_id or role not in {"Owner", "Admin", "Operator", "Qualification"} or not session.get("authenticated"):
         raise PermissionError("durable_authority_required")
     conn.execute("""INSERT INTO lite_system_health_request_authority VALUES (?,?,?,?,?,?)
                     ON CONFLICT(request_id) DO UPDATE SET session_id=excluded.session_id,actor_role=excluded.actor_role,
@@ -99,7 +99,7 @@ def _current_context(conn, request: dict) -> dict | None:
         if not auth or auth["role"] != binding["actor_role"] or auth["authorization_version"] != binding["authorization_version"] or auth["enterprise_enabled"] != bool(binding["enterprise_enabled"]):
             return None
         return {"actor": {"identity_id": actor_id, "type": "human"}, "session": {"authenticated": True}, "authorization": auth}
-    if kind != "qualification":
+    if kind != "qualification" or binding["actor_role"] != "Qualification":
         return None
     from . import lite_harness
     if not lite_harness.harness_enabled() or not lite_harness.qualification_owner_enabled() or lite_harness.environment() != lite_harness.HARNESS_RUNTIME_ENVIRONMENT:
