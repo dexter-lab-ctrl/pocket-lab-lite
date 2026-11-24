@@ -492,7 +492,7 @@ def policy() -> dict[str, Any]:
                 "operation_id": CONTROLLED_RECOVERY_OPERATION,
                 "execution_owner": "worker_recovery_watchdog",
                 "verification": "fresh_consumer_generation_and_health",
-                "activation_scope": "qualification_only",
+                "activation_scope": "source_qualified_assisted_only" if CONTROLLED_RECOVERY_OPERATION in infrastructure_ops.PRODUCTION_QUALIFIED_OPERATIONS else "qualification_only",
             },
             "explanation": "The allowlisted recovery adapter is isolated-qualification only and disabled by default; existing guardians remain authoritative."}
 
@@ -704,7 +704,8 @@ def admit_controlled_recovery(
     session_id = session.get("session_id") if actor_type == "human" else ((auth_context or {}).get("harness") or {}).get("session_id")
     if not confirm:
         return {**assessment, "status": "blocked", "reasons": ["confirmation_required"], "recorded": False}
-    if not session_id or not session.get("authenticated") or authorization.get("role") not in {"Owner", "Admin", "Operator"}:
+    qualification_actor = actor_type == "qualification" and ((auth_context or {}).get("harness") or {}).get("profile") == "qualification-owner"
+    if not session_id or not session.get("authenticated") or not (qualification_actor or (actor_type == "human" and authorization.get("role") in {"Owner", "Admin", "Operator"})):
         return {**assessment, "status": "blocked", "reasons": ["durable_authority_required"], "recorded": False}
     if not actor_id or actor_id == "anonymous":
         return {**assessment, "status": "blocked", "reasons": ["actor_identity_required"], "recorded": False}
