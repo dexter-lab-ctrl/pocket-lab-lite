@@ -1200,42 +1200,91 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
             for item in items[:40]
             if isinstance(item, dict)
         ]
-        eligible = [
-            item for item in items
-            if isinstance(item, dict)
-            and item.get("source") == "nats"
-            and (item.get("target_id") == "jetstream" or str(item.get("target_id") or "").startswith("consumer:"))
-            and item.get("current_monitoring") is True
-            and item.get("repair_available") is True
-        ]
-        incident = eligible[0] if eligible else {}
-        if not incident:
-            raise QualificationError("candidate System Health projection did not produce an eligible NATS recovery incident")
-        incident_id = str(incident.get("incident_id") or "")
-        generation = int(incident.get("generation") or 0)
-        if not incident_id or generation < 1 or incident.get("state") == "resolved":
-            raise QualificationError("candidate incident state was not active and generation-bound")
-        self.results["recovery_selection"] = {
-            "source": _safe_text(incident.get("source"), 64),
-            "target_id": _safe_text(incident.get("target_id"), 128),
-            "generation": generation,
-            "enrollment_generation": int(incident.get("enrollment_generation") or 0),
+
+        def eligible_incident(rows: Any) -> dict[str, Any]:
+            if not isinstance(rows, list):
+                return {}
+            return next(
+                (
+                    item for item in rows
+                    if isinstance(item, dict)
+                    and item.get("source") == "nats"
+                    and (item.get("target_id") == "jetstream" or str(item.get("target_id") or "").startswith("consumer:"))
+                    and item.get("current_monitoring") is True
+                    and item.get("repair_available") is True
+                    and item.get("state") != "resolved"
+                    and int(item.get("generation") or 0) >= 1
+                    and str(item.get("incident_id") or "")
+                ),
+                {},
+            )
+
+        incident: dict[str, Any] = {}
+        incident_id = ""
+        generation = 0
+        detail = decisions = app = diagnosis = None
+        repair_payload: dict[str, Any] = {}
+        preflight = repair = replay = stale_repair = unauthorized = None
+        repair_attempts: list[dict[str, Any]] = []
+        transient_race_reasons = {
+            "incident_already_resolved",
+            "evidence_not_current",
+            "unhealthy_evidence_not_confirmed",
+            "incident_generation_changed",
         }
-        detail = self.client.request("GET", f"/api/lite/system-health/incidents/{incident_id}", session=self.session)
-        decisions = self.client.request("GET", f"/api/lite/system-health/incidents/{incident_id}/decisions", session=self.session)
-        app = self.client.request("GET", "/api/lite/system-health/apps/photoprism", session=self.session)
-        if detail.status != 200 or decisions.status != 200 or app.status not in {200, 404}:
-            raise QualificationError("candidate System Health incident detail routes failed")
-        diagnosis = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/diagnose", session=self.session)
-        if diagnosis.status != 200:
-            raise QualificationError("candidate System Health diagnosis was not persisted")
-        repair_payload = {"operation_id": "runtime.consumer.reconnect", "expected_generation": generation, "idempotency_key": "qualification-system-health-001", "confirm": True}
-        preflight = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/preflight", repair_payload, session=self.session)
-        repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
-        replay = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
-        stale = dict(repair_payload); stale["expected_generation"] = generation + 99
-        stale_repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", stale, session=self.session)
-        unauthorized = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/diagnose")
+        for attempt in range(1, 7):
+            current_incidents = self.client.request("GET", "/api/lite/system-health/incidents", session=self.session)
+            current_items = current_incidents.body.get("items") if isinstance(current_incidents.body, dict) else []
+            incident = eligible_incident(current_items)
+            if not incident:
+                time.sleep(0.4)
+                continue
+            incident_id = str(incident.get("incident_id") or "")
+            generation = int(incident.get("generation") or 0)
+            self.results["recovery_selection"] = {
+                "source": _safe_text(incident.get("source"), 64),
+                "target_id": _safe_text(incident.get("target_id"), 128),
+                "generation": generation,
+                "enrollment_generation": int(incident.get("enrollment_generation") or 0),
+                "attempt": attempt,
+            }
+            detail = self.client.request("GET", f"/api/lite/system-health/incidents/{incident_id}", session=self.session)
+            decisions = self.client.request("GET", f"/api/lite/system-health/incidents/{incident_id}/decisions", session=self.session)
+            app = self.client.request("GET", "/api/lite/system-health/apps/photoprism", session=self.session)
+            if detail.status != 200 or decisions.status != 200 or app.status not in {200, 404}:
+                raise QualificationError("candidate System Health incident detail routes failed")
+            diagnosis = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/diagnose", session=self.session)
+            if diagnosis.status != 200:
+                raise QualificationError("candidate System Health diagnosis was not persisted")
+            repair_payload = {
+                "operation_id": "runtime.consumer.reconnect",
+                "expected_generation": generation,
+                "idempotency_key": f"qualification-system-health-{attempt:03d}",
+                "confirm": True,
+            }
+            preflight = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/preflight", repair_payload, session=self.session)
+            repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
+            repair_detail = response_detail(repair)
+            repair_attempts.append({
+                "attempt": attempt,
+                "preflight_status": preflight.status,
+                "repair_status": repair.status,
+                "repair_reason_code": _safe_text(repair_detail.get("reason_code"), 80),
+            })
+            if repair.status == 202:
+                replay = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
+                stale = dict(repair_payload)
+                stale["expected_generation"] = generation + 99
+                stale_repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", stale, session=self.session)
+                unauthorized = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/diagnose")
+                break
+            if not self.browser_ui or repair_detail.get("reason_code") not in transient_race_reasons:
+                break
+            time.sleep(0.4)
+
+        if not incident or not incident_id or generation < 1 or repair is None:
+            raise QualificationError("candidate System Health projection did not produce an eligible NATS recovery incident")
+        self.results["recovery_attempts"] = repair_attempts
         self.results["repair_contract"] = {
             "preflight": response_contract(preflight),
             "repair": response_contract(repair),
