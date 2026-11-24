@@ -19,19 +19,13 @@ from . import lite_security_maintenance as maintenance
 from . import lite_policy_opa as opa
 from . import lite_infrastructure_operations as ops
 
-OPERATIONS = frozenset({"storage.evidence.preview", "storage.evidence.retention", "sqlite.checkpoint.passive"})
+OPERATIONS = ops.MAINTENANCE_OPERATIONS
 SUBJECT = "pocketlab.commands.lite.system_health.maintenance"
 ACTION = "system_health.maintenance"
 
 
 def enabled(operation: str) -> bool:
-    if operation not in OPERATIONS or os.environ.get("POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE","0") != "0":
-        return False
-    if os.environ.get("POCKETLAB_ENVIRONMENT","").strip().casefold() == "qualification":
-        return os.environ.get("POCKETLAB_SYSTEM_HEALTH_MAINTENANCE_ADAPTER") == "1"
-    return (operation in ops.PRODUCTION_QUALIFIED_OPERATIONS
-            and os.environ.get("POCKETLAB_SYSTEM_HEALTH_PRODUCTION_ASSISTED") == "1"
-            and authority.preferences()["recovery_mode"] == "assisted")
+    return ops.maintenance_enabled(operation)
 
 
 def _public(row: dict) -> dict:
