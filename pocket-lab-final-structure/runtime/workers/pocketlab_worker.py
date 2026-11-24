@@ -208,6 +208,7 @@ async def worker_recovery_watchdog(stop_event: asyncio.Event) -> None:
     from api_fastapi.services import lite_infrastructure_owner_evidence, lite_system_health  # type: ignore
     evidence_owner_instance = uuid.uuid4().hex
     pending_owner_evidence = True  # reconcile abandoned evidence once on startup
+    next_controlled_reconciliation = 0.0
     while not stop_event.is_set():
         try:
             if pending_owner_evidence:
@@ -256,6 +257,9 @@ async def worker_recovery_watchdog(stop_event: asyncio.Event) -> None:
             # adapter owned by this same watchdog. It is intentionally polled
             # independently of the command durable, so a broken command
             # consumer cannot be the delivery mechanism for its own repair.
+            if time.monotonic() >= next_controlled_reconciliation:
+                next_controlled_reconciliation = time.monotonic() + 60.0
+                await asyncio.to_thread(lite_system_health.reconcile_controlled_recovery_requests)
             controlled = await lite_system_health.process_controlled_recovery_requests(
                 BUS, DURABLE_NAME
             )
