@@ -309,3 +309,48 @@ def system_health_diagnostic_export(payload: DiagnosticExportRequest, request: R
     from fastapi.responses import JSONResponse
     return JSONResponse({"scope": payload.scope, "created_at": health._now(), "sanitized": True, "data": content},
                         headers={"Cache-Control": "no-store", "Content-Disposition": 'attachment; filename="pocketlab-system-health.json"'})
+
+
+class MaintenanceRequest(BaseModel):
+    model_config = {"extra":"forbid"}
+    operation_id: str = Field(pattern="^(storage[.]evidence[.](preview|retention)|sqlite[.]checkpoint[.]passive)$")
+    preview_id: str = Field(default="",max_length=80)
+    idempotency_key: str = Field(min_length=16,max_length=128)
+    confirm: bool
+
+
+@router.get("/maintenance")
+def system_health_maintenance_history(request: Request):
+    context = _require_authenticated(request)
+    from ..services import lite_infrastructure_authority as authority
+    from ..services import lite_infrastructure_maintenance as maintenance
+    from ..db.connection import connection
+    try:
+        with connection() as conn:
+            authority.require_owner(conn,context)
+    except PermissionError as exc:
+        _control_error(exc)
+    return {"items":maintenance.history(),"available_operations":[op for op in sorted(maintenance.OPERATIONS) if maintenance.enabled(op)]}
+
+
+@router.post("/maintenance",status_code=202)
+async def system_health_maintenance_request(payload: MaintenanceRequest, request: Request):
+    context = _require_authenticated(request,write=True)
+    from ..services import lite_infrastructure_maintenance as maintenance
+    from ..services.action_queue import submit_domain_command
+    import asyncio
+    try:
+        result,created = await asyncio.to_thread(maintenance.admit,context,payload.operation_id,payload.preview_id,payload.idempotency_key,payload.confirm)
+    except (PermissionError,ValueError) as exc:
+        _control_error(exc)
+    except lite_policy_opa.PolicyDecisionError as exc:
+        raise HTTPException(exc.status_code,detail={"reason_code":exc.reason_code,"message":exc.message}) from exc
+    if created:
+        try:
+            await submit_domain_command(maintenance.SUBJECT,"lite.system_health.maintenance.queued",{"command_id":result["command_id"]})
+        except Exception as exc:
+            # Publication may have succeeded before an evidence error. Never
+            # resubmit the same admission blindly or assert execution failed.
+            raise HTTPException(503,detail={"reason_code":"delivery_unconfirmed","command_id":result["command_id"],
+                                           "message":"Delivery is unconfirmed; review the recorded operation."}) from exc
+    return result
