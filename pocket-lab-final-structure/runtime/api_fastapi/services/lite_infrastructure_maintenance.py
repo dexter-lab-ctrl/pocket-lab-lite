@@ -117,6 +117,9 @@ def admit(context: dict, operation: str, preview_id: str, idempotency_key: str, 
                 if not backup:
                     raise ValueError("verified_backup_required")
                 candidate_json=json.dumps([dict(backup)])
+            elif operation=="runtime.configuration.restore":
+                from . import lite_infrastructure_configuration as configuration
+                candidate_json=json.dumps([configuration.binding()])
             elif operation in {"runtime.telemetry.recover","runtime.server_agent.recover"}:
                 from . import lite_infrastructure_service_control as service_control
                 candidate_json=json.dumps([service_control.binding(operation)])
@@ -199,6 +202,12 @@ def _execute(command_id: str) -> dict:
     except Exception:
         return _finish(command_id,"blocked",{"reason":"authorization_or_readiness_unavailable"})
     try:
+        if operation=="runtime.configuration.restore":
+            with connection() as conn:
+                with begin_immediate(conn):
+                    conn.execute("UPDATE lite_system_health_maintenance_admissions SET evidence_json=?,expires_at=? WHERE command_id=? AND status='executing'",
+                        (json.dumps({"reconciler_requested":True}),_expires(180),command_id))
+            return {"status":"executing","command_id":command_id,"sanitized":True}
         if operation in {"runtime.telemetry.recover","runtime.server_agent.recover"}:
             with connection() as conn:
                 with begin_immediate(conn):

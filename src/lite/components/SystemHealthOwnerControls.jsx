@@ -15,6 +15,7 @@ const labels = {
   'projection.reconcile': 'Refresh optional activity history',
   'runtime.telemetry.recover': 'Review stopped monitoring recovery',
   'runtime.server_agent.recover': 'Review stopped server agent recovery',
+  'runtime.configuration.restore': 'Review gateway desired-state restoration',
 };
 const states = { queued: 'Queued', executing: 'Working', verified: 'Verified', blocked: 'Blocked', uncertain: 'Outcome not confirmed', expired: 'Expired', cancelled: 'Cancelled' };
 
@@ -52,6 +53,7 @@ export default function SystemHealthOwnerControls({ section, policy, history, re
     : operation.endsWith('.cleanup') || operation === 'storage.evidence.retention'
       ? 'Remove only the exact reviewed owner-approved candidates. Personal files and active data are protected.'
       : operation === 'recovery.database.rehearse' ? 'Verify and migrate the latest verified database package on a private copy. No live restore or service interruption.'
+      : operation === 'runtime.configuration.restore' ? 'Reconcile only a confirmed gateway desired-state mismatch through the existing runtime owner. No arbitrary configuration or secrets are accepted.'
       : operation.startsWith('runtime.') ? 'Request recovery of a confirmed stopped service through its existing supervisor. Current authority and restart budget must permit it.'
       : operation === 'projection.reconcile' ? 'Ask the existing scheduler to refresh optional activity history.'
       : 'Request a passive checkpoint. A busy database does not count as verified.', async () => {
@@ -113,7 +115,7 @@ export default function SystemHealthOwnerControls({ section, policy, history, re
     </>}
     {['backup','services','operations'].includes(section) && <>
       <LiteButton haptic tone="secondary" disabled={busy || maintenance.refreshing} onClick={() => maintenance.refresh()}>Refresh operation status</LiteButton>
-      {(section === 'backup' ? ['recovery.database.rehearse'] : section === 'services' ? ['runtime.telemetry.recover','runtime.server_agent.recover'] : ['projection.reconcile']).filter(op => available.includes(op)).map(op => <LiteButton key={op} haptic tone="secondary" disabled={busy} onClick={() => request(op)}>{labels[op]}</LiteButton>)}
+      {(section === 'backup' ? ['recovery.database.rehearse'] : section === 'services' ? ['runtime.telemetry.recover','runtime.server_agent.recover','runtime.configuration.restore'] : ['projection.reconcile']).filter(op => available.includes(op)).map(op => <LiteButton key={op} haptic tone="secondary" disabled={busy} onClick={() => request(op)}>{labels[op]}</LiteButton>)}
     </>}
     {['storage','backup','services','operations','history'].includes(section) && rows.slice(0,10).map(row => <LiteActionRow key={row.command_id} label={labels[row.operation_id] || 'Maintenance operation'} value={row.resolution === 'closed_unverified' ? 'Closed · not verified' : states[row.status] || 'Not confirmed'}
       summary={typeof row.evidence?.allocated_candidate_bytes === 'number' ? row.evidence.allocated_candidate_bytes + ' allocated bytes in reviewed candidates; actual freed space not confirmed.' : typeof row.evidence?.candidate_count === 'number' ? row.evidence.candidate_count + ' reviewed records' : undefined}
