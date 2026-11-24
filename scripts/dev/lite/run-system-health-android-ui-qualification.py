@@ -346,6 +346,9 @@ def main(argv: list[str] | None = None) -> int:
         failure = f"{type(exc).__name__}: {_safe_text(exc)}"
         run.results["failure"] = {"type": type(exc).__name__, "message": _safe_text(exc), "sanitized": True}
     finally:
+        if status != "PASS":
+            with contextlib.suppress(Exception):
+                run.capture_candidate_diagnostics()
         _stop_process(candidate_server)
         relay.stop()
         if candidate_owned:

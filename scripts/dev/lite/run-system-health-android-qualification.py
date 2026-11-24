@@ -268,6 +268,29 @@ def response_contract(response: HttpResult) -> dict[str, Any]:
     }
 
 
+_REMOTE_RECOVERY_PROBE = r'''import json, sqlite3, sys
+path = sys.argv[1]
+conn = sqlite3.connect(path)
+conn.row_factory = sqlite3.Row
+def bounded(row):
+    return {key: row[key] for key in row.keys() if key in {
+        "request_id", "incident_id", "status", "execution_state", "verification_state",
+        "attempt", "max_attempts", "outcome", "terminal_reason", "safe_summary",
+        "before_evidence_json", "after_evidence_json", "updated_at", "completed_at",
+    }}
+requests = [bounded(row) for row in conn.execute(
+    "SELECT * FROM lite_system_health_recovery_requests ORDER BY requested_at DESC LIMIT 8"
+)]
+events = [
+    {key: row[key] for key in row.keys() if key in {"incident_id", "generation", "event_type", "created_at", "safe_summary"}}
+    for row in conn.execute(
+        "SELECT incident_id,generation,event_type,created_at,safe_summary FROM lite_system_health_events ORDER BY id DESC LIMIT 20"
+    )
+]
+print(json.dumps({"requests": requests, "events": events}, sort_keys=True, separators=(",", ":")))
+'''
+
+
 def _sql_statements(sql: str) -> Iterable[str]:
     buffer = ""
     for line in sql.splitlines(keepends=True):
@@ -1087,17 +1110,21 @@ time.sleep(3)
             if body.get("status") != "admitted" or not request.get("request_id"):
                 raise QualificationError("System Health controlled recovery was not durably admitted")
             deadline = time.monotonic() + 45
+            latest_request: dict[str, Any] = {}
             while time.monotonic() < deadline:
                 decisions_now = self.client.request("GET", f"/api/lite/system-health/incidents/{incident_id}/decisions", session=self.session)
                 requests = decisions_now.body.get("recovery_requests") if isinstance(decisions_now.body, dict) else []
                 current_request = next((item for item in requests if isinstance(item, dict) and item.get("request_id") == request.get("request_id")), None)
                 if current_request:
+                    latest_request = current_request
                     status = str(current_request.get("status") or "")
                     if status and (not lifecycle or lifecycle[-1] != status):
                         lifecycle.append(status)
                     if status in {"verified", "execution_failed", "verification_failed", "verification_unavailable", "manual_attention_required", "blocked", "expired", "cancelled"}:
                         break
                 time.sleep(1)
+            self.results["recovery_lifecycle"] = lifecycle
+            self.results["recovery_last_request"] = latest_request
             if not lifecycle or lifecycle[-1] != "verified":
                 raise QualificationError("System Health recovery did not reach independently verified state")
         else:
@@ -1138,6 +1165,44 @@ time.sleep(3)
             "candidate_run_root_metrics": self.controller._android_metrics(self.remote, self.remote_root),
             "android_device_metrics": device_payload, "system_health_latency_ms": {"samples": latencies, "min": min(latencies), "max": max(latencies), "mean": round(sum(latencies) / len(latencies), 2)},
             "production_stress_or_fault_injection": False, "comparison_baseline": "candidate-only observation; no production improvement/regression claim",
+        }
+
+    def capture_candidate_diagnostics(self) -> None:
+        """Capture bounded, sanitized owner-state evidence before cleanup."""
+        if self.remote is None or not self.remote_root:
+            return
+        logs: dict[str, list[str]] = {}
+        for name in ("api.log", "worker.log", "driver.log"):
+            try:
+                raw = self.controller._android_read_text(self.remote, f"{self.remote_root}/logs/{name}", root=self.remote_root)
+            except Exception:
+                continue
+            safe_lines: list[str] = []
+            for line in str(raw or "").splitlines()[-80:]:
+                if re.search(r"token|password|secret|cookie|authorization|private[_ -]?key", line, re.IGNORECASE):
+                    safe_lines.append("[redacted diagnostic line]")
+                    continue
+                safe_lines.append(re.sub(r"https?://[^\s]+", "[url]", _safe_text(line, 360)))
+            if safe_lines:
+                logs[name] = safe_lines
+        probe = self.controller._android_ssh_run(
+            self.remote.host,
+            [self.remote.python, "-c", _REMOTE_RECOVERY_PROBE, f"{self.remote_root}/state/{SCHEMA_DB_NAME}"],
+            timeout=20,
+        )
+        database: dict[str, Any] = {"status": "UNVALIDATED"}
+        if probe.returncode == 0:
+            try:
+                parsed = json.loads(probe.stdout.strip().splitlines()[-1])
+                database = sanitize(parsed)
+                database["status"] = "PASS"
+            except (ValueError, IndexError, TypeError):
+                database = {"status": "UNVALIDATED"}
+        self.results["candidate_recovery_diagnostics"] = {
+            "status": "PASS" if database.get("status") == "PASS" else "UNVALIDATED",
+            "database": database,
+            "log_tails": logs,
+            "sanitized": True,
         }
 
     def _concurrency(self) -> None:
