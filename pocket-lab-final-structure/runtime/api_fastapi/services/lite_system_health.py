@@ -35,7 +35,7 @@ DEPENDENCY_EDGES = (
     {"upstream": "remote_access", "downstream": "agent", "authority": "inferred", "summary": "Connectivity can affect remote device reachability."},
 )
 # Registry metadata is descriptive; the P4 admission path remains allowlisted.
-REPAIR_CATALOG = tuple(infrastructure_ops.operation_catalog())
+REPAIR_CATALOG = tuple({"operation_id": item.operation_id, "risk_class": item.risk_class, "availability": item.availability, "summary": item.expected_impact} for item in infrastructure_ops.OPERATIONS)
 SOURCE_NAMES = {
     "system.health": "system", "system.nats_remote": "nats",
     "system.processes": "processes", "system.agent": "agent",
@@ -445,7 +445,7 @@ def history(limit: int = 30, offset: int = 0) -> dict[str, Any]:
     )
     result["recovery_requests"] = _read(
         "SELECT request_id,incident_id,incident_generation,enrollment_generation,operation_id,status,"
-        "execution_state,verification_state,requested_at,updated_at,completed_at,safe_summary,outcome,terminal_reason "
+        "execution_state,verification_state,attempt,requested_at,updated_at,completed_at,safe_summary,outcome,terminal_reason "
         "FROM lite_system_health_recovery_requests ORDER BY requested_at DESC,request_id DESC LIMIT ? OFFSET ?",
         (max(1, min(limit, 100)), max(0, min(offset, 10000))),
     )
@@ -1176,7 +1176,7 @@ def decision_history(incident_id: str, *, limit: int = 20) -> dict[str, Any]:
         ),
         "recovery_requests": _read(
             "SELECT request_id,incident_id,incident_generation,enrollment_generation,operation_id,status,"
-            "execution_state,verification_state,requested_at,updated_at,completed_at,safe_summary,outcome,terminal_reason "
+            "execution_state,verification_state,attempt,requested_at,updated_at,completed_at,safe_summary,outcome,terminal_reason "
             "FROM lite_system_health_recovery_requests WHERE incident_id=? ORDER BY requested_at DESC LIMIT ?",
             (incident_id, max(1, min(limit, 50))),
         ),
