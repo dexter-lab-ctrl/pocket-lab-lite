@@ -45,7 +45,7 @@ def record_consumer_recovery(*, owner_instance: str, durable: str,
     return key
 
 
-def verify_consumer_recoveries(owner_instance: str, status: dict) -> None:
+def verify_consumer_recoveries(owner_instance: str, status: dict) -> bool:
     """A later fetch from the same registered consumer generation is required."""
     now = health._now()
     cutoff = (datetime.now(timezone.utc) - timedelta(seconds=VERIFICATION_WINDOW_SECONDS)).isoformat(timespec="seconds").replace("+00:00", "Z")
@@ -70,7 +70,7 @@ def verify_consumer_recoveries(owner_instance: str, status: dict) -> None:
         if outcome:
             decisions.append((outcome, now if outcome == "verified" else None, row["evidence_id"]))
     if not decisions:
-        return
+        return bool(rows)
     with connection() as conn:
         with begin_immediate(conn):
             conn.executemany(
@@ -79,6 +79,7 @@ def verify_consumer_recoveries(owner_instance: str, status: dict) -> None:
                    WHERE evidence_id=? AND verification_state='pending'""",
                 decisions,
             )
+    return len(rows) == 32 or len(decisions) < len(rows)
 
 
 def history(limit: int = 30) -> list[dict]:
