@@ -1,6 +1,6 @@
 # System Health — Azure Horizon H0–H6 experience hardening
 
-**State:** SOURCE IMPLEMENTATION AND BOUNDED QUALIFICATION RECORDED; PERFORMANCE REMAINS INCONCLUSIVE. **Base:** `main` at `a9f8b2d7625fd84f82dffee5f44bcee20225661e`. **Feature:** `feat/azure-horizon-system-health-experience-hardening`. The qualified UI candidate source SHA was `1ee1662490cb863891a082393f8c2b3b279544ae`; production was not changed.
+**State:** SOURCE IMPLEMENTATION AND BOUNDED QUALIFICATION RECORDED; PERFORMANCE HAS A RETAINED MIXED RESIDUAL. **Base:** `main` at `a9f8b2d7625fd84f82dffee5f44bcee20225661e`. **Feature:** `feat/azure-horizon-system-health-experience-hardening`. The qualified UI/runtime candidate source SHA was `b65d83c2f83229e3abd59e01b33aaecaa5797734`; production was not changed.
 
 ## H0 — Source findings and scope
 
@@ -57,14 +57,14 @@ The following evidence was captured on the feature branch before documentation r
 | Surface | Result | Evidence |
 |---|---|---|
 | Backend syntax and focused System Health tests | PASS | `py_compile`; focused and related qualification suites: 71 passed |
-| Frontend System Health tests | PASS | Vitest: 2 files, 13 tests |
+| Frontend System Health tests | PASS | Vitest: 3 files, 19 tests, including saved-to-fresh and fresh-to-saved regressions |
 | Production build and Storybook | PASS | `npm run build`; `npm run build-storybook` |
 | Mocked desktop/mobile and Axe | PASS | System Health Playwright: 42/42; portal-mounted Manage Axe included |
 | Responsive visual suite | APPROVED | 42/42; 40 reviewed canonical light/dark desktop/mobile snapshots |
-| Physical Android Chrome UI | PASS | Exact candidate `1ee1662490cb863891a082393f8c2b3b279544ae`; Manage, diagnosis `200`, Home return, no repair/preflight |
-| Android performance and baseline attribution | INCONCLUSIVE/BLOCKED | System Health-only collector reached exact current APIs but safe-read state remained saved; no threshold or classifier was weakened |
+| Physical Android Chrome UI | PASS | Exact candidate `b65d83c2f83229e3abd59e01b33aaecaa5797734`; Chrome 158.0.8127.42/CDP 1.3, Manage, diagnosis `200`, Home return, no repair/preflight |
+| Android performance and baseline attribution | RESIDUAL | 3 repetitions × 9 System Health interactions; 9/9 `MIXED`, 0/9 absolute target or hard-gate passes; no `APP_INCREMENTAL_COST` |
 
-The physical run used the Dev-PC-hosted isolated candidate and synthetic qualification Owner harness. It is not production Server Phone backend evidence. The System Health performance residual is retained rather than converted into an unsupported result.
+The physical run used the Dev-PC-hosted isolated candidate and synthetic qualification Owner harness. It is not production Server Phone backend evidence. The candidate proxy preserved the safe-read nonce and the screen revalidated the summary on mount; direct current responses and the rendered current-attention state converged. The performance residual is retained rather than converted into an unsupported result.
 
 ## H6 — Documentation and PR
 
@@ -80,7 +80,9 @@ P4 controlled self-healing is deliberately **NOT IMPLEMENTED**. A future separat
 
 - Production historical device labels require separate read-only provenance; there is no cleanup in H0–H6.
 - Hardware vibration and ARM64 production-backend behavior were not independently qualified; the physical browser consumed the Dev-PC candidate.
-- Android System Health performance remains inconclusive because the safe-read path stayed in saved presentation after repeated harness isolation. Absolute and baseline-normalized performance are not claimed.
+- Android System Health performance retains a reproducible mixed residual: baseline absolute limits already miss on this device and candidate LoAF/Event Timing deltas remain in the mixed classification. Absolute target and hard-gate passes are not claimed; no PR-specific actionable regression was established.
+- The two Devices assertion failures are pre-existing on current `main` and were reproduced in an isolated main worktree; PR #656 does not change the asserted files.
+- Local `task lite:check` is blocked by the protected Java patch mismatch (`17.0.20.1` required versus `17.0.21.1` installed); no version guard or global toolchain was changed.
 - CI exact-head status and final generated-documentation/repository-gate output are recorded in the PR continuation and must remain separate from local PASS evidence.
 - Existing APIs retain legacy unresolved counts for compatibility; clients must use the new additive fields for current concern counters.
 - Storybook/Playwright fixtures are synthetic and cannot prove live device recovery.
