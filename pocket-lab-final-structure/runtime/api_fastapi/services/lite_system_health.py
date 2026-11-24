@@ -17,6 +17,7 @@ from typing import Any
 
 from contextlib import closing
 from ..db.connection import begin_immediate, connection, open_fast_read_connection
+from . import lite_infrastructure_operations as infrastructure_ops
 
 ACTIVE = frozenset({"detected", "diagnosing", "diagnosed", "repair_available", "repairing", "verifying", "blocked", "failed", "manual_attention_required"})
 UNHEALTHY = frozenset({"errored", "read_only", "recovery_required", "watch", "elevated", "storage_pressure", "degraded", "unavailable", "unhealthy", "critical", "offline", "stopped", "missing", "errored", "failed", "attention", "pressure", "agent_stopped_without_supervisor"})
@@ -33,14 +34,8 @@ DEPENDENCY_EDGES = (
     {"upstream": "processes", "downstream": "api", "authority": "inferred", "summary": "Process availability can affect API readiness."},
     {"upstream": "remote_access", "downstream": "agent", "authority": "inferred", "summary": "Connectivity can affect remote device reachability."},
 )
-# Explicitly descriptive: these are owned by existing runtime guardians.
-REPAIR_CATALOG = (
-    {"operation_id": "runtime.consumer.reconnect", "risk_class": "A", "execution_owner": "nats_worker_watchdog", "availability": "externally_managed", "summary": "Worker watchdog owns durable-consumer recovery."},
-    {"operation_id": "device.agent.recover", "risk_class": "A", "execution_owner": "node_supervisor", "availability": "externally_managed", "summary": "Device supervisor owns eligible stopped-agent recovery."},
-    {"operation_id": "app.repair", "risk_class": "B", "execution_owner": "existing_app_action", "availability": "guided_existing_flow", "summary": "Review app repair inside the existing Apps Manage flow."},
-    {"operation_id": "runtime.configuration.restore", "risk_class": "B", "execution_owner": "runtime_reconciler", "availability": "not_enabled", "summary": "No automatic configuration overwrite is enabled."},
-    {"operation_id": "recovery.database.restore", "risk_class": "C", "execution_owner": "recovery", "availability": "never_automatic", "summary": "Database restore requires the existing preview and confirmation workflow."},
-)
+# Registry metadata is descriptive; the P4 admission path remains allowlisted.
+REPAIR_CATALOG = tuple(infrastructure_ops.operation_catalog())
 SOURCE_NAMES = {
     "system.health": "system", "system.nats_remote": "nats",
     "system.processes": "processes", "system.agent": "agent",
@@ -52,16 +47,8 @@ CONTROLLED_RECOVERY_OPERATION = "runtime.consumer.reconnect"
 
 
 def controlled_recovery_enabled() -> bool:
-    """Return true only for an explicitly isolated qualification candidate.
-
-    The adapter is implemented in the worker owner, but activation requires
-    both a qualification environment and a separate opt-in. Production and
-    the installed Server Phone therefore remain autonomous-watchdog only.
-    """
-    return (
-        os.environ.get("POCKETLAB_ENVIRONMENT", "").strip().casefold() == "qualification"
-        and os.environ.get("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER") == "1"
-    )
+    """Reuse the per-adapter activation boundary; production stays fail closed."""
+    return infrastructure_ops.controlled_recovery_enabled()
 
 
 def _now() -> str:
@@ -350,6 +337,8 @@ def public_incident(item: dict[str, Any]) -> dict[str, Any]:
     result["repair_available"] = bool(
         controlled_recovery_enabled()
         and result.get("current_monitoring")
+        and result.get("concern_state") == "current_concern"
+        and result.get("evidence_freshness") == "current"
         and result.get("source") == "nats"
         and (target_id == "jetstream" or target_id.startswith("consumer:"))
     )
@@ -419,6 +408,8 @@ def summary() -> dict[str, Any]:
     status = ("unknown" if not total or not fresh else
               "attention" if unhealthy or current else
               "unknown" if unknown_count or saved_count else "healthy")
+    from . import lite_infrastructure_owner_evidence as owner_evidence
+    automatic = owner_evidence.summary()
     return {
         "status": status, "checked_at": _now(), "data_source": "persisted_projection",
         "observed_services": total, "healthy_services": healthy,
@@ -428,8 +419,9 @@ def summary() -> dict[str, Any]:
         "current_problems": current, "saved_problems": saved_count,
         "current_critical_problems": counts.get("current_critical") or 0,
         "unresolved_critical_problems": counts.get("critical") or 0,
-        "unknown_services": unknown_count, "automatic_repairs_running": 0,
-        "recent_verified_recoveries": 0,  # Healthy observation is not verified repair recovery.
+        "unknown_services": unknown_count, "automatic_repairs_running": automatic["pending_count"],
+        "recent_verified_recoveries": automatic["verified_count"],
+        "automatic_recovery": automatic,  # Only owner-correlated, independently verified evidence.
         "recent_resolutions": recent,
         "freshness": "current" if fresh else "stale" if total else "unavailable",
         "summary": "No authoritative health observations yet." if not total else
@@ -453,6 +445,8 @@ def history(limit: int = 30, offset: int = 0) -> dict[str, Any]:
         "FROM lite_system_health_recovery_requests ORDER BY requested_at DESC,request_id DESC LIMIT ? OFFSET ?",
         (max(1, min(limit, 100)), max(0, min(offset, 10000))),
     )
+    from . import lite_infrastructure_owner_evidence as owner_evidence
+    result["automatic_recoveries"] = owner_evidence.history(limit)
     return result
 
 
@@ -473,12 +467,17 @@ def resource_intelligence() -> dict[str, Any]:
 
 def knowledge() -> dict[str, Any]:
     rows = _read("SELECT i.source,i.target_id,SUM(i.recurrence_count) AS recurrences,COUNT(*) AS incidents FROM lite_system_health_incidents i" + MEMBERSHIP_JOIN + " WHERE " + MONITORED + " GROUP BY i.source,i.target_id ORDER BY recurrences DESC LIMIT 32")
-    return {"recurring_components": rows, "diagnostics": "deterministic", "ai_provider": "disabled", "evidence": "sanitized_summary_only"}
+    from . import lite_infrastructure_read_model as infrastructure
+    current = incidents(limit=100)["items"]
+    return {"recurring_components": rows, "diagnostics": "deterministic", "ai_provider": "disabled", "evidence": "sanitized_summary_only",
+            "correlations": infrastructure.correlate(current, list(DEPENDENCY_EDGES)),
+            "reliability": infrastructure.reliability()}
 
 
 def policy() -> dict[str, Any]:
     return {"automatic_execution": "existing_independent_guardians_only", "engine_auto_repair": False,
-            "mode": "fail_closed", "repair_catalog": list(REPAIR_CATALOG),
+            "mode": "fail_closed", "repair_catalog": infrastructure_ops.operation_catalog(),
+            "activation_policy": infrastructure_ops.activation_policy(),
             "cooldown": "owned_by_existing_executor", "resource_budget": "owned_by_existing_executor",
             "controlled_recovery_adapter": {
                 "implemented": True,
@@ -489,7 +488,7 @@ def policy() -> dict[str, Any]:
                 "verification": "fresh_consumer_generation_and_health",
                 "activation_scope": "qualification_only",
             },
-            "explanation": "The allowlisted recovery adapter is candidate-only and disabled by default; existing guardians remain authoritative."}
+            "explanation": "The allowlisted recovery adapter is isolated-qualification only and disabled by default; existing guardians remain authoritative."}
 
 
 def diagnose(incident_id: str) -> dict[str, Any] | None:
@@ -857,6 +856,7 @@ def _claim_controlled_recovery(durable: str) -> dict[str, Any] | None:
                 or current["source"] != "nats"
                 or current["target_id"] != row["target_id"]
                 or current["observation_status"] not in UNHEALTHY
+                or freshness(current["observed_at"]) != "current"
             ):
                 conn.execute(
                     "UPDATE lite_system_health_recovery_requests SET status='blocked',execution_state='blocked',authorization_state='stale',updated_at=?,completed_at=?,terminal_reason=?,safe_summary=? WHERE request_id=?",
