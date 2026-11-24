@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-import os
-import sqlite3
 from typing import Any
 
 from ..db.connection import connection, begin_immediate
@@ -93,7 +91,7 @@ def bind_request(conn, request_id: str, context: dict, confirmed: bool) -> None:
 
 def _current_context(conn, request: dict) -> dict | None:
     binding = conn.execute("SELECT * FROM lite_system_health_request_authority WHERE request_id=?", (request["request_id"],)).fetchone()
-    if not binding:
+    if not binding or not binding["confirmed"]:
         return None
     actor_id, kind = request["actor_id"], request["actor_type"]
     if kind == "human":
@@ -168,7 +166,7 @@ def revalidate(request: dict) -> bool:
         doc["continuation"] = {"matching_independent_approval":approval,"matching_temporary_exception":False}
         status, payload = opa._http_json("POST", opa.OPA_DECISION_PATH, {"input":doc})
         result = opa._validate_result(payload.get("result")) if status == 200 else {}
-        if result.get("allow") is not True or result.get("policy_revision") != request["policy_revision"]:
+        if result.get("allow") is not True or (observed or result.get("policy_revision")) != request["policy_revision"]:
             return False
         # Re-read identity after network evaluation to narrow revocation races.
         with connection() as conn:
