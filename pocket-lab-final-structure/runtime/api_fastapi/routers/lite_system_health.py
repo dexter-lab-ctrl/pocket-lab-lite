@@ -150,6 +150,8 @@ def system_health_preflight(incident_id: str, payload: RepairRequest, request: R
 @router.post("/incidents/{incident_id}/repair", status_code=202)
 def system_health_repair(incident_id: str, payload: RepairRequest, request: Request):
     context = _require_authenticated(request, write=True)
+    if not payload.confirm:
+        raise HTTPException(422, detail={"status":"blocked","reason_code":"confirmation_required"})
     found = health.incident(incident_id)
     if found is None:
         raise HTTPException(404, detail={"status": "not_found", "summary": "This problem was not found."})
