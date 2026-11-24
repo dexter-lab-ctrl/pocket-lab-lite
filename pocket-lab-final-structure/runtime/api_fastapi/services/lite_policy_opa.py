@@ -46,6 +46,7 @@ PROTECTED_ACTIONS = frozenset(
         "restore.preview",
         "restore.apply",
         "system_health.recovery",
+        "system_health.maintenance",
     }
 )
 
