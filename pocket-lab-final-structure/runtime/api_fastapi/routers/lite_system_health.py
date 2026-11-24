@@ -160,7 +160,7 @@ def system_health_repair(incident_id: str, payload: RepairRequest, request: Requ
     if replay is not None:
         if replay.get("reasons"):
             raise HTTPException(409, detail={"status": "blocked", "reason_code": replay["reasons"][0], "summary": "The idempotency key is bound to a different recovery request."})
-        return {"status": "admitted", "request": replay.get("request"), "summary": "The existing durable recovery request was returned.", "idempotent_replay": True}
+        return {"status": replay.get("status", "blocked"), "request": replay.get("request"), "summary": "The existing durable recovery request was returned.", "idempotent_replay": True}
     if found["generation"] != payload.expected_generation:
         raise HTTPException(409, detail={"status": "blocked", "reason_code": "incident_generation_changed", "summary": "Status changed. Diagnose again before attempting repair."})
     preflight = health.repair_preflight(incident_id, payload.operation_id, payload.expected_generation)
@@ -242,4 +242,70 @@ def system_health_repair(incident_id: str, payload: RepairRequest, request: Requ
         raise HTTPException(409, detail={"status": "blocked", "reason_code": result["reasons"][0], "summary": "The recovery request was blocked before execution."})
     if decision.get("reason_code") == "approval_required":
         raise HTTPException(409, detail={"status": "approval_required", "request": result.get("request"), "summary": "Independent Enterprise approval is required before recovery can be admitted."})
-    return {"status": "admitted", "request": result.get("request"), "summary": "Recovery was admitted to the existing worker recovery owner."}
+    return {"status": (result.get("request") or {}).get("status", "blocked"), "request": result.get("request"), "summary": "Review the recorded recovery state."}
+
+
+class PreferenceRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    expected_revision: int = Field(ge=0)
+    recovery_mode: str = Field(pattern="^(monitor|assisted)$")
+    resource_mode: str = Field(pattern="^(balanced|low_power|maintenance)$")
+
+
+def _control_error(exc: Exception):
+    if isinstance(exc, PermissionError):
+        raise HTTPException(403, detail={"reason_code": "owner_required", "message": "A current Owner session is required."}) from exc
+    if isinstance(exc, LookupError):
+        raise HTTPException(404, detail={"reason_code": "request_not_found"}) from exc
+    raise HTTPException(409, detail={"reason_code": str(exc), "message": "The operation is no longer eligible."}) from exc
+
+
+@router.put("/preferences")
+def system_health_preferences(payload: PreferenceRequest, request: Request):
+    context = _require_authenticated(request, write=True)
+    from ..services import lite_infrastructure_authority as authority
+    try:
+        return authority.save_preferences(context, **payload.model_dump())
+    except (PermissionError, ValueError) as exc:
+        _control_error(exc)
+
+
+@router.post("/recovery-requests/{request_id}/cancel")
+def system_health_cancel_request(request_id: str, request: Request):
+    context = _require_authenticated(request, write=True)
+    from ..services import lite_infrastructure_authority as authority
+    try:
+        return authority.cancel_request(context, request_id)
+    except (PermissionError, LookupError, ValueError) as exc:
+        _control_error(exc)
+
+
+class DiagnosticExportRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    scope: str = Field(pattern="^(infrastructure|recovery_statistics)$")
+    confirm: bool
+
+
+@router.post("/diagnostic-export")
+def system_health_diagnostic_export(payload: DiagnosticExportRequest, request: Request):
+    context = _require_authenticated(request, write=True)
+    from ..services import lite_infrastructure_authority as authority
+    from ..services import lite_infrastructure_read_model as model
+    from ..db.connection import connection, begin_immediate
+    if not payload.confirm:
+        raise HTTPException(422, detail={"reason_code": "confirmation_required"})
+    try:
+        with connection() as conn:
+            authority.require_owner(conn, context)
+        # Explicit scope, no incident identifiers, raw logs, credentials, paths,
+        # network addresses, database content or arbitrary file selection.
+        content = model.infrastructure() if payload.scope == "infrastructure" else model.reliability()
+        with connection() as conn:
+            with begin_immediate(conn):
+                actor = authority.require_owner(conn, context)
+                authority.audit(conn, actor, "diagnostics_exported", payload.scope)
+    except PermissionError as exc:
+        _control_error(exc)
+    from fastapi.responses import JSONResponse
+    return JSONResponse({"scope": payload.scope, "created_at": health._now(), "sanitized": True, "data": content},
+                        headers={"Cache-Control": "no-store", "Content-Disposition": 'attachment; filename="pocketlab-system-health.json"'})
