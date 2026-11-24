@@ -106,6 +106,42 @@ def _prune(conn: sqlite3.Connection) -> None:
     )
 
 
+# Only these sources are device-scoped; shared system.agent observations use
+# source="system" and must never be filtered as a fleet member.
+DEVICE_SOURCES = ("agent", "supervisor", "telemetry")
+MEMBERSHIP_JOIN = " LEFT JOIN device_enrollment_registry m ON m.device_id=i.target_id AND i.source IN ('agent','supervisor','telemetry') "
+MEMBERSHIP_STATE = """CASE WHEN i.source NOT IN ('agent','supervisor','telemetry') THEN 'shared'
+    WHEN m.device_id IS NULL THEN 'unknown'
+    WHEN m.protected_server_host=1 AND m.removal_status!='active' THEN 'protected_conflict'
+    WHEN m.removal_status='active' AND m.enrollment_status='enrolled' THEN 'active'
+    WHEN m.removal_status IN ('retired','removed') THEN m.removal_status
+    ELSE 'unknown' END"""
+MONITORED = "(" + MEMBERSHIP_STATE + ") IN ('shared','active','protected_conflict')"
+
+
+def _device_memberships(conn: sqlite3.Connection, observations: list) -> dict[str, str]:
+    ids = sorted({target for source, target, _, _ in observations if source in DEVICE_SOURCES})
+    if not ids:
+        return {}
+    placeholders = ",".join("?" for _ in ids)
+    rows = conn.execute(
+        "SELECT device_id,removal_status,enrollment_status,protected_server_host "
+        "FROM device_enrollment_registry WHERE device_id IN (" + placeholders + ")", ids,
+    )
+    return {row["device_id"]: ("active" if row["removal_status"] == "active"
+            and row["enrollment_status"] == "enrolled" else "unknown") for row in rows}
+
+
+def _observation_rows(where: str = "", limit: int = 128) -> list[dict[str, Any]]:
+    return _read(
+        "SELECT i.source,i.target_id,CASE WHEN (" + MEMBERSHIP_STATE + ")='protected_conflict' "
+        "THEN 'unknown' ELSE i.status END AS status,i.observed_at "
+        "FROM lite_system_health_observations i" + MEMBERSHIP_JOIN +
+        " WHERE " + MONITORED + (" AND " + where if where else "") +
+        " ORDER BY i.source,i.target_id LIMIT ?", (limit,),
+    )
+
+
 def _observations(domain: str, payload: dict[str, Any]):
     source = SOURCE_NAMES.get(domain)
     if not source or not isinstance(payload, dict):
@@ -174,8 +210,11 @@ def ingest_projection(domain: str, payload: dict[str, Any]) -> int:
     changed = 0
     with connection() as conn:
         with begin_immediate(conn):
+            memberships = _device_memberships(conn, observations[:64])
             for source, target, status, summary in observations[:64]:
-                if not target:
+                # Retirement is terminal in the enrollment store. Never mutate a
+                # historical incident based on a late heartbeat or stale projection.
+                if not target or (source in DEVICE_SOURCES and memberships.get(target) != "active"):
                     continue
                 current = conn.execute(
                     "SELECT status,source_revision FROM lite_system_health_observations WHERE source=? AND target_id=?",
@@ -236,15 +275,16 @@ def _read(sql: str, params: tuple = ()) -> list[dict[str, Any]]:
 
 def incidents(*, include_resolved: bool = False, limit: int = 40, offset: int = 0) -> dict[str, Any]:
     limit, offset = max(1, min(int(limit), 100)), max(0, min(int(offset), 10000))
-    where = "" if include_resolved else "WHERE i.state != 'resolved'"
+    where = "" if include_resolved else "WHERE i.state != 'resolved' AND " + MONITORED
     items = _read(
-        "SELECT i.*, o.status AS latest_observation_status, o.observed_at AS latest_observed_at "
+        "SELECT i.*, o.status AS latest_observation_status, o.observed_at AS latest_observed_at, "
+        + MEMBERSHIP_STATE + " AS membership_state, m.retired_at AS membership_retired_at "
         "FROM lite_system_health_incidents i LEFT JOIN lite_system_health_observations o "
-        "ON o.source=i.source AND o.target_id=i.target_id "
+        "ON o.source=i.source AND o.target_id=i.target_id " + MEMBERSHIP_JOIN
         + where + " ORDER BY i.last_seen_at DESC, i.incident_id LIMIT ? OFFSET ?",
-        (limit, offset),
+        (limit + 1, offset),
     )
-    return {"items": [public_incident(item) for item in items], "limit": limit, "offset": offset, "next_offset": offset + len(items) if len(items) == limit else None}
+    return {"items": [public_incident(item) for item in items[:limit]], "limit": limit, "offset": offset, "next_offset": offset + limit if len(items) > limit else None}
 
 
 def public_incident(item: dict[str, Any]) -> dict[str, Any]:
@@ -263,6 +303,13 @@ def public_incident(item: dict[str, Any]) -> dict[str, Any]:
         and item.get("latest_observation_status") in UNHEALTHY
         else "saved_concern"
     )
+    membership = item.get("membership_state", "unknown")
+    result["current_monitoring"] = membership in {"active", "shared", "protected_conflict"}
+    if membership in {"retired", "removed", "unknown"}:
+        result["concern_state"] = "historical_record"
+    elif membership == "protected_conflict":
+        result["concern_state"] = "saved_concern"
+        result["observation_freshness"] = "unknown"
     result["repair_available"] = False  # Explicitly off until owned command handlers are qualified.
     result["repair_guidance"] = "Review the existing protected recovery action for this component."
     return result
@@ -281,46 +328,67 @@ def freshness(timestamp: str | None) -> str:
 
 def incident(incident_id: str) -> dict[str, Any] | None:
     rows = _read(
-        "SELECT i.*, o.status AS latest_observation_status, o.observed_at AS latest_observed_at "
+        "SELECT i.*, o.status AS latest_observation_status, o.observed_at AS latest_observed_at, "
+        + MEMBERSHIP_STATE + " AS membership_state, m.retired_at AS membership_retired_at "
         "FROM lite_system_health_incidents i LEFT JOIN lite_system_health_observations o "
-        "ON o.source=i.source AND o.target_id=i.target_id WHERE i.incident_id=? LIMIT 1",
+        "ON o.source=i.source AND o.target_id=i.target_id " + MEMBERSHIP_JOIN + " WHERE i.incident_id=? LIMIT 1",
         (incident_id,),
     )
     return public_incident(rows[0]) if rows else None
 
 
 def summary() -> dict[str, Any]:
-    signals = _read("SELECT source,target_id,status,observed_at FROM lite_system_health_observations ORDER BY source,target_id LIMIT 256")
-    active = _read("SELECT source,target_id,state,severity FROM lite_system_health_incidents WHERE state!='resolved' LIMIT 256")
-    recent = _read("SELECT incident_id,state,summary,resolved_at FROM lite_system_health_incidents WHERE state='resolved' ORDER BY resolved_at DESC LIMIT 5")
-    fresh = [s for s in signals if freshness(s["observed_at"]) == "current"]
-    healthy = sum(1 for s in fresh if s["status"] in HEALTHY)
-    unhealthy = sum(1 for s in fresh if s["status"] in UNHEALTHY)
-    unknown_count = len(signals) - len(fresh) + sum(s["status"] not in (HEALTHY | UNHEALTHY) for s in fresh)
-    signal_by_target = {(s["source"], s["target_id"]): s for s in signals}
-    current = [
-        item for item in active
-        if (signal := signal_by_target.get((item["source"], item["target_id"])))
-        and freshness(signal["observed_at"]) == "current"
-        and signal["status"] in UNHEALTHY
-    ]
-    saved_count = len(active) - len(current)
-    status = ("unknown" if not signals or not fresh else
+    # Aggregate before limiting any history page. The registry PK supports the
+    # membership join; no per-incident database reads or live probes are needed.
+    unhealthy_values = ",".join("'" + value + "'" for value in sorted(UNHEALTHY))
+    healthy_values = ",".join("'" + value + "'" for value in sorted(HEALTHY))
+    recent_signal = "(julianday(i.observed_at) BETWEEN julianday('now')-300.0/86400 AND julianday('now'))"
+    signal_stats = _read(
+        "SELECT COUNT(*) AS total, "
+        "SUM(CASE WHEN " + recent_signal + " AND i.status IN (" + healthy_values + ") AND (" + MEMBERSHIP_STATE + ")!='protected_conflict' THEN 1 ELSE 0 END) AS healthy, "
+        "SUM(CASE WHEN " + recent_signal + " AND i.status IN (" + unhealthy_values + ") AND (" + MEMBERSHIP_STATE + ")!='protected_conflict' THEN 1 ELSE 0 END) AS unhealthy, "
+        "SUM(CASE WHEN " + recent_signal + " AND (" + MEMBERSHIP_STATE + ")!='protected_conflict' THEN 1 ELSE 0 END) AS fresh "
+        "FROM lite_system_health_observations i" + MEMBERSHIP_JOIN + " WHERE " + MONITORED
+    )
+    stats = signal_stats[0] if signal_stats else {}
+    total = stats.get("total") or 0
+    healthy = stats.get("healthy") or 0
+    unhealthy = stats.get("unhealthy") or 0
+    fresh = stats.get("fresh") or 0
+    unknown_count = total - healthy - unhealthy
+    is_current = "(julianday(o.observed_at) BETWEEN julianday('now')-300.0/86400 AND julianday('now') AND o.status IN (" + unhealthy_values + ") AND (" + MEMBERSHIP_STATE + ")!='protected_conflict')"
+    incident_stats = _read(
+        "SELECT COUNT(*) AS total, SUM(CASE WHEN i.severity='critical' THEN 1 ELSE 0 END) AS critical, "
+        "SUM(CASE WHEN " + is_current + " THEN 1 ELSE 0 END) AS current, "
+        "SUM(CASE WHEN " + is_current + " AND i.severity='critical' THEN 1 ELSE 0 END) AS current_critical "
+        "FROM lite_system_health_incidents i LEFT JOIN lite_system_health_observations o "
+        "ON o.source=i.source AND o.target_id=i.target_id " + MEMBERSHIP_JOIN +
+        " WHERE i.state!='resolved' AND " + MONITORED
+    )
+    counts = incident_stats[0] if incident_stats else {}
+    active = counts.get("total") or 0
+    current = counts.get("current") or 0
+    saved_count = active - current
+    historical = _read("SELECT COUNT(*) AS total FROM lite_system_health_incidents i" + MEMBERSHIP_JOIN + " WHERE NOT " + MONITORED)
+    historical_count = historical[0]["total"] if historical else 0
+    recent = _read("SELECT i.incident_id,i.state,i.summary,i.resolved_at FROM lite_system_health_incidents i" + MEMBERSHIP_JOIN + " WHERE i.state='resolved' AND " + MONITORED + " ORDER BY i.resolved_at DESC LIMIT 5")
+    status = ("unknown" if not total or not fresh else
               "attention" if unhealthy or current else
               "unknown" if unknown_count or saved_count else "healthy")
     return {
         "status": status, "checked_at": _now(), "data_source": "persisted_projection",
-        "observed_services": len(signals), "healthy_services": healthy,
+        "observed_services": total, "healthy_services": healthy,
+        "historical_device_records": historical_count,
         # Legacy fields preserve unresolved-incident semantics for old clients.
-        "active_problems": len(active), "critical_problems": sum(a["severity"] == "critical" for a in active),
-        "current_problems": len(current), "saved_problems": saved_count,
-        "current_critical_problems": sum(a["severity"] == "critical" for a in current),
-        "unresolved_critical_problems": sum(a["severity"] == "critical" for a in active),
+        "active_problems": active, "critical_problems": counts.get("critical") or 0,
+        "current_problems": current, "saved_problems": saved_count,
+        "current_critical_problems": counts.get("current_critical") or 0,
+        "unresolved_critical_problems": counts.get("critical") or 0,
         "unknown_services": unknown_count, "automatic_repairs_running": 0,
         "recent_verified_recoveries": 0,  # Healthy observation is not verified repair recovery.
         "recent_resolutions": recent,
-        "freshness": "current" if fresh else "stale" if signals else "unavailable",
-        "summary": "No authoritative health observations yet." if not signals else
+        "freshness": "current" if fresh else "stale" if total else "unavailable",
+        "summary": "No authoritative health observations yet." if not total else
                    "One or more services need attention." if status == "attention" else
                    "Health evidence is incomplete or stale." if status == "unknown" else
                    "Observed services are healthy.",
@@ -338,7 +406,7 @@ def history(limit: int = 30, offset: int = 0) -> dict[str, Any]:
 
 
 def dependency_graph() -> dict[str, Any]:
-    observations = _read("SELECT source,target_id,status,observed_at FROM lite_system_health_observations ORDER BY source,target_id LIMIT 128")
+    observations = _observation_rows()
     nodes = []
     for row in observations:
         nodes.append({**row, "freshness": freshness(row["observed_at"]), "authority": "verified_runtime" if freshness(row["observed_at"]) == "current" else "unknown"})
@@ -346,14 +414,14 @@ def dependency_graph() -> dict[str, Any]:
 
 
 def resource_intelligence() -> dict[str, Any]:
-    rows = _read("SELECT source,target_id,status,observed_at FROM lite_system_health_observations WHERE source IN ('storage','telemetry','sqlite') LIMIT 32")
+    rows = _observation_rows("i.source IN ('storage','telemetry','sqlite')", 32)
     return {"signals": [{**r, "freshness": freshness(r["observed_at"])} for r in rows],
             "forecast": "not_enough_information", "model": "deterministic_only",
             "explanation": "Current trend history does not support a reliable forecast."}
 
 
 def knowledge() -> dict[str, Any]:
-    rows = _read("SELECT source,target_id,SUM(recurrence_count) AS recurrences,COUNT(*) AS incidents FROM lite_system_health_incidents GROUP BY source,target_id ORDER BY recurrences DESC LIMIT 32")
+    rows = _read("SELECT i.source,i.target_id,SUM(i.recurrence_count) AS recurrences,COUNT(*) AS incidents FROM lite_system_health_incidents i" + MEMBERSHIP_JOIN + " WHERE " + MONITORED + " GROUP BY i.source,i.target_id ORDER BY recurrences DESC LIMIT 32")
     return {"recurring_components": rows, "diagnostics": "deterministic", "ai_provider": "disabled", "evidence": "sanitized_summary_only"}
 
 
@@ -369,7 +437,7 @@ def diagnose(incident_id: str) -> dict[str, Any] | None:
     if not found:
         return None
     related = [edge for edge in DEPENDENCY_EDGES if edge["downstream"] == found["source"]]
-    upstream = [r for r in _read("SELECT source,target_id,status,observed_at FROM lite_system_health_observations LIMIT 128")
+    upstream = [r for r in _observation_rows()
                 if r["source"] in {edge["upstream"] for edge in related} and r["status"] in UNHEALTHY
                 and freshness(r["observed_at"]) == "current"]
     return {
@@ -422,11 +490,18 @@ def repair_preflight(incident_id: str, operation_id: str, expected_generation: i
         reasons.append("operation_not_allowlisted")
     if found["generation"] != expected_generation:
         reasons.append("incident_generation_changed")
+    if found["membership_state"] in {"retired", "removed"}:
+        reasons.append("device_no_longer_enrolled")
+    elif found["membership_state"] == "unknown":
+        reasons.append("device_membership_unknown")
+    elif found["membership_state"] == "protected_conflict":
+        reasons.append("protected_host_membership_conflict")
     if found["state"] == "resolved":
         reasons.append("incident_already_resolved")
     if found["evidence_freshness"] != "current":
         reasons.append("evidence_not_current")
-    # The subsystem never bypasses the established app/device/agent authority.
+    # The watchdog has no qualified requestable command/verification contract.
+    # Do not add an enable switch that can bypass this structural blocker.
     reasons.append("system_health_executor_not_qualified")
     return {
         "incident_id": incident_id, "incident_generation": found["generation"],
@@ -438,7 +513,8 @@ def repair_preflight(incident_id: str, operation_id: str, expected_generation: i
         "max_retries": 0, "cooldown_state": "not_applicable",
         "single_flight_state": "not_applicable",
         "verification": "not_started", "execution": "not_started",
-        "guidance": "Use the already governed Apps, Devices or Recovery action if it is currently offered.",
+        "guidance": ("This device is no longer monitored; review its history." if not found["current_monitoring"] else
+                     "Use the already governed Apps, Devices or Recovery action if it is currently offered."),
     }
 
 
