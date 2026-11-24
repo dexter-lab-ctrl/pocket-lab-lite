@@ -72,6 +72,18 @@ recovery_action if {
 	input.target.id != ""
 }
 
+system_health_recovery_action if {
+	input.action.id == "system_health.recovery"
+	authorized_actor
+	input.target.type == "system_health_incident"
+	input.target.id != ""
+	input.target.state.operation_id == "runtime.consumer.reconnect"
+	input.target.state.adapter_enabled == true
+	input.target.state.preflight_valid == true
+	input.target.state.incident_generation > 0
+	input.target.state.enrollment_generation >= 0
+}
+
 backup_location_action if {
 	input.action.id == "backup.location.manage"
 	authorized_actor
@@ -251,6 +263,65 @@ decision := {
 	"reason_code": "authenticated_recovery_operation",
 } if {
 	recovery_action
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["authenticated_actor", "system_health_target", "owner_authority", "fresh_preflight"],
+	"reason_code": "owner_authority_system_health_recovery",
+} if {
+	system_health_recovery_action
+	input.actor.type == "human"
+	input.actor.role == "Owner"
+	input.actor.owner_authority == true
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["authenticated_actor", "system_health_target", "qualification_scope", "fresh_preflight"],
+	"reason_code": "qualification_owner_system_health_recovery",
+} if {
+	system_health_recovery_action
+	input.actor.type == "qualification"
+	input.actor.role == "Owner"
+	input.harness.profile == "qualification-owner"
+}
+
+decision := {
+	"allow": true,
+	"constraints": ["system_health_target", "independent_approval_consumed", "fresh_preflight"],
+	"reason_code": "independent_approval_satisfied",
+} if {
+	system_health_recovery_action
+	input.actor.enterprise_enabled == true
+	input.actor.role in {"Admin", "Operator"}
+	input.continuation.matching_independent_approval == true
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["independent_approval", "active_owner_or_admin", "fresh_preflight"],
+	"reason_code": "approval_required",
+	"requirements": {
+		"required_approver_roles": ["Owner", "Admin"],
+		"required_assurance": "policy.approval.system_health.recovery",
+		"approval_lifetime_seconds": 900,
+	},
+} if {
+	system_health_recovery_action
+	input.actor.enterprise_enabled == true
+	input.actor.role in {"Admin", "Operator"}
+	not input.continuation.matching_independent_approval
+}
+
+decision := {
+	"allow": false,
+	"constraints": ["enterprise_role_not_eligible"],
+	"reason_code": "enterprise_role_forbidden",
+} if {
+	system_health_recovery_action
+	input.actor.enterprise_enabled == true
+	input.actor.role in {"Viewer", "Auditor"}
 }
 
 decision := {

@@ -1131,6 +1131,37 @@ function mockPremiumRecoveryProjection(name = 'healthy') {
 
 
 const MOCK_HEALTH_INCIDENT_ID = 'health-111111111111111111111111';
+const CONTROLLED_RECOVERY_SCENARIOS = new Set([
+  'system-health-recovery-available', 'system-health-approval-pending',
+  'system-health-recovery-queued', 'system-health-recovery-working',
+  'system-health-verification-pending', 'system-health-verified-recovery',
+  'system-health-verification-failed', 'system-health-recovery-cooldown',
+  'system-health-manual-attention',
+]);
+const recoveryScenarioStatus = (kind = rawScenario()) => ({
+  'system-health-recovery-available': 'preflight_checked',
+  'system-health-approval-pending': 'approval_required',
+  'system-health-recovery-queued': 'admitted',
+  'system-health-recovery-working': 'executing',
+  'system-health-verification-pending': 'awaiting_verification',
+  'system-health-verified-recovery': 'verified',
+  'system-health-verification-failed': 'verification_failed',
+  'system-health-recovery-cooldown': 'admitted',
+  'system-health-manual-attention': 'manual_attention_required',
+}[kind] || 'admitted');
+function mockRecoveryRequest(kind = rawScenario()) {
+  if (!CONTROLLED_RECOVERY_SCENARIOS.has(kind)) return null;
+  const status = recoveryScenarioStatus(kind);
+  return {
+    request_id: 'recovery-synthetic-001', incident_id: MOCK_HEALTH_INCIDENT_ID,
+    incident_generation: 1, enrollment_generation: 0,
+    operation_id: 'runtime.consumer.reconnect', status,
+    execution_state: ['admitted', 'approval_required'].includes(status) ? 'queued' : status === 'verified' ? 'succeeded' : 'running',
+    verification_state: status === 'verified' ? 'verified' : status === 'awaiting_verification' ? 'pending' : status === 'verification_failed' ? 'failed' : 'not_started',
+    safe_summary: status === 'verified' ? 'Fresh worker evidence verified recovery.' : 'Synthetic lifecycle fixture; no production execution is implied.',
+    outcome: status === 'verified' ? 'verified_recovery' : status,
+  };
+}
 function mockSystemHealthIncident(resolved = false, override = {}) {
   return {
     incident_id: MOCK_HEALTH_INCIDENT_ID, source: 'nats', target_id: 'jetstream',
@@ -1143,7 +1174,8 @@ function mockSystemHealthIncident(resolved = false, override = {}) {
     concern_state: resolved ? 'resolved_observation' : 'current_concern',
     summary: 'Command delivery needs attention.',
     suspected_cause: '', verified_cause: '', cause_confidence: 'unconfirmed',
-    repair_available: false, repair_guidance: 'Review the existing protected recovery action.',
+    repair_available: CONTROLLED_RECOVERY_SCENARIOS.has(rawScenario()),
+    repair_guidance: CONTROLLED_RECOVERY_SCENARIOS.has(rawScenario()) ? 'Review the governed candidate recovery option.' : 'Review the existing protected recovery action.',
     ...override,
   };
 }
@@ -1165,7 +1197,7 @@ function mockSystemHealthItems() {
     summary: 'A previously recorded device agent issue is awaiting a fresh check.',
   });
   const current = mockSystemHealthIncident();
-  if (kind === 'system-health-p4-membership') return [mockSystemHealthIncident(false, { source: 'agent', target_id: 'active-synthetic', device_label: 'Secondary phone', membership_state: 'active', current_monitoring: true, latest_observation_status: 'offline', summary: 'Enrolled device is offline.' })];
+  if (kind === 'system-health-p4-membership') return [mockSystemHealthIncident(false, { source: 'agent', target_id: 'active-synthetic', device_label: 'Secondary phone', membership_state: 'active', current_monitoring: true, latest_observation_status: 'offline', summary: 'Enrolled device is offline.', repair_available: false })];
   if (kind === 'system-health-resolved' || kind === 'system-health-observed-recovery') return [];
   if (kind === 'system-health-saved-only' || kind === 'system-health-stale' || kind === 'system-health-offline') return [saved];
   if (kind === 'system-health-mixed') return [current, saved];
@@ -1177,7 +1209,7 @@ function mockSystemHealthItems() {
       source: 'agent', target_id: 'synthetic-node-' + (i + 1) }));
   if (kind === 'system-health-failed-repair') return [mockSystemHealthIncident(false, { state: 'failed' })];
   if (kind === 'system-health-blocked-repair') return [mockSystemHealthIncident(false, { state: 'blocked' })];
-  return kind === 'system-health-attention' ? [current] : [];
+  return kind === 'system-health-attention' || CONTROLLED_RECOVERY_SCENARIOS.has(kind) ? [current] : [];
 }
 function mockSystemHealthSummary() {
   const kind = rawScenario();
@@ -1229,6 +1261,7 @@ export const handlers = [
         ? [{ repair_id: 'synthetic-repair-outcome', operation_id: 'app.repair',
           execution_state: rawScenario() === 'system-health-failed-repair' ? 'failed' : 'blocked',
           verification_state: 'not_started', safe_summary: 'Synthetic non-success recovery fixture.' }] : [],
+    recovery_requests: mockRecoveryRequest(rawScenario()) ? [mockRecoveryRequest(rawScenario())] : [],
     limit: 30, offset: 0, next_offset: null,
   })),
   http.get('/api/lite/system-health/dependencies', () => HttpResponse.json({
@@ -1246,10 +1279,17 @@ export const handlers = [
   })),
   http.get('/api/lite/system-health/policies', () => HttpResponse.json({
     automatic_execution: 'existing_independent_guardians_only', engine_auto_repair: false, mode: 'fail_closed',
+    controlled_recovery_adapter: { implemented: true, enabled: false, default_enabled: false, operation_id: 'runtime.consumer.reconnect', execution_owner: 'worker_recovery_watchdog' },
     repair_catalog: [{ operation_id: 'runtime.consumer.reconnect', risk_class: 'A', availability: 'externally_managed', summary: 'Worker watchdog owns durable-consumer recovery.' }],
   })),
-  http.get('/api/lite/system-health/repairs', () => HttpResponse.json({ operations: [], new_executor_enabled: false })),
-  http.get('/api/lite/system-health/incidents/:incidentId/decisions', () => HttpResponse.json({ diagnoses: [], repair_denials: [] })),
+  http.get('/api/lite/system-health/repairs', () => HttpResponse.json({
+    operations: [], new_executor_enabled: false,
+    controlled_recovery_adapter: { implemented: true, enabled: false, default_enabled: false, operation_id: 'runtime.consumer.reconnect', execution_owner: 'worker_recovery_watchdog' },
+  })),
+  http.get('/api/lite/system-health/incidents/:incidentId/decisions', () => {
+    const request = mockRecoveryRequest(rawScenario());
+    return HttpResponse.json({ diagnoses: [], repair_denials: [], recovery_requests: request ? [request] : [] });
+  }),
   http.post('/api/lite/system-health/incidents/:incidentId/diagnose', ({ params }) =>
     HttpResponse.json({
       incident_id: params.incidentId, generation: 1, evidence_freshness: 'current',
@@ -1261,14 +1301,28 @@ export const handlers = [
       what_does_not_change: 'No service restart, configuration update, or data change.',
       recorded: true, diagnosis_id: 'diagnosis-mocked',
     })),
-  http.post('/api/lite/system-health/incidents/:incidentId/preflight', () => HttpResponse.json({
-    allowed: false, status: 'blocked', reasons: ['system_health_executor_not_qualified'],
-    execution: 'not_started', verification: 'not_started',
-  })),
-  http.post('/api/lite/system-health/incidents/:incidentId/repair', () => HttpResponse.json({
-    detail: { status: 'blocked', reason_code: 'system_health_executor_not_qualified', recorded: true,
-      summary: 'No new System Health repair executor is enabled. Use the existing protected repair workflow.' },
-  }, { status: 409 })),
+  http.post('/api/lite/system-health/incidents/:incidentId/preflight', () => {
+    const enabled = CONTROLLED_RECOVERY_SCENARIOS.has(rawScenario());
+    return HttpResponse.json(enabled ? {
+      allowed: true, status: 'preflight_checked', reasons: [], max_retries: 2,
+      execution: 'not_started', verification: 'not_started',
+    } : {
+      allowed: false, status: 'blocked', reasons: ['system_health_recovery_disabled'],
+      execution: 'not_started', verification: 'not_started',
+    });
+  }),
+  http.post('/api/lite/system-health/incidents/:incidentId/repair', ({ params }) => {
+    const kind = rawScenario();
+    const request = mockRecoveryRequest(kind);
+    if (kind === 'system-health-approval-pending') {
+      return HttpResponse.json({ detail: { status: 'approval_required', request, summary: 'Independent approval is required before recovery can be admitted.' } }, { status: 409 });
+    }
+    if (!request) {
+      return HttpResponse.json({ detail: { status: 'blocked', reason_code: 'system_health_recovery_disabled', recorded: true,
+        summary: 'Recovery is not enabled for this candidate. Use the existing protected repair workflow.' } }, { status: 409 });
+    }
+    return HttpResponse.json({ status: request.status, request, summary: 'Synthetic candidate lifecycle response.' }, { status: 202 });
+  }),
 
   http.get('/ready', () => HttpResponse.json(controlPlane(), { status: controlPlane().ready ? 200 : 503 })),
   http.get('/api', () => HttpResponse.json({ name: 'Pocket Lab FastAPI/NATS Control API', mode: 'msw' })),

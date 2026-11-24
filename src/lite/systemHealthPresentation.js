@@ -42,6 +42,15 @@ export const INCIDENT_STATE_LABELS = Object.freeze({
   manual_attention_required: 'Manual review required', resolved: 'Observed healthy',
 });
 
+export const RECOVERY_LIFECYCLE_LABELS = Object.freeze({
+  requested: 'Request received', preflight_checked: 'Preflight checked', approval_required: 'Approval required',
+  approved: 'Approved', admitted: 'Recovery queued', accepted: 'Accepted by recovery owner',
+  executing: 'Working', awaiting_verification: 'Verification pending', verified: 'Verified recovery',
+  denied: 'Recovery denied', blocked: 'Recovery blocked', expired: 'Request expired',
+  cancelled: 'Recovery cancelled', execution_failed: 'Execution failed', verification_failed: 'Verification failed',
+  verification_unavailable: 'Verification unavailable', manual_attention_required: 'Manual attention required',
+});
+
 const SAFE_LABEL = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/;
 
 export function componentLabel(source, targetId, deviceLabel) {
@@ -157,4 +166,8 @@ export function recoveryOperationLabel(operationId) {
 
 export function recoveryAvailabilityLabel(value) {
   return RECOVERY_AVAILABILITY_LABELS[value] || 'Availability not confirmed';
+}
+
+export function recoveryLifecycleLabel(value) {
+  return RECOVERY_LIFECYCLE_LABELS[value] || 'Recovery status not confirmed';
 }

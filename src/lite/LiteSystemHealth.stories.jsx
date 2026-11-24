@@ -1,7 +1,7 @@
 import React from 'react';
 import LiteStoryFrame, { createLiteStory } from './stories/LiteStoryFrame.jsx';
 
-// Real registered screen, with deterministic mock API. Qualification not run.
+// Real registered screen, with deterministic mock API for review and qualification.
 export default { title: 'Pocket Lab Lite/Azure Horizon/System Health', component: LiteStoryFrame, tags: ['autodocs'] };
 export const HealthyLightDesktop = createLiteStory('system-health', 'system-health-healthy', { theme: 'daylight', viewport: 'desktop' });
 export const HealthyDarkDesktop = createLiteStory('system-health', 'system-health-healthy', { theme: 'dark', viewport: 'desktop' });
@@ -26,6 +26,15 @@ export const ObservedRecoveryMobile = createLiteStory('system-health', 'system-h
 export const VerifiedRepairDesktop = createLiteStory('system-health', 'system-health-verified-repair', { theme: 'dark', viewport: 'desktop' });
 export const FailedRepairDesktop = createLiteStory('system-health', 'system-health-failed-repair', { theme: 'daylight', viewport: 'desktop' });
 export const BlockedRepairMobile = createLiteStory('system-health', 'system-health-blocked-repair', { theme: 'dark', viewport: 'mobile360' });
+export const RecoveryAvailableDesktop = createLiteStory('system-health', 'system-health-recovery-available', { theme: 'daylight', viewport: 'desktop', notes: 'Synthetic candidate-only eligibility; not production activation.' });
+export const ApprovalPendingDesktop = createLiteStory('system-health', 'system-health-approval-pending', { theme: 'dark', viewport: 'desktop', notes: 'Synthetic Enterprise approval-required response.' });
+export const RecoveryQueuedMobile = createLiteStory('system-health', 'system-health-recovery-queued', { theme: 'daylight', viewport: 'mobile390', notes: 'Synthetic admitted request response.' });
+export const RecoveryWorkingMobile = createLiteStory('system-health', 'system-health-recovery-working', { theme: 'dark', viewport: 'mobile360', notes: 'Synthetic executing lifecycle response.' });
+export const VerificationPendingDesktop = createLiteStory('system-health', 'system-health-verification-pending', { theme: 'daylight', viewport: 'desktop', notes: 'Synthetic awaiting-verification response.' });
+export const VerifiedRecoveryDesktop = createLiteStory('system-health', 'system-health-verified-recovery', { theme: 'dark', viewport: 'desktop', notes: 'Synthetic fresh verification response; no production operation is implied.' });
+export const VerificationFailedMobile = createLiteStory('system-health', 'system-health-verification-failed', { theme: 'daylight', viewport: 'mobile390' });
+export const RecoveryCooldownMobile = createLiteStory('system-health', 'system-health-recovery-cooldown', { theme: 'dark', viewport: 'mobile360' });
+export const ManualAttentionDesktop = createLiteStory('system-health', 'system-health-manual-attention', { theme: 'daylight', viewport: 'desktop' });
 export const LongTechnicalIdentifier = createLiteStory('system-health', 'system-health-long-identifier', { theme: 'dark', viewport: 'mobile360' });
 export const MalformedTarget = createLiteStory('system-health', 'system-health-malformed-target', { theme: 'daylight', viewport: 'mobile390' });
 export const ManageDesktop = createLiteStory('system-health', 'system-health-mixed', { theme: 'daylight', viewport: 'desktop', notes: 'Open Manage for responsive geometry qualification.' });
@@ -33,6 +42,6 @@ export const ManageMobile = createLiteStory('system-health', 'system-health-mixe
 export const ManageLight = createLiteStory('system-health', 'system-health-attention', { theme: 'daylight', viewport: 'desktop' });
 export const ManageDark = createLiteStory('system-health', 'system-health-attention', { theme: 'dark', viewport: 'desktop' });
 
-/** P4 membership stories — ADDED, NOT RUN. */
+/** P4 membership stories — deterministic review states. */
 export const EnrolledAndRemovedDesktop = createLiteStory('system-health', 'system-health-p4-membership', { theme: 'daylight', viewport: 'desktop' });
 export const EnrolledAndRemovedMobile = createLiteStory('system-health', 'system-health-p4-membership', { theme: 'dark', viewport: 'mobile390' });

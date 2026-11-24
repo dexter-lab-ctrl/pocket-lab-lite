@@ -120,7 +120,7 @@ def test_response_contract_is_bounded_to_denial_fields():
     contract = module.response_contract(module.HttpResult(409, {
         "detail": {
             "status": "blocked",
-            "reason_code": "system_health_executor_not_qualified",
+            "reason_code": "system_health_recovery_disabled",
             "recorded": True,
             "unexpected": "omitted",
         },
@@ -128,7 +128,7 @@ def test_response_contract_is_bounded_to_denial_fields():
     }))
     assert contract["status"] == 409
     assert contract["detail_status"] == "blocked"
-    assert contract["reason_code"] == "system_health_executor_not_qualified"
+    assert contract["reason_code"] == "system_health_recovery_disabled"
     assert contract["recorded"] is True
     assert "unexpected" in contract["detail_keys"]
     direct = module.response_contract(module.HttpResult(409, {
@@ -149,9 +149,10 @@ def test_schema42_forward_migrations_repeat_and_rollback_copy(tmp_path):
     assert initial["before"]["schema_version"] == 42
     assert initial["before"]["marker_revision"] == 7
     applied = module.apply_isolated_health_migrations(REPO, sha, database)
-    assert applied["applied"] == [43, 44]
+    latest = max(version for version, *_ in module._candidate_migrations(REPO, sha))
+    assert applied["applied"] == list(range(43, latest + 1))
     assert module.apply_isolated_health_migrations(REPO, sha, database)["applied"] == []
-    final = module._verify_sqlite(database, expected_version=44)
+    final = module._verify_sqlite(database, expected_version=latest)
     assert final["status"] == "PASS"
     assert final["marker_revision"] == 7
     module.validate_rollback_backup(rollback, root)
@@ -173,8 +174,9 @@ def test_readiness_sanitization_and_source_safety_contract():
     assert evidence["nested"]["status"] == "blocked"
     source = SCRIPT.read_text(encoding="utf-8")
     assert '"POCKETLAB_TEST_AUTH_BYPASS": "0"' in source
-    assert '"POCKETLAB_QUALIFICATION_OWNER": "0"' in source
+    assert '"POCKETLAB_QUALIFICATION_OWNER": self.qualification_owner_flag' in source
     assert '"POCKETLAB_HARNESS_DESTRUCTIVE": "0"' in source
+    assert '"POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1" if self.browser_ui else "0"' in source
     assert '"POCKETLAB_NATS_URL": nats_origin' in source
     assert "production_database_touched" in source
 

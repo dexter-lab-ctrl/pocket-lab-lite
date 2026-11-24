@@ -45,6 +45,7 @@ PROTECTED_ACTIONS = frozenset(
         "backup.location.manage",
         "restore.preview",
         "restore.apply",
+        "system_health.recovery",
     }
 )
 
@@ -348,14 +349,14 @@ def _server_continuation_facts(input_doc: dict[str, Any]) -> tuple[str | None, s
         from . import lite_policy_approvals
 
         revision = _safe_revision()
-        approval_actions = {"device.remove", "device.invite", "device.roles.change", "app.remove"}
+        approval_actions = {"device.remove", "device.invite", "device.roles.change", "app.remove", "system_health.recovery"}
         action_id = str(input_doc["action"]["id"])
         target = input_doc.get("target") or {}
         target_type = str(target.get("type") or "")
         state = target.get("state") if isinstance(target.get("state"), dict) else {}
         if (
             action_id in approval_actions
-            and target_type in {"device", "app"}
+            and target_type in {"device", "app", "system_health_incident"}
             and actor.get("enterprise_enabled") is True
             and actor.get("role") in {"Admin", "Operator"}
         ):
@@ -429,6 +430,7 @@ def _approval_requirement_is_valid(input_doc: dict[str, Any], decision: dict[str
         "device.invite": ("device", "policy.approval.device.invite"),
         "device.roles.change": ("device", "policy.approval.device.roles.change"),
         "app.remove": ("app", "policy.approval.app.remove"),
+        "system_health.recovery": ("system_health_incident", "policy.approval.system_health.recovery"),
     }.get(action_id)
     return bool(
         expected

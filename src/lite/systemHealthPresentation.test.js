@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   componentLabel, groupHealthIncidents, healthCounts, healthStatusLabel,
   incidentEvidenceState, recoveryAvailabilityLabel, recoveryDestination,
-  recoveryOperationLabel, systemHealthPresentation,
+  recoveryLifecycleLabel, recoveryOperationLabel, systemHealthPresentation,
 } from './systemHealthPresentation.js';
 
 // Deterministic presentation contract, tests authored but NOT RUN in H0–H6.
@@ -47,6 +47,14 @@ describe('System Health H2 evidence-first presentation', () => {
     expect(recoveryAvailabilityLabel('externally_managed')).toMatch(/existing recovery service/i);
     expect(recoveryAvailabilityLabel('never_automatic')).toMatch(/manual confirmation/i);
     expect(recoveryAvailabilityLabel('not_enabled')).toBe('Not available');
+  });
+
+  it('maps durable recovery lifecycle states without treating admission as success', () => {
+    expect(recoveryLifecycleLabel('admitted')).toMatch(/queued/i);
+    expect(recoveryLifecycleLabel('awaiting_verification')).toMatch(/verification pending/i);
+    expect(recoveryLifecycleLabel('verified')).toMatch(/verified/i);
+    expect(recoveryLifecycleLabel('verification_failed')).toMatch(/failed/i);
+    expect(recoveryLifecycleLabel('unknown-state')).toMatch(/not confirmed/i);
   });
 
   it('retains recognizable legitimate device identities, including short ones', () => {

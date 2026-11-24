@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 import React from 'react';
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../hooks/useLiteQuery.js', () => ({ useLiteQuery: vi.fn() }));
 
 import { useLiteQuery } from '../hooks/useLiteQuery.js';
-import LiteSystemHealth, { SYSTEM_HEALTH_SUMMARY_QUERY_OPTIONS, systemHealthPresentation } from './LiteSystemHealth.jsx';
+import LiteSystemHealth, { SYSTEM_HEALTH_SUMMARY_QUERY_OPTIONS, SystemHealthIncidentCard, systemHealthPresentation } from './LiteSystemHealth.jsx';
 
 afterEach(() => {
   cleanup();
@@ -79,5 +79,22 @@ describe('System Health authoritative presentation', () => {
     const saved = systemHealthPresentation({ status: 'attention', freshness: 'current', current_problems: 1 }, true);
     expect(fresh.state).toBe('attention');
     expect(saved.state).toBe('saved');
+  });
+
+  it('exposes governed recovery only for a backend-eligible current incident', () => {
+    const onRecover = vi.fn();
+    const { rerender } = render(<SystemHealthIncidentCard
+      incident={{ incident_id: 'health-current', source: 'nats', target_id: 'jetstream',
+        generation: 1, evidence_freshness: 'current', concern_state: 'current_concern',
+        repair_available: true, summary: 'Command connection needs attention.' }}
+      onDiagnose={vi.fn()} onRecover={onRecover} />);
+    fireEvent.click(document.querySelector('button:last-of-type'));
+    expect(onRecover).toHaveBeenCalledTimes(1);
+    rerender(<SystemHealthIncidentCard
+      incident={{ incident_id: 'health-history', source: 'agent', target_id: 'retired',
+        current_monitoring: false, membership_state: 'removed', concern_state: 'historical_record',
+        repair_available: false }}
+      onDiagnose={vi.fn()} onRecover={onRecover} />);
+    expect(document.body.textContent).not.toMatch(/Review recovery/);
   });
 });

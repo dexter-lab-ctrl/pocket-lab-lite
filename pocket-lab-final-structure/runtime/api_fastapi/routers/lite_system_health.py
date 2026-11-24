@@ -5,7 +5,8 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
 from .. import deps
-from ..services import lite_system_health as health
+from ..services import lite_policy_approvals, lite_policy_opa, lite_system_health as health
+from ..services import lite_harness
 
 router = APIRouter(prefix="/api/lite/system-health", tags=["lite-system-health"])
 
@@ -101,7 +102,12 @@ def system_health_policies(request: Request):
 @router.get("/repairs")
 def system_health_repairs(request: Request):
     _require_authenticated(request)
-    return {"operations": health.policy()["repair_catalog"], "new_executor_enabled": False}
+    current = health.policy()
+    return {
+        "operations": current["repair_catalog"],
+        "new_executor_enabled": False,
+        "controlled_recovery_adapter": current["controlled_recovery_adapter"],
+    }
 
 
 @router.post("/incidents/{incident_id}/diagnose")
@@ -134,22 +140,88 @@ def system_health_preflight(incident_id: str, payload: RepairRequest, request: R
     return result
 
 
-@router.post("/incidents/{incident_id}/repair", status_code=409)
+@router.post("/incidents/{incident_id}/repair", status_code=202)
 def system_health_repair(incident_id: str, payload: RepairRequest, request: Request):
     context = _require_authenticated(request, write=True)
-    # Fail closed: do not invent an executor or bypass existing OPA/app authority,
-    # supervisor ownership, idempotency or verified recovery criteria.
     found = health.incident(incident_id)
     if found is None:
         raise HTTPException(404, detail={"status": "not_found", "summary": "This problem was not found."})
     if found["generation"] != payload.expected_generation:
         raise HTTPException(409, detail={"status": "blocked", "reason_code": "incident_generation_changed", "summary": "Status changed. Diagnose again before attempting repair."})
-    result = health.record_repair_denial(incident_id, payload.operation_id,
-                                        payload.expected_generation, payload.idempotency_key,
-                                        str(((context or {}).get("actor") or {}).get("type") or "unknown"))
+    preflight = health.repair_preflight(incident_id, payload.operation_id, payload.expected_generation)
+    if preflight is None:
+        raise HTTPException(404, detail={"status": "not_found", "summary": "This problem was not found."})
+    if not preflight["allowed"]:
+        result = health.record_repair_denial(
+            incident_id, payload.operation_id, payload.expected_generation,
+            payload.idempotency_key,
+            str(((context or {}).get("actor") or {}).get("type") or "unknown"),
+        )
+        raise HTTPException(
+            409,
+            detail={
+                "status": "blocked", "reason_code": (result or {}).get("reasons", preflight["reasons"])[0],
+                "summary": "Recovery is not enabled for this candidate or the evidence is no longer eligible.",
+                "recorded": bool((result or {}).get("recorded")),
+            },
+        )
+    try:
+        lite_harness.enforce_capability(
+            context,
+            action_id="system_health.recovery",
+            target_type="system_health_incident",
+            target_id=incident_id,
+            destructive=False,
+            operation_id=payload.operation_id,
+        )
+        decision = lite_policy_opa.evaluate_authorization(
+            auth_context=context,
+            action_id="system_health.recovery",
+            target_type="system_health_incident",
+            target_id=incident_id,
+            target_revision=f"{incident_id}:{payload.expected_generation}:{int(found.get('enrollment_generation') or 0)}",
+            target={
+                "scope": "local_server_host_only",
+                "state": {
+                    "operation_id": payload.operation_id,
+                    "adapter_enabled": True,
+                    "preflight_valid": True,
+                    "incident_generation": int(payload.expected_generation),
+                    "enrollment_generation": int(found.get("enrollment_generation") or 0),
+                    "confirmed": bool(payload.confirm),
+                },
+            },
+            request_context={"confirmation_present": bool(payload.confirm), "idempotency_key_present": True},
+        )
+    except lite_harness.HarnessError as exc:
+        raise HTTPException(exc.status_code, detail={"status": "denied", "reason_code": exc.reason_code, "summary": exc.message}) from exc
+    except lite_policy_opa.PolicyDecisionError as exc:
+        decision = exc.decision or {"allow": False, "reason_code": exc.reason_code}
+        if exc.reason_code not in {"approval_required"}:
+            raise HTTPException(exc.status_code, detail={"status": "denied", "reason_code": exc.reason_code, "summary": exc.message}) from exc
+    continuation_id = decision.get("continuation_approval_id") if decision.get("allow") else None
+    if continuation_id:
+        try:
+            lite_policy_approvals.consume_matching(
+                auth_context=context,
+                approval_id=str(continuation_id),
+                action_id="system_health.recovery",
+                target_type="system_health_incident",
+                target_id=incident_id,
+                target_revision=f"{incident_id}:{payload.expected_generation}:{int(found.get('enrollment_generation') or 0)}",
+                policy_revision=str(decision.get("policy_revision") or ""),
+                request_fingerprint=f"{incident_id}:{payload.expected_generation}:{int(found.get('enrollment_generation') or 0)}",
+            )
+        except lite_policy_approvals.ApprovalError as exc:
+            raise HTTPException(exc.status_code, detail={"status": "blocked", "reason_code": exc.reason_code, "summary": exc.message}) from exc
+    result = health.admit_controlled_recovery(
+        incident_id, payload.operation_id, payload.expected_generation, payload.idempotency_key,
+        confirm=payload.confirm, auth_context=context, decision=decision,
+    )
     if result is None:
         raise HTTPException(404, detail={"status": "not_found", "summary": "This problem was not found."})
-    raise HTTPException(409, detail={"status": "blocked",
-                                    "reason_code": result["reasons"][0],
-                                    "summary": "No new System Health repair executor is enabled. Use the existing protected repair workflow.",
-                                    "recorded": result["recorded"]})
+    if result.get("reasons"):
+        raise HTTPException(409, detail={"status": "blocked", "reason_code": result["reasons"][0], "summary": "The recovery request was blocked before execution."})
+    if decision.get("reason_code") == "approval_required":
+        raise HTTPException(409, detail={"status": "approval_required", "request": result.get("request"), "summary": "Independent Enterprise approval is required before recovery can be admitted."})
+    return {"status": "admitted", "request": result.get("request"), "summary": "Recovery was admitted to the existing worker recovery owner."}

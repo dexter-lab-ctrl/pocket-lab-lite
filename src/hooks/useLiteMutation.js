@@ -32,6 +32,7 @@ export const liteMutationInvalidations = {
   restart_agent: [liteQueryKeys.fleet(), liteQueryKeys.status()],
   add_device: [liteQueryKeys.fleet(), liteQueryKeys.status(), ['lite', 'system-health']],
   remove_device: [liteQueryKeys.fleet(), liteQueryKeys.status(), ['lite', 'system-health']],
+  system_health_recovery: [liteQueryKeys.healthIntelligence(), liteQueryKeys.healthIncidents(), liteQueryKeys.healthHistory()],
   refresh_remote_access: [liteQueryKeys.fleet()],
   update_device_model: [liteQueryKeys.fleet()],
   release_check: [liteQueryKeys.release()],

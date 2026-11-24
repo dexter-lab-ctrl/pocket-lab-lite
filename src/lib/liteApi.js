@@ -256,6 +256,8 @@ export const liteApi = {
   healthIntelligenceApp: (appId) => readJson(`/api/lite/system-health/apps/${encodeURIComponent(appId)}`),
   healthIntelligencePolicies: () => readJson('/api/lite/system-health/policies'),
   healthIntelligenceDiagnose: (incidentId) => postJson(`/api/lite/system-health/incidents/${encodeURIComponent(incidentId)}/diagnose`, {}),
+  healthIntelligencePreflight: (incidentId, body = {}) => postJson(`/api/lite/system-health/incidents/${encodeURIComponent(incidentId)}/preflight`, body),
+  healthIntelligenceRepair: (incidentId, body = {}) => postJson(`/api/lite/system-health/incidents/${encodeURIComponent(incidentId)}/repair`, body),
 
   systemProcesses: conditionalGet('/api/lite/system/processes'),
   systemAgent: conditionalGet('/api/lite/system/agent'),

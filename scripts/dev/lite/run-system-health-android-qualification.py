@@ -387,9 +387,11 @@ def create_schema42_fixture(repo: Path, candidate_sha: str, run_root: Path) -> t
 
 
 def apply_isolated_health_migrations(repo: Path, candidate_sha: str, database: Path) -> dict[str, Any]:
-    migrations = [item for item in _candidate_migrations(repo, candidate_sha) if item[0] in {43, 44}]
-    if [item[0] for item in migrations] != [43, 44]:
-        raise QualificationError("candidate System Health migration chain 0043/0044 is incomplete")
+    all_migrations = _candidate_migrations(repo, candidate_sha)
+    migrations = [item for item in all_migrations if item[0] >= 43]
+    versions = [item[0] for item in migrations]
+    if not versions or versions != list(range(43, versions[-1] + 1)):
+        raise QualificationError("candidate forward migration chain after schema 42 is incomplete")
     conn = sqlite3.connect(str(database), timeout=20)
     try:
         conn.execute("PRAGMA foreign_keys=ON")
@@ -621,6 +623,10 @@ class SystemHealthAndroidQualification:
         self.repo = repo
         self.controller = _controller()
         self.candidate_sha = validate_candidate_sha(repo, candidate_sha, self.controller)
+        candidate_migrations = _candidate_migrations(repo, self.candidate_sha)
+        if not candidate_migrations:
+            raise QualificationError("candidate migration inventory is empty")
+        self.candidate_schema_version = max(item[0] for item in candidate_migrations)
         self.base_sha = str(base_sha or "").strip().casefold()
         if not SHA_RE.fullmatch(self.base_sha):
             raise QualificationError("base SHA must be an explicit commit")
@@ -727,7 +733,7 @@ class SystemHealthAndroidQualification:
     def _local_fixture(self) -> None:
         self.database, self.rollback_database, fixture = create_schema42_fixture(self.repo, self.candidate_sha, self.paths.root)
         apply = apply_isolated_health_migrations(self.repo, self.candidate_sha, self.database)
-        after = _verify_sqlite(self.database, expected_version=44)
+        after = _verify_sqlite(self.database, expected_version=self.candidate_schema_version)
         if after["status"] != "PASS":
             raise QualificationError("isolated System Health migrations failed local integrity verification")
         repeat = apply_isolated_health_migrations(self.repo, self.candidate_sha, self.database)
@@ -743,7 +749,8 @@ class SystemHealthAndroidQualification:
             "production_database_used": False,
         }
         # Recreate the schema-42 candidate DB after the local migration proof;
-        # the phone candidate must perform 0043/0044 itself at startup.
+        # the phone candidate must perform the complete forward chain itself at
+        # startup, including generation and recovery-request migrations.
         self.database.unlink()
         self.database, self.rollback_database, _ = create_schema42_fixture(self.repo, self.candidate_sha, self.paths.root)
 
@@ -789,6 +796,10 @@ class SystemHealthAndroidQualification:
             # ("POCKETLAB_QUALIFICATION_OWNER": "0"). The browser UI lane
             # opts into the existing non-destructive owner bridge explicitly.
             "POCKETLAB_ENVIRONMENT": "qualification", "POCKETLAB_HARNESS_ENABLED": "1", "POCKETLAB_HARNESS_DESTRUCTIVE": "0", "POCKETLAB_QUALIFICATION_OWNER": self.qualification_owner_flag, "POCKETLAB_TEST_AUTH_BYPASS": "0",
+            # Controlled recovery is enabled only inside the isolated browser
+            # candidate. The security-assurance lane and installed runtime
+            # remain default-off.
+            "POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1" if self.browser_ui else "0",
             "POCKETLAB_HARNESS_BOOTSTRAP_APPROVED": "1", "POCKETLAB_HARNESS_BOOTSTRAP_PROFILE": self.bootstrap_profile, "POCKETLAB_HARNESS_RUNTIME_ID": f"qualification-{self.run_id}",
             "POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID": self.principal_id, "POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT": self.fingerprint, "POCKETLAB_HARNESS_PROVISIONING_TOKEN": self.provisioning_token,
             "POCKETLAB_STATE_DIR": f"{self.remote_root}/state", "POCKETLAB_LITE_DB_PATH": f"{self.remote_root}/state/{SCHEMA_DB_NAME}", "POCKETLAB_BASE_DIR": f"{self.remote_root}/base", "POCKETLAB_API_DIR": f"{self.remote_root}/api", "POCKETLAB_IAC_DIR": f"{self.remote_root}/iac",
@@ -1010,18 +1021,43 @@ time.sleep(3)
             "stale_repair": response_contract(stale_repair),
             "unauthorized_diagnosis": response_contract(unauthorized),
         }
-        if preflight.status != 200 or repair.status != 409 or replay.status != 409 or stale_repair.status != 409 or unauthorized.status != 401:
-            raise QualificationError("System Health repair denial/authentication contract failed")
         body = response_detail(repair)
         stale_body = response_detail(stale_repair)
-        if body.get("status") != "blocked" or body.get("recorded") is not True or stale_body.get("reason_code") != "incident_generation_changed":
-            raise QualificationError("System Health repair denial was not fail-closed")
+        lifecycle: list[str] = []
+        if self.browser_ui:
+            if preflight.status != 200 or repair.status != 202 or replay.status != 202 or stale_repair.status != 409 or unauthorized.status != 401:
+                raise QualificationError("System Health controlled recovery admission/authentication contract failed")
+            request = body.get("request") if isinstance(body.get("request"), dict) else {}
+            if body.get("status") != "admitted" or not request.get("request_id"):
+                raise QualificationError("System Health controlled recovery was not durably admitted")
+            deadline = time.monotonic() + 45
+            while time.monotonic() < deadline:
+                decisions_now = self.client.request("GET", f"/api/lite/system-health/incidents/{incident_id}/decisions", session=self.session)
+                requests = decisions_now.body.get("recovery_requests") if isinstance(decisions_now.body, dict) else []
+                current_request = next((item for item in requests if isinstance(item, dict) and item.get("request_id") == request.get("request_id")), None)
+                if current_request:
+                    status = str(current_request.get("status") or "")
+                    if status and (not lifecycle or lifecycle[-1] != status):
+                        lifecycle.append(status)
+                    if status in {"verified", "execution_failed", "verification_failed", "verification_unavailable", "manual_attention_required", "blocked", "expired", "cancelled"}:
+                        break
+                time.sleep(1)
+            if not lifecycle or lifecycle[-1] != "verified":
+                raise QualificationError("System Health recovery did not reach independently verified state")
+        else:
+            if preflight.status != 200 or repair.status != 409 or replay.status != 409 or stale_repair.status != 409 or unauthorized.status != 401:
+                raise QualificationError("System Health repair denial/authentication contract failed")
+            if body.get("status") != "blocked" or body.get("recorded") is not True:
+                raise QualificationError("System Health repair denial was not fail-closed")
+        if stale_body.get("reason_code") != "incident_generation_changed":
+            raise QualificationError("System Health stale generation was not rejected")
         self.results["system_health_api"] = {
             "status": "PASS", "anonymous_read_rejected": True, "authenticated_routes": route_results,
             "incident_id_class": "deterministic_health_identity", "incident_generation": generation, "incident_state": incident.get("state"),
             "detail": detail.status, "diagnosis": diagnosis.status, "preflight": preflight.status, "repair": repair.status,
-            "idempotent_replay": replay.status == 409, "generation_fencing": stale_body.get("reason_code"), "unauthorized_write": unauthorized.status,
-            "app_diagnostics_status": app.status, "new_executor_enabled": False, "raw_evidence_exposed": False,
+            "idempotent_replay": replay.status in {202, 409}, "generation_fencing": stale_body.get("reason_code"), "unauthorized_write": unauthorized.status,
+            "app_diagnostics_status": app.status, "new_executor_enabled": False, "controlled_recovery_verified": self.browser_ui,
+            "recovery_lifecycle": lifecycle, "raw_evidence_exposed": False,
         }
 
     def _measure(self) -> None:
@@ -1119,14 +1155,14 @@ time.sleep(3)
             self._discover_remote()
             self._local_fixture()
             assert self.database is not None and self.rollback_database is not None
-            # The phone receives only the schema-42 candidate DB.  The API owns
-            # the forward application of 0043/0044 at startup.
+            # The phone receives only the schema-42 candidate DB. The candidate
+            # API owns the complete forward migration chain at startup.
             self._start_local_nats()
             self._stage_remote()
             before = self._remote_probe(expected=42)
             self.results.setdefault("isolated_sqlite", {})["phone_before_migration"] = before
             self._start_transport_and_candidate()
-            after = self._remote_probe(expected=44)
+            after = self._remote_probe(expected=self.candidate_schema_version)
             if after.get("marker_revision") != 7 or after.get("status") != "PASS":
                 raise QualificationError("phone candidate migration did not preserve the isolated fixture")
             self.results.setdefault("isolated_sqlite", {})["phone_after_migration"] = after
@@ -1135,7 +1171,7 @@ time.sleep(3)
             self._qualify_api()
             self._concurrency()
             self._measure()
-            repeat = self._remote_probe(expected=44)
+            repeat = self._remote_probe(expected=self.candidate_schema_version)
             self.results.setdefault("isolated_sqlite", {})["after_gets"] = repeat
             self.results["status"] = "PASS"
             status = "PASS"
@@ -1149,7 +1185,7 @@ time.sleep(3)
             self._cleanup()
             self.results["finished_at"] = _now()
             self.results["status"] = status
-        evidence = self.external_evidence / f"pr649-system-health-android-{self.candidate_sha[:12]}.json"
+        evidence = self.external_evidence / f"pr657-system-health-android-{self.candidate_sha[:12]}.json"
         evidence.write_text(json.dumps(sanitize(self.results), indent=2, sort_keys=True) + "\n", encoding="utf-8")
         evidence.chmod(0o600)
         return status, evidence

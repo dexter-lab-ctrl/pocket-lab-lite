@@ -5,8 +5,9 @@ The existing System Health Android lane proves the exact candidate API with an
 isolated phone-side runtime.  This companion lane keeps that runtime alive,
 serves the exact frontend through the checked-in candidate server, and lets
 Android Chrome consume it through the existing standard-user CDP relay.  The
-candidate server forwards only loopback HTTPS API traffic and the diagnosis
-write; repair and preflight writes remain blocked.
+candidate server forwards only loopback HTTPS API traffic and the bounded
+System Health diagnosis, preflight and recovery writes to the isolated
+candidate API; no installed-phone API is used for mutation qualification.
 """
 from __future__ import annotations
 
@@ -262,7 +263,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"status": "BLOCKED", "reason": "base SHA could not be resolved", "sanitized": True}, sort_keys=True))
         return 2
     base_sha = base_result.stdout.strip().casefold()
-    evidence_dir = (args.evidence_dir or (REPO_ROOT / ".pocketlab-dev" / "validation")) / f"pr649-system-health-android-ui-{str(args.candidate_sha)[:12]}"
+    evidence_dir = (args.evidence_dir or (REPO_ROOT / ".pocketlab-dev" / "validation")) / f"pr657-system-health-android-ui-{str(args.candidate_sha)[:12]}"
     evidence_dir = evidence_dir.absolute()
     evidence_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
     if not args.dist_dir.is_dir() or not (args.dist_dir / "index.html").is_file():
@@ -289,7 +290,7 @@ def main(argv: list[str] | None = None) -> int:
         before = run._remote_probe(expected=42)
         run.results.setdefault("isolated_sqlite", {})["phone_before_migration"] = before
         run._start_transport_and_candidate()
-        after = run._remote_probe(expected=44)
+        after = run._remote_probe(expected=run.candidate_schema_version)
         if after.get("marker_revision") != 7 or after.get("status") != "PASS":
             raise health.QualificationError("phone candidate migration did not preserve the isolated fixture")
         run.results.setdefault("isolated_sqlite", {})["phone_after_migration"] = after
@@ -326,14 +327,14 @@ def main(argv: list[str] | None = None) -> int:
         (evidence_dir / "ui-qualifier.log").write_text(_safe_text(node_result.stdout, 6000) + "\n" + _safe_text(node_result.stderr, 6000) + "\n", encoding="utf-8")
         if node_result.returncode != 0:
             raise health.QualificationError("physical Android System Health UI qualifier failed")
-        ui_json = evidence_dir / f"pr649-system-health-android-ui-{run.candidate_sha[:12]}.json"
+        ui_json = evidence_dir / f"pr657-system-health-android-ui-{run.candidate_sha[:12]}.json"
         if not ui_json.is_file():
             raise health.QualificationError("physical Android UI evidence was not written")
         ui_evidence = json.loads(ui_json.read_text(encoding="utf-8"))
         if ui_evidence.get("status") != "PASS" or ui_evidence.get("candidate_sha") != run.candidate_sha:
             raise health.QualificationError("physical Android UI evidence was not exact-SHA bound")
         run.results["android_system_health_ui"] = ui_evidence
-        repeat = run._remote_probe(expected=44)
+        repeat = run._remote_probe(expected=run.candidate_schema_version)
         run.results.setdefault("isolated_sqlite", {})["after_ui_gets"] = repeat
         run.results["status"] = "PASS"
         status = "PASS"
@@ -351,7 +352,7 @@ def main(argv: list[str] | None = None) -> int:
         run._cleanup()
         run.results["finished_at"] = health._now()
         run.results["status"] = status
-        final = evidence_dir / f"pr649-system-health-android-ui-final-{run.candidate_sha[:12]}.json"
+        final = evidence_dir / f"pr657-system-health-android-ui-final-{run.candidate_sha[:12]}.json"
         final.write_text(json.dumps(health.sanitize(run.results), indent=2, sort_keys=True) + "\n", encoding="utf-8")
         final.chmod(0o600)
     print(json.dumps({"status": status, "candidate_sha": run.candidate_sha, "base_sha": base_sha, "evidence": str(final), "failure": failure}, indent=2, sort_keys=True))
