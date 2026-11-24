@@ -104,3 +104,43 @@ This section supersedes the earlier partial disposition where applicable. The ea
 - Backend fixture/authority/maintenance/owner evidence regression and frontend owner confirmation cases authored — NOT RUN. Additional per-operation concurrency, policy, migration, UI, accessibility and runtime qualification cases remain outstanding.
 
 **Continuation status: partial source implementation, not ready for qualification or merge as the full P5–P12 delivery.** No tests, builds, checks, CI investigation, qualification, generated contracts/docs, runtime deployment, production activation, merge, release or tagging were performed.
+
+
+## Residual source implementation continuation — 2026-11-25
+
+Scope: source implementation only, continuing draft PR #658 on the existing branch from `0a5686b33f211bc82f7c77d37d2c1dec8e61a8ed`. Last implementation commit before this documentation update: `6935759bd115844d43aff9756a46db2aa5d60875`.
+
+All new implementation in this section is **source-authored / unqualified**. GitHub commit/ref results establish that the source was written, not that it compiles, migrates, executes or passes qualification. No production activation, deployment, server-phone operation, test/build/check execution, CI investigation, release or merge was performed.
+
+| Residual capability | Source delivered | Remaining boundary / qualification requirement |
+|---|---|---|
+| Governed service-specific recovery | Fixed stopped telemetry and server-agent recovery through existing core supervisor, current authority and process generation, restart budget and independent readiness evidence | Other service owners retain existing paths; no arbitrary NATS/API/worker/OPA/remote restart interface |
+| Safe cleanup | Exact reviewed preview/apply for aged rotated PM2 archives and marked abandoned database-rehearsal directories, bounded selection, inode and link exclusions, existing owner locks | Cache removal remains with app-specific owner; raw evidence and personal data protected; concurrency and filesystem race qualification required |
+| Reclaimable storage | Allocated bytes for exact candidate set and observed before/after available-space delta | Observed delta is not exclusive physical attribution; no guaranteed reclaim amount |
+| Uncertain maintenance | Separate durable closed-unverified resolution, explicit current Owner and policy, shared execution fence, no rewriting success or replay | Live owner contention, expiry and closure races require local qualification |
+| Workflow retry/cancel | Queued maintenance cancellation and owner navigation for apps/devices/recovery/Safety; fresh optional activity-history reconciliation request | No generic replay/cancel of other owners' accepted or uncertain work; additional per-owner mutation contracts remain source work |
+| Battery / charging | Bounded local sysfs observation, explicit unsupported/unknown, thermal and charging-aware evidence | Android permissions and host variants need device proof; remote device battery not newly collected |
+| Resource admission | Effective preference and pressure hysteresis for optional stable activity-history cadence; essential services excluded | Not general app/backup/scan workload admission; broader owner contracts remain source work |
+| Certificate / clock / scanner DB | Local certificate expiry, local HTTPS trust and hostname plus certificate fingerprint check; systemd synchronization indication where supported; clock-step observation; existing scanner database freshness; durable and loaded policy consistency | No claim of remote end-to-end TLS, synchronized Android clock, or scanner currency without observations |
+| Approved configuration recovery | Narrow Caddy desired-state repair candidate through existing runtime reconciler, later approved/observed fingerprints and functional readiness | Other configuration owners remain authoritative; review admission/claim race and exact scope on DEV-PC |
+| Restore rehearsal | Bounded isolated verified database copy; exact backup identity/hash/schema, migration rehearsal, integrity and foreign-key checks; no live promotion | Not a full workspace/app restore rehearsal; actual compatibility and resource cost untested |
+| Availability / incident timing | 24-hour per-service minute samples, explicit observed coverage, generation-specific observed incident-resolution duration | Not continuous uptime or universal MTTR; missing samples excluded, coverage must accompany interpretation |
+| Selective automatic recovery | Fixed Risk A optional activity-history reconciliation via existing scheduler, durable attempts, cooldown, single flight and escalation | Later successful refresh establishes observed completion, not exclusive causality; no automatic cleanup or restart |
+| Automatic production policy | Revisioned Owner preference, durable authority and policy binding, exact internal service actor, emergency disable, explicit future runtime gates and separate empty qualification allowlist | No qualified production operation; no actual preference activation or policy promotion |
+
+### Source migrations and authorization
+
+New draft migrations: 0052 (uncertain resolution and availability samples), 0053 (host protection), 0054 (selective automation policy and attempts). The **unreleased draft migration 0050** was extended to enumerate additional fixed operations. This session did not execute any migration. If any external DEV-PC or device already applied the earlier draft 0050, do not overwrite its migration checksum or bypass migration validation: reconcile with a reviewed forward-only migration, or use a fresh disposable candidate database. Do not assume earlier draft migrations have never been applied elsewhere.
+
+Existing OPA source was extended for fixed operations, closure, cancellation and the narrow automatic service actor. Deployed policy, runtime configuration and production qualification allowlists were not activated or promoted. Runtime actor authority, fail-closed behavior, idempotency, stale revisions, replay, leases and owner coordination require actual qualification.
+
+### DEV-PC / Codex handoff (deferred, not executed)
+
+1. Fetch the existing feature branch and confirm exact GitHub head. Read the complete PR and this ledger before editing.
+2. Perform a single-agent source integration review of migrations, command/owner contracts, OPA source and synchronization, API schemas, owner lock ordering, scheduler refresh semantics, PM2 state and generation comparisons, protected filesystem manifests, platform capability handling, and frontend query/confirmation state.
+3. Resolve the remaining source gaps above against the existing owner contracts; do not introduce a competing executor or generic retry, unrestricted cleanup, or unsafe restart capability.
+4. Only in a separately authorized qualification session, use disposable state for schema migration and backend/frontend regression runs, then scoped mocked/live DEV-PC and server-phone qualification using the established project harness. Verify actual Android permissions, TLS listener configuration, pressure/idle overhead and owner failure scenarios. Do not modify production state or promote the empty qualification allowlists merely to obtain passing results.
+5. Preserve the draft PR, no merge/release/activation until explicitly authorized after evidence review.
+
+Regression test source was extended for power observation, pressure dwell/recovery, sampled availability, disabled automation, cleanup links, stopped-service generation and configuration mismatch eligibility, and the frontend preference boundary. These are authored tests, not results; they are not a complete qualification matrix.
+
