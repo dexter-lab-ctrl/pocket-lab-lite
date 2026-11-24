@@ -34,6 +34,14 @@ const SECTIONS = Object.freeze([
     { id: 'details', label: 'Technical details', description: 'Sanitized diagnostic metadata', icon: Settings2 },
   ] },
 ]);
+export const SYSTEM_HEALTH_SUMMARY_QUERY_OPTIONS = Object.freeze({
+  staleTime: 90_000,
+  pollingMode: 'relaxed',
+  refetchOnWindowFocus: false,
+  // A saved safe-read is useful for continuity, but it must not suppress the
+  // first live revalidation when this screen mounts again.
+  refetchOnMount: 'always',
+});
 export { systemHealthPresentation };
 
 export function SystemHealthIncidentCard({ incident, onDiagnose, saved = false }) {
@@ -145,7 +153,7 @@ export default function LiteSystemHealth({ onNavigate }) {
   const navigation = useLitePanelSectionNavigation(open);
   const summaryQuery = useLiteQuery({
     queryKey: liteQueryKeys.healthIntelligence(), path: '/api/lite/system-health/summary',
-    queryFn: liteApi.healthIntelligenceSummary, staleTime: 90_000, pollingMode: 'relaxed', refetchOnWindowFocus: false,
+    queryFn: liteApi.healthIntelligenceSummary, ...SYSTEM_HEALTH_SUMMARY_QUERY_OPTIONS,
   });
   const incidentsQuery = useLiteQuery({
     queryKey: liteQueryKeys.healthIncidents(), path: '/api/lite/system-health/incidents',

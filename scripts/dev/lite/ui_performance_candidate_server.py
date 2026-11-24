@@ -302,7 +302,12 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
             return
 
         headers = {"Accept": self.headers.get("Accept", "application/json")[:256]}
-        for name in ("Cache-Control", "If-None-Match", "Last-Event-ID"):
+        # Safe-read requests use a non-secret nonce to distinguish a live
+        # backend response from a service-worker/HTTP-cache response. The
+        # candidate proxy must preserve that transport contract end to end;
+        # otherwise the browser correctly falls back to its saved snapshot
+        # even when the isolated backend returned current evidence.
+        for name in ("Cache-Control", "If-None-Match", "Last-Event-ID", "X-PocketLab-Read-Nonce"):
             value = self.headers.get(name)
             if value:
                 headers[name] = value[:512]

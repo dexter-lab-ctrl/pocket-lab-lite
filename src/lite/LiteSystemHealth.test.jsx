@@ -1,5 +1,17 @@
-import { describe, expect, it } from 'vitest';
-import { systemHealthPresentation } from './LiteSystemHealth.jsx';
+// @vitest-environment jsdom
+import React from 'react';
+import { cleanup, render } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../hooks/useLiteQuery.js', () => ({ useLiteQuery: vi.fn() }));
+
+import { useLiteQuery } from '../hooks/useLiteQuery.js';
+import LiteSystemHealth, { SYSTEM_HEALTH_SUMMARY_QUERY_OPTIONS, systemHealthPresentation } from './LiteSystemHealth.jsx';
+
+afterEach(() => {
+  cleanup();
+  useLiteQuery.mockReset();
+});
 
 describe('System Health authoritative presentation', () => {
   it('never labels missing data healthy', () => {
@@ -24,5 +36,48 @@ describe('System Health authoritative presentation', () => {
     const result = systemHealthPresentation({ status: 'healthy', freshness: 'current', unknown_services: 0 });
     expect(result.state).toBe('ready');
     expect(result.title).toMatch(/observed/i);
+  });
+
+  it('revalidates a saved summary on mount and transitions saved to fresh evidence', () => {
+    expect(SYSTEM_HEALTH_SUMMARY_QUERY_OPTIONS.refetchOnMount).toBe('always');
+
+    const currentSummary = {
+      status: 'attention', freshness: 'current', current_problems: 1,
+      saved_problems: 0, healthy_services: 7, unknown_services: 0,
+      summary: 'One current observation needs review.',
+    };
+    let savedOnly = true;
+    useLiteQuery.mockImplementation(({ path }) => {
+      if (path === '/api/lite/system-health/summary') {
+        return {
+          data: currentSummary,
+          savedStateOnly: savedOnly,
+          backendReachable: !savedOnly,
+          refreshing: false,
+          refresh: vi.fn(),
+          error: null,
+          cacheStatus: null,
+        };
+      }
+      return {
+        data: { items: [] }, loading: false, error: null,
+        refreshing: false, refresh: vi.fn(), savedStateOnly: false,
+        backendReachable: true, cacheStatus: null,
+      };
+    });
+
+    const view = render(<LiteSystemHealth />);
+    expect(document.querySelector('[data-health-overview="saved"]')).toBeTruthy();
+
+    savedOnly = false;
+    view.rerender(<LiteSystemHealth />);
+    expect(document.querySelector('[data-health-overview="attention"]')).toBeTruthy();
+  });
+
+  it('transitions fresh evidence back to saved without presenting it as current', () => {
+    const fresh = systemHealthPresentation({ status: 'attention', freshness: 'current', current_problems: 1 });
+    const saved = systemHealthPresentation({ status: 'attention', freshness: 'current', current_problems: 1 }, true);
+    expect(fresh.state).toBe('attention');
+    expect(saved.state).toBe('saved');
   });
 });
