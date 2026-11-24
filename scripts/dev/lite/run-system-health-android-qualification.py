@@ -331,19 +331,26 @@ healthy = {
     "summary": "Qualification recovery target is healthy.",
 }
 terminal = {"verified", "execution_failed", "verification_failed", "verification_unavailable", "manual_attention_required", "blocked", "expired", "cancelled"}
+conn = sqlite3.connect(database)
+try:
+    baseline_request_ids = {str(row[0]) for row in conn.execute(
+        "SELECT request_id FROM lite_system_health_recovery_requests"
+    ).fetchall() if row and row[0]}
+finally:
+    conn.close()
 started = time.monotonic()
 while time.monotonic() < float(deadline):
     projections.project("system.nats_remote", degraded)
     conn = sqlite3.connect(database)
     try:
         row = conn.execute(
-            "SELECT status FROM lite_system_health_recovery_requests ORDER BY requested_at DESC LIMIT 1"
+            "SELECT request_id,status FROM lite_system_health_recovery_requests ORDER BY requested_at DESC LIMIT 1"
         ).fetchone()
     finally:
         conn.close()
-    if row and str(row[0] or "") in terminal:
+    if row and str(row[0] or "") not in baseline_request_ids and str(row[1] or "") in terminal:
         projections.project("system.nats_remote", healthy)
-        print(json.dumps({"status": "PASS", "request_status": str(row[0]), "bounded": True}, sort_keys=True), flush=True)
+        print(json.dumps({"status": "PASS", "request_status": str(row[1]), "bounded": True}, sort_keys=True), flush=True)
         raise SystemExit(0)
     time.sleep(0.25)
 print(json.dumps({"status": "TIMEOUT", "bounded": True, "elapsed_seconds": round(time.monotonic() - started, 2)}, sort_keys=True), flush=True)
