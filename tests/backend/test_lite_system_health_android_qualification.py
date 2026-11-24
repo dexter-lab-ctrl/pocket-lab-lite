@@ -73,6 +73,7 @@ def test_backend_lane_starts_its_recovery_fixture_before_api_contract():
     api_call = run_body.index("self._qualify_api()")
     assert fixture_call < api_call
     assert '"POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1"' in source
+    assert "harness_capability_denied" in source
 
 
 def test_isolated_binding_rejects_production_paths_and_collisions(tmp_path):

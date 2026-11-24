@@ -1280,6 +1280,19 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
                 "repair_status": repair.status,
                 "repair_reason_code": _safe_text(repair_detail.get("reason_code"), 80),
             })
+            if not self.browser_ui and repair.status == 403:
+                # The security-assurance profile is intentionally not granted
+                # the qualification-owner recovery capability. Exercise the
+                # same request again, then prove generation fencing and
+                # anonymous-write rejection without treating the expected
+                # fail-closed 403 as an execution failure.
+                replay = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
+                stale = dict(repair_payload)
+                stale["expected_generation"] = generation + 99
+                stale["idempotency_key"] = f"{repair_payload['idempotency_key']}-stale"
+                stale_repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", stale, session=self.session)
+                unauthorized = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/diagnose")
+                break
             if repair.status == 202:
                 replay = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
                 stale = dict(repair_payload)
@@ -1330,9 +1343,12 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
             if not lifecycle or lifecycle[-1] != "verified":
                 raise QualificationError("System Health recovery did not reach independently verified state")
         else:
-            if preflight.status != 200 or repair.status != 409 or replay.status != 409 or stale_repair.status != 409 or unauthorized.status != 401:
+            if preflight.status != 200 or repair.status not in {403, 409} or stale_repair.status != 409 or unauthorized.status != 401:
                 raise QualificationError("System Health repair denial/authentication contract failed")
-            if body.get("status") != "blocked" or body.get("recorded") is not True:
+            if repair.status == 403:
+                if body.get("status") != "denied" or body.get("reason_code") != "harness_capability_denied" or replay.status != 403:
+                    raise QualificationError("System Health capability denial was not fail-closed")
+            elif body.get("status") != "blocked" or body.get("recorded") is not True or replay.status != 409:
                 raise QualificationError("System Health repair denial was not fail-closed")
         if stale_body.get("reason_code") != "incident_generation_changed":
             raise QualificationError("System Health stale generation was not rejected")
@@ -1340,7 +1356,7 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
             "status": "PASS", "anonymous_read_rejected": True, "authenticated_routes": route_results,
             "incident_id_class": "deterministic_health_identity", "incident_generation": generation, "incident_state": incident.get("state"),
             "detail": detail.status, "diagnosis": diagnosis.status, "preflight": preflight.status, "repair": repair.status,
-            "idempotent_replay": replay.status in {202, 409}, "generation_fencing": stale_body.get("reason_code"), "unauthorized_write": unauthorized.status,
+            "idempotent_replay": replay.status in {202, 409}, "denial_replay": (not self.browser_ui and replay.status == repair.status), "generation_fencing": stale_body.get("reason_code"), "unauthorized_write": unauthorized.status,
             "app_diagnostics_status": app.status, "new_executor_enabled": False, "controlled_recovery_verified": self.browser_ui,
             "recovery_lifecycle": lifecycle, "raw_evidence_exposed": False,
         }
