@@ -1499,6 +1499,16 @@ async def handle_lite_database_restore(command: Dict[str, Any]) -> Dict[str, Any
     return result
 
 
+async def handle_system_health_maintenance(command: Dict[str, Any]) -> Dict[str, Any]:
+    from . import lite_infrastructure_maintenance as infrastructure
+    # Only a durable admission keyed by the command ID can authorize an action.
+    result = await asyncio.to_thread(infrastructure.execute, _command_id(command))
+    await _publish("pocketlab.audit.lite.system_health.maintenance", "lite.system_health.maintenance",
+                   {"command_id": _command_id(command), "status": result["status"], "sanitized": True},
+                   trace_id=_command_id(command))
+    return result
+
+
 async def handle_lite_maintenance_retention(command: Dict[str, Any]) -> Dict[str, Any]:
     command_id = _command_id(command)
     from . import lite_security_maintenance
@@ -1683,6 +1693,7 @@ HANDLERS = {
     "pocketlab.commands.lite.database.restore": handle_lite_database_restore,
     "pocketlab.commands.lite.maintenance.retention": handle_lite_maintenance_retention,
     "pocketlab.commands.lite.maintenance.checkpoint": handle_lite_maintenance_checkpoint,
+    "pocketlab.commands.lite.system_health.maintenance": handle_system_health_maintenance,
 }
 
 
