@@ -297,6 +297,10 @@ def main(argv: list[str] | None = None) -> int:
         run.results.setdefault("isolated_sqlite", {})["phone_after_migration"] = after
         run._run_projection_driver()
         run._bootstrap()
+        # Re-arm after the synthetic Owner bootstrap because the normal
+        # candidate projection scheduler may have observed the healthy broker
+        # while the bootstrap requests were completing.
+        run._run_projection_driver()
         run._qualify_api()
         # The candidate's normal projection scheduler may observe the healthy
         # disposable broker after the API recovery probe. Re-arm the bounded
