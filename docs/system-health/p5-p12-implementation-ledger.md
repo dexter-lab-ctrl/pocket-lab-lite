@@ -30,6 +30,12 @@ The physical blocker is external to the candidate: Android reported a secure key
 
 The final source remediation also changed `healthCancelRecovery` to a contract-discoverable template route and added a regression assertion. Direct frontend/backend route comparison then reported zero unsupported Lite API paths. The earlier exact-candidate evidence is not relabeled as final after this source change; final isolated evidence is recorded against `c17a35e3f9c9338026bafb76c7cf92b3dab179a6`.
 
+### Post-qualification CI reconciliation — 2026-11-25
+
+Commit `36d68ff49264dd4d7006625df8d280ca16554ba6` adds the 14 System Health execution reason codes that the source-derived Documentation Platform catalog discovered. The supplement-aware in-memory catalog now reports zero undocumented structured codes; no generated documentation output was committed or treated as final evidence.
+
+Exact-head run [45504905152](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45504905152) used the current feature head `36d68ff49264dd4d7006625df8d280ca16554ba6`. Isolated backend qualification and UI-performance qualification passed. `quick-and-docs` reached the API parity fence and failed the explicit OpenAPI baseline-promotion check: source-derived OpenAPI contains 266 paths while the previously promoted baseline contains 258, with eight new System Health routes (`automatic-policy`, `diagnostic-export`, `infrastructure`, `maintenance`, `maintenance/{command_id}/cancel`, `maintenance/{command_id}/resolve`, `preferences`, and `recovery-requests/{request_id}/cancel`). This is retained as **BLOCKED / DEFERRED** because the required physical Android qualification did not complete and the workflow requires physical qualification before final contract/documentation promotion. No baseline hash was weakened, manually edited, or relabeled as qualified.
+
 Base: `bb98e6c04c657154ce19675d9d96dc693995ac22` (PR #657). Implementation only; no qualification or production activation authorized. This ledger begins with source inspection; subsequent commits must reconcile each entry with actual implementation.
 
 ## Source reuse and initial boundaries
