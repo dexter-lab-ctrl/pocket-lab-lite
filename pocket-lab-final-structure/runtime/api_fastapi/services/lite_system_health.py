@@ -357,7 +357,7 @@ def freshness(timestamp: str | None) -> str:
         observed = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
         age = (datetime.now(timezone.utc) - observed).total_seconds()
         return "current" if 0 <= age <= OBSERVATION_MAX_AGE_SECONDS else "stale"
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, AttributeError):
         return "unknown"
 
 

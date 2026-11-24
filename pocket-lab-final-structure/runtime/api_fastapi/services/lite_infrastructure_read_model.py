@@ -325,13 +325,16 @@ def reliability() -> dict:
                 durations.append(elapsed)
         except (TypeError, ValueError, AttributeError):
             continue
+    from . import lite_infrastructure_reliability as samples
+    observed = samples.statistics()
     return {
         "scope": "latest_100_governed_requests", "sample_count": len(rows),
         "verified_count": verified, "terminal_execution_count": terminal,
         "verification_rate": round(verified / terminal, 4) if terminal else None,
-        "observed_availability": None, "observation_coverage": None,
+        "observed_availability": observed["observed_availability"], "observation_coverage": observed["observation_coverage"],
+        "sampled_reliability": observed,
         "mean_recovery_seconds": None, "automatic_recovery_rate": None,
         "mean_verified_request_elapsed_seconds": round(sum(durations)/len(durations), 1) if durations else None,
         "verified_request_timing_samples": len(durations),
-        "reason": "Continuous observation coverage and comparable timing evidence are not established.",
+        "reason": "Sampled availability excludes missing and unknown observations; it is not continuous uptime.",
     }

@@ -883,7 +883,7 @@ decision := {
     input.actor.owner_authority == true
     input.target.type == "system_health_maintenance"
     input.target.id != ""
-    input.target.state.operation_id in {"storage.evidence.preview", "storage.evidence.retention", "sqlite.checkpoint.passive"}
+    input.target.state.operation_id in {"storage.evidence.preview", "storage.evidence.retention", "sqlite.checkpoint.passive", "maintenance.uncertain.resolve"}
     input.target.state.adapter_enabled == true
     input.target.state.confirmed == true
 }

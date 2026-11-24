@@ -6,12 +6,15 @@ Never execute from an HTTP request or replay an uncertain owner execution.
 from __future__ import annotations
 
 import hashlib
+import fcntl
+from contextlib import contextmanager
 import json
 import os
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from .. import deps
 from ..db.connection import connection, begin_immediate
 from . import lite_infrastructure_authority as authority
 from . import lite_system_health as health
@@ -33,11 +36,11 @@ def _public(row: dict) -> dict:
         evidence = json.loads(row.get("evidence_json") or "{}")
     except (ValueError,TypeError):
         evidence = {}
-    return {key: row.get(key) for key in ("command_id","operation_id","preview_id","status","requested_at","expires_at","completed_at")} | {"evidence": evidence, "sanitized": True}
+    return {key: row.get(key) for key in ("command_id","operation_id","preview_id","status","requested_at","expires_at","completed_at")} | {"evidence": evidence, "resolution": row.get("disposition"), "sanitized": True}
 
 
 def history() -> list[dict]:
-    return [_public(row) for row in health._read("SELECT * FROM lite_system_health_maintenance_admissions ORDER BY requested_at DESC,command_id DESC LIMIT 20")]
+    return [_public(row) for row in health._read("SELECT a.*,r.disposition FROM lite_system_health_maintenance_admissions a LEFT JOIN lite_system_health_maintenance_resolutions r USING(command_id) ORDER BY requested_at DESC,command_id DESC LIMIT 20")]
 
 
 def _expires(seconds: int) -> str:
@@ -93,7 +96,7 @@ def admit(context: dict, operation: str, preview_id: str, idempotency_key: str, 
             # Expire only not-yet-executed admissions. Unknown owner outcomes
             # remain uncertain and are not automatically retried.
             conn.execute("UPDATE lite_system_health_maintenance_admissions SET status='expired',completed_at=? WHERE status='queued' AND expires_at<=?",(health._now(),health._now()))
-            if conn.execute("SELECT 1 FROM lite_system_health_maintenance_admissions WHERE status IN ('queued','executing','uncertain') LIMIT 1").fetchone():
+            if conn.execute("SELECT 1 FROM lite_system_health_maintenance_admissions a WHERE status IN ('queued','executing','uncertain') AND NOT EXISTS (SELECT 1 FROM lite_system_health_maintenance_resolutions r WHERE r.command_id=a.command_id) LIMIT 1").fetchone():
                 raise ValueError("maintenance_single_flight")
             candidate_json = "[]"
             if preview_id:
@@ -129,7 +132,25 @@ def _finish(command_id: str,status: str,evidence: dict,candidates: list[str] | N
     return _public(dict(row))
 
 
+@contextmanager
+def _owner_lock():
+    # Same private state directory on Termux/Linux; no /tmp and no blocking
+    # worker on another owner. OS releases the fence on process death.
+    path = deps.settings().state_dir / "system-health-maintenance.lock"
+    fd = os.open(path, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        yield
+    finally:
+        os.close(fd)
+
+
 def execute(command_id: str) -> dict:
+    with _owner_lock():
+        return _execute(command_id)
+
+
+def _execute(command_id: str) -> dict:
     """Called only from domain_commands handler in the existing worker."""
     with connection() as conn:
         with begin_immediate(conn):
@@ -188,6 +209,15 @@ def execute(command_id: str) -> dict:
 
 
 def reconcile() -> None:
+    # Never expire a live owner while it still holds the execution fence.
+    try:
+        with _owner_lock():
+            _reconcile()
+    except BlockingIOError:
+        return
+
+
+def _reconcile() -> None:
     # Existing watchdog invokes this at bounded cadence. No replay.
     rows = health._read("SELECT command_id,status FROM lite_system_health_maintenance_admissions WHERE status IN ('queued','executing') AND expires_at<=? LIMIT 20",(health._now(),))
     if not rows:
@@ -198,3 +228,39 @@ def reconcile() -> None:
                 conn.execute("""UPDATE lite_system_health_maintenance_admissions SET status=?,completed_at=?
                     WHERE command_id=? AND status=? AND expires_at<=?""",
                     ("uncertain" if row["status"]=="executing" else "expired",health._now(),row["command_id"],row["status"],health._now()))
+
+
+def resolve_uncertain(context: dict, command_id: str, *, confirm: bool) -> dict:
+    """Explicit closure after owner review, never an assertion of success."""
+    if not confirm:
+        raise ValueError("confirmation_required")
+    with _owner_lock():
+        with connection() as conn:
+            actor = authority.require_owner(conn, context)
+            row = conn.execute("SELECT * FROM lite_system_health_maintenance_admissions WHERE command_id=?", (command_id,)).fetchone()
+            if not row:
+                raise LookupError("request_not_found")
+            if row["status"] != "uncertain":
+                raise ValueError("not_uncertain")
+            existing = conn.execute("SELECT disposition FROM lite_system_health_maintenance_resolutions WHERE command_id=?", (command_id,)).fetchone()
+            if existing:
+                return _public(dict(row) | dict(existing))
+        if maintenance.maintenance_state().get("active") or maintenance.active_security_scan():
+            raise ValueError("maintenance_conflict")
+        decision = opa.evaluate_authorization(auth_context=context, action_id=ACTION,
+            target_type="system_health_maintenance", target_id=command_id,
+            target_revision=command_id + ":uncertain", target={"operation_id":"maintenance.uncertain.resolve",
+                "confirmed":True, "adapter_enabled":True},
+            request_context={"confirmation_present":True})
+        with connection() as conn:
+            with begin_immediate(conn):
+                actor = authority.require_owner(conn, context)
+                # Acknowledgement cannot interrupt a running owner. Never
+                # update the original execution outcome or reuse its preview.
+                row = conn.execute("SELECT * FROM lite_system_health_maintenance_admissions WHERE command_id=? AND status='uncertain'", (command_id,)).fetchone()
+                if not row:
+                    raise ValueError("state_changed")
+                conn.execute("""INSERT INTO lite_system_health_maintenance_resolutions
+                    VALUES(?,?,?,?,?,'closed_unverified')""",
+                    (command_id,actor,decision["decision_id"],decision["policy_revision"],health._now()))
+                return _public(dict(row) | {"disposition":"closed_unverified"})

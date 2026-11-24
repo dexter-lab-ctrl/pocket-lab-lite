@@ -365,3 +365,22 @@ async def system_health_maintenance_request(payload: MaintenanceRequest, request
             raise HTTPException(503,detail={"reason_code":"delivery_unconfirmed","command_id":result["command_id"],
                                            "message":"Delivery is unconfirmed; review the recorded operation."}) from exc
     return result
+
+
+class ResolveMaintenanceRequest(BaseModel):
+    model_config = {"extra":"forbid"}
+    confirm: bool
+
+
+@router.post("/maintenance/{command_id}/resolve")
+def system_health_resolve_maintenance(command_id: str, payload: ResolveMaintenanceRequest, request: Request):
+    context = _require_authenticated(request,write=True)
+    from ..services import lite_infrastructure_maintenance as maintenance
+    try:
+        return maintenance.resolve_uncertain(context,command_id,confirm=payload.confirm)
+    except BlockingIOError as exc:
+        raise HTTPException(409, detail={"reason_code":"owner_still_running"}) from exc
+    except (PermissionError,LookupError,ValueError) as exc:
+        _control_error(exc)
+    except lite_policy_opa.PolicyDecisionError as exc:
+        raise HTTPException(exc.status_code,detail={"reason_code":exc.reason_code,"message":exc.message}) from exc
