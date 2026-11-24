@@ -763,6 +763,7 @@ class SystemHealthAndroidQualification:
         self.remote_api_port = 0
         self.api: Any | None = None
         self.worker: Any | None = None
+        self.nats_tunnel: Any | None = None
         self.driver: Any | None = None
         self.recovery_fixture: Any | None = None
         self.tunnels: list[Any] = []
@@ -962,7 +963,7 @@ class SystemHealthAndroidQualification:
             "POCKETLAB_API_BIND": "127.0.0.1", "POCKETLAB_API_PORT": str(remote_api_port), "POCKETLAB_OPA_URL": opa_origin, "POCKETLAB_OPA_ACTIVE_POLICY_DIR": f"{self.remote_root}/opa/active",
             "POCKETLAB_NATS_URL": nats_origin, "POCKETLAB_LITE_PUBLIC_NATS_URL": nats_origin, "POCKETLAB_NATS_JETSTREAM": "1", "POCKETLAB_NATS_REQUIRED": "1", "POCKETLAB_NATS_REQUIRE_JETSTREAM": "1", "POCKETLAB_NATS_NAME": f"qualification-{self.run_id}",
             "POCKETLAB_NATS_USER": self.nats.user if self.nats else "", "POCKETLAB_NATS_PASSWORD": self.nats.password if self.nats else "", "POCKETLAB_AGENT_NATS_USER": self.nats.user if self.nats else "", "POCKETLAB_AGENT_NATS_PASSWORD": self.nats.password if self.nats else "",
-            "POCKETLAB_NATS_INITIAL_CONNECT_DEADLINE": "5", "POCKETLAB_NATS_RECONNECT_WAIT": "1", "POCKETLAB_NATS_RECONNECT_MIN_SECONDS": "1", "POCKETLAB_NATS_RECONNECT_MAX_SECONDS": "5", "POCKETLAB_NATS_WATCHDOG_SECONDS": "2",
+            "POCKETLAB_NATS_INITIAL_CONNECT_DEADLINE": "5", "POCKETLAB_NATS_RECONNECT_WAIT": "30", "POCKETLAB_NATS_RECONNECT_MIN_SECONDS": "1", "POCKETLAB_NATS_RECONNECT_MAX_SECONDS": "5", "POCKETLAB_NATS_WATCHDOG_SECONDS": "2",
             "POCKETLAB_WORKER_DURABLE": "pocketlab_command_worker_v1", "POCKETLAB_WORKER_QUEUE": "pocketlab_command_worker_v1", "POCKETLAB_WORKER_RECOVERY_SECONDS": "2", "POCKETLAB_WORKER_HEARTBEAT_SECONDS": "5", "POCKETLAB_WORKER_NATS_RETRY_SECONDS": "1", "POCKETLAB_JETSTREAM_MAX_BYTES": "16777216", "POCKETLAB_QUALIFICATION_LOG_DIR": f"{self.remote_root}/logs", "POCKETLAB_DISABLE_RELEASE_UPDATER": "1",
             "POCKETLAB_LITE_SECURE_ORIGIN": "", "POCKETLAB_SECURE_ORIGIN": "", "CADDYFILE": "", "POCKET_LAB_CADDYFILE": "", "SSL_CERT_FILE": f"{self.remote_root}/qualification-ca.pem", "REQUESTS_CA_BUNDLE": f"{self.remote_root}/qualification-ca.pem",
         }
@@ -976,6 +977,7 @@ class SystemHealthAndroidQualification:
             local_port=self.nats.port, target_port=self.nats.port, remote_port=0,
         )
         reverse.start()
+        self.nats_tunnel = reverse
         self.tunnels.append(reverse)
         opa_tunnel = self.controller.AndroidTunnel(
             host=self.remote.host, run_id=self.run_id, kind="system-health-opa", log=self.paths.logs / "ssh-opa.log", direction="reverse",
@@ -1028,6 +1030,27 @@ class SystemHealthAndroidQualification:
             raise QualificationError("candidate worker exited during readiness")
         validate_candidate_readiness(api_status=200, api_owned=self.api.alive(), worker_owned=self.worker.alive())
         self.results["candidate_runtime"] = {"status": "PASS", "candidate_sha": self.candidate_sha, "api_owned": True, "worker_owned": True, "api_loopback_only": True, "production_pm2_used": False, "production_caddy_used": False}
+
+    def _pause_candidate_nats_for_recovery(self) -> bool:
+        """Create a bounded unhealthy owner state in the isolated candidate only."""
+        if not self.browser_ui or self.nats_tunnel is None:
+            return False
+        if not self.nats_tunnel.stop():
+            raise QualificationError("candidate NATS tunnel ownership could not be paused")
+        # Let the worker's existing disconnect callback publish the unhealthy
+        # owner state before the independent API admission request is sent.
+        time.sleep(1.0)
+        return True
+
+    def _resume_candidate_nats_after_recovery_admission(self, paused: bool) -> None:
+        if not paused or self.nats_tunnel is None:
+            return
+        self.nats_tunnel.start()
+        self.results["recovery_transport"] = {
+            "status": "PASS",
+            "candidate_nats_tunnel_restarted": True,
+            "production_transport_touched": False,
+        }
 
     def _remote_probe(self, *, expected: int | None = None) -> dict[str, Any]:
         assert self.remote is not None
@@ -1272,7 +1295,11 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
                 "confirm": True,
             }
             preflight = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/preflight", repair_payload, session=self.session)
-            repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
+            nats_paused = self._pause_candidate_nats_for_recovery()
+            try:
+                repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
+            finally:
+                self._resume_candidate_nats_after_recovery_admission(nats_paused)
             repair_detail = response_detail(repair)
             repair_attempts.append({
                 "attempt": attempt,
