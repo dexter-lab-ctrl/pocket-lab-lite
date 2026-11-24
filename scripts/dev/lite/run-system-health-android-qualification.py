@@ -291,6 +291,66 @@ print(json.dumps({"requests": requests, "events": events}, sort_keys=True, separ
 '''
 
 
+_REMOTE_RECOVERY_FIXTURE = r'''import json, sqlite3, sys, time
+runtime, database, deadline = sys.argv[1:]
+sys.path.insert(0, runtime)
+from api_fastapi.services import lite_phase3b_projections as projections
+
+degraded = {
+    "status": "degraded",
+    "connected": True,
+    "jetstream_enabled": True,
+    "durable_consumer_health": {
+        "pocketlab_command_worker_v1": {
+            "healthy": False,
+            "generation": 1,
+            "recoveries": 0,
+            "task_alive": False,
+            "subscription_present": False,
+            "callback_inflight": False,
+        }
+    },
+    "generation": 9001,
+    "summary": "Qualification recovery target needs attention.",
+    "sanitized": True,
+}
+healthy = {
+    **degraded,
+    "status": "healthy",
+    "durable_consumer_health": {
+        "pocketlab_command_worker_v1": {
+            "healthy": True,
+            "generation": 2,
+            "recoveries": 1,
+            "task_alive": True,
+            "subscription_present": True,
+            "callback_inflight": False,
+        }
+    },
+    "generation": 9002,
+    "summary": "Qualification recovery target is healthy.",
+}
+terminal = {"verified", "execution_failed", "verification_failed", "verification_unavailable", "manual_attention_required", "blocked", "expired", "cancelled"}
+started = time.monotonic()
+while time.monotonic() < float(deadline):
+    projections.project("system.nats_remote", degraded)
+    conn = sqlite3.connect(database)
+    try:
+        row = conn.execute(
+            "SELECT status FROM lite_system_health_recovery_requests ORDER BY requested_at DESC LIMIT 1"
+        ).fetchone()
+    finally:
+        conn.close()
+    if row and str(row[0] or "") in terminal:
+        projections.project("system.nats_remote", healthy)
+        print(json.dumps({"status": "PASS", "request_status": str(row[0]), "bounded": True}, sort_keys=True), flush=True)
+        raise SystemExit(0)
+    time.sleep(0.25)
+print(json.dumps({"status": "TIMEOUT", "bounded": True, "elapsed_seconds": round(time.monotonic() - started, 2)}, sort_keys=True), flush=True)
+raise SystemExit(1)
+'''
+
+
 def _sql_statements(sql: str) -> Iterable[str]:
     buffer = ""
     for line in sql.splitlines(keepends=True):
@@ -685,6 +745,7 @@ class SystemHealthAndroidQualification:
         self.api: Any | None = None
         self.worker: Any | None = None
         self.driver: Any | None = None
+        self.recovery_fixture: Any | None = None
         self.tunnels: list[Any] = []
         self.opa_policy_path: Path | None = None
         self.principal_private = Ed25519PrivateKey.generate()
@@ -1013,6 +1074,33 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
         self.results["projection_driver"] = {"status": "PASS", "output_lines": line_count, "duplicate_suppression": True}
         return payload
 
+    def _start_recovery_projection_fixture(self) -> None:
+        """Keep one bounded degraded NATS target current during recovery admission."""
+        assert self.remote is not None
+        if self.recovery_fixture is not None and self.recovery_fixture.alive():
+            raise QualificationError("a recovery projection fixture is already running")
+        remote_path = f"{self.remote_root}/probe/system-health-recovery-fixture.py"
+        self.controller._android_remote_write(
+            self.remote.host, remote_path, _REMOTE_RECOVERY_FIXTURE, root=self.remote_root, mode="400"
+        )
+        self.recovery_fixture = self.controller.AndroidRemoteProcess(
+            remote=self.remote, run_id=self.run_id, root=self.remote_root, name="system-health-recovery-fixture", env_path=self.env_path,
+            argv=[self.remote.python, remote_path, self.runtime_root, f"{self.remote_root}/state/{SCHEMA_DB_NAME}", str(time.time() + 120)],
+            cwd=self.runtime_root, log_path=f"{self.remote_root}/logs/recovery-fixture.log",
+        )
+        self.recovery_fixture.launch()
+        time.sleep(0.8)
+        if not self.recovery_fixture.alive():
+            raise QualificationError("recovery projection fixture exited before readiness")
+        runs = self.results.setdefault("recovery_projection_fixture", [])
+        if isinstance(runs, list):
+            runs.append({"status": "PASS", "bounded_seconds": 120, "target": "nats/jetstream", "fault_injection": "candidate_sqlite_projection_only"})
+
+    def _stop_recovery_projection_fixture(self) -> None:
+        if self.recovery_fixture is not None:
+            with contextlib.suppress(Exception):
+                self.recovery_fixture.stop()
+
     def _bootstrap(self) -> None:
         assert self.client is not None
         validate_synthetic_identity(
@@ -1199,7 +1287,7 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
         if self.remote is None or not self.remote_root:
             return
         logs: dict[str, list[str]] = {}
-        for name in ("api.log", "worker.log", "driver.log"):
+        for name in ("api.log", "worker.log", "driver.log", "recovery-fixture.log"):
             try:
                 raw = self.controller._android_read_text(self.remote, f"{self.remote_root}/logs/{name}", root=self.remote_root)
             except Exception:
@@ -1264,7 +1352,7 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
             with contextlib.suppress(Exception):
                 remote_processes_before = self.controller._android_run_owned_processes(self.remote, root=self.remote_root, run_id=self.run_id)
         self._cleanup_session()
-        for process in (self.driver, self.worker, self.api):
+        for process in (self.recovery_fixture, self.driver, self.worker, self.api):
             if process is not None:
                 with contextlib.suppress(Exception):
                     process.stop()

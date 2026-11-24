@@ -179,6 +179,8 @@ def test_readiness_sanitization_and_source_safety_contract():
     assert '"POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1" if self.browser_ui else "0"' in source
     assert '"POCKETLAB_NATS_URL": nats_origin' in source
     assert "production_database_touched" in source
+    assert "_REMOTE_RECOVERY_FIXTURE" in source
+    assert "candidate_sqlite_projection_only" in source
 
 
 def test_taskfile_wires_only_the_narrow_system_health_lane():
