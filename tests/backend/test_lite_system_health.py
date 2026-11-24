@@ -49,8 +49,8 @@ def health(tmp_path, monkeypatch):
 
 def qualification_context(actor_id="qualification-owner"):
     return {"actor": {"identity_id": actor_id, "type": "qualification"},
-            "session": {"authenticated": True}, "harness": {"session_id": "test-harness"},
-            "authorization": {"role": "Owner", "authorization_version": 1, "enterprise_enabled": False}}
+            "session": {"authenticated": True}, "harness": {"session_id": "test-harness", "profile": "qualification-owner"},
+            "authorization": {"role": None, "authorization_version": 1, "enterprise_enabled": False}}
 
 
 def observed_nats(status="degraded", revision=1):
