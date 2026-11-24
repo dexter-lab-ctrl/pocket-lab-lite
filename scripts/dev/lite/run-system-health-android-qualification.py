@@ -1035,6 +1035,12 @@ class SystemHealthAndroidQualification:
         """Create a bounded unhealthy owner state in the isolated candidate only."""
         if not self.browser_ui or self.nats_tunnel is None:
             return False
+        # The candidate environment already contains the first dynamic
+        # reverse-forward port. Pin that owned port before restarting the
+        # tunnel; otherwise the phone would receive a new port while the
+        # worker still points at the original NATS origin.
+        if self.nats_tunnel.remote_port:
+            self.nats_tunnel.requested_remote_port = int(self.nats_tunnel.remote_port)
         if not self.nats_tunnel.stop():
             raise QualificationError("candidate NATS tunnel ownership could not be paused")
         # Let the worker's existing disconnect callback publish the unhealthy

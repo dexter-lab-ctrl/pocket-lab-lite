@@ -75,6 +75,7 @@ def test_backend_lane_starts_its_recovery_fixture_before_api_contract():
     assert '"POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1"' in source
     assert "harness_capability_denied" in source
     assert "self.nats_tunnel.stop()" in source
+    assert "requested_remote_port = int(self.nats_tunnel.remote_port)" in source
     assert '"POCKETLAB_NATS_RECONNECT_WAIT": "30"' in source
 
 
