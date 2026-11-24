@@ -636,6 +636,11 @@ def test_new_maintenance_cannot_be_activated_by_production_environment_alone(hea
     assert all(not maintenance.enabled(op) for op in maintenance.OPERATIONS)
 
 
+def test_system_health_frontend_recovery_cancel_path_is_contract_discoverable():
+    api = Path("src/lib/liteApi.js").read_text(encoding="utf-8")
+    assert "postJson(`/api/lite/system-health/recovery-requests/${encodeURIComponent(id)}/cancel`, {})" in api
+
+
 def test_preferences_are_revision_bound_and_audited(health, monkeypatch):
     from api_fastapi.services import lite_infrastructure_authority as authority
     monkeypatch.setattr(authority, "connection", health.connection)
