@@ -72,6 +72,13 @@ def system_health_resources(request: Request):
     return health.resource_intelligence()
 
 
+@router.get("/infrastructure")
+def system_health_infrastructure(request: Request):
+    _require_authenticated(request)
+    from ..services import lite_infrastructure_read_model as infrastructure
+    return infrastructure.infrastructure()
+
+
 @router.get("/intelligence")
 def system_health_intelligence(request: Request):
     _require_authenticated(request)
