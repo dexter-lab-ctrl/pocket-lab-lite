@@ -1275,6 +1275,7 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
                 replay = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
                 stale = dict(repair_payload)
                 stale["expected_generation"] = generation + 99
+                stale["idempotency_key"] = f"{repair_payload['idempotency_key']}-stale"
                 stale_repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", stale, session=self.session)
                 unauthorized = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/diagnose")
                 break
