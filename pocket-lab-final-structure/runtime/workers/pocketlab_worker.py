@@ -262,8 +262,8 @@ async def worker_recovery_watchdog(stop_event: asyncio.Event) -> None:
                 await asyncio.to_thread(lite_system_health.reconcile_controlled_recovery_requests)
                 from api_fastapi.services import lite_infrastructure_maintenance  # type: ignore
                 await asyncio.to_thread(lite_infrastructure_maintenance.reconcile)
-                from api_fastapi.services import lite_infrastructure_authority  # type: ignore
-                await asyncio.to_thread(lite_infrastructure_authority.refresh_resource_preference)
+                from api_fastapi.services import lite_infrastructure_host_protection  # type: ignore
+                await asyncio.to_thread(lite_infrastructure_host_protection.capture)
                 from api_fastapi.services import lite_infrastructure_reliability  # type: ignore
                 await asyncio.to_thread(lite_infrastructure_reliability.capture)
             controlled = await lite_system_health.process_controlled_recovery_requests(

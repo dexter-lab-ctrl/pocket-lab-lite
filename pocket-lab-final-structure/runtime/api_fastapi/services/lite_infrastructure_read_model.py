@@ -26,7 +26,7 @@ STATUS = frozenset({
     "active", "idle", "queued", "accepted", "working", "in_progress", "pending",
     "cancelled", "succeeded", "blocked", "undeliverable", "timed_out",
     "verified", "not_verified", "not_configured", "not_run", "ok", "wal",
-    "partial", "stale", "saved", "expired", "completed", "disabled", "stable", "converging", "repairing", "mismatch",
+    "partial", "stale", "saved", "expired", "completed", "disabled", "stable", "converging", "repairing", "mismatch", "charging", "discharging", "full", "not_charging", "fresh", "clock_step_detected", "no_step_observed",
 })
 SERVICE_IDENTITIES = (
     ("api", "Control API", "pocket-api", "api", "system.health"),
@@ -234,12 +234,20 @@ def infrastructure() -> dict:
         _number(history, "Completed in recorded window", history.get("recent_completed") if past else None),
         _number(history, "Earlier failures", history.get("historical_failures") if past else None),
     ]
+    from . import lite_infrastructure_host_protection as protection
+    host = protection.snapshot()
+    host_stamp = {"updated_at":host.get("observed_at")}
+    metadata_stamp = {"updated_at":host.get("metadata_observed_at")}
+    metadata = _dict(host.get("metadata"))
+    power = _dict(host.get("battery"))
     resource = [
         _field(telemetry, "Resource signals", telemetry.get("status")),
         _field(storage, "Storage protection", storage.get("status")),
         _field(system, "Maintenance", "active" if system.get("maintenance_active") is True else "idle" if system.get("maintenance_active") is False else "unknown"),
-        _field(telemetry, "Battery", _dict(telemetry.get("capabilities")).get("battery")),
-        _field(telemetry, "Charging", _dict(telemetry.get("capabilities")).get("charging")),
+        _field(host_stamp, "Server battery measurement", power.get("state")),
+        _number(host_stamp, "Server battery (%)", power.get("percent")),
+        _field(host_stamp, "Server charging", power.get("charging")),
+        _field(host_stamp, "Server thermal pressure", host.get("thermal")),
         _field({}, "Resource preference", "unknown"),
     ]
     policy_rows = health._read("SELECT active_revision_id,known_good_revision_id FROM policy_runtime_state WHERE state_id=1")
@@ -249,10 +257,11 @@ def infrastructure() -> dict:
     security_rows = [
         _field(security, "Safety evidence", security.get("status")),
         _field(progress, "Safety operation", progress.get("status")),
-        _field({}, "Active policy integrity", "unknown"),
+        _field(metadata_stamp, "Active policy integrity", metadata.get("policy_integrity")),
         _field({"updated_at":health._now()} if policy else {}, "Durable policy pointer agreement (not loaded policy proof)", policy_record),
-        _field({}, "Vulnerability database freshness", "unknown"),
-        _field({}, "System clock reliability", "unknown"),
+        _field(metadata_stamp, "Vulnerability database freshness", metadata.get("scanner_database")),
+        _field(metadata_stamp, "Local certificate expiry (not live TLS proof)", metadata.get("certificate_expiry")),
+        _field(host_stamp, "System clock continuity (not time synchronization)", host.get("clock_continuity")),
     ]
     from . import lite_infrastructure_authority as authority
     preferences = authority.preferences()
@@ -271,6 +280,7 @@ def infrastructure() -> dict:
         "resource_policy": {
             "available": False, "proposed_modes": ["balanced", "low_power", "maintenance"],
             "preference": preferences["resource_mode"], "preference_revision": preferences["revision"],
+            "effective_mode": host.get("effective_resource_mode") if _freshness(host_stamp)=="current" and host.get("effective_resource_mode") in {"balanced","low_power","maintenance"} else None,
             "essential_services_protected": True,
             "reason": "Preference is recorded separately from effective scheduler behavior.",
         },
