@@ -151,6 +151,9 @@ def tick() -> None:
                 or health.freshness(power.get("observed_at"))!="current" or power.get("effective_resource_mode")!="balanced"
                 or power.get("automatic_pressure") or safety.maintenance_state().get("active") or safety.active_security_scan()):
                 return
+            policy_state=health._read("SELECT active_revision_id,known_good_revision_id FROM policy_runtime_state WHERE state_id=1")
+            if not policy_state or policy_state[0]["active_revision_id"]!=row["policy_revision"] or policy_state[0]["known_good_revision_id"]!=row["policy_revision"]:
+                return
             context={"actor":{"type":"service","identity_id":"system-health-scheduler"},
                      "session":{"authenticated":True,"auth_method":"internal_worker"}}
             decision=opa.evaluate_authorization(auth_context=context,action_id=ACTION,

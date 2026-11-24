@@ -130,3 +130,17 @@ describe('System Health owner controls', () => {
     expect(view.queryByRole('button', { name: 'Confirm', exact:true })).toBeNull();
   });
 });
+
+
+describe('Selective System Health automation preference', () => {
+  it('keeps production qualification separate from a saved preference', () => {
+    useLiteQuery.mockReturnValue({});
+    const policy={owner_controls_available:true,selective_automation:{revision:1,preference_enabled:true,source_qualified:false}};
+    const view=render(<SystemHealthOwnerControls section="policies" policy={policy} readOnly={false}/>);
+    expect(view.getByText('Production qualification pending.')).toBeTruthy();
+    fireEvent.click(view.getByRole('button',{name:'Disable automatic preference'}));
+    expect(view.getByRole('button',{name:'Confirm',exact:true})).toBeTruthy();
+    fireEvent.click(view.getByRole('button',{name:'Cancel',exact:true}));
+    expect(view.queryByRole('button',{name:'Confirm',exact:true})).toBeNull();
+  });
+});

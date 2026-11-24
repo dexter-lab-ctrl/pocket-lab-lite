@@ -194,6 +194,11 @@ def infrastructure() -> dict:
     progress = snapshots.get("security.progress", {})
     writer = _dict(sqlite.get("writer"))
     maintenance = _dict(sqlite.get("maintenance"))
+    from . import lite_infrastructure_host_protection as protection
+    host = protection.snapshot()
+    host_stamp = {"updated_at":host.get("observed_at")}
+    metadata_stamp = {"updated_at":host.get("metadata_observed_at")}
+    metadata = _dict(host.get("metadata"))
     network = [
         _field(remote, "Remote access", remote.get("status")),
         _field(remote, "Tailscale daemon", _flag(remote.get("running"))),
@@ -205,7 +210,7 @@ def infrastructure() -> dict:
         _field(remote, "Tailnet command connectivity", _flag(remote.get("nats_reachable"))),
         _field(nats, "Secondary command route", _flag(nats.get("secondary_ready"))),
         _field({}, "Local network reachability", "unknown"),
-        _field({}, "Secure access certificates", "unknown"),
+        _field(metadata_stamp, "Local HTTPS certificate and hostname verification", metadata.get("local_tls")),
     ]
     runtime = _dict(snapshots.get("system.status",{}).get("runtime"))
     runtime_stamp = {"updated_at":runtime.get("observed_at")}
@@ -245,11 +250,6 @@ def infrastructure() -> dict:
         _number(history, "Completed in recorded window", history.get("recent_completed") if past else None),
         _number(history, "Earlier failures", history.get("historical_failures") if past else None),
     ]
-    from . import lite_infrastructure_host_protection as protection
-    host = protection.snapshot()
-    host_stamp = {"updated_at":host.get("observed_at")}
-    metadata_stamp = {"updated_at":host.get("metadata_observed_at")}
-    metadata = _dict(host.get("metadata"))
     power = _dict(host.get("battery"))
     resource = [
         _field(telemetry, "Resource signals", telemetry.get("status")),
@@ -273,6 +273,7 @@ def infrastructure() -> dict:
         _field(metadata_stamp, "Vulnerability database freshness", metadata.get("scanner_database")),
         _field(metadata_stamp, "Local certificate expiry (not live TLS proof)", metadata.get("certificate_expiry")),
         _field(host_stamp, "System clock continuity (not time synchronization)", host.get("clock_continuity")),
+        _field(metadata_stamp, "Operating system time synchronization", metadata.get("time_sync")),
     ]
     from . import lite_infrastructure_authority as authority
     preferences = authority.preferences()

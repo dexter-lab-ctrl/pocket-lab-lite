@@ -1,10 +1,15 @@
 """Local host protection evidence, collected by the existing worker.
-No subprocess, network fetch, privileged access, or read-path side effects.
+No external network fetch, privileged access, or read-path side effects.
 """
 from __future__ import annotations
 from datetime import datetime, timezone
 import json
 import os
+import re
+import socket
+import ssl
+import hashlib
+import subprocess
 from pathlib import Path
 import time
 from ..db.connection import connection, begin_immediate
@@ -98,6 +103,60 @@ def certificate(root: Path | None=None) -> str:
         return "unknown"
 
 
+def local_tls(root: Path | None=None) -> str:
+    """Verify the configured tailnet certificate on the local HTTPS listener.
+    No remote DNS resolution, external request, or disabled certificate check.
+    """
+    root=root or Path.home()/".pocket_lab"/"tailscale-certs"
+    try:
+        if root.is_symlink():
+            return "unknown"
+        with os.scandir(root) as entries:
+            candidates=[]
+            for index,item in enumerate(entries):
+                if index>=32:
+                    return "unknown"
+                if item.name.endswith(".ts.net.crt") and item.is_file(follow_symlinks=False):
+                    candidates.append(Path(item.path))
+        if len(candidates)!=1:
+            return "not_configured" if not candidates else "unknown"
+        name=candidates[0].name.removesuffix(".crt")
+        if not re.fullmatch(r"[a-z0-9](?:[a-z0-9.-]{0,249})\.ts\.net",name):
+            return "unknown"
+        fd=os.open(candidates[0],os.O_RDONLY|os.O_NOFOLLOW)
+        with os.fdopen(fd,"r",encoding="ascii") as stream:
+            pem=stream.read(65537)
+        if len(pem)>65536:
+            return "unknown"
+        # Existing Caddy site uses the standard HTTPS listener. The local
+        # address does not require Tailnet DNS or route reachability.
+        expected=hashlib.sha256(ssl.PEM_cert_to_DER_cert(pem)).digest()
+        context=ssl.create_default_context()
+        with socket.create_connection(("localhost",443),timeout=2) as plain:
+            with context.wrap_socket(plain,server_hostname=name) as secure:
+                served=secure.getpeercert(binary_form=True)
+                return "ready" if served and hashlib.sha256(served).digest()==expected else "not_ready"
+    except FileNotFoundError:
+        return "not_configured"
+    except (OSError,ValueError,ssl.SSLError,UnicodeError):
+        return "not_ready"
+
+
+def time_sync() -> str:
+    # Only the OS's own synchronization assertion; never infer from wall time.
+    # Android/Termux generally lacks systemd, so report unsupported there.
+    if not Path("/run/systemd/system").is_dir():
+        return "unsupported"
+    try:
+        result=subprocess.run(["timedatectl","show","--property=NTPSynchronized","--value"],
+                              capture_output=True,text=True,timeout=2,check=False)
+        if result.returncode!=0:
+            return "unknown"
+        return {"yes":"ready","no":"not_ready"}.get(result.stdout.strip(),"unknown")
+    except (OSError,subprocess.SubprocessError):
+        return "unknown"
+
+
 def _metadata() -> dict:
     from . import lite_security, lite_policy_opa
     from . import lite_infrastructure_read_model as model
@@ -115,7 +174,7 @@ def _metadata() -> dict:
             policy="unknown"
     return {"scanner_database":scanner_status if scanner_status in {"fresh","stale","unavailable"} else "unknown",
             "scanner_valid_until":scanner.get("valid_until") if isinstance(scanner.get("valid_until"),str) else None,
-            "policy_integrity":policy,"certificate_expiry":certificate()}
+            "policy_integrity":policy,"certificate_expiry":certificate(),"local_tls":local_tls(),"time_sync":time_sync()}
 
 
 def snapshot() -> dict:

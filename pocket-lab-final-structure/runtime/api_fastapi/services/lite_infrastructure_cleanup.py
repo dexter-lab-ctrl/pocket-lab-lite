@@ -162,6 +162,8 @@ def apply(scope: str,candidates: list[dict]) -> dict:
         if current!=candidates:
             raise ValueError("retention_preview_changed")
         rootfd=os.open(root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+        before=os.fstatvfs(rootfd)
+        before_bytes=before.f_bavail*before.f_frsize
         try:
             if scope=="logs":
                 active=_active_logs(root)
@@ -182,6 +184,8 @@ def apply(scope: str,candidates: list[dict]) -> dict:
                         os.close(fd)
                     os.rmdir(folder,dir_fd=rootfd)
             os.fsync(rootfd)
+            after=os.fstatvfs(rootfd)
+            delta=after.f_bavail*after.f_frsize-before_bytes
         finally:
             os.close(rootfd)
-    return {"verified":True,"files_removed":len(candidates),"allocated_candidate_bytes":sum(r["allocated"] for r in candidates),"physical_reclaimed_bytes":None}
+    return {"verified":True,"files_removed":len(candidates),"allocated_candidate_bytes":sum(r["allocated"] for r in candidates),"observed_available_delta_bytes":delta,"physical_reclaimed_bytes":None}

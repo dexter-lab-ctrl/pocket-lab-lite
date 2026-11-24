@@ -26,7 +26,7 @@ def health(tmp_path, monkeypatch):
         conn.executescript((schema_root / "0045_system_health_enrollment_generation.sql").read_text(encoding="utf-8"))
         conn.executescript((schema_root / "0046_system_health_recovery_requests.sql").read_text(encoding="utf-8"))
         conn.executescript((schema_root / "0048_system_health_owner_recovery_evidence.sql").read_text(encoding="utf-8"))
-        for migration in ("0049_system_health_control_authority.sql", "0050_system_health_maintenance_admission.sql", "0051_system_health_service_owner_evidence.sql"):
+        for migration in ("0049_system_health_control_authority.sql", "0050_system_health_maintenance_admission.sql", "0051_system_health_service_owner_evidence.sql", "0052_system_health_resolution_and_samples.sql", "0053_system_health_host_protection.sql", "0054_system_health_selective_automation.sql"):
             conn.executescript((schema_root / migration).read_text(encoding="utf-8"))
 
     def connect():
@@ -661,3 +661,92 @@ def test_service_evidence_requires_later_same_instance_readiness(health, monkeyp
     evidence.verify_runtime_contract({"observed_at": health._now(), "services": [{"process": "pocket-worker", "stable": True, "health": "ready"}]}, [process])
     assert evidence.history()[0]["verification_state"] == "verified"
     assert "process_instance_digest" not in evidence.history()[0]
+
+
+def test_battery_measurements_do_not_invent_values(health,tmp_path):
+    from api_fastapi.services import lite_infrastructure_host_protection as host
+    supply=tmp_path/"battery"
+    supply.mkdir()
+    (supply/"type").write_text("Battery")
+    (supply/"capacity").write_text("19")
+    (supply/"status").write_text("Discharging")
+    assert host.battery(tmp_path)=={"state":"available","percent":19,"charging":"discharging"}
+    (supply/"capacity").write_text("105")
+    assert host.battery(tmp_path)["percent"] is None
+    (supply/"capacity").write_text("19")
+    second=tmp_path/"second"
+    second.mkdir()
+    (second/"type").write_text("Battery")
+    assert host.battery(tmp_path)["state"]=="unknown"
+
+
+def test_resource_pressure_has_dwell_and_recovery_hysteresis(health,monkeypatch):
+    from api_fastapi.services import lite_infrastructure_host_protection as host
+    monkeypatch.setattr(host,"_pressure",False)
+    monkeypatch.setattr(host,"_pressure_since",None)
+    monkeypatch.setattr(host,"_clear_since",None)
+    low={"percent":15,"charging":"discharging"}
+    charged={"percent":40,"charging":"charging"}
+    assert host._effective("balanced",low,thermal="normal",enabled=True,now=0)=="balanced"
+    assert host._effective("balanced",low,thermal="normal",enabled=True,now=60)=="low_power"
+    assert host._effective("balanced",charged,thermal="normal",enabled=True,now=120)=="low_power"
+    assert host._effective("balanced",charged,thermal="normal",enabled=True,now=240)=="balanced"
+    assert host._effective("maintenance",low,thermal="critical",enabled=False,now=300)=="balanced"
+
+
+def test_sampled_availability_reports_coverage_separately(health,monkeypatch):
+    from api_fastapi.services import lite_infrastructure_reliability as reliability
+    monkeypatch.setattr(reliability.time,"time",lambda: 120000.0)
+    with health.connection() as conn:
+        conn.execute("INSERT INTO lite_system_health_availability_samples VALUES(1999,'api','healthy')")
+        conn.execute("INSERT INTO lite_system_health_availability_samples VALUES(1999,'nats','unknown')")
+    result=reliability.statistics()
+    assert result["known_samples"]==1
+    assert result["observed_availability"]==1.0
+    assert result["observation_coverage"] < 0.001
+    assert result["continuous_uptime"] is None
+
+
+def test_automatic_preference_cannot_qualify_production(health,monkeypatch):
+    from api_fastapi.services import lite_infrastructure_automation as automation
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT","production")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_PRODUCTION_AUTOMATIC","1")
+    assert automation._gate() is False
+    assert automation.public()["source_qualified"] is False
+
+
+def test_cleanup_rejects_symlink_and_hardlink(health,tmp_path):
+    from api_fastapi.services import lite_infrastructure_cleanup as cleanup
+    import os
+    original=tmp_path/"owned"
+    original.write_bytes(b"sample")
+    link=tmp_path/"linked"
+    link.symlink_to(original)
+    with pytest.raises(ValueError):
+        cleanup._identity(link.lstat())
+    hard=tmp_path/"hard"
+    os.link(original,hard)
+    with pytest.raises(ValueError):
+        cleanup._identity(original.lstat())
+
+
+def test_service_control_requires_fresh_stopped_generation(health,monkeypatch):
+    from api_fastapi.services import lite_infrastructure_service_control as control
+    from api_fastapi.services import lite_infrastructure_read_model as model
+    snapshot={"system.processes":{"updated_at":health._now(),"items":[{"name":"pocket-telemetry","status":"online","restart_generation":3}]}}
+    monkeypatch.setattr(model,"_snapshots",lambda:snapshot)
+    with pytest.raises(ValueError,match="stopped_service_not_confirmed"):
+        control.binding("runtime.telemetry.recover")
+    snapshot["system.processes"]["items"][0]["status"]="stopped"
+    assert control.binding("runtime.telemetry.recover")["generation"]==3
+
+
+def test_configuration_binding_does_not_accept_healthy_gateway(health,monkeypatch):
+    from api_fastapi.services import lite_infrastructure_configuration as config
+    from api_fastapi.services import lite_infrastructure_read_model as model
+    data={"system.status":{"runtime":{"observed_at":health._now(),"services":[{"process":"caddy-proxy","desired_state_match":True,"state":"online","restart_generation":4}]}}}
+    monkeypatch.setattr(model,"_snapshots",lambda:data)
+    with pytest.raises(ValueError,match="configuration_mismatch_not_confirmed"):
+        config.binding()
+    data["system.status"]["runtime"]["services"][0]["desired_state_match"]=False
+    assert config.binding()=={"target":"caddy-proxy","restart_generation":4}
