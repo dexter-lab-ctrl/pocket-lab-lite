@@ -128,6 +128,11 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="lite_system_health_recovery_requests.incident_id references lite_system_health_incidents.incident_id via "><a href='lite_system_health_recovery_requests.html'>lite_system_health_recovery_requests</a><span class='relatedKey'>.incident_id</span></td>
+                                                <td class="constraint detail"></td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="lite_system_health_repair_attempts.incident_id references lite_system_health_incidents.incident_id via "><a href='lite_system_health_repair_attempts.html'>lite_system_health_repair_attempts</a><span class='relatedKey'>.incident_id</span></td>
                                                 <td class="constraint detail"></td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -400,6 +405,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="enrollment_generation">enrollment_generation</span></td>
+                                    <td>INTEGER</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>0</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -435,6 +457,12 @@
                                     <td>Primary key</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>incident_id</td>
+                                </tr>
+                                <tr>
+                                    <td title='Indexed'>idx_lite_system_health_incident_generation</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>target_id + enrollment_generation + last_seen_at</td>
                                 </tr>
                                 <tr>
                                     <td title='Indexed'>lite_system_health_incidents_current</td>
@@ -473,24 +501,40 @@
                                 <ul class="nav nav-tabs pull-left ui-sortable-handle">
                                     <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
                                     <li class=""><a href="#oneimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">One implied</a></li>
+                                    <li class=""><a href="#twoimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">Two implied</a></li>
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="576,5,980,217">
-<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,32,532,574">
+<area shape="rect" id="node1" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="576,5,1001,393">
+<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,234,532,806">
+<area shape="rect" id="node3" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="587,411,990,622">
 </map>
                                         <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/lite_system_health_incidents.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="lite_system_health_diagnoses.html" target="_top" title="lite_system_health_diagnoses" alt="" coords="603,5,953,187">
-<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,332,532,874">
-<area shape="rect" id="node3" href="lite_system_health_events.html" target="_top" title="lite_system_health_events" alt="" coords="618,205,938,387">
-<area shape="rect" id="node4" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="576,405,980,617">
-<area shape="rect" id="node5" href="lite_system_health_repair_denials.html" target="_top" title="lite_system_health_repair_denials" alt="" coords="585,635,971,846">
+<area shape="rect" id="node1" href="lite_system_health_diagnoses.html" target="_top" title="lite_system_health_diagnoses" alt="" coords="614,5,964,187">
+<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,432,532,1004">
+<area shape="rect" id="node3" href="lite_system_health_events.html" target="_top" title="lite_system_health_events" alt="" coords="629,205,948,387">
+<area shape="rect" id="node4" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="576,405,1001,793">
+<area shape="rect" id="node5" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="587,811,990,1022">
+<area shape="rect" id="node6" href="lite_system_health_repair_denials.html" target="_top" title="lite_system_health_repair_denials" alt="" coords="596,1040,982,1251">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/lite_system_health_incidents.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
+                                    </div>
+                                    <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
+<area shape="rect" id="node1" href="lite_system_health_diagnoses.html" target="_top" title="lite_system_health_diagnoses" alt="" coords="945,5,1296,187">
+<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="337,432,864,1004">
+<area shape="rect" id="node3" href="lite_system_health_events.html" target="_top" title="lite_system_health_events" alt="" coords="960,205,1280,387">
+<area shape="rect" id="node4" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="908,864,1333,1251">
+<area shape="rect" id="node5" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="484,1073,717,1167">
+<area shape="rect" id="node6" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="5,1036,293,1130">
+<area shape="rect" id="node7" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="918,405,1322,617">
+<area shape="rect" id="node8" href="lite_system_health_repair_denials.html" target="_top" title="lite_system_health_repair_denials" alt="" coords="927,635,1314,846">
+</map>
+                                        <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/lite_system_health_incidents.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                 </div>
                             </div>

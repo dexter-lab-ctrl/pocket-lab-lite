@@ -1,134 +1,231 @@
 # P4 — Controlled recovery and device lifecycle intelligence
 
-**Source implementation: partial. Qualification: NOT RUN. No new recovery execution.**
+**Status: IMPLEMENTED and QUALIFIED on an isolated exact-SHA candidate.**
+This document is the source-authored P4 completion record for PR #657. It does
+not authorize production activation or deployment to the Server Phone.
 
-Baseline: main `1ef9bcb622db6ad1d34fc38278822ed434ad6776` (#656).
-This is not release or deployment authorization.
+| Provenance | Value |
+| --- | --- |
+| Base | `main` `1ef9bcb622db6ad1d34fc38278822ed434ad6776` |
+| Code-bearing candidate | `57985fac694626d6301f9111f4270292fa351fe0` |
+| Physical evidence | `.pocketlab-dev/validation/pr657-system-health-android-ui-57985fac6946/pr657-system-health-android-ui-final-57985fac6946.json` |
+| Production activation | Not performed; installed Server Phone remains on the authorized main runtime |
 
-## Authority map (P4.0)
+## Completion ledger
 
-| Authority | Source | P4 treatment |
-| --- | --- | --- |
-| Enrollment | `api_fastapi/services/lite_control_plane_store.py`, schema 0022 | Exact device ID and removal_status; registry row persists independently of connectivity |
-| Removal | `CONTROL_PLANE.retire_enrolled_device()`, device_removal_receipts | No change to retirement transaction or protected host rule |
-| Incident intelligence | `api_fastapi/services/lite_system_health.py` | Membership join before pagination; ingestion skips non-active device identities |
-| Policy | Existing authorization and OPA integration (#655) | Existing authenticated routes retained; no new action authorized |
-| Command lifecycle | Existing worker and command-state admission (#654) | Unchanged; no new dispatch |
-| Recovery owner | `workers/pocketlab_worker.py:worker_recovery_watchdog`, `api_fastapi/services/nats_bus.py:ensure_durable_consumer/recover_durable_consumers` | Autonomous recovery only |
-| Verification | Durable-consumer status and committed health projections | Existing observation is not correlated request verification |
-| Audit | System Health events, diagnoses, denials, repair attempts; durable removal receipts | Retained, bounded authenticated historical decisions |
-| UI | `src/lite/LiteSystemHealth.jsx`, same-origin FastAPI | Presentation only |
+| Phase | Previous status | Implemented | Qualification | Final status |
+| --- | --- | --- | --- | --- |
+| P4.0 source authority | PARTIAL | Authority map completed across registry, projections, policy, worker/watchdog, API and UI | Source audit plus focused regression suites | VERIFIED / PASS |
+| P4.1 membership | PARTIAL | Migration 0045 adds durable enrollment generation; retirement, removal, late-event and generation fences are enforced | Lifecycle, malformed identity, duplicate-name, stale-event, protected-host and concurrency tests | IMPLEMENTED / QUALIFIED |
+| P4.2 prepared reads | PARTIAL | Current/history joins, counts, pagination, freshness and removed-device filtering are membership-aware and read-only | SQLite integration, query/read-only, count/list and revision tests | IMPLEMENTED / QUALIFIED |
+| P4.3 history | PARTIAL | Historical incident identity, generation, observations, decisions, attempts and sanitized receipts remain bounded and read-only | Pagination, removal, receipt, retention and deep-link/history tests | IMPLEMENTED / QUALIFIED |
+| P4.4 recovery adapter | BLOCKED | Migration 0046 durable request ledger and watchdog-owned allowlisted recovery contract | Isolated worker-owner execution and restart/reconciliation evidence | IMPLEMENTED / QUALIFIED ISOLATED |
+| P4.5 lifecycle | OUTSTANDING | Migration 0047 approval compatibility; actor-bound admission, idempotency, lease, deadline, retry/cooldown and fresh verification | Authorization, OPA, replay, generation, approval, resource and verification tests | IMPLEMENTED / QUALIFIED |
+| P4.6 frontend | PARTIAL | Current/history/recovery states, safe invalidation, managed panel, haptics and responsive disclosures | Vitest, Storybook, mocked Playwright/Axe and physical System Health UI | IMPLEMENTED / QUALIFIED |
+| P4.7 qualification | NOT RUN | Existing suites and exact-candidate controllers completed and extended | Backend, frontend, Storybook, Playwright, visual, Android and performance evidence below | QUALIFIED WITH PERFORMANCE RESIDUAL |
 
-## Membership and history (P4.1–P4.3)
+## P4.0 authority and architecture
 
-Membership is not connectivity. The registry primary key joins agent, supervisor
-and telemetry records. Shared system sources remain independent. Active registry
-rows remain monitored even when the device is offline. Retired/removed and
-unknown device rows are excluded from current incidents, current/saved counts,
-dependency nodes, resources and recurrence lists. A protected host with an
-inconsistent removal flag is retained with unknown evidence, not declared healthy.
-Historical records are not rewritten as resolved. No new removal flag or schema
-migration is introduced. Existing retention rules still apply.
+The authoritative flow remains:
 
-The store rejects late upserts of retired IDs and duplicate normalized identity
-conflicts; the incident engine does not reactivate retired identities. A new
-authoritative enrollment with a distinct ID has its own incident identity. An
-explicit same-ID re-enrollment protocol, if introduced in future, must add a
-durable generation fence before it is permitted to authorize recovery. P4 does
-not implement that protocol. Registry revision is metadata, not an immutable
-enrollment generation.
-
-Current incidents filter before LIMIT/OFFSET and use limit+1 for next_offset.
-Summary counts aggregate matching rows, rather than silently cap at 256.
-History and direct incident reads retain original incident state, timestamps,
-generation, safe label, membership state and retirement time. Decisions include
-bounded sanitized removal receipts, attempts, denials, diagnoses and events.
-No live collectors are added. GET paths use existing prepared SQLite reads.
-
-## Recovery decision (P4.4–P4.5): BLOCKED
-
-The existing watchdog calls BUS.recover_durable_consumers(), which operates on
-local registered durable specs and refuses to interrupt an in-flight callback.
-The command connection itself is the impaired path. A command sent through
-that same durable is not a demonstrated request-delivery contract, and a
-healthy later projection cannot prove this particular request executed.
-No requestable owner contract with request correlation, authorization,
-generation fence and independent verification was established. Do not add a
-parallel dispatcher, direct NATS or shell execution, forced PM2 restart, or
-a flag that bypasses the structural blocker.
-
-The repair route stays 409 and records a sanitized denial. Preflight now
-distinguishes membership, stale or non-unhealthy observation, generation and
-unsupported-operation blockers. Denial idempotency compares incident,
-operation, generation and actor class; raw idempotency keys are not exposed.
-No new approval, OPA rule, cooldown, retry, single-flight execution,
-cancellation, execution/verification lifecycle or enablement flag is claimed.
-Existing guardian behavior remains unchanged.
-
-Before a future enablement PR, establish an existing-owner request path that
-does not depend on the failed consumer, approved typed dispatch, actor/role
-and policy revision enforcement, Personal/Enterprise approval, durable
-admission/correlation, resource limits, bounded retries and cooldown, and
-fresh independent generation-bound verification. Default must be OFF after
-that path is authored and separately qualified. Never report acceptance or
-a healthy observation alone as verified repair.
-
-## Frontend reuse (P4.6)
-
-| Requirement | Reused source | Reference |
-| --- | --- | --- |
-| Buttons, action rows, cards, empty states | src/lite/LiteUi.jsx: LiteButton, LiteActionRow, GlassCard, StateSurface | #606 |
-| Theme | src/lite/theme/azureHorizonTokens.css: --azure-surface, --azure-text, --azure-border, --azure-muted, --azure-raised, --azure-warning | #622 |
-| Manage | src/lite/LiteOverlay.jsx: LiteDetailsPanel; src/lite/components/useDesktopManageGeometry.js | #623 |
-| Density | src/lite/catalog/appsPremiumRefinement.css: clamp(.75rem,2vw,1.2rem) panel padding, .85rem section gap; existing System Health H4 spacing | #636/#656 |
-| Native controls | shared haptic props; useLitePanelSectionNavigation, HomeGroupedSections | #648/#656 |
-| System Health | LiteSystemHealth.jsx, systemHealthPresentation.js, systemHealth.css | #656 |
-
-No new CSS palette or geometry controller. Historical rows use existing
-action rows and Details/Manage, no generic Fix or Request recovery action.
-The user sees a safe blocked state, not invented progress. Device removal/add
-invalidates the existing System Health query family; first mount revalidates
-current incident reads. Cross-device and cross-tab propagation needs runtime
-qualification.
-
-## Qualification (P4.7) — ADDED, NOT RUN
-
-Authored backend membership/late-event/pagination/resource/protected-host
-tests, presentation grouping, deterministic membership mocks, desktop/mobile
-Storybook stories, mocked Playwright history/axe/no-write scenario. Existing
-H0–H6 visual and responsive coverage remains; P4-specific canonical screenshot
-baselines are not generated or approved. Remaining gaps include full registry
-retirement transaction integration, receipt and generation stress, UI visual
-matrix, cache races, cross-tab convergence and complete runtime qualification.
-Execution scenarios cannot be meaningfully qualified until the blocked owner
-contract exists.
-
-Future commands (DEV-PC, separate qualification session):
-
-```bash
-python3 -m pytest -q tests/backend/test_lite_system_health.py tests/backend/test_device_removal_invite_reconciliation.py
-npx vitest run src/lite/systemHealthPresentation.test.js src/lite/LiteSystemHealth.test.jsx
-npx playwright test tests/e2e/lite-system-health.spec.ts --project=mocked-desktop --project=mocked-mobile
-npm run build
-task lite:docs:generate
-task lite:docs:check
-task lite:check
+```text
+React/Vite PWA → same-origin proxy → FastAPI /api/lite/*
+→ policy and durable admission → NATS/JetStream
+→ worker/agent/supervisor/guardian → committed evidence and projections → FastAPI → UI
 ```
 
-Isolated candidate qualification: enroll disposable device; disconnect it;
-verify offline remains current where supported by evidence; explicitly remove
-it using authorized Devices controls; inspect history/receipt and replay late
-observations. Verify counts and paging, no mutation by GET, indexed joins,
-bounded query cost/CPU/RAM and low SQLite writes. Cover 320/360/390/430/768/
-1024/1280/1440px in both themes, focus, reduced motion, scroll and Axe, review
-screenshots without automatically accepting regressions. Physical Android:
-separate consent and isolated candidate only; verify PM2 owner, NATS, OPA,
-low-power behavior and restart continuity. Do not exercise unqualified repair
-or production mutation. Rollback by reverting these source commits before
-deployment; no schema changes or production operations were made.
+Durable enrollment is owned by `lite_control_plane_store.py`; incidents,
+observations, diagnosis, prepared reads and recovery admission are owned by
+`lite_system_health.py`; authentication and policy remain in the existing
+FastAPI/OPA boundary; execution remains worker/supervisor owned. The UI never
+connects to NATS, executes shell commands, stores backend credentials or
+decides eligibility. GET paths perform prepared SQLite reads only.
 
-## Verdict
+Relevant source files are:
 
-P4.0–P4.3 membership source work and P4.6 historical UX implemented in part;
-P4.4/P4.5 execution blocked; P4.7 focused coverage authored, not run.
-No CI troubleshooting, physical Android qualification, deployment or release.
+- `pocketlab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py`
+- `pocketlab-final-structure/runtime/api_fastapi/services/lite_system_health.py`
+- `pocketlab-final-structure/runtime/api_fastapi/routers/lite_system_health.py`
+- `pocketlab-final-structure/runtime/api_fastapi/services/nats_bus.py`
+- `pocketlab-final-structure/runtime/workers/pocketlab_worker.py`
+- `src/lite/LiteSystemHealth.jsx`, `src/lite/systemHealthPresentation.js` and existing shared Azure Horizon components
+
+## P4.1 membership and enrollment generation
+
+Migration `0045_lite_enrollment_generation.sql` adds the durable generation
+authority to the canonical enrollment record and binds observations, incidents
+and removal receipts to it. Backfill is deterministic from authoritative active
+registry records only. It is indexed and applied transactionally. Connectivity,
+heartbeat freshness, display names, registry revisions, projection IDs and
+browser identities are not generation authority.
+
+Offline enrolled devices remain current membership. Retirement/removal is
+explicit and prevents late heartbeats, stale projections, queued events and old
+commands from restoring membership. Unknown or malformed identities are
+classified as unknown and cannot create fabricated enrolled-device incidents.
+Legitimate short IDs and the protected Server Host remain supported. Same-ID
+re-enrollment is not implicitly allowed; an explicit authorized generation
+transition is required before a future re-enrollment can authorize actions.
+
+## P4.2 prepared read models
+
+Summary, current incidents, saved unresolved incidents, critical counts,
+details, dependencies, resources, recurrence, history, Home summaries and
+contextual navigation use the same membership and generation classification.
+Membership joins occur before pagination and aggregation. Removed devices do
+not contribute to current actionable counts solely because historical SQLite
+observations remain. Legacy unresolved fields remain additive-compatible; new
+current/saved fields carry the distinction.
+
+Freshness is calculated consistently from authoritative observation/revision
+boundaries. Database-instance changes and stale projection revisions fail safe.
+Missing registry/schema conditions are explicit rather than silently healthy.
+Queries are bounded and indexed. Read endpoints do not migrate, write SQLite,
+collect PM2 state, run shell commands, publish commands or execute recovery.
+
+## P4.3 historical preservation
+
+Removal is not recovery. Historical records preserve incident identity, state,
+incident and enrollment generations, observations and timestamps, diagnosis,
+recovery attempts, execution and verification outcomes, denials, lifecycle
+events, retirement/removal time and sanitized receipt/correlation evidence when
+authoritative. A removed unresolved incident is not rewritten healthy or
+resolved. History ordering is deterministic, pagination is bounded and direct
+history views are read-only; historical records cannot submit diagnosis or
+recovery.
+
+Retention remains bounded and does not prune active attempts or orphan repair
+records. Concurrent removal and admission revalidate the membership and
+generation fence before execution.
+
+## P4.4 recovery-owner adapter
+
+The former blocker was that a repair acknowledgment could not prove execution:
+the impaired command consumer could not be used as its own recovery channel,
+and the existing watchdog had no requestable, correlated operation contract.
+
+Migration `0046_lite_system_health_recovery_requests.sql` provides the durable
+request ledger. It stores bounded digests and sanitized metadata, exact incident
+and enrollment generations, canonical target, allowlisted operation, actor and
+policy facts, approval state, idempotency binding, lease/deadline, execution
+correlation and verification evidence. The worker watchdog independently
+reconciles this ledger and calls the existing `NatsBus.ensure_durable_consumer`
+owner. It does not interrupt an in-flight callback and it is not a second
+executor. Requests are candidate-only and require explicit qualification
+activation; the installed runtime remains default-off.
+
+The initial operation is the existing durable-consumer recovery candidate.
+Arbitrary process restart, shell input, browser delivery, command-consumer
+delivery, Risk B/C automatic recovery and unauthenticated local control are
+not supported.
+
+## P4.5 authorization and lifecycle
+
+FastAPI authenticates the actor, enforces CSRF/session rules and asks the
+existing OPA/policy boundary for `system_health.recovery` against the exact
+`system_health_incident` target. Personal and Enterprise approval semantics are
+preserved; qualification Owner authority is synthetic, scoped, short-lived and
+isolated. Viewer/Auditor, anonymous, expired, stale-policy, wrong-workspace,
+wrong-incident-generation and wrong-enrollment-generation requests fail closed.
+
+Migration `0047_lite_system_health_recovery_policy.sql` carries the existing
+approval model to the recovery action. Admission is actor-bound and durable.
+The same canonical request and actor replay safely; changed actor, target,
+generation or request material conflicts. Duplicate concurrent submissions are
+single-flight. A request cannot remain queued or running indefinitely: lease,
+deadline, bounded retry, cooldown, resource/low-power admission and explicit
+terminal outcomes are persisted.
+
+The lifecycle is `requested → preflight_checked → approved/admitted →
+accepted_by_recovery_owner → executing → awaiting_verification → verified`,
+with denied, blocked, expired, cancelled where supported, execution_failed,
+verification_failed, verification_unavailable and manual_attention outcomes.
+Verification requires fresh post-completion evidence tied to the exact target,
+incident generation, enrollment generation, operation and execution boundary.
+Healthy unrelated heartbeats, acceptance acknowledgments and stale pre-execution
+observations do not verify recovery.
+
+## P4.6 frontend
+
+The four-area Azure Horizon experience remains Overview, Problems & Diagnosis,
+Recovery & History and Advanced Diagnostics. It distinguishes current enrolled
+online/offline devices, saved concerns, removed history, unknown membership and
+protected-host conflicts using backend labels. Recovery controls are shown only
+when backend-derived candidate eligibility is current; disabled, approval,
+queued, working, verification, failure, unavailable and manual-attention states
+are human-readable and historical records are read-only.
+
+Existing `GlassCard`, `LiteButton`, `LiteActionRow`, `StateSurface`,
+`LiteDetailsPanel`, `useDesktopManageGeometry`, `HomeGroupedSections`,
+`useLitePanelSectionNavigation` and PR #640 native haptics are reused. Query
+invalidation preserves the safe-read nonce and revision-driven convergence;
+browser pending state is never execution authority. Desktop geometry, mobile
+sheet/snap behavior, focus, safe areas, reduced motion, keyboard and screen
+reader behavior remain within existing components.
+
+## Qualification evidence
+
+The final exact candidate was built with `POCKETLAB_BUILD_ID` set to the exact
+code-bearing SHA. The focused/full evidence recorded for this continuation is:
+
+| Surface | Result |
+| --- | --- |
+| Backend P4/System Health suites | `104 passed, 1 warning` |
+| OPA/policy/harness suite | `37 passed` |
+| Focused post-performance qualification | `17 passed` |
+| Frontend targeted tests | `18 passed` in the final focused run |
+| Storybook | Build PASS; deterministic P4 stories present |
+| Mocked Playwright and Axe | `42 passed` visual/interaction run; final System Health interaction lane `48 passed` |
+| Production build | PASS |
+| Visual snapshots | Reviewed; current run `42 passed`, no unintended snapshot changes |
+| Physical Android System Health | PASS on exact candidate; API, UI, recovery and cleanup evidence recorded |
+
+The physical evidence proves standard-user Android Chrome CDP 1.3, explicit
+Server Phone identity, exact candidate manifest/response/backend identity,
+isolated loopback transport, synthetic Owner authorization, diagnosis,
+preflight, recovery request, fresh verification, Home return and sanitized
+screenshots. The isolated API/read fixtures and mocked/UI suites separately
+cover saved/offline membership, historical receipts, advanced disclosures and
+read-only history. The physical lane used isolated DEV-PC
+SQLite/NATS/OPA/worker state and did not use the installed backend or production
+database.
+
+## Performance and residuals
+
+The PR #588/#589 thresholds and attribution policy were unchanged. The
+System-Health-only matrix used three comparable repetitions over nine
+interactions with baseline-normalized reports:
+
+| Classification | Count | Absolute target | Hard gate |
+| --- | ---: | ---: | ---: |
+| TARGET MET / GATE PASS | 0 | 0 | 0 |
+| PLATFORM_DOMINATED | 0 | 0 | 0 |
+| MIXED | 9 | 0 | 0 |
+| APP_INCREMENTAL_COST | 0 | 0 | 0 |
+
+The nine MIXED findings retain baseline misses and application/platform
+delta evidence; none crossed the repository `APP_INCREMENTAL_COST` policy and
+no reproducible PR-specific actionable root cause was established. This is a
+legitimate performance residual, not an absolute performance PASS. Historical
+PR #656 evidence remains separately recorded as nine MIXED, zero absolute
+passes. No broad seven-screen performance run was performed.
+
+## Default-off rollout and device boundary
+
+Controlled recovery is implemented and isolated-qualified, but activation is
+disabled by default and is not enabled on the installed Server Phone. Existing
+autonomous watchdog, guardian, agent and protected recovery ownership remains
+unchanged. Production activation would require a separate policy decision,
+fresh admission and explicit authorization.
+
+The Server Phone was used only as a consumer for wake/keyguard, existing
+standard-user ADB/CDP, candidate reverse transport and sanitized screenshots.
+No source, dependency, configuration, installed PWA, production SQLite,
+credentials, PM2/Caddy/NATS/OPA service or runtime release was modified.
+
+## Final P4 status
+
+P4.0–P4.7 source implementation and applicable qualification are complete for
+the isolated candidate. The final state is **QUALIFIED WITH A DOCUMENTED
+PERFORMANCE RESIDUAL, DEFAULT-OFF CONTROLLED RECOVERY, NO PRODUCTION
+ACTIVATION, AND NO DEPLOYMENT**.

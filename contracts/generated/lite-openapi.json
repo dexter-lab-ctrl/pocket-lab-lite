@@ -19866,13 +19866,23 @@
           "required": true
         },
         "responses": {
-          "409": {
+          "202": {
             "content": {
               "application/json": {
                 "schema": {}
               }
             },
             "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
           },
           "422": {
             "content": {

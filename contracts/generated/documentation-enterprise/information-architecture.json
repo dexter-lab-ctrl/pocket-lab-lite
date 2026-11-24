@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 535,
+  "page_count": 537,
   "page_types": [
     "overview",
     "guide",
@@ -17525,6 +17525,29 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "system-health/p4-device-lifecycle.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "recovery",
+      "generated": false,
+      "id": "page:system-health/p4-device-lifecycle",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "system-health/p4-device-lifecycle.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "system-health/p4-device-lifecycle.md",
+      "title": "P4 — Controlled recovery and device lifecycle intelligence",
+      "url": "/system-health/p4-device-lifecycle/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "system-health/qualification-handoff-h0-h6.md"
       ],
       "confidence": "source-derived",
@@ -17543,6 +17566,29 @@
       "source_or_generator": "system-health/qualification-handoff-h0-h6.md",
       "title": "System Health H0–H6 qualification handoff",
       "url": "/system-health/qualification-handoff-h0-h6/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "system-health/qualification-handoff-p4.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:system-health/qualification-handoff-p4",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "system-health/qualification-handoff-p4.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "system-health/qualification-handoff-p4.md",
+      "title": "PR #657 P4 qualification handoff",
+      "url": "/system-health/qualification-handoff-p4/"
     },
     {
       "additional_audiences": [],
@@ -18666,7 +18712,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "36ab24cf3a8cafd6a23eb3cbfba4cea54c575dd5d998ae5492f51c00cd95dd9b",
+  "source_fingerprint": "f92ae028701a83d3bc93939ca10a646d776ea5f116bb0b509a5e65bbbf716156",
   "top_level": [
     "start-here",
     "use",

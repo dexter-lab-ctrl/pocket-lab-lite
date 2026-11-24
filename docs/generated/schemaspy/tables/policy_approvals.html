@@ -117,6 +117,11 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="lite_system_health_recovery_requests.approval_id&#39;s name implies that it&#39;s a child of policy_approvals.approval_id, but it doesn&#39;t reference that column."><a href='lite_system_health_recovery_requests.html'>lite_system_health_recovery_requests</a><span class='relatedKey'>.approval_id</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -685,45 +690,48 @@
                                     </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="human_identities.html" target="_top" title="human_identities" alt="" coords="327,350,574,532">
-<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,340,262,464">
-<area shape="rect" id="node3" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="638,5,1140,841">
-<area shape="rect" id="node4" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="306,38,594,161">
+<area shape="rect" id="node1" href="human_identities.html" target="_top" title="human_identities" alt="" coords="327,548,574,730">
+<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,539,262,662">
+<area shape="rect" id="node3" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="1184,5,1609,393">
+<area shape="rect" id="node4" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="638,204,1140,1040">
+<area shape="rect" id="node5" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="306,180,594,303">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/policy_approvals.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="app_current_state.html" target="_top" title="app_current_state" alt="" coords="365,1741,611,1835">
-<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,1480,262,1574">
-<area shape="rect" id="node3" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="860,2384,1070,2478">
-<area shape="rect" id="node4" href="human_identities.html" target="_top" title="human_identities" alt="" coords="369,1517,607,1611">
-<area shape="rect" id="node5" href="device_role_assignments.html" target="_top" title="device_role_assignments" alt="" coords="334,1888,642,1982">
-<area shape="rect" id="node6" href="device_role_change_operations.html" target="_top" title="device_role_change_operations" alt="" coords="306,2000,670,2094">
-<area shape="rect" id="node7" href="device_supervisor_state.html" target="_top" title="device_supervisor_state" alt="" coords="338,2112,638,2206">
-<area shape="rect" id="node8" href="device_system_profiles.html" target="_top" title="device_system_profiles" alt="" coords="343,608,633,702">
-<area shape="rect" id="node9" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="812,1088,1118,1182">
-<area shape="rect" id="node10" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="812,1200,1118,1294">
-<area shape="rect" id="node11" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="838,1865,1092,1959">
-<area shape="rect" id="node12" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="806,1977,1124,2071">
-<area shape="rect" id="node13" href="lite_installed_release_identity.html" target="_top" title="lite_installed_release_identity" alt="" coords="312,2224,664,2318">
-<area shape="rect" id="node14" href="lite_revision_events.html" target="_top" title="lite_revision_events" alt="" coords="358,1187,619,1281">
-<area shape="rect" id="node15" href="owner_approved_operations.html" target="_top" title="owner_approved_operations" alt="" coords="1279,157,1616,251">
-<area shape="rect" id="node16" href="owner_operation_clients.html" target="_top" title="owner_operation_clients" alt="" coords="814,1683,1116,1777">
-<area shape="rect" id="node17" href="owner_operation_client_pairings.html" target="_top" title="owner_operation_client_pairings" alt="" coords="1260,1700,1634,1794">
-<area shape="rect" id="node18" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="1277,2089,1617,2183">
-<area shape="rect" id="node19" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="852,2089,1078,2183">
-<area shape="rect" id="node20" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="714,234,1216,1070">
-<area shape="rect" id="node21" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="344,5,632,129">
-<area shape="rect" id="node22" href="policy_decisions.html" target="_top" title="policy_decisions" alt="" coords="19,8,248,102">
-<area shape="rect" id="node23" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1678,2013,2010,2107">
-<area shape="rect" id="node24" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="792,2272,1138,2366">
-<area shape="rect" id="node25" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="819,1347,1111,1441">
-<area shape="rect" id="node26" href="release_runtime_projection.html" target="_top" title="release_runtime_projection" alt="" coords="324,1299,652,1393">
-<area shape="rect" id="node27" href="security_database_backups.html" target="_top" title="security_database_backups" alt="" coords="323,1629,653,1723">
-<area shape="rect" id="node28" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="1309,2293,1586,2387">
-<area shape="rect" id="node29" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="824,1459,1106,1553">
-<area shape="rect" id="node30" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="850,1571,1080,1665">
+<area shape="rect" id="node1" href="app_current_state.html" target="_top" title="app_current_state" alt="" coords="365,779,611,873">
+<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,1209,262,1303">
+<area shape="rect" id="node3" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="860,5,1070,99">
+<area shape="rect" id="node4" href="human_identities.html" target="_top" title="human_identities" alt="" coords="369,891,607,985">
+<area shape="rect" id="node5" href="device_role_assignments.html" target="_top" title="device_role_assignments" alt="" coords="334,1039,642,1133">
+<area shape="rect" id="node6" href="device_role_change_operations.html" target="_top" title="device_role_change_operations" alt="" coords="306,1151,670,1245">
+<area shape="rect" id="node7" href="device_supervisor_state.html" target="_top" title="device_supervisor_state" alt="" coords="338,1263,638,1357">
+<area shape="rect" id="node8" href="device_system_profiles.html" target="_top" title="device_system_profiles" alt="" coords="343,1461,633,1555">
+<area shape="rect" id="node9" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="812,1300,1118,1394">
+<area shape="rect" id="node10" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="812,1188,1118,1282">
+<area shape="rect" id="node11" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="838,964,1092,1058">
+<area shape="rect" id="node12" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="806,1076,1124,1170">
+<area shape="rect" id="node13" href="lite_installed_release_identity.html" target="_top" title="lite_installed_release_identity" alt="" coords="312,1573,664,1667">
+<area shape="rect" id="node14" href="lite_revision_events.html" target="_top" title="lite_revision_events" alt="" coords="358,1685,619,1779">
+<area shape="rect" id="node15" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="1260,2356,1685,2450">
+<area shape="rect" id="node16" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="714,1500,1216,2336">
+<area shape="rect" id="node17" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="794,2353,1136,2447">
+<area shape="rect" id="node18" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="344,2129,632,2223">
+<area shape="rect" id="node24" href="policy_decisions.html" target="_top" title="policy_decisions" alt="" coords="19,2127,248,2221">
+<area shape="rect" id="node19" href="owner_approved_operations.html" target="_top" title="owner_approved_operations" alt="" coords="1304,1379,1641,1473">
+<area shape="rect" id="node20" href="owner_operation_clients.html" target="_top" title="owner_operation_clients" alt="" coords="814,447,1116,541">
+<area shape="rect" id="node21" href="owner_operation_client_pairings.html" target="_top" title="owner_operation_client_pairings" alt="" coords="1285,447,1660,541">
+<area shape="rect" id="node22" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="1303,335,1642,429">
+<area shape="rect" id="node23" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="852,264,1078,358">
+<area shape="rect" id="node25" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1729,335,2061,429">
+<area shape="rect" id="node26" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="792,117,1138,211">
+<area shape="rect" id="node27" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="819,559,1111,653">
+<area shape="rect" id="node28" href="release_runtime_projection.html" target="_top" title="release_runtime_projection" alt="" coords="324,520,652,614">
+<area shape="rect" id="node29" href="security_database_backups.html" target="_top" title="security_database_backups" alt="" coords="323,632,653,726">
+<area shape="rect" id="node30" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="1334,97,1611,191">
+<area shape="rect" id="node31" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="824,671,1106,765">
+<area shape="rect" id="node32" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="850,817,1080,911">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/policy_approvals.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

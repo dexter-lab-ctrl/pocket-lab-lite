@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 5780a412008f7217bf3f9b0814a9adf25a38545cad2f0d731283f7da40e47a27
+source_fingerprint: 23132d90a760ecab14f9636fe492a250240adf3510904a00ea70f59866a24b94
 schema_revision: 1
 validation_status: generated
 ---
@@ -128,6 +128,7 @@ validation_status: generated
 | `harness_session_not_found` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
 | `harness_session_required` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
 | `harness_transport_rejected` | validation | Synthetic harness proof was presented over a non-loopback or forwarded transport. | yes | no | 401 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py |
+| `historical_record` | system-health | The requested System Health action targets retained evidence for a device that is no longer a current recovery target. | no | yes | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/routers/lite_system_health.py |
 | `human_session_required` | identity | The requested credential or session lifecycle action requires the signed-in local owner session. | yes | no | 403 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `identity_current_password_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `identity_login_failed` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |

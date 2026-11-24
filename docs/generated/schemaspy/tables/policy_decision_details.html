@@ -118,6 +118,11 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="lite_system_health_recovery_requests.policy_decision_id&#39;s name implies that it&#39;s a child of policy_decision_details.decision_id, but it doesn&#39;t reference that column."><a href='lite_system_health_recovery_requests.html'>lite_system_health_recovery_requests</a><span class='relatedKey'>.policy_decision_id</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="policy_approvals.originating_decision_id&#39;s name implies that it&#39;s a child of policy_decision_details.decision_id, but it doesn&#39;t reference that column."><a href='policy_approvals.html'>policy_approvals</a><span class='relatedKey'>.originating_decision_id</span></td>
                                                 <td class="constraint detail">Implied Constraint</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -242,19 +247,22 @@
                                     </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="758,5,1093,481">
-<area shape="rect" id="node2" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="278,33,714,194">
-<area shape="rect" id="node3" href="policy_decisions.html" target="_top" title="policy_decisions" alt="" coords="5,7,234,189">
+<area shape="rect" id="node1" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="1137,5,1562,393">
+<area shape="rect" id="node2" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="758,205,1093,681">
+<area shape="rect" id="node3" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="278,180,714,341">
+<area shape="rect" id="node4" href="policy_decisions.html" target="_top" title="policy_decisions" alt="" coords="5,153,234,335">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/policy_decision_details.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="human_identities.html" target="_top" title="human_identities" alt="" coords="405,288,643,382">
-<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,251,262,345">
-<area shape="rect" id="node3" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="786,5,1121,481">
-<area shape="rect" id="node4" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="306,33,742,194">
-<area shape="rect" id="node5" href="policy_decisions.html" target="_top" title="policy_decisions" alt="" coords="19,7,248,189">
+<area shape="rect" id="node1" href="human_identities.html" target="_top" title="human_identities" alt="" coords="405,5,643,99">
+<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,27,262,121">
+<area shape="rect" id="node3" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="1171,123,1596,217">
+<area shape="rect" id="node4" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="840,8,1073,102">
+<area shape="rect" id="node5" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="786,120,1127,214">
+<area shape="rect" id="node6" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="306,169,742,330">
+<area shape="rect" id="node7" href="policy_decisions.html" target="_top" title="policy_decisions" alt="" coords="19,143,248,325">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/policy_decision_details.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

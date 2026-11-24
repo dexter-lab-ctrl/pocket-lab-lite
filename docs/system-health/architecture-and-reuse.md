@@ -19,6 +19,7 @@ The new System Health service does not execute shell commands, start PM2, connec
 | P2 | 0044 diagnostic/denial audit, risk A/B/C policy registry, authenticated fail-closed preflight, incident-generation guard, idempotency digest | VERIFIED: diagnosis persists, preflight is blocked, repair returns audited denial, no new executor is enabled |
 | P3 | Existing watchdog/supervisor ownership preserved; worker-owned NATS/process/agent, storage/SQLite/telemetry signals; registered app-process detection | Source and exact-SHA isolated ARM64/Termux candidate qualified; no destructive fault injection or production-phone service changes performed |
 | P4 | Lazy System Health tab, Home summary, Apps/Devices/Safety/Recovery links, native Manage, diagnosis, safe guidance, history, policy and dependency views | Mocked desktop/mobile and exact-SHA physical Android Chrome-to-candidate UI qualified; hardware haptics and production API remain separately limited |
+| P4.0–P4.7 | Durable membership generation, membership-aware prepared reads, historical preservation, existing-owner controlled recovery adapter, governed lifecycle/verification, Azure Horizon recovery UI and exact-candidate qualification | PR #657 code-bearing candidate `57985fac694626d6301f9111f4270292fa351fe0` qualified on DEV-PC and physical System Health; controlled recovery remains default-off and production activation was not performed |
 | P5 | Dependency authority labels, inferred upstream diagnosis, safe configuration mismatch reporting, recurrence, resource bands and disabled AI state | Truthful unknown/stale/unavailable semantics qualified; predictive forecast remains intentionally unavailable without evidence |
 | P6 | Authored pytest, Vitest, Storybook and Playwright, mock API states and handoff | DEV-PC tests/builds pass; Home-only Android performance is baseline-attributed with no `APP_INCREMENTAL_COST`; exact-SHA phone-side backend candidate and isolated migration proof pass; broader legacy visual loop retains unrelated Catalog drift |
 
@@ -112,8 +113,24 @@ No new background polling thread, heavyweight ML library, continuous process sam
 **Final state: SOURCE IMPLEMENTATION AND GUARDED PROMOTION WORKFLOW PROVIDED — EXACT-SHA ARM64/TERMUX CANDIDATE, ISOLATED MIGRATIONS, MOCKED UI AND ANDROID CHROME-TO-CANDIDATE UI QUALIFIED — PRODUCTION ACTIVATION NOT PERFORMED; LIVE ADMISSION BLOCKED BY THE MISSING EXTERNAL GUARDIAN — DRAFT PR REQUIRED.**
 
 
-## P4 source implementation (not qualified)
+## PR #657 P4 completion addendum
 
-See [P4 controlled recovery and device lifecycle](p4-device-lifecycle.md). The
-durable enrollment registry now constrains device-scoped System Health reads;
-the watchdog remains the independent recovery owner. No new executor is enabled.
+See [P4 controlled recovery and device lifecycle](p4-device-lifecycle.md) and
+[the P4 qualification handoff](qualification-handoff-p4.md) for the complete
+source and evidence record. The durable enrollment registry now has an
+authoritative generation fence (migration 0045); prepared reads and historical
+records apply the same membership classification. The durable recovery request
+ledger (migration 0046) is consumed by the existing worker watchdog and invokes
+the existing NATS durable-consumer owner. Approval/policy compatibility is
+recorded in migration 0047. No second executor, arbitrary process endpoint or
+browser authority was introduced.
+
+The isolated exact candidate qualified actor-bound authorization, approval,
+idempotency, bounded execution and fresh independent verification. Controlled
+recovery remains disabled by default and was not enabled on the installed
+Server Phone. Physical System Health evidence used the DEV-PC candidate backend
+through the standard-user loopback Android CDP path; it is not production
+backend evidence. The nine-interaction performance matrix retained zero
+absolute target or hard-gate passes, zero `PLATFORM_DOMINATED` results, nine
+`MIXED` results and zero
+`APP_INCREMENTAL_COST` results as a legitimate residual.

@@ -648,6 +648,7 @@
          <column autoUpdated="false" defaultValue="''" digits="0" id="19" name="canonical_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="21" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="22" name="enrollment_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
          <primaryKey column="device_id" sequenceNumberInPK="1"/>
          <index name="device_enrollment_registry_s_pk" unique="true">
             <column ascending="true" name="device_id"/>
@@ -657,6 +658,11 @@
             <column ascending="true" name="protected_server_host"/>
             <column ascending="true" name="device_name"/>
             <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_enrollment_generation" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="enrollment_generation"/>
+            <column ascending="true" name="removal_status"/>
          </index>
          <index name="idx_device_enrollment_last_seen" unique="false">
             <column ascending="true" name="removal_status"/>
@@ -1009,6 +1015,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
          <column autoUpdated="false" defaultValue="''" digits="0" id="10" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="1" digits="0" id="11" name="sanitized" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="12" name="enrollment_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
          <primaryKey column="receipt_id" sequenceNumberInPK="1"/>
          <index name="device_removal_receipts_s_pk" unique="true">
             <column ascending="true" name="receipt_id"/>
@@ -1655,6 +1662,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="incident_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <child column="incident_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_system_health_diagnoses"/>
             <child column="incident_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_system_health_events"/>
+            <child column="incident_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_system_health_recovery_requests"/>
             <child column="incident_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_system_health_repair_attempts"/>
             <child column="incident_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_system_health_repair_denials"/>
          </column>
@@ -1673,9 +1681,15 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="''" digits="0" id="14" name="suspected_cause" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="''" digits="0" id="15" name="verified_cause" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="16" name="enrollment_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
          <primaryKey column="incident_id" sequenceNumberInPK="1"/>
          <index name="lite_system_health_incidents_s_pk" unique="true">
             <column ascending="true" name="incident_id"/>
+         </index>
+         <index name="idx_lite_system_health_incident_generation" unique="false">
+            <column ascending="true" name="target_id"/>
+            <column ascending="true" name="enrollment_generation"/>
+            <column ascending="true" name="last_seen_at"/>
          </index>
          <index name="lite_system_health_incidents_current" unique="false">
             <column ascending="true" name="state"/>
@@ -1697,15 +1711,88 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="observed_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="''" digits="0" id="4" name="source_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="''" digits="0" id="5" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="enrollment_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
          <primaryKey column="source" sequenceNumberInPK="1"/>
          <primaryKey column="target_id" sequenceNumberInPK="2"/>
          <index name="lite_system_health_observations_s_pk" unique="true">
             <column ascending="true" name="source"/>
             <column ascending="true" name="target_id"/>
          </index>
+         <index name="idx_lite_system_health_observation_generation" unique="false">
+            <column ascending="true" name="target_id"/>
+            <column ascending="true" name="enrollment_generation"/>
+            <column ascending="true" name="observed_at"/>
+         </index>
          <index name="sqlite_autoindex_lite_system_health_observations_1" unique="true">
             <column ascending="true" name="source"/>
             <column ascending="true" name="target_id"/>
+         </index>
+      </table>
+      <table name="lite_system_health_recovery_requests" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="request_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="incident_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="incident_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_system_health_incidents"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="incident_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="3" name="enrollment_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="operation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="target_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="target_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="7" name="target_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="idempotency_digest" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="request_digest" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="actor_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="actor_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="12" name="policy_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="13" name="policy_decision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_decision_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="authorization_state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="15" name="approval_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="approval_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_approvals"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="execution_state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="verification_state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="requested_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="available_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="deadline_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="lease_until" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="24" name="completed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="25" name="attempt" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="2" digits="0" id="26" name="max_attempts" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="27" name="before_evidence_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="28" name="after_evidence_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="29" name="safe_summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'not_executed'" digits="0" id="30" name="outcome" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="31" name="terminal_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="request_id" sequenceNumberInPK="1"/>
+         <index name="lite_system_health_recovery_requests_s_pk" unique="true">
+            <column ascending="true" name="request_id"/>
+         </index>
+         <index name="lite_system_health_recovery_actor" unique="false">
+            <column ascending="true" name="actor_id"/>
+            <column ascending="true" name="requested_at"/>
+         </index>
+         <index name="lite_system_health_recovery_incident" unique="false">
+            <column ascending="true" name="incident_id"/>
+            <column ascending="true" name="requested_at"/>
+         </index>
+         <index name="lite_system_health_recovery_ready" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="available_at"/>
+            <column ascending="true" name="requested_at"/>
+         </index>
+         <index name="lite_system_health_recovery_single_flight" unique="true">
+            <column ascending="true" name="incident_id"/>
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="sqlite_autoindex_lite_system_health_recovery_requests_1" unique="true">
+            <column ascending="true" name="request_id"/>
+         </index>
+         <index name="sqlite_autoindex_lite_system_health_recovery_requests_2" unique="true">
+            <column ascending="true" name="idempotency_digest"/>
          </index>
       </table>
       <table name="lite_system_health_repair_attempts" remarks="" type="TABLE">
@@ -2122,7 +2209,9 @@
          </index>
       </table>
       <table name="policy_approvals" remarks="" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="approval_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="approval_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="approval_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_system_health_recovery_requests"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="originating_decision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_decision_details"/>
          </column>
@@ -2203,6 +2292,7 @@
       </table>
       <table name="policy_decision_details" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="decision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="policy_decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_system_health_recovery_requests"/>
             <child column="originating_decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_approvals"/>
             <parent column="decision_id" foreignKey="" implied="false" onDeleteCascade="true" table="policy_decisions"/>
          </column>

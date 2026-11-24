@@ -86,6 +86,9 @@
       "api:get:/api/lite/system-health/incidents/{incident_id}": [
         "ui:litesystemhealth"
       ],
+      "api:get:/api/lite/system-health/incidents/{incident_id}/decisions": [
+        "ui:litesystemhealth"
+      ],
       "api:get:/api/lite/system-health/intelligence": [
         "ui:litesystemhealth"
       ],
@@ -228,6 +231,12 @@
       "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose": [
         "ui:litesystemhealth"
       ],
+      "api:post:/api/lite/system-health/incidents/{incident_id}/preflight": [
+        "ui:litesystemhealth"
+      ],
+      "api:post:/api/lite/system-health/incidents/{incident_id}/repair": [
+        "ui:litesystemhealth"
+      ],
       "api:put:/api/lite/identity/passkeys/{credential_id}": [
         "ui:liteidentity"
       ]
@@ -333,11 +342,14 @@
         "api:get:/api/lite/system-health/history",
         "api:get:/api/lite/system-health/incidents",
         "api:get:/api/lite/system-health/incidents/{incident_id}",
+        "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
         "api:get:/api/lite/system-health/intelligence",
         "api:get:/api/lite/system-health/policies",
         "api:get:/api/lite/system-health/resources",
         "api:get:/api/lite/system-health/summary",
-        "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose"
+        "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+        "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+        "api:post:/api/lite/system-health/incidents/{incident_id}/repair"
       ]
     }
   },
@@ -347,6 +359,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "57cf8b4550e18f3e7fa688ad4af95976722d6d8767b6706cb21a593128a9ce45"
+    "source_fingerprint": "81084650377a487b849259cff5fe88015992935c129196e927c40325fb8884a6"
   }
 }

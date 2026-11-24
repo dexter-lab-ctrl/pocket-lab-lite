@@ -3949,6 +3949,13 @@
       "domain": "system-health",
       "frontend_clients": [
         {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceDecisions",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -7953,6 +7960,13 @@
           "resolved": true,
           "source_module": "src/lite/LiteSystemHealth.jsx",
           "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
@@ -7979,6 +7993,13 @@
       "description": "System Health Preflight",
       "domain": "system-health",
       "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligencePreflight",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "mutation"
+        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -8012,6 +8033,13 @@
       "domain": "system-health",
       "frontend_clients": [
         {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceRepair",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "mutation"
+        },
+        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -8024,6 +8052,7 @@
       "name": "POST /api/lite/system-health/incidents/{incident_id}/repair",
       "operation_id": "system_health_repair_api_lite_system_health_incidents__incident_id__repair_post",
       "response_statuses": [
+        "202",
         "409",
         "422",
         "503"
@@ -8218,6 +8247,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "57cf8b4550e18f3e7fa688ad4af95976722d6d8767b6706cb21a593128a9ce45"
+    "source_fingerprint": "81084650377a487b849259cff5fe88015992935c129196e927c40325fb8884a6"
   }
 }

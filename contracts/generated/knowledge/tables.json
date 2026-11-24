@@ -474,6 +474,7 @@
       "domain": "devices",
       "id": "table:device_enrollment_registry",
       "indexes": [
+        "idx_device_enrollment_generation",
         "idx_device_enrollment_last_seen",
         "idx_device_enrollment_name",
         "idx_device_enrollment_active_order",
@@ -481,7 +482,8 @@
       ],
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
       ],
       "name": "device_enrollment_registry",
       "owner": "not a prepared projection",
@@ -496,7 +498,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
       ],
       "type": "table",
       "writer": "device lifecycle and projection services"
@@ -787,7 +790,8 @@
         "sqlite_autoindex_device_removal_receipts_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
       ],
       "name": "device_removal_receipts",
       "owner": "not a prepared projection",
@@ -799,7 +803,8 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
       ],
       "type": "table",
       "writer": "device lifecycle and projection services"
@@ -970,7 +975,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "name": "enterprise_configuration",
       "owner": "not a prepared projection",
@@ -982,7 +988,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1001,7 +1008,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "name": "enterprise_memberships",
       "owner": "not a prepared projection",
@@ -1013,7 +1021,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1218,7 +1227,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -1239,7 +1249,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1405,12 +1416,15 @@
       "domain": "control_plane",
       "id": "table:lite_system_health_incidents",
       "indexes": [
+        "idx_lite_system_health_incident_generation",
         "lite_system_health_incidents_target",
         "lite_system_health_incidents_current",
         "sqlite_autoindex_lite_system_health_incidents_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
       ],
       "name": "lite_system_health_incidents",
       "owner": "not a prepared projection",
@@ -1421,7 +1435,9 @@
       ],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1433,10 +1449,12 @@
       "domain": "control_plane",
       "id": "table:lite_system_health_observations",
       "indexes": [
+        "idx_lite_system_health_observation_generation",
         "sqlite_autoindex_lite_system_health_observations_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
       ],
       "name": "lite_system_health_observations",
       "owner": "not a prepared projection",
@@ -1445,7 +1463,40 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_recovery_requests",
+      "indexes": [
+        "lite_system_health_recovery_single_flight",
+        "lite_system_health_recovery_actor",
+        "lite_system_health_recovery_incident",
+        "lite_system_health_recovery_ready",
+        "sqlite_autoindex_lite_system_health_recovery_requests_2",
+        "sqlite_autoindex_lite_system_health_recovery_requests_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
+      ],
+      "name": "lite_system_health_recovery_requests",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "after_evidence_json",
+        "before_evidence_json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1809,7 +1860,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "name": "policy_approvals",
       "owner": "not a prepared projection",
@@ -1823,7 +1875,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -2816,6 +2869,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "57cf8b4550e18f3e7fa688ad4af95976722d6d8767b6706cb21a593128a9ce45"
+    "source_fingerprint": "81084650377a487b849259cff5fe88015992935c129196e927c40325fb8884a6"
   }
 }

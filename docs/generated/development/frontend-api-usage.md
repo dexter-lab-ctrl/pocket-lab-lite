@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: e5767d673673220d48775cba89387a49223c46afd79e312ba71d66c0c4a6d2e6
+source_fingerprint: 8466391d6352afb300438c57d99469566e1c66fa58fb32abd3fef8bc568b5abc
 schema_revision: 1
 validation_status: generated
 ---
@@ -106,7 +106,10 @@ validation_status: generated
 | src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceHistory | GET | `/api/lite/system-health/history` | query | no | static |
 | src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceIncidents | GET | `/api/lite/system-health/incidents` | query | no | static |
 | src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceIncident | GET | `/api/lite/system-health/incidents/{param}` | query | no | dynamic |
+| src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceDecisions | GET | `/api/lite/system-health/incidents/{param}/decisions` | query | no | dynamic |
 | src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceDiagnose | POST | `/api/lite/system-health/incidents/{param}/diagnose` | mutation | no | dynamic |
+| src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligencePreflight | POST | `/api/lite/system-health/incidents/{param}/preflight` | mutation | no | dynamic |
+| src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceRepair | POST | `/api/lite/system-health/incidents/{param}/repair` | mutation | no | dynamic |
 | src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceKnowledge | GET | `/api/lite/system-health/intelligence` | query | no | static |
 | src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligencePolicies | GET | `/api/lite/system-health/policies` | query | no | static |
 | src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceResources | GET | `/api/lite/system-health/resources` | query | no | static |
@@ -230,7 +233,7 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/incidents` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/incidents/:incidentId` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/incidents/:incidentId/decisions` | mock | yes | static |
-| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/incidents/:incidentId/diagnose` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/system-health/incidents/:incidentId/diagnose` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/system-health/incidents/:incidentId/preflight` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/system-health/incidents/:incidentId/repair` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/intelligence` | mock | yes | static |
@@ -452,9 +455,6 @@ validation_status: generated
 - `/api/lite/security/runs/{run_id}`
 - `/api/lite/security/scan`
 - `/api/lite/system-health/apps/{app_id}`
-- `/api/lite/system-health/incidents/{incident_id}/decisions`
-- `/api/lite/system-health/incidents/{incident_id}/preflight`
-- `/api/lite/system-health/incidents/{incident_id}/repair`
 - `/api/lite/system-health/repairs`
 - `/api/lite/system/agent`
 - `/api/lite/system/health`

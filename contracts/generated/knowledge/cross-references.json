@@ -1153,6 +1153,10 @@
       ],
       "api:get:/api/lite/system-health/incidents/{incident_id}/decisions": [
         {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
           "source": "domain:system-health",
           "type": "owns"
         }
@@ -2355,11 +2359,19 @@
       ],
       "api:post:/api/lite/system-health/incidents/{incident_id}/preflight": [
         {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
           "source": "domain:system-health",
           "type": "owns"
         }
       ],
       "api:post:/api/lite/system-health/incidents/{incident_id}/repair": [
+        {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
         {
           "source": "domain:system-health",
           "type": "owns"
@@ -4398,6 +4410,12 @@
       "reason:harness_transport_rejected": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:historical_record": [
+        {
+          "source": "domain:system-health",
           "type": "owns"
         }
       ],
@@ -8081,6 +8099,12 @@
           "type": "owns"
         }
       ],
+      "table:lite_system_health_recovery_requests": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_system_health_repair_attempts": [
         {
           "source": "domain:control_plane",
@@ -9386,6 +9410,10 @@
         },
         {
           "source": "reason:harness_transport_rejected",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:historical_record",
           "type": "verified_by"
         },
         {
@@ -12923,15 +12951,39 @@
       ],
       "test:tests/backend/test_lite_system_health.py": [
         {
+          "source": "reason:approval_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:authentication_required",
           "type": "verified_by"
         },
         {
           "source": "reason:disabled",
           "type": "verified_by"
+        },
+        {
+          "source": "reason:historical_record",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:independent_approval_satisfied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
+          "type": "verified_by"
         }
       ],
       "test:tests/backend/test_lite_system_health_android_qualification.py": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
         {
           "source": "reason:generation_changed",
           "type": "verified_by"
@@ -14941,6 +14993,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:historical_record",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:human_session_required",
           "type": "verified_by"
         },
@@ -16156,6 +16212,10 @@
         },
         {
           "source": "reason:harness_transport_rejected",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:historical_record",
           "type": "verified_by"
         },
         {
@@ -26685,6 +26745,10 @@
           "type": "owns"
         },
         {
+          "target": "table:lite_system_health_recovery_requests",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_system_health_repair_attempts",
           "type": "owns"
         },
@@ -30303,6 +30367,10 @@
         {
           "target": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
           "type": "owns"
+        },
+        {
+          "target": "reason:historical_record",
+          "type": "owns"
         }
       ],
       "domain:telemetry": [
@@ -32061,6 +32129,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_system_health.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_policy_source_reconciliation.py",
           "type": "verified_by"
         },
@@ -32971,6 +33043,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -33799,6 +33875,24 @@
           "type": "verified_by"
         }
       ],
+      "reason:historical_record": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_system_health.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:human_session_required": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -34084,6 +34178,10 @@
       "reason:independent_approval_satisfied": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_system_health.py",
           "type": "verified_by"
         },
         {
@@ -35669,6 +35767,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_system_health.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
           "type": "verified_by"
         },
@@ -36222,6 +36324,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_recovery.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_system_health.py",
           "type": "verified_by"
         },
         {
@@ -37371,6 +37477,10 @@
           "type": "calls"
         },
         {
+          "target": "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+          "type": "calls"
+        },
+        {
           "target": "api:get:/api/lite/system-health/intelligence",
           "type": "calls"
         },
@@ -37389,6 +37499,14 @@
         {
           "target": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
           "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+          "type": "calls"
         }
       ]
     }
@@ -37399,6 +37517,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "57cf8b4550e18f3e7fa688ad4af95976722d6d8767b6706cb21a593128a9ce45"
+    "source_fingerprint": "81084650377a487b849259cff5fe88015992935c129196e927c40325fb8884a6"
   }
 }

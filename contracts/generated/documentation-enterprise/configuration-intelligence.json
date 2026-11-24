@@ -112,6 +112,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
         "scripts/dev/lite/run-ui-performance-android-baseline.sh",
         "scripts/dev/lite/run-ui-performance-android-recovery.sh",
         "tests/backend/test_lite_android_performance_baseline.py"
@@ -312,6 +313,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
         "scripts/dev/lite/run-ui-performance-android-baseline.sh",
         "scripts/dev/lite/run-ui-performance-android-recovery.sh"
       ],
@@ -384,10 +386,12 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
         "scripts/dev/lite/run-ui-performance-android-baseline.sh",
         "scripts/dev/lite/run-ui-performance-android-cdp.sh",
         "scripts/dev/lite/run-ui-performance-android-recovery.sh",
-        "scripts/dev/lite/run-ui-performance-qualified.py"
+        "scripts/dev/lite/run-ui-performance-qualified.py",
+        "tests/backend/test_lite_system_health_android_qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -2736,7 +2740,9 @@
       "secret": false,
       "source": [
         "playwright.config.ts",
-        "scripts/dev/lite/run-ui-performance-qualified.py"
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
+        "scripts/dev/lite/run-ui-performance-qualified.py",
+        "tests/backend/test_lite_system_health_android_qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -4401,6 +4407,31 @@
       "secret": false,
       "source": [
         "scripts/dev/lite/run-system-health-android-ui-qualification.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "frontend",
+        "repository tooling"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "LITE_SYSTEM_HEALTH_PERFORMANCE_MATRIX",
+      "owner": "frontend",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "src/performance/litePerformanceMatrix.js",
+        "tests/backend/test_lite_android_performance_baseline.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -6116,6 +6147,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
         "scripts/dev/lite/run-ui-performance-android-baseline.sh",
         "scripts/dev/lite/run-ui-performance-android-candidate.sh",
         "tests/backend/test_lite_android_performance_baseline.py",
@@ -8717,8 +8749,7 @@
     {
       "affected_components": [
         "FastAPI",
-        "bootstrap/runtime",
-        "repository tooling"
+        "bootstrap/runtime"
       ],
       "affects_release": true,
       "affects_runtime": true,
@@ -8739,8 +8770,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py",
-        "scripts/dev/lite/recover-main-database.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -10380,6 +10411,7 @@
       "secret": false,
       "source": [
         "scripts/dev/lite/harness.py",
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "tests/backend/test_lite_ui_performance_runner.py"
       ],
@@ -10431,9 +10463,9 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
         "scripts/dev/lite/run-system-health-android-qualification.py",
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
-        "scripts/dev/lite/start-qualification.sh",
-        "tests/backend/test_lite_harness.py"
+        "scripts/dev/lite/start-qualification.sh"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -10846,7 +10878,7 @@
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
         "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
         "scripts/dev/lite/run-system-health-android-qualification.py",
-        "scripts/dev/lite/run-ui-performance-qualified.py"
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -10923,6 +10955,7 @@
       "source": [
         "scripts/dev/lite/harness.py",
         "scripts/dev/lite/run-photo-backup-candidate-qualification.py",
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
         "scripts/dev/lite/run-ui-performance-qualified.py",
         "scripts/dev/lite/security_assurance.py",
         "tests/backend/test_lite_ui_performance_runner.py"
@@ -26263,6 +26296,56 @@
     },
     {
       "affected_components": [
+        "FastAPI",
+        "repository tooling"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER",
+      "owner": "FastAPI/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py",
+        "tests/backend/test_lite_system_health.py",
+        "tests/backend/test_lite_system_health_android_qualification.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "FastAPI"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SYSTEM_HEALTH_RECOVERY_COOLDOWN_SECONDS",
+      "owner": "FastAPI/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
         "bootstrap/runtime"
       ],
       "affects_release": true,
@@ -26996,7 +27079,8 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -27164,7 +27248,8 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -27189,7 +27274,8 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py",
+        "scripts/dev/lite/run-system-health-android-qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },

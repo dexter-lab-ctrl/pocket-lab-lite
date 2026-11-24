@@ -46,6 +46,7 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `GET /api/lite/system-health/history` | ui:litesystemhealth | — | unvalidated |
 | `GET /api/lite/system-health/incidents` | ui:litesystemhealth | — | unvalidated |
 | `GET /api/lite/system-health/incidents/{incident_id}` | ui:litesystemhealth | — | unvalidated |
+| `GET /api/lite/system-health/incidents/{incident_id}/decisions` | ui:litesystemhealth | — | unvalidated |
 | `GET /api/lite/system-health/intelligence` | ui:litesystemhealth | — | unvalidated |
 | `GET /api/lite/system-health/policies` | ui:litesystemhealth | — | unvalidated |
 | `GET /api/lite/system-health/resources` | ui:litesystemhealth | — | unvalidated |
@@ -91,6 +92,8 @@ Verified relationships are generated from frontend API usage, parity field mappi
 | `POST /api/lite/security/apps/{app_id}/check` | ui:litesecurity | — | unvalidated |
 | `POST /api/lite/security/check` | ui:litesecurity | — | unvalidated |
 | `POST /api/lite/system-health/incidents/{incident_id}/diagnose` | ui:litesystemhealth | — | unvalidated |
+| `POST /api/lite/system-health/incidents/{incident_id}/preflight` | ui:litesystemhealth | — | unvalidated |
+| `POST /api/lite/system-health/incidents/{incident_id}/repair` | ui:litesystemhealth | — | unvalidated |
 | `PUT /api/lite/identity/passkeys/{credential_id}` | ui:liteidentity | — | unvalidated |
 
 ## Field lineage

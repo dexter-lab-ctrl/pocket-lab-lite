@@ -11,6 +11,7 @@ recovery_backup_locations
 human_identities
 device_current_state
 app_current_state
+policy_decision_details
 workflow_event_index
 security_database_backups
 policy_revisions
@@ -20,13 +21,13 @@ device_system_profiles
 security_scan_runs
 auth_sessions
 harness_sessions
-policy_decision_details
 recovery_code_batches
 security_database_restores
 webauthn_credentials
 device_lifecycle_events
 owner_operation_client_pairings
 policy_activation_operations
+policy_approvals
 owner_approved_operations
 app_action_lifecycle
 assurance_execution_checkpoints
@@ -71,11 +72,11 @@ enterprise_configuration
 harness_recovery_receipts
 human_enrollment_claims
 policy_runtime_state
+lite_system_health_recovery_requests
 policy_recovery_resolutions
 policy_temporary_exceptions
 webauthn_challenges
 enterprise_memberships
-policy_approvals
 app_credential_metadata
 audit_evidence_index
 backup_manifest_index
