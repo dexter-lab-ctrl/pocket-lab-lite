@@ -91,6 +91,11 @@ def admit(context: dict, operation: str, preview_id: str, idempotency_key: str, 
     with connection() as conn:
         with begin_immediate(conn):
             actor = authority.require_owner(conn,context)
+            old = conn.execute("SELECT * FROM lite_system_health_maintenance_admissions WHERE idempotency_digest=?", (digest,)).fetchone()
+            if old:
+                if old["actor_id"] != actor or old["operation_id"] != operation or old["preview_id"] != preview_id:
+                    raise ValueError("idempotency_conflict")
+                return _public(dict(old)), False
             # Expire only not-yet-executed admissions. Unknown owner outcomes
             # remain uncertain and are not automatically retried.
             conn.execute("UPDATE lite_system_health_maintenance_admissions SET status='expired',completed_at=? WHERE status='queued' AND expires_at<=?",(health._now(),health._now()))
@@ -156,6 +161,12 @@ def execute(command_id: str) -> dict:
             return _finish(command_id,"blocked",{"reason":"policy_revision_changed"})
         with connection() as conn:
             current = authority._human_authority(conn,request["actor_id"],request["session_id"])
+            if request["preview_id"]:
+                preview = conn.execute("""SELECT candidate_json FROM lite_system_health_maintenance_admissions
+                    WHERE command_id=? AND actor_id=? AND operation_id='storage.evidence.preview' AND status='verified' AND expires_at>?""",
+                    (request["preview_id"],request["actor_id"],health._now())).fetchone()
+                if not preview or preview["candidate_json"] != request["candidate_json"]:
+                    current = None
         if not current or current != auth or not enabled(operation) or maintenance.maintenance_state().get("active") or maintenance.active_security_scan():
             return _finish(command_id,"blocked",{"reason":"maintenance_conflict_or_authority_changed"})
     except Exception:
@@ -174,8 +185,10 @@ def execute(command_id: str) -> dict:
                     isinstance(evidence["checkpointed_frames"],int) and isinstance(evidence["checkpoint_log_frames"],int)
                     and evidence["checkpointed_frames"]>=evidence["checkpoint_log_frames"]>=0)
         return _finish(command_id,"verified" if verified else "uncertain",evidence|{"quick_check_ok":result.get("quick_check")=="ok"})
-    except ValueError:
-        return _finish(command_id,"blocked",{"reason":"reviewed_plan_changed"})
+    except ValueError as exc:
+        if str(exc) in {"retention_preview_changed", "reviewed_candidates_required"}:
+            return _finish(command_id,"blocked",{"reason":"reviewed_plan_changed"})
+        return _finish(command_id,"uncertain",{"reason":"owner_outcome_not_verified"})
     except Exception:
         return _finish(command_id,"uncertain",{"reason":"owner_outcome_not_verified"})
 
