@@ -1073,7 +1073,17 @@ time.sleep(3)
         items = incidents.body.get("items") if isinstance(incidents.body.get("items"), list) else []
         if incidents.status != 200 or not items:
             raise QualificationError("candidate System Health projection did not produce an incident")
-        incident = items[0] if isinstance(items[0], dict) else {}
+        eligible = [
+            item for item in items
+            if isinstance(item, dict)
+            and item.get("source") == "nats"
+            and (item.get("target_id") == "jetstream" or str(item.get("target_id") or "").startswith("consumer:"))
+            and item.get("current_monitoring") is True
+            and item.get("repair_available") is True
+        ]
+        incident = eligible[0] if eligible else {}
+        if not incident:
+            raise QualificationError("candidate System Health projection did not produce an eligible NATS recovery incident")
         incident_id = str(incident.get("incident_id") or "")
         generation = int(incident.get("generation") or 0)
         if not incident_id or generation < 1 or incident.get("state") == "resolved":

@@ -171,7 +171,11 @@ async function main() {
   }
   await page.screenshot({ path: resolve(outputDir, 'system-health-landing.png'), fullPage: true });
 
-  const incident = page.locator('[data-health-incident]').first();
+  const recoverableIncidents = page.locator('[data-health-incident]').filter({
+    has: page.getByRole('button', { name: 'Review recovery', exact: true }),
+  });
+  if (await recoverableIncidents.count() < 1) fail('Android System Health did not expose an eligible recovery incident');
+  const incident = recoverableIncidents.first();
   const incidentId = await incident.getAttribute('data-health-incident');
   if (!/^health-[0-9a-f]{24}$/.test(String(incidentId || ''))) fail('Android System Health did not expose a generation-bound incident');
   await incident.getByRole('button', { name: 'Review issue', exact: true }).click();
