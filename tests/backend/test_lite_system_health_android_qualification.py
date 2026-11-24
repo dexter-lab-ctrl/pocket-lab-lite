@@ -201,6 +201,7 @@ def test_browser_ui_lane_keeps_owner_non_destructive_and_uses_candidate_bridge()
     assert "run._start_local_opa()" in ui_source
     assert "--performance" in ui_source
     assert '"LITE_ANDROID_QUALIFICATION_SCOPE": "system-health"' in ui_source
+    assert '"LITE_QUALIFICATION_BROWSER_BRIDGE": "1"' in ui_source
     assert '"interaction_count": 9' in ui_source
 
 

@@ -380,6 +380,7 @@ def main(argv: list[str] | None = None) -> int:
                 "LITE_ANDROID_BASELINE_REPETITIONS": "3",
                 "POCKETLAB_ANDROID_DEVICE_SERIAL": args.device_serial,
                 "POCKETLAB_HARNESS_BROWSER_BRIDGE": run.browser_bridge,
+                "LITE_QUALIFICATION_BROWSER_BRIDGE": "1",
             })
             performance_script = REPO_ROOT / "scripts/dev/lite/run-ui-performance-android-baseline.sh"
             performance_result = _run(
