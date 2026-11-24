@@ -131,6 +131,7 @@ def storage_readiness(request: Any | None = None, *, root: Path | None = None) -
         "ready": ready,
         "reason": reason,
         "free_bytes": free,
+        "total_bytes": total if metrics_available else None,
         "free_percent": round(percent, 3),
         "minimum_free_bytes": effective_bytes,
         "minimum_free_percent": round(effective_percent, 3),
