@@ -257,6 +257,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--evidence-dir", type=Path, default=None)
     parser.add_argument("--dist-dir", type=Path, default=REPO_ROOT / "dist")
     parser.add_argument("--device-serial", required=True, help="Explicit Windows ADB serial selected by the operator")
+    parser.add_argument(
+        "--performance",
+        action="store_true",
+        help="Run the System Health-only three-repetition baseline-normalized Android performance matrix after functional UI qualification.",
+    )
     args = parser.parse_args(argv)
     base_result = _run(["git", "rev-parse", "--verify", f"{args.base_sha}^{{commit}}"], timeout=15)
     if base_result.returncode != 0:
@@ -343,6 +348,74 @@ def main(argv: list[str] | None = None) -> int:
         if ui_evidence.get("status") != "PASS" or ui_evidence.get("candidate_sha") != run.candidate_sha:
             raise health.QualificationError("physical Android UI evidence was not exact-SHA bound")
         run.results["android_system_health_ui"] = ui_evidence
+
+        if args.performance:
+            # The functional browser lane consumes the injected degraded
+            # observation and reaches terminal verification. Rearm one fresh,
+            # bounded fixture before the read-only performance matrix so all
+            # nine System Health interactions measure the exact candidate's
+            # current concern surface without submitting diagnosis or repair.
+            run._stop_recovery_projection_fixture()
+            run._start_recovery_projection_fixture()
+            bridge = run.client.request("POST", "/api/lite/harness/browser/bridge", session=run.session)
+            bridge_token = str(bridge.body.get("browser_bridge_token") or "") if isinstance(bridge.body, dict) else ""
+            if bridge.status != 200 or len(bridge_token) < 32:
+                raise health.QualificationError("isolated performance browser bridge could not be renewed")
+            run.browser_bridge = bridge_token
+            performance_env = os.environ.copy()
+            for secret_key in (
+                "POCKETLAB_HARNESS_SESSION",
+                "POCKETLAB_HARNESS_PROVISIONING_TOKEN",
+                "POCKETLAB_HARNESS_BOOTSTRAP_APPROVED",
+                "POCKETLAB_HARNESS_API_URL",
+                "POCKETLAB_TEST_AUTH_BYPASS",
+            ):
+                performance_env.pop(secret_key, None)
+            performance_env.update({
+                "LITE_ANDROID_CDP_URL": CDP_LOCAL_URL,
+                "LITE_BASE_URL": CANDIDATE_URL,
+                "LITE_PERF_SOURCE_COMMIT": run.candidate_sha,
+                "LITE_ANDROID_QUALIFICATION_SCOPE": "system-health",
+                "LITE_ANDROID_EXPECTED_INTERACTION_REPORTS": "9",
+                "LITE_ANDROID_BASELINE_REPETITIONS": "3",
+                "POCKETLAB_ANDROID_DEVICE_SERIAL": args.device_serial,
+                "POCKETLAB_HARNESS_BROWSER_BRIDGE": run.browser_bridge,
+            })
+            performance_script = REPO_ROOT / "scripts/dev/lite/run-ui-performance-android-baseline.sh"
+            performance_result = _run(
+                ["bash", str(performance_script)],
+                timeout=900,
+                env=performance_env,
+            )
+            (evidence_dir / "system-health-performance.log").write_text(
+                _safe_text(performance_result.stdout, 12_000)
+                + "\n"
+                + _safe_text(performance_result.stderr, 12_000)
+                + "\n",
+                encoding="utf-8",
+            )
+            if performance_result.returncode != 0:
+                raise health.QualificationError("physical Android System Health performance qualifier failed")
+            summary_path = REPO_ROOT / ".pocketlab-dev" / "performance" / "android-baseline-summary.json"
+            if not summary_path.is_file():
+                raise health.QualificationError("System Health Android performance summary was not written")
+            performance_summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            if performance_summary.get("report_count") != 9:
+                raise health.QualificationError("System Health Android performance did not produce exactly nine normalized reports")
+            if performance_summary.get("sanitized") is not True:
+                raise health.QualificationError("System Health Android performance summary was not sanitized")
+            run.results["android_system_health_performance"] = {
+                "status": "PASS",
+                "scope": "system-health",
+                "repetition_count": 3,
+                "interaction_count": 9,
+                "summary": performance_summary,
+                "absolute_target_passes": performance_summary.get("absolute_target_passes"),
+                "absolute_gate_passes": performance_summary.get("absolute_gate_passes"),
+                "classifications": performance_summary.get("classifications"),
+                "sanitized": True,
+            }
+
         repeat = run._remote_probe(expected=run.candidate_schema_version)
         run.results.setdefault("isolated_sqlite", {})["after_ui_gets"] = repeat
         run.results["status"] = "PASS"

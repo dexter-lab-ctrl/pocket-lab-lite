@@ -34,7 +34,8 @@ case "$qualification_scope" in
   home) default_expected_interaction_reports=18 ;;
   access) default_expected_interaction_reports=15 ;;
   recovery) default_expected_interaction_reports=4 ;;
-  *) fail 'LITE_ANDROID_QUALIFICATION_SCOPE must be all, home, access or recovery.' ;;
+  system-health) default_expected_interaction_reports=9 ;;
+  *) fail 'LITE_ANDROID_QUALIFICATION_SCOPE must be all, home, access, recovery or system-health.' ;;
 esac
 
 device_state_args=()
@@ -93,7 +94,11 @@ for run_index in $(seq 1 "$repetitions"); do
     elif [[ "$qualification_scope" == recovery ]]; then
       evidence_files=(.pocketlab-dev/performance/ui-performance-android-recovery-*.json)
     else
-      evidence_files=(.pocketlab-dev/performance/ui-performance-android-cdp-*.json)
+      if [[ "$qualification_scope" == system-health ]]; then
+        evidence_files=(.pocketlab-dev/performance/ui-performance-android-system-health-*.json)
+      else
+        evidence_files=(.pocketlab-dev/performance/ui-performance-android-cdp-*.json)
+      fi
     fi
     shopt -u nullglob
     evidence_count="${#evidence_files[@]}"

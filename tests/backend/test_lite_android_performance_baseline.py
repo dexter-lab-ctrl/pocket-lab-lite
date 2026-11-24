@@ -26,6 +26,20 @@ def test_android_baseline_runner_repeats_existing_physical_matrix():
     assert '"${device_state_args[@]}"' in runner
 
 
+def test_system_health_android_performance_scope_is_narrow_and_fixed_size():
+    baseline = (ROOT / "scripts/dev/lite/run-ui-performance-android-baseline.sh").read_text(encoding="utf-8")
+    qualifier = (ROOT / "scripts/dev/lite/qualify-ui-performance-android-cdp.mjs").read_text(encoding="utf-8")
+    matrix = (ROOT / "src/performance/litePerformanceMatrix.js").read_text(encoding="utf-8")
+    assert "system-health) default_expected_interaction_reports=9" in baseline
+    assert "ui-performance-android-system-health-*.json" in baseline
+    assert "LITE_SYSTEM_HEALTH_PERFORMANCE_MATRIX" in qualifier
+    assert "systemHealthOnly = qualificationScope === 'system-health'" in qualifier
+    assert "system-health-only" in (ROOT / "scripts/dev/lite/run-ui-performance-android-cdp.sh").read_text(encoding="utf-8")
+    assert matrix.count("screen: 'system-health'") == 9
+    assert "system-health.overview.screen-steady" in matrix
+    assert "system-health.refresh.feedback" in matrix
+
+
 def test_android_baseline_control_is_exact_sha_candidate_surface():
     runner = (ROOT / "scripts/dev/lite/qualify-ui-performance-android-baseline.mjs").read_text(encoding="utf-8")
     assert '/__pocketlab_qualification__/baseline-control.html' in runner
