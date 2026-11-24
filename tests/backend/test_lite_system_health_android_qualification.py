@@ -195,6 +195,8 @@ def test_browser_ui_lane_keeps_owner_non_destructive_and_uses_candidate_bridge()
     assert '"POCKETLAB_HARNESS_DESTRUCTIVE": "0"' in source
     assert '"POCKETLAB_TEST_AUTH_BYPASS": "0"' in source
     assert '"/api/lite/harness/browser/bridge"' in source
+    ui_source = (REPO / "scripts" / "dev" / "lite" / "run-system-health-android-ui-qualification.py").read_text(encoding="utf-8")
+    assert "run._start_local_opa()" in ui_source
 
 
 def test_physical_system_health_qualifier_activates_android_target():

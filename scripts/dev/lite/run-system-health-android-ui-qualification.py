@@ -287,6 +287,7 @@ def main(argv: list[str] | None = None) -> int:
         run._local_fixture()
         run._start_local_nats()
         run._stage_remote()
+        run._start_local_opa()
         before = run._remote_probe(expected=42)
         run.results.setdefault("isolated_sqlite", {})["phone_before_migration"] = before
         run._start_transport_and_candidate()
