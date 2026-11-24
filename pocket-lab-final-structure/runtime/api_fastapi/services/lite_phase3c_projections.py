@@ -324,6 +324,10 @@ def _storage_material() -> dict[str, Any]:
         "database_instance": prepared._database_instance(),
         "status": status,
         "free_space_band": free_band,
+        # Quantize capacity to MiB to avoid byte-level revision churn.
+        "total_capacity_mib": int(readiness["total_bytes"] // (1024 * 1024)) if readiness.get("total_bytes") is not None else None,
+        "free_capacity_mib": int(readiness["free_bytes"] // (1024 * 1024)) if percent_scaled is not None else None,
+        "wal_size_mib": int(wal_bytes // (1024 * 1024)) if wal_bytes is not None else None,
         "wal_band": wal_band,
         "state_directory": "available" if available else "unavailable",
         "writeability": "writable" if writable else "read_only",
