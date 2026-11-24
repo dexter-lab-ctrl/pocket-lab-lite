@@ -1,0 +1,293 @@
+"""Bounded infrastructure presentation from existing SQLite projections.
+
+No collectors, filesystem enumeration, probes, migrations, command dispatch
+or policy mutations are invoked by these reads. Only enumerated fields leave
+the projection store. Unknown values and old observations remain explicit.
+"""
+from __future__ import annotations
+
+import json
+from typing import Any
+
+from . import lite_system_health as health
+
+DOMAINS = (
+    "system.health", "system.processes", "system.nats_remote",
+    "system.remote_access", "system.storage_pressure", "system.sqlite_health",
+    "system.telemetry_thresholds", "system.activity_current",
+    "system.activity_history", "security.summary", "security.progress",
+)
+STATUS = frozenset({
+    "healthy", "normal", "ready", "online", "running", "connected", "available",
+    "degraded", "attention", "watch", "elevated", "critical", "unavailable",
+    "unhealthy", "offline", "stopped", "errored", "failed", "missing",
+    "unknown", "unsupported", "not_ready", "read_only", "writable",
+    "storage_pressure", "recovery_required", "maintenance_active", "maintenance",
+    "active", "idle", "queued", "accepted", "working", "in_progress", "pending",
+    "cancelled", "succeeded", "blocked", "undeliverable", "timed_out",
+    "verified", "not_verified", "not_configured", "not_run", "ok", "wal",
+    "partial", "stale", "saved", "expired", "completed", "disabled",
+})
+SERVICE_IDENTITIES = (
+    ("api", "Control API", "pocket-api", "api", "system.health"),
+    ("nats", "Command service", "pocket-nats", "nats", "system.nats_remote"),
+    ("worker", "Background worker", "pocket-worker", None, "system.processes"),
+    ("gateway", "Web gateway", "caddy-proxy", None, "system.processes"),
+    ("policy", "Security policy engine", "pocket-opa", None, "system.processes"),
+    ("agent", "Server node agent", "pocket-node-agent", None, "system.processes"),
+    ("monitoring", "Device monitoring", "pocket-telemetry", "telemetry", "system.health"),
+    ("supervisor", "Core supervisor", "pocketlab-core-supervisor", None, "system.processes"),
+    ("guardian", "External runtime guardian", None, None, "system.health"),
+)
+
+
+def _dict(value: Any) -> dict:
+    return value if isinstance(value, dict) else {}
+
+
+def _items(value: Any, limit: int = 64) -> list[dict]:
+    return [item for item in value[:limit] if isinstance(item, dict)] if isinstance(value, list) else []
+
+
+def _enum(value: Any) -> str:
+    return value if isinstance(value, str) and value in STATUS else "unknown"
+
+
+def _count(value: Any) -> int | None:
+    return value if type(value) is int and 0 <= value <= 2_000_000_000 else None
+
+
+def _flag(value: Any) -> str:
+    return "ready" if value is True else "not_ready" if value is False else "unknown"
+
+
+def _freshness(row: dict) -> str:
+    return health.freshness(row.get("updated_at"))
+
+
+def _field(row: dict, label: str, value: Any) -> dict:
+    return {"label": label, "status": _enum(value), "freshness": _freshness(row)}
+
+
+def _number(row: dict, label: str, value: Any) -> dict:
+    return {"label": label, "count": _count(value), "freshness": _freshness(row)}
+
+
+def _snapshots() -> dict[str, dict]:
+    # Do not call phase3b.snapshot: it may initialize schema on the API path.
+    # Select only known domains from the same existing committed projection table.
+    rows = health._read(
+        "SELECT domain,status,payload_json,updated_at FROM phase3b_current_state "
+        "WHERE domain IN (" + ",".join("?" for _ in DOMAINS) + ")",
+        DOMAINS,
+    )
+    result = {}
+    for row in rows:
+        try:
+            raw = row.get("payload_json")
+            if not isinstance(raw, str) or len(raw) > 65536:
+                continue
+            payload = json.loads(raw)
+        except (TypeError, ValueError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        result[row["domain"]] = {**payload, "status": row.get("status"), "updated_at": row.get("updated_at")}
+    return result
+
+
+def _services(snapshots: dict) -> list[dict]:
+    processes = snapshots.get("system.processes", {})
+    system = snapshots.get("system.health", {})
+    nats = snapshots.get("system.nats_remote", {})
+    components = _dict(system.get("components"))
+    # Only fixed managed-service names; no arbitrary process labels or PIDs.
+    known = {item.get("name"): item for item in _items(processes.get("items"), 128)
+             if isinstance(item.get("name"), str)}
+    output = []
+    for key, label, process, component, domain in SERVICE_IDENTITIES:
+        row = snapshots.get(domain, {})
+        process_row = known.get(process, {})
+        state = _enum(process_row.get("status")) if process_row else "unknown"
+        process_freshness = _freshness(processes) if process_row else "unknown"
+        readiness = _enum(components.get(component)) if component else "unknown"
+        if key == "nats":
+            readiness = _enum(nats.get("status"))
+        # Process online is not functional readiness. A stopped known process
+        # is a valid observation, but only independent component evidence
+        # may show operational readiness.
+        status = readiness
+        if process_freshness == "current" and state in {"stopped", "errored", "failed", "missing"}:
+            status = state
+            row = processes
+        output.append({
+            "id": key, "label": label, "status": status,
+            "freshness": _freshness(row) if status != "unknown" else "unknown",
+            "process_status": state, "process_freshness": process_freshness,
+            "functional_readiness": readiness,
+        })
+    return output
+
+
+def _backup_readiness(storage: dict, sqlite: dict) -> list[dict]:
+    # Same prepared source tables and completion clock used by
+    # ControlPlaneProjectionStore.recovery_projection_snapshot; no initialize().
+    rows = health._read(
+        "SELECT status,verification_status,created_at,verified_at "
+        "FROM backup_manifest_index ORDER BY updated_at_epoch_ms DESC,backup_id DESC LIMIT 1"
+    )
+    completion = health._read(
+        "SELECT last_completed_at FROM projection_refresh_state WHERE domain=? LIMIT 1",
+        ("recovery.summary",),
+    )
+    stamp = {"updated_at": completion[0].get("last_completed_at")} if completion else {}
+    backup = rows[0] if rows else {}
+    latest = _dict(sqlite.get("latest_backup"))
+    return [
+        _field(stamp, "Latest workspace backup", backup.get("status")),
+        _field(stamp, "Backup integrity", backup.get("verification_status")),
+        _field(storage, "Backup destination", storage.get("backup_target")),
+        _field(sqlite, "Database backup", latest.get("status")),
+        _number(sqlite, "Current database schema", sqlite.get("schema_version")),
+        _number(sqlite, "Backup database schema", latest.get("schema_version")),
+        _field({}, "Restore rehearsal", "unknown"),
+        _field({}, "Restore compatibility", "unknown"),
+        _field({}, "Rollback readiness", "unknown"),
+    ]
+
+
+def infrastructure() -> dict:
+    snapshots = _snapshots()
+    system = snapshots.get("system.health", {})
+    nats = snapshots.get("system.nats_remote", {})
+    remote = snapshots.get("system.remote_access", {})
+    storage = snapshots.get("system.storage_pressure", {})
+    sqlite = snapshots.get("system.sqlite_health", {})
+    activity = snapshots.get("system.activity_current", {})
+    history = snapshots.get("system.activity_history", {})
+    telemetry = snapshots.get("system.telemetry_thresholds", {})
+    security = snapshots.get("security.summary", {})
+    progress = snapshots.get("security.progress", {})
+    writer = _dict(sqlite.get("writer"))
+    maintenance = _dict(sqlite.get("maintenance"))
+    network = [
+        _field(remote, "Remote access", remote.get("status")),
+        _field(remote, "Tailscale daemon", _flag(remote.get("running"))),
+        _field(remote, "Tailnet readiness", _flag(remote.get("ready"))),
+        _field(remote, "Authentication readiness", _flag(remote.get("authenticated"))),
+        _field(remote, "Trusted address reported", _flag(remote.get("tailnet_ip_present"))),
+        _field(nats, "Local command connectivity", _flag(nats.get("connected"))),
+        _field(nats, "JetStream availability", _flag(nats.get("jetstream_enabled"))),
+        _field(remote, "Tailnet command connectivity", _flag(remote.get("nats_reachable"))),
+        _field(nats, "Secondary command route", _flag(nats.get("secondary_ready"))),
+        _field({}, "Local network reachability", "unknown"),
+        _field({}, "Secure access certificates", "unknown"),
+    ]
+    storage_rows = [
+        _field(storage, "Storage pressure", storage.get("status")),
+        _field(storage, "Available space band", storage.get("free_space_band")),
+        _field(storage, "Workspace directory", storage.get("state_directory")),
+        _field(storage, "Workspace write access", storage.get("writeability")),
+        _field(storage, "WAL pressure", storage.get("wal_band")),
+        _number({}, "Total capacity (bytes)", None),
+        _number({}, "Reclaimable storage (bytes)", None),
+    ]
+    database = [
+        _field(sqlite, "Database health", sqlite.get("status")),
+        _field(sqlite, "Integrity check", sqlite.get("quick_check")),
+        _field(sqlite, "Journal mode", sqlite.get("journal_mode")),
+        _field(sqlite, "WAL pressure", sqlite.get("wal_band")),
+        _field(sqlite, "Write queue pressure", writer.get("queue_pressure")),
+        _field(sqlite, "Maintenance", maintenance.get("status")),
+        _field(sqlite, "Latest restore", _dict(sqlite.get("latest_restore")).get("state")),
+    ]
+    # No counts are represented as zero if the collector did not establish
+    # counts_available. No inferred cancellation or replay state is presented.
+    active = activity.get("counts_available") is True
+    past = history.get("counts_available") is True
+    workflows = [
+        _number(activity, "Working", activity.get("active_operations") if active else None),
+        _number(activity, "Waiting", activity.get("queued_operations") if active else None),
+        _number(activity, "Stale operation records", activity.get("stale_operations") if active else None),
+        _number(activity, "Needs attention", activity.get("attention_required") if active else None),
+        _number(history, "Completed in recorded window", history.get("recent_completed") if past else None),
+        _number(history, "Earlier failures", history.get("historical_failures") if past else None),
+    ]
+    resource = [
+        _field(telemetry, "Resource signals", telemetry.get("status")),
+        _field(storage, "Storage protection", storage.get("status")),
+        _field(system, "Maintenance", "active" if system.get("maintenance_active") is True else "idle" if system.get("maintenance_active") is False else "unknown"),
+        _field({}, "Battery and charging", "unsupported"),
+        _field({}, "Resource preference", "unknown"),
+    ]
+    security_rows = [
+        _field(security, "Safety evidence", security.get("status")),
+        _field(progress, "Safety operation", progress.get("status")),
+        _field({}, "Active policy integrity", "unknown"),
+        _field({}, "Vulnerability database freshness", "unknown"),
+        _field({}, "System clock reliability", "unknown"),
+    ]
+    return {
+        "source": "committed_sqlite_projections",
+        "services": _services(snapshots), "network": network,
+        "storage": storage_rows, "database": database,
+        "workflows": workflows, "resources": resource, "security": security_rows,
+        "backup": _backup_readiness(storage, sqlite),
+        "cleanup": {
+            "available": False, "estimated_bytes": None,
+            "protected": ["Personal files and media", "Active databases and application data",
+                          "Protected backups and audit evidence", "Current logs and recovery artifacts"],
+            "reason": "A qualified owner-bound cleanup manifest and execution contract are required.",
+        },
+        "resource_policy": {
+            "available": False, "proposed_modes": ["balanced", "low_power", "maintenance"],
+            "essential_services_protected": True,
+            "reason": "No qualified resource preference mutation is enabled.",
+        },
+        "retry_available": False, "cancellation_available": False,
+        "sanitized": True,
+    }
+
+
+def correlate(items: list[dict], edges: list[dict]) -> list[dict]:
+    """Bounded correlation hints, never verified root cause or suppression."""
+    candidates = [item for item in items[:100] if item.get("concern_state") == "current_concern"
+                  and item.get("current_monitoring") is True]
+    def source(item: dict) -> str:
+        return item.get("target_id") if item.get("source") == "system" else item.get("source")
+    result = []
+    for edge in edges[:32]:
+        if edge.get("authority") not in {"verified_contract", "inferred", "verified_runtime"}:
+            continue
+        upstream = [item for item in candidates if source(item) == edge.get("upstream")]
+        downstream = [item for item in candidates if source(item) == edge.get("downstream")]
+        if not upstream or not downstream:
+            continue
+        result.append({
+            "upstream": edge["upstream"], "downstream": edge["downstream"],
+            "relationship_authority": edge["authority"], "cause_confidence": "inferred",
+            "upstream_count": len(upstream), "downstream_count": len(downstream),
+            "summary": "Related current concerns may share a dependency; review upstream evidence first.",
+        })
+    return result
+
+
+def reliability() -> dict:
+    # Existing request evidence only. Limit to a recent bounded page; absence
+    # of records is not proof of uptime or successful recovery.
+    rows = health._read(
+        "SELECT status,execution_state,verification_state,completed_at "
+        "FROM lite_system_health_recovery_requests ORDER BY requested_at DESC,request_id DESC LIMIT 100"
+    )
+    verified = sum(row["status"] == "verified" and row["verification_state"] == "verified"
+                   and row["execution_state"] == "succeeded" for row in rows)
+    terminal = sum(row["status"] in {"verified", "execution_failed", "verification_failed", "verification_unavailable",
+                                    "manual_attention_required"} for row in rows)
+    return {
+        "scope": "latest_100_governed_requests", "sample_count": len(rows),
+        "verified_count": verified, "terminal_execution_count": terminal,
+        "verification_rate": round(verified / terminal, 4) if terminal else None,
+        "observed_availability": None, "observation_coverage": None,
+        "mean_recovery_seconds": None, "automatic_recovery_rate": None,
+        "reason": "Continuous observation coverage and comparable timing evidence are not established.",
+    }
