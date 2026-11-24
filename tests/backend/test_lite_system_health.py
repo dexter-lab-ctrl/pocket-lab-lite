@@ -25,6 +25,7 @@ def health(tmp_path, monkeypatch):
         conn.executescript((schema_root / "0044_system_health_audit.sql").read_text(encoding="utf-8"))
         conn.executescript((schema_root / "0045_system_health_enrollment_generation.sql").read_text(encoding="utf-8"))
         conn.executescript((schema_root / "0046_system_health_recovery_requests.sql").read_text(encoding="utf-8"))
+        conn.executescript((schema_root / "0048_system_health_owner_recovery_evidence.sql").read_text(encoding="utf-8"))
 
     def connect():
         conn = sqlite3.connect(db, isolation_level=None)
@@ -524,3 +525,80 @@ def test_p4_enterprise_approval_promotes_same_idempotent_request(health, monkeyp
     assert admitted["request"]["status"] == "admitted"
     assert admitted["request"]["authorization_state"] == "authorized"
     assert health.decision_history(item["incident_id"])["recovery_requests"][0]["status"] == "admitted"
+
+
+def test_infrastructure_registry_cannot_enable_production_or_generic_execution(health, monkeypatch):
+    from api_fastapi.services import lite_infrastructure_operations as ops
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "production")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")
+    assert not ops.controlled_recovery_enabled()
+    assert not ops.activation_policy()["production_automatic_enabled"]
+    assert not any(row["system_health_requestable"] for row in ops.operation_catalog())
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE", "0")
+    assert ops.controlled_recovery_enabled()
+    assert [r["operation_id"] for r in ops.operation_catalog() if r["system_health_requestable"]] == ["runtime.consumer.reconnect"]
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE", "1")
+    assert not ops.controlled_recovery_enabled()
+
+
+def test_infrastructure_prepared_reads_do_not_leak_payloads_or_invent_capacity(health):
+    import json
+    from api_fastapi.services import lite_infrastructure_read_model as model
+    with health.connection() as conn:
+        conn.execute("CREATE TABLE phase3b_current_state(domain TEXT, status TEXT, payload_json TEXT, updated_at TEXT)")
+        conn.execute("INSERT INTO phase3b_current_state VALUES(?,?,?,?)",
+                     ("system.processes", "healthy", json.dumps({"items": [
+                         {"name": "pocket-worker", "status": "online", "command": "SECRET_COMMAND"},
+                         {"name": "private-process", "status": "online"}]}), health._now()))
+    result = model.infrastructure()
+    worker = next(row for row in result["services"] if row["id"] == "worker")
+    assert worker["process_status"] == "online"
+    assert worker["functional_readiness"] == "unknown"
+    assert "SECRET_COMMAND" not in json.dumps(result)
+    assert "private-process" not in json.dumps(result)
+    assert result["cleanup"]["estimated_bytes"] is None
+    assert result["cleanup"]["available"] is False
+    assert result["retry_available"] is False
+    assert model.reliability()["observed_availability"] is None
+
+
+def test_correlation_excludes_history_and_never_claims_verified_cause(health):
+    from api_fastapi.services import lite_infrastructure_read_model as model
+    edges = [{"upstream": "nats", "downstream": "worker", "authority": "verified_contract"}]
+    rows = [{"source": "system", "target_id": name, "concern_state": "current_concern", "current_monitoring": True}
+            for name in ("nats", "worker")]
+    assert model.correlate(rows, edges)[0]["cause_confidence"] == "inferred"
+    rows[1]["current_monitoring"] = False
+    assert model.correlate(rows, edges) == []
+
+
+def test_owner_evidence_requires_later_same_generation_fetch(health, monkeypatch):
+    from datetime import datetime, timedelta, timezone
+    from api_fastapi.services import lite_infrastructure_owner_evidence as evidence
+    monkeypatch.setattr(evidence, "connection", health.connection)
+    then = (datetime.now(timezone.utc) - timedelta(seconds=10)).isoformat(timespec="seconds").replace("+00:00", "Z")
+    fetched = (datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat(timespec="seconds").replace("+00:00", "Z")
+    assert evidence.record_consumer_recovery(owner_instance="test-worker", durable="worker",
+        before={"generation": 1}, after={"generation": 1}, started_at=then) is None
+    for _ in range(2):
+        evidence.record_consumer_recovery(owner_instance="test-worker", durable="worker",
+            before={"generation": 1}, after={"generation": 2}, started_at=then)
+    assert evidence.summary()["recorded_count"] == 1
+    assert evidence.summary()["verified_count"] == 0
+    with health.connection() as conn:
+        conn.execute("UPDATE lite_system_health_owner_recovery_evidence SET completed_at=?", (then,))
+    evidence.verify_consumer_recoveries("test-worker", {"generation": 2, "healthy": True, "task_alive": True,
+        "subscription_present": True, "last_fetch_at": fetched})
+    assert evidence.summary()["verified_count"] == 1
+    assert "test-worker" not in str(evidence.history())
+
+
+def test_owner_restart_does_not_verify_previous_worker_execution(health, monkeypatch):
+    from api_fastapi.services import lite_infrastructure_owner_evidence as evidence
+    monkeypatch.setattr(evidence, "connection", health.connection)
+    evidence.record_consumer_recovery(owner_instance="previous", durable="worker", before={"generation": 1},
+                                     after={"generation": 2}, started_at=health._now())
+    evidence.verify_consumer_recoveries("replacement", {"generation": 2, "healthy": True})
+    assert evidence.summary()["verified_count"] == 0
+    assert evidence.summary()["unverified_count"] == 1
