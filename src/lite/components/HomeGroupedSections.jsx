@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
+import { triggerLiteHaptic } from '../../lib/liteNativeFeedback.js';
 
 /**
  * Home-only composition of the existing LiteDetailsPanel portal and scroll owner.
@@ -9,7 +10,7 @@ import { ArrowLeft, ChevronRight } from 'lucide-react';
  */
 export default function HomeGroupedSections({
   groups, section, onSectionChange, defaultSection, navigation,
-  title, children,
+  title, children, haptic = false,
 }) {
   const selected = section || defaultSection;
   const items = groups.flatMap((group) => group.items);
@@ -34,6 +35,7 @@ export default function HomeGroupedSections({
   }, [section, navigation]);
 
   function selectSection(id) {
+    if (haptic) triggerLiteHaptic('tap');
     lastSelectedId.current = id;
     enteredSectionRef.current = true;
     navigation?.reveal?.(true);
@@ -41,6 +43,7 @@ export default function HomeGroupedSections({
   }
 
   function backToIndex() {
+    if (haptic) triggerLiteHaptic('tap');
     returnToIndexRef.current = true;
     navigation?.reveal?.(true);
     onSectionChange(null);

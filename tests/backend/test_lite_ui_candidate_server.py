@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -37,6 +38,13 @@ def test_candidate_manifest_rejects_non_commit_identity():
         candidate.candidate_manifest("not-a-sha")
 
 
+def test_candidate_manifest_can_identify_a_devpc_isolated_runtime(monkeypatch):
+    candidate = _module()
+    monkeypatch.setenv("POCKETLAB_CANDIDATE_RUNTIME_TRANSPORT", "devpc_loopback_isolated_candidate")
+    manifest = candidate.candidate_manifest("a" * 40)
+    assert manifest["runtime_transport"] == "devpc_loopback_isolated_candidate"
+
+
 @pytest.mark.parametrize(
     "path,allowed",
     [
@@ -65,6 +73,59 @@ def test_candidate_proxy_is_lite_api_only(path, allowed):
 def test_candidate_mode_allows_only_diagnosis_write(path, allowed):
     candidate = _module()
     assert candidate.is_allowed_candidate_write(path) is allowed
+
+
+def test_candidate_proxy_forwards_safe_read_nonce(monkeypatch):
+    candidate = _module()
+    nonce = "plr-test-read-12345678"
+    forwarded = {}
+
+    class FakeResponse:
+        status = 200
+        reason = "OK"
+
+        def __init__(self):
+            self.chunks = [b"{}", b""]
+
+        def getheaders(self):
+            return [("Content-Type", "application/json"), ("X-Pocket-Lab-Read-Nonce", nonce)]
+
+        def read(self, _size=-1):
+            return self.chunks.pop(0)
+
+    class FakeConnection:
+        def __init__(self, *_args, **_kwargs):
+            self.response = FakeResponse()
+
+        def request(self, method, path, *, body=None, headers=None):
+            forwarded.update(headers or {})
+            assert method == "GET"
+            assert path == "/api/lite/system-health/summary"
+            assert body is None
+
+        def getresponse(self):
+            return self.response
+
+        def close(self):
+            return None
+
+    class FakeHandler(candidate.CandidateRequestHandler):
+        pass
+
+    handler = object.__new__(FakeHandler)
+    handler.command = "GET"
+    handler.path = "/api/lite/system-health/summary"
+    handler.server = SimpleNamespace(source_commit="a" * 40)
+    handler.headers = {"X-PocketLab-Read-Nonce": nonce}
+    handler.wfile = BytesIO()
+    handler.send_response = lambda *_args: None
+    handler.send_header = lambda *_args: None
+    handler.end_headers = lambda: None
+    monkeypatch.setattr(candidate.http.client, "HTTPConnection", FakeConnection)
+
+    handler._proxy_api()
+
+    assert forwarded["X-PocketLab-Read-Nonce"] == nonce
 
 
 def test_candidate_api_target_is_loopback_tls_and_fail_closed(monkeypatch, tmp_path):

@@ -15,6 +15,7 @@ import {
   GlassCard,
   LiteRefreshButton,
   LiteActionRow,
+  LiteButton,
 } from './LiteUi.jsx';
 import { LiteFreshness, LiteTechnicalFacts } from './LiteUx.jsx';
 import { LiteDetailsPanel } from './LiteOverlay.jsx';
@@ -168,14 +169,14 @@ function HomeSystemHealthSummary({ onNavigate, backendReachable, saved }) {
     <div className="lite-home-section-title"><h2 id="lite-home-system-health-heading">System Health</h2></div>
     <p className="lite-home-muted">{!current ? 'Current system health is not confirmed.' : data?.status === 'healthy' ? 'Observed services are healthy.' : data?.summary || 'Health information needs review.'}</p>
     <div className="lite-home-system-health-facts">
-      <span><strong>{current ? data.healthy_services : '—'}</strong> Healthy services</span>
-      <span><strong>{current ? data.active_problems : '—'}</strong> Active problems</span>
-      <span><strong>{current ? data.automatic_repairs_running : '—'}</strong> Automatic repairs</span>
-      <span><strong>{current ? data.recent_verified_recoveries : '—'}</strong> Verified recoveries</span>
+      <span><strong>{current ? data.healthy_services : '—'}</strong> Healthy signals</span>
+      <span><strong>{current ? (data.current_problems ?? (data.status === 'attention' ? data.active_problems : 0)) : '—'}</strong> Current concerns</span>
+      <span><strong>{current ? (data.saved_problems ?? 0) : '—'}</strong> Older records</span>
+      <span><strong>{current ? data.unknown_services : '—'}</strong> Unknown signals</span>
     </div>
-    <button type="button" className="lite-home-text-action" onClick={() => onNavigate?.('system-health')} aria-label="Open System Health">
+    <LiteButton haptic tone="secondary" className="lite-home-text-action" onClick={() => onNavigate?.('system-health')} ariaLabel="Open System Health">
       Open System Health <ChevronRight size={16} aria-hidden="true" />
-    </button>
+    </LiteButton>
     {error ? <p className="lite-home-muted">Latest health information could not be loaded.</p> : null}
     {loading && !data ? <p className="lite-home-muted">Reading stored health observations…</p> : null}
   </GlassCard>;

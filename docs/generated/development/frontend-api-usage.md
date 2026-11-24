@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 168a86def213a12715f21fbbb4397f042943e6d38a222cda7859a3cf95a939f9
+source_fingerprint: e5767d673673220d48775cba89387a49223c46afd79e312ba71d66c0c4a6d2e6
 schema_revision: 1
 validation_status: generated
 ---
@@ -105,6 +105,7 @@ validation_status: generated
 | src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceDependencies | GET | `/api/lite/system-health/dependencies` | query | no | static |
 | src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceHistory | GET | `/api/lite/system-health/history` | query | no | static |
 | src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceIncidents | GET | `/api/lite/system-health/incidents` | query | no | static |
+| src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceIncident | GET | `/api/lite/system-health/incidents/{param}` | query | no | dynamic |
 | src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceDiagnose | POST | `/api/lite/system-health/incidents/{param}/diagnose` | mutation | no | dynamic |
 | src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligenceKnowledge | GET | `/api/lite/system-health/intelligence` | query | no | static |
 | src/lite/LiteSystemHealth.jsx | liteApi.healthIntelligencePolicies | GET | `/api/lite/system-health/policies` | query | no | static |
@@ -451,7 +452,6 @@ validation_status: generated
 - `/api/lite/security/runs/{run_id}`
 - `/api/lite/security/scan`
 - `/api/lite/system-health/apps/{app_id}`
-- `/api/lite/system-health/incidents/{incident_id}`
 - `/api/lite/system-health/incidents/{incident_id}/decisions`
 - `/api/lite/system-health/incidents/{incident_id}/preflight`
 - `/api/lite/system-health/incidents/{incident_id}/repair`

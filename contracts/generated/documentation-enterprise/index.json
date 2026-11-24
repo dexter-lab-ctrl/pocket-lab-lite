@@ -8946,6 +8946,30 @@
       },
       {
         "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_CANDIDATE_RUNTIME_TRANSPORT",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/ui_performance_candidate_server.py",
+          "tests/backend/test_lite_ui_candidate_server.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "FastAPI",
           "documentation",
           "repository tooling"
@@ -41561,7 +41585,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 532,
+      "page_count": 535,
       "top_level": [
         "start-here",
         "use",
@@ -49445,9 +49469,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "a1e88b7738f226a9c384bf1c562cd96c5863d96fd16088c0ddb2de828cf0fd67",
-        "documentation": "ec11ae61824190c53d741d18a2f47ea3ff2c27dfccf562c3a6846f9844d2a0e1",
+        "documentation": "db1186ac4ab14a975e53272a2352b560b153d13f49921c47402a141d9f69161f",
         "openapi": "38baff15a70648585d6011bf868a4d665931203c92b8affdd708f4d70a2f6fd8",
-        "operational_health": "aec7541d4a33d25f00eac9e13b5bbf03fcd516bd9437b4d7dbb068e71689b59e"
+        "operational_health": "ea003bbb9cf65b358c0943cc1c0afb7687ff0898774bdb9e0ac0a96782fec547"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -125105,5 +125129,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "7cefdcd7eb6d5effedd17a9ff9addeaabb57dd79ee16bcb30a0c083e3e6803c9"
+  "source_fingerprint": "f809952c33bbc4cf32f03884862e1846525db6513a91ebbe1ac6446eed34258f"
 }

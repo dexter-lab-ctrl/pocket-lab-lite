@@ -16398,6 +16398,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/e2e/lite-system-health-visual.spec.ts",
+      "name": "tests/e2e/lite-system-health-visual.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-system-health-visual.spec.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/e2e/lite-system-health.spec.ts",
       "name": "tests/e2e/lite-system-health.spec.ts",
       "source_refs": [
@@ -42087,6 +42098,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/e2e/lite-system-health-visual.spec.ts"
+      ],
+      "id": "rel:672bdec54f65fba9",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-system-health-visual.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:67320e2680842603",
@@ -54805,6 +54830,20 @@
       "id": "rel:9f950198b4aa30e7",
       "source": "ui:liteapp",
       "target": "api:get:/api/lite/catalog",
+      "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:9f95b0a082e21868",
+      "source": "ui:litesystemhealth",
+      "target": "api:get:/api/lite/system-health/incidents/{incident_id}",
       "type": "calls"
     },
     {

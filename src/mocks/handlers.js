@@ -1131,29 +1131,62 @@ function mockPremiumRecoveryProjection(name = 'healthy') {
 
 
 const MOCK_HEALTH_INCIDENT_ID = 'health-111111111111111111111111';
-function mockSystemHealthIncident(resolved = false) {
+function mockSystemHealthIncident(resolved = false, override = {}) {
   return {
     incident_id: MOCK_HEALTH_INCIDENT_ID, source: 'nats', target_id: 'jetstream',
     kind: 'health', state: resolved ? 'resolved' : 'detected',
     severity: 'warning', generation: 1, recurrence_count: 0, observation_count: 2,
     first_seen_at: mockIso(-600000), last_seen_at: mockIso(-60000),
     resolved_at: resolved ? mockIso(-60000) : null, evidence_freshness: 'current',
+    observation_freshness: 'current',
+    latest_observation_status: resolved ? 'healthy' : 'degraded',
+    concern_state: resolved ? 'resolved_observation' : 'current_concern',
     summary: 'Command delivery needs attention.',
     suspected_cause: '', verified_cause: '', cause_confidence: 'unconfirmed',
     repair_available: false, repair_guidance: 'Review the existing protected recovery action.',
+    ...override,
   };
+}
+function mockSystemHealthItems() {
+  const kind = rawScenario();
+  const saved = mockSystemHealthIncident(false, {
+    incident_id: 'health-222222222222222222222222',
+    source: 'agent', target_id: 'pocket-node',
+    last_seen_at: mockIso(-86400000), evidence_freshness: 'stale',
+    observation_freshness: 'stale', concern_state: 'saved_concern',
+    summary: 'A previously recorded device agent issue is awaiting a fresh check.',
+  });
+  const current = mockSystemHealthIncident();
+  if (kind === 'system-health-resolved' || kind === 'system-health-observed-recovery') return [];
+  if (kind === 'system-health-saved-only' || kind === 'system-health-stale' || kind === 'system-health-offline') return [saved];
+  if (kind === 'system-health-mixed') return [current, saved];
+  if (kind === 'system-health-critical') return [mockSystemHealthIncident(false, { severity: 'critical' })];
+  if (kind === 'system-health-malformed-target') return [mockSystemHealthIncident(false, { source: 'agent', target_id: '../../unsafe' })];
+  if (kind === 'system-health-long-identifier') return [mockSystemHealthIncident(false, { source: 'agent', target_id: 'long-synthetic-device-' + 'a'.repeat(78) })];
+  if (kind === 'system-health-many') return Array.from({ length: 30 }, (_, i) =>
+    mockSystemHealthIncident(false, { incident_id: 'health-' + String(i + 1).padStart(24, '0'),
+      source: 'agent', target_id: 'synthetic-node-' + (i + 1) }));
+  if (kind === 'system-health-failed-repair') return [mockSystemHealthIncident(false, { state: 'failed' })];
+  if (kind === 'system-health-blocked-repair') return [mockSystemHealthIncident(false, { state: 'blocked' })];
+  return kind === 'system-health-attention' ? [current] : [];
 }
 function mockSystemHealthSummary() {
   const kind = rawScenario();
-  const stale = kind === 'system-health-stale';
+  const stale = ['system-health-stale', 'system-health-offline', 'system-health-saved-only'].includes(kind);
   const unknown = kind === 'system-health-unknown';
-  const attention = kind === 'system-health-attention';
-  const resolved = kind === 'system-health-resolved';
+  const items = mockSystemHealthItems();
+  const current = stale ? 0 : items.filter(item => item.concern_state === 'current_concern').length;
+  const saved = items.filter(item => item.concern_state === 'saved_concern').length;
+  const attention = current > 0;
+  const resolved = ['system-health-resolved', 'system-health-observed-recovery', 'system-health-verified-repair'].includes(kind);
   return {
     status: stale || unknown ? 'unknown' : attention ? 'attention' : 'healthy',
     checked_at: mockIso(), data_source: 'persisted_projection',
     observed_services: unknown ? 0 : 8, healthy_services: stale || unknown ? 0 : attention ? 7 : 8,
-    active_problems: attention ? 1 : 0, critical_problems: 0,
+    active_problems: items.length, critical_problems: items.filter(item => item.severity === 'critical').length,
+    current_problems: current, saved_problems: saved,
+    current_critical_problems: items.filter(item => item.concern_state === 'current_concern' && item.severity === 'critical').length,
+    unresolved_critical_problems: items.filter(item => item.severity === 'critical').length,
     unknown_services: stale ? 8 : unknown ? 0 : 0,
     automatic_repairs_running: 0, recent_verified_recoveries: 0,
     recent_resolutions: resolved ? [mockSystemHealthIncident(true)] : [],
@@ -1167,8 +1200,7 @@ export const handlers = [
   http.get('/api/lite/system-health/summary', ({ request }) =>
     HttpResponse.json(mockSystemHealthSummary(), { headers: liteSafeReadHeaders(request) })),
   http.get('/api/lite/system-health/incidents', ({ request }) => {
-    const active = rawScenario() === 'system-health-attention';
-    const items = active ? [mockSystemHealthIncident()] : [];
+    const items = mockSystemHealthItems();
     return HttpResponse.json({ items, limit: 30, offset: 0, next_offset: null }, { headers: liteSafeReadHeaders(request) });
   }),
   http.get('/api/lite/system-health/incidents/:incidentId', ({ params }) =>
@@ -1176,8 +1208,16 @@ export const handlers = [
       ? HttpResponse.json(mockSystemHealthIncident(rawScenario() === 'system-health-resolved'))
       : HttpResponse.json({ detail: 'Problem not found' }, { status: 404 })),
   http.get('/api/lite/system-health/history', () => HttpResponse.json({
-    items: rawScenario() === 'system-health-resolved' ? [mockSystemHealthIncident(true)] : [],
-    repairs: [], limit: 30, offset: 0, next_offset: null,
+    items: ['system-health-resolved', 'system-health-observed-recovery', 'system-health-verified-repair'].includes(rawScenario())
+      ? [mockSystemHealthIncident(true)] : mockSystemHealthItems(),
+    repairs: rawScenario() === 'system-health-verified-repair'
+      ? [{ repair_id: 'synthetic-repair-verified', operation_id: 'app.repair',
+        execution_state: 'completed', verification_state: 'verified', safe_summary: 'Synthetic verified recovery fixture.' }]
+      : ['system-health-failed-repair', 'system-health-blocked-repair'].includes(rawScenario())
+        ? [{ repair_id: 'synthetic-repair-outcome', operation_id: 'app.repair',
+          execution_state: rawScenario() === 'system-health-failed-repair' ? 'failed' : 'blocked',
+          verification_state: 'not_started', safe_summary: 'Synthetic non-success recovery fixture.' }] : [],
+    limit: 30, offset: 0, next_offset: null,
   })),
   http.get('/api/lite/system-health/dependencies', () => HttpResponse.json({
     nodes: [{ source: 'nats', target_id: 'jetstream', status: rawScenario() === 'system-health-attention' ? 'degraded' : 'healthy', observed_at: mockIso(-60000), freshness: 'current', authority: 'verified_runtime' }],

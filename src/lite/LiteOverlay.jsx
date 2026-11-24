@@ -1,3 +1,4 @@
+import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Move, Maximize2, RotateCcw } from 'lucide-react';
@@ -273,6 +274,7 @@ export function LiteSheet({
   variant = 'manage',
   motion = 'none',
   mobileSnap = false,
+  hapticNavigation = false,
   mobileHeaderVariant = 'default',
 }) {
   const generatedId = useId();
@@ -410,10 +412,10 @@ export function LiteSheet({
             {headerActions}
             {mobileSheet.active ? <div className="lite-sheet-mobile-snap-actions" role="group" aria-label="Sheet size">
               <span className="sr-only" aria-live="polite">Sheet size: {mobileSheet.state}</span>
-              <button type="button" className={mobileSheet.state === 'compact' ? 'is-active' : ''} aria-pressed={mobileSheet.state === 'compact'} onClick={mobileSheet.contract} disabled={!mobileSheet.canContract}>Compact</button>
-              <button type="button" className={mobileSheet.state === 'expanded' ? 'is-active' : ''} aria-pressed={mobileSheet.state === 'expanded'} onClick={mobileSheet.expand} disabled={!mobileSheet.canExpand}>Expand</button>
+              <button type="button" className={mobileSheet.state === 'compact' ? 'is-active' : ''} aria-pressed={mobileSheet.state === 'compact'} onClick={() => { if (hapticNavigation) triggerLiteHaptic('tap'); mobileSheet.contract(); }} disabled={!mobileSheet.canContract}>Compact</button>
+              <button type="button" className={mobileSheet.state === 'expanded' ? 'is-active' : ''} aria-pressed={mobileSheet.state === 'expanded'} onClick={() => { if (hapticNavigation) triggerLiteHaptic('tap'); mobileSheet.expand(); }} disabled={!mobileSheet.canExpand}>Expand</button>
             </div> : null}
-            <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={onClose} aria-label={variantClasses.closeLabel} {...closeLabelOverride}>
+            <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={() => { if (hapticNavigation) triggerLiteHaptic('tap'); onClose?.(); }} aria-label={variantClasses.closeLabel} {...closeLabelOverride}>
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -443,14 +445,14 @@ export function LiteDesktopPanelControls({ title = 'Details', geometry, desktopT
 export function LiteDetailsPanel({
   open, onClose, title = 'Details', description = '', bodyRef, bodyClassName = '',
   children, variant = 'manage', className = '', desktopGeometry, mobileSnap = false,
-  desktopToolLabels = false, closeLabel,
+  desktopToolLabels = false, closeLabel, hapticNavigation = false,
 }) {
   const { panelRef, desktopPanel, panelStyle } = desktopGeometry || {};
   const tools = desktopPanel ? <LiteDesktopPanelControls title={title}
     desktopToolLabels={desktopToolLabels} geometry={desktopGeometry} /> : null;
   return (
     <LiteSheet open={open} onClose={onClose} title={title} eyebrow="Action Details"
-      description={description} variant={variant} headerActions={tools} mobileSnap={mobileSnap && !desktopPanel}
+      description={description} variant={variant} headerActions={tools} mobileSnap={mobileSnap && !desktopPanel} hapticNavigation={hapticNavigation}
       closeLabel={closeLabel}
       layerClassName={`lite-details-overlay-layer ${variant === 'home' ? 'lite-home-panel-layer' : ''}`}
       className={`lite-details-panel ${className} ${desktopPanel ? 'is-movable' : ''}`.trim()}

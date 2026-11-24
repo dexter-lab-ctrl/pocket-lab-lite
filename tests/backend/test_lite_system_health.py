@@ -126,3 +126,94 @@ def test_anonymous_system_health_incident_read_is_denied():
             "/api/lite/system-health/incidents/health-111111111111111111111111/diagnose"
         )
         assert attempt.status_code == 401
+
+
+# H1 source qualification: author only, never execute in this implementation session.
+def test_fresh_vs_saved_incidents_are_counted_separately(health):
+    assert health.ingest_projection("system.nats_remote", observed_nats("degraded", 1)) == 1
+    initial = health.summary()
+    assert initial["current_problems"] == 1
+    assert initial["saved_problems"] == 0
+    assert initial["active_problems"] == 1  # legacy unresolved count remains stable
+    assert health.incidents()["items"][0]["concern_state"] == "current_concern"
+
+    # A newer unknown observation cannot remove the unresolved lifecycle record.
+    assert health.ingest_projection("system.nats_remote", observed_nats("unknown", 2)) == 0
+    newer = health.summary()
+    assert newer["current_problems"] == 0
+    assert newer["saved_problems"] == 1
+    assert newer["active_problems"] == 1
+    assert newer["status"] == "unknown"
+    assert health.incidents()["items"][0]["concern_state"] == "saved_concern"
+
+
+def test_stale_critical_incident_is_not_current_or_resolved(health):
+    health.ingest_projection("system.nats_remote", observed_nats("unavailable"))
+    original = health.incidents()["items"][0]
+    assert original["severity"] == "critical"
+    with health.connection() as conn:
+        conn.execute(
+            "UPDATE lite_system_health_observations SET observed_at='2001-01-01T00:00:00Z'"
+        )
+        conn.execute(
+            "UPDATE lite_system_health_incidents SET last_seen_at='2001-01-01T00:00:00Z'"
+        )
+    current = health.summary()
+    assert current["current_problems"] == 0
+    assert current["saved_problems"] == 1
+    assert current["critical_problems"] == 1
+    assert current["unresolved_critical_problems"] == 1
+    assert current["status"] == "unknown"
+    incident = health.incident(original["incident_id"])
+    assert incident["state"] == "detected"
+    assert incident["generation"] == original["generation"]
+    assert incident["concern_state"] == "saved_concern"
+
+
+@pytest.mark.parametrize("domain,field", [
+    ("system.agent", "items"),
+    ("system.supervisor", "items"),
+    ("system.processes", "items"),
+    ("system.telemetry_thresholds", "devices"),
+])
+def test_malformed_projection_collection_cannot_create_incidents(health, domain, field):
+    for invalid in ("abc", {"3": {"device_id": "3"}}, 5, None):
+        assert health.ingest_projection(domain, {field: invalid, "generation": 1}) == 0
+    assert health.incidents()["items"] == []
+
+
+def test_short_but_explicit_valid_device_identity_is_preserved(health):
+    payload = {"items": [{"device_id": "3", "connection_state": "offline",
+                          "command_deliverable": False}], "generation": 1}
+    assert health.ingest_projection("system.agent", payload) == 1
+    assert health.incidents()["items"][0]["target_id"] == "3"
+    assert health.incidents()["items"][0]["concern_state"] == "current_concern"
+    assert health.ingest_projection("system.agent", {"items": [
+        {"device_id": "../../private", "connection_state": "offline"},
+        {"device_id": 3, "connection_state": "offline"},
+        {"device_id": "", "connection_state": "offline"},
+    ], "generation": 2}) == 0
+
+
+def test_malformed_consumer_names_are_not_converted_to_fake_targets(health):
+    payload = {"status": "healthy", "generation": 1,
+               "durable_consumer_health": {
+                   "consumer-safe": {"healthy": False},
+                   "../../unsafe": {"healthy": False},
+                   3: {"healthy": False},
+               }}
+    assert health.ingest_projection("system.nats_remote", payload) == 1
+    assert health.incidents()["items"][0]["target_id"] == "consumer:consumer-safe"
+
+
+def test_observed_healthy_transition_is_not_verified_repair(health):
+    health.ingest_projection("system.nats_remote", observed_nats("degraded", 1))
+    incident_id = health.incidents()["items"][0]["incident_id"]
+    health.ingest_projection("system.nats_remote", observed_nats("healthy", 2))
+    item = health.incident(incident_id)
+    assert item["state"] == "resolved"
+    assert item["concern_state"] == "resolved_observation"
+    assert health.summary()["recent_verified_recoveries"] == 0
+    assert health.policy()["engine_auto_repair"] is False
+    assert health.repair_preflight(incident_id, "runtime.consumer.reconnect",
+                                   item["generation"])["allowed"] is False

@@ -8,14 +8,14 @@ const cdpUrl = String(process.env.LITE_ANDROID_CDP_URL || 'http://127.0.0.1:1922
 const baseUrl = String(process.env.LITE_BASE_URL || 'http://127.0.0.1:18765').trim();
 const commit = String(process.env.LITE_PERF_SOURCE_COMMIT || '').trim().toLowerCase();
 const bridge = String(process.env.POCKETLAB_HARNESS_BROWSER_BRIDGE || '').trim();
-const outputDir = resolve(process.env.LITE_SYSTEM_HEALTH_ANDROID_OUTPUT_DIR || '.pocketlab-dev/validation/pr649-system-health-android-ui');
+const qualificationId = String(process.env.LITE_SYSTEM_HEALTH_ANDROID_QUALIFICATION_ID || 'pr656-system-health-android-ui').trim().toLowerCase();
+const expectedRuntimeTransport = String(process.env.LITE_EXPECTED_RUNTIME_TRANSPORT || 'ssh_loopback_to_isolated_phone_candidate').trim().toLowerCase();
+const outputDir = resolve(process.env.LITE_SYSTEM_HEALTH_ANDROID_OUTPUT_DIR || `.pocketlab-dev/validation/${qualificationId}`);
 
 let browser;
 let page;
 let context;
-const requests = [];
-const responses = [];
-const requestFailures = [];
+const pageObservations = new Map();
 
 function fail(message) {
   throw new Error(String(message));
@@ -51,7 +51,20 @@ function safePath(url) {
 async function waitForSystemHealth() {
   await page.locator('[data-system-health-page="true"]').waitFor({ state: 'visible', timeout: 30_000 });
   await page.locator('[data-health-incident]').first().waitFor({ state: 'visible', timeout: 30_000 });
-  await page.getByRole('heading', { name: 'Active Problems', exact: true }).waitFor({ state: 'visible', timeout: 10_000 });
+  await page.getByRole('heading', { name: 'What needs attention', exact: true }).waitFor({ state: 'visible', timeout: 10_000 });
+}
+
+async function activateCandidatePage() {
+  await page.bringToFront().catch(() => {});
+  if (!context || !page) return;
+  try {
+    const session = await context.newCDPSession(page);
+    await session.send('Page.bringToFront').catch(() => {});
+    await session.detach().catch(() => {});
+  } catch {
+    // Android Chrome may not expose a detachable Page session for every target.
+    // Playwright's bringToFront above remains the normal activation path.
+  }
 }
 
 async function proveManifest(expectedCommit) {
@@ -61,7 +74,7 @@ async function proveManifest(expectedCommit) {
   });
   if (!response?.ok()) fail('Android candidate manifest was not reachable');
   const manifest = JSON.parse(await page.locator('body').innerText());
-  if (manifest.source_commit !== expectedCommit || manifest.sanitized !== true || manifest.runtime_transport !== 'ssh_loopback_to_isolated_phone_candidate') {
+  if (manifest.source_commit !== expectedCommit || manifest.sanitized !== true || manifest.runtime_transport !== expectedRuntimeTransport) {
     fail('Android candidate manifest did not prove the isolated exact-SHA runtime');
   }
   if (response.headers()['x-pocket-lab-candidate-sha'] !== expectedCommit) fail('Android manifest response SHA header was incorrect');
@@ -70,6 +83,8 @@ async function proveManifest(expectedCommit) {
 
 async function main() {
   const expectedCommit = exactCommit();
+  if (!/^[a-z][a-z0-9_-]{2,79}$/.test(qualificationId)) fail('Android System Health qualification ID is invalid');
+  if (!/^[a-z][a-z0-9_-]{2,79}$/.test(expectedRuntimeTransport)) fail('Android candidate runtime transport is invalid');
   const cdp = localEndpoint(cdpUrl, 'LITE_ANDROID_CDP_URL', 19222);
   const base = localEndpoint(baseUrl, 'LITE_BASE_URL', 18765);
   if (bridge.length < 32 || bridge.length > 128 || /[\r\n]/.test(bridge)) fail('A short-lived browser bridge is required');
@@ -89,53 +104,87 @@ async function main() {
   if (!contexts.length) fail('Android Chrome exposed no browser context');
   context = contexts[0];
   await context.setExtraHTTPHeaders({ 'X-Pocket-Lab-Qualification-Bridge': bridge });
-  page = await context.newPage();
-  page.on('request', (request) => {
-    const path = safePath(request.url());
-    if (path.startsWith('/api/lite/system-health/')) requests.push({ method: request.method(), path });
-  });
-  page.on('response', (response) => {
-    const path = safePath(response.url());
-    if (!path.startsWith('/api/lite/system-health/')) return;
-    const headers = response.headers();
-    responses.push({ method: response.request().method(), path, status: response.status(), candidate_sha: headers['x-pocket-lab-candidate-sha'] || '' });
-  });
-  page.on('requestfailed', (request) => {
-    const path = safePath(request.url());
-    if (path.startsWith('/api/lite/')) requestFailures.push({ method: request.method(), path, failure: 'request_failed' });
-  });
+  const candidateOrigin = new URL(baseUrl).origin;
+  const existingCandidatePages = context.pages().filter((candidatePage) => candidatePage.url().startsWith(candidateOrigin));
+  page = existingCandidatePages[existingCandidatePages.length - 1] || await context.newPage();
+  const candidatePages = [...new Set([...existingCandidatePages, page])];
 
-  await page.goto(new URL('/?pocketlab_qualification_bootstrap=1', base).toString(), { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  await page.evaluate(async () => {
-    const registrations = await navigator.serviceWorker?.getRegistrations?.() || [];
-    await Promise.all(registrations.map((registration) => registration.unregister()));
-    if ('caches' in window) {
-      const names = await caches.keys();
-      await Promise.all(names.map((name) => caches.delete(name)));
+  function observeCandidatePage(candidatePage) {
+    if (pageObservations.has(candidatePage)) return pageObservations.get(candidatePage);
+    const observation = { requests: [], responses: [], requestFailures: [] };
+    pageObservations.set(candidatePage, observation);
+    candidatePage.on('request', (request) => {
+      const path = safePath(request.url());
+      if (path.startsWith('/api/lite/system-health/')) observation.requests.push({ method: request.method(), path });
+    });
+    candidatePage.on('response', (response) => {
+      const path = safePath(response.url());
+      if (!path.startsWith('/api/lite/system-health/')) return;
+      const headers = response.headers();
+      observation.responses.push({ method: response.request().method(), path, status: response.status(), candidate_sha: headers['x-pocket-lab-candidate-sha'] || '' });
+    });
+    candidatePage.on('requestfailed', (request) => {
+      const path = safePath(request.url());
+      if (path.startsWith('/api/lite/')) observation.requestFailures.push({ method: request.method(), path, failure: 'request_failed' });
+    });
+    return observation;
+  }
+
+  // Android Chrome can retain several exact-origin candidate tabs. A tab can
+  // expose truthful DOM and manifest responses while remaining a background
+  // target that never starts the app's API requests. Try every retained
+  // candidate target, preferring the most recently exposed one, and keep the
+  // target that actually renders System Health in the foreground.
+  let manifest;
+  let selectedObservation;
+  let selectedCandidate = false;
+  let lastCandidateError;
+  for (const candidatePage of [...candidatePages].reverse()) {
+    page = candidatePage;
+    observeCandidatePage(candidatePage);
+    try {
+      await activateCandidatePage(candidatePage);
+      await candidatePage.goto(new URL('/?pocketlab_qualification_bootstrap=1', base).toString(), { waitUntil: 'domcontentloaded', timeout: 30_000 });
+      await candidatePage.evaluate(async () => {
+        const registrations = await navigator.serviceWorker?.getRegistrations?.() || [];
+        await Promise.all(registrations.map((registration) => registration.unregister()));
+        if ('caches' in window) {
+          const names = await caches.keys();
+          await Promise.all(names.map((name) => caches.delete(name)));
+        }
+      });
+      const candidateManifest = await proveManifest(expectedCommit);
+      const landing = await candidatePage.goto(new URL('/?screen=system-health', base).toString(), { waitUntil: 'domcontentloaded', timeout: 30_000 });
+      if (!landing?.ok() || landing.headers()['x-pocket-lab-candidate-sha'] !== expectedCommit) fail('Android System Health page did not prove the exact candidate SHA');
+      if (await candidatePage.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content') !== expectedCommit) fail('Android System Health metadata did not prove the exact candidate SHA');
+      await waitForSystemHealth();
+      manifest = candidateManifest;
+      selectedObservation = pageObservations.get(candidatePage);
+      selectedCandidate = true;
+      break;
+    } catch (error) {
+      lastCandidateError = error;
     }
-  });
-  const manifest = await proveManifest(expectedCommit);
-  const landing = await page.goto(new URL('/?screen=system-health', base).toString(), { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  if (!landing?.ok() || landing.headers()['x-pocket-lab-candidate-sha'] !== expectedCommit) fail('Android System Health page did not prove the exact candidate SHA');
-  if (await page.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content') !== expectedCommit) fail('Android System Health metadata did not prove the exact candidate SHA');
-  await waitForSystemHealth();
+  }
+  if (!selectedCandidate) {
+    fail(`Android Chrome candidate tabs did not expose a foreground System Health page: ${String(lastCandidateError?.message || lastCandidateError || 'unknown target error').slice(0, 240)}`);
+  }
   await page.screenshot({ path: resolve(outputDir, 'system-health-landing.png'), fullPage: true });
 
   const incident = page.locator('[data-health-incident]').first();
   const incidentId = await incident.getAttribute('data-health-incident');
   if (!/^health-[0-9a-f]{24}$/.test(String(incidentId || ''))) fail('Android System Health did not expose a generation-bound incident');
-  await incident.getByRole('button', { name: 'Diagnose & Fix', exact: true }).click();
+  await incident.getByRole('button', { name: 'Review issue', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.waitFor({ state: 'visible', timeout: 10_000 });
   await Promise.all([
     page.waitForResponse((response) => response.request().method() === 'POST' && safePath(response.url()) === `/api/lite/system-health/incidents/${incidentId}/diagnose` && response.status() === 200, { timeout: 30_000 }),
     dialog.getByRole('button', { name: 'Check cause', exact: true }).click(),
   ]);
-  const fixButton = dialog.getByRole('button', { name: /^Fix/ });
-  await fixButton.waitFor({ state: 'visible', timeout: 10_000 });
-  if (!(await fixButton.isDisabled())) fail('System Health Fix action was not disabled');
+  if (await dialog.getByRole('button', { name: /^Fix/ }).count()) fail('System Health exposed an unsupported Fix action');
   await page.screenshot({ path: resolve(outputDir, 'system-health-diagnosis.png'), fullPage: true });
 
+  const { requests, responses, requestFailures } = selectedObservation;
   const forbiddenWrites = requests.filter((item) => item.method === 'POST' && (item.path.endsWith('/repair') || item.path.endsWith('/preflight')));
   if (forbiddenWrites.length) fail('Android System Health UI attempted an unauthorized repair or preflight write');
   if (requestFailures.length) fail('Android System Health API request failed');
@@ -154,13 +203,13 @@ async function main() {
     android_chrome: { browser: String(version.Browser || ''), protocol_version: String(version['Protocol-Version'] || ''), package: String(version['Android-Package'] || ''), websocket_loopback: true },
     candidate_manifest: manifest,
     candidate_api_backend_verified: true,
-    system_health: { landing: true, active_incident: incidentId, diagnosis_post_status: 200, manage_open: true, fix_disabled: true, repair_execution: false, preflight_execution: false, home_return: true },
+    system_health: { landing: true, active_incident: incidentId, review_issue_open: true, diagnosis_post_status: 200, manage_open: true, recovery_action_exposed: false, repair_execution: false, preflight_execution: false, home_return: true },
     api_response_count: responses.length,
     api_response_paths: [...new Set(responses.map((item) => item.path))].sort(),
     screenshots: ['system-health-landing.png', 'system-health-diagnosis.png', 'home-system-health-summary.png'],
     sanitized: true,
   };
-  const evidencePath = resolve(outputDir, `pr649-system-health-android-ui-${expectedCommit.slice(0, 12)}.json`);
+  const evidencePath = resolve(outputDir, `${qualificationId}-${expectedCommit.slice(0, 12)}.json`);
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
   console.log(JSON.stringify({ status: 'PASS', evidence: basename(evidencePath), candidate_sha: expectedCommit, android_chrome: evidence.android_chrome, system_health: evidence.system_health }, null, 2));
 }

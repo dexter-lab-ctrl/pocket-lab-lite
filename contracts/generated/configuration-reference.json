@@ -2736,6 +2736,24 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_CANDIDATE_RUNTIME_TRANSPORT",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/ui_performance_candidate_server.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
         "pocket-lab-final-structure",
         "scripts"
       ],
@@ -19535,7 +19553,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "32c10f9b9e018cda850d114b8ff773d873f8706f27f435f7062250dac8faea75",
+    "aggregate_fingerprint": "54a2839a3e31ecb16b5c8f899c0068e78f964d0c4bf1203f1928da42c5272570",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -19677,7 +19695,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py": "d85235198dd1b8366276a0660f1bda33eb1e7d9f2452fc25f993cff50ad342bc",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_storage_faults.py": "41bea79d33cf41b184235ccdd9c825b42c717eb82c3287dee5ae9bd58fc1972e",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_storage_guard.py": "57b16f747bd3643add6c5351acb83e34c374af6e0778fca7f71a51c1fd27a9e2",
-      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py": "6ab8fed33d321d7fecc88e8147efc82f31bba31ea5429b53ff0cf5be7d41d686",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py": "54cd83a38c1ad83dc6ac07e7af65cecdc71d3d0259518509c81865fc4587f3b9",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_webauthn.py": "92031b51af43d78839be3678b64e06eb7ed811db86dcc1bba87ea5d66639ee47",
       "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py": "ec004e6970fc322899dcbca6c4604fbbd3abec40e1f8441772e3c530ccd17766",
       "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py": "40bf8bb41a113eea49c88486949a09ad39d2fcb46f02b8d8635e318c912d1b99",

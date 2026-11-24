@@ -46,6 +46,7 @@ CANDIDATE_HEALTH_PATH = "/__pocketlab_qualification__/health"
 CANDIDATE_CONTROL_PATH = "/__pocketlab_qualification__/baseline-control.html"
 BRIDGE_HEADER = "X-Pocket-Lab-Qualification-Bridge"
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+RUNTIME_TRANSPORT_RE = re.compile(r"^[a-z][a-z0-9_-]{2,79}$")
 MAX_BRIDGE_HEADER_BYTES = 4096
 MAX_PROXY_RESPONSE_BYTES = 32 * 1024 * 1024
 MAX_PROXY_REQUEST_BYTES = 64 * 1024
@@ -90,11 +91,7 @@ def exact_source_commit(value: str | None = None) -> str:
 
 def candidate_manifest(source_commit: str) -> dict[str, Any]:
     commit = exact_source_commit(source_commit)
-    runtime_transport = (
-        "ssh_loopback_to_isolated_phone_candidate"
-        if os.environ.get("POCKETLAB_CANDIDATE_API_LOCAL_PORT")
-        else "ssh_loopback_to_server_phone_caddy"
-    )
+    runtime_transport = candidate_runtime_transport()
     return {
         "schema_version": "1.0.0",
         "source_commit": commit,
@@ -105,6 +102,20 @@ def candidate_manifest(source_commit: str) -> dict[str, Any]:
         "browser_secret_persisted": False,
         "sanitized": True,
     }
+
+
+def candidate_runtime_transport() -> str:
+    """Return the explicit runtime transport represented by this candidate."""
+    override = os.environ.get("POCKETLAB_CANDIDATE_RUNTIME_TRANSPORT", "").strip().lower()
+    if override:
+        if not RUNTIME_TRANSPORT_RE.fullmatch(override):
+            raise CandidateServerError("candidate_runtime_transport_invalid")
+        return override
+    return (
+        "ssh_loopback_to_isolated_phone_candidate"
+        if os.environ.get("POCKETLAB_CANDIDATE_API_LOCAL_PORT")
+        else "ssh_loopback_to_server_phone_caddy"
+    )
 
 
 def is_allowed_api_path(path: str) -> bool:
@@ -291,7 +302,12 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
             return
 
         headers = {"Accept": self.headers.get("Accept", "application/json")[:256]}
-        for name in ("Cache-Control", "If-None-Match", "Last-Event-ID"):
+        # Safe-read requests use a non-secret nonce to distinguish a live
+        # backend response from a service-worker/HTTP-cache response. The
+        # candidate proxy must preserve that transport contract end to end;
+        # otherwise the browser correctly falls back to its saved snapshot
+        # even when the isolated backend returned current evidence.
+        for name in ("Cache-Control", "If-None-Match", "Last-Event-ID", "X-PocketLab-Read-Nonce"):
             value = self.headers.get(name)
             if value:
                 headers[name] = value[:512]
@@ -382,7 +398,7 @@ def serve_candidate(dist_dir: Path, source_commit: str) -> None:
                 "status": "READY",
                 "bind": f"{CANDIDATE_HOST}:{CANDIDATE_PORT}",
                 "source_commit": source_commit,
-                "runtime_transport": "ssh_loopback_to_isolated_phone_candidate" if candidate_api_mode_enabled() else "ssh_loopback_to_server_phone_caddy",
+                "runtime_transport": candidate_runtime_transport(),
                 "browser_secret_persisted": False,
                 "sanitized": True,
             },

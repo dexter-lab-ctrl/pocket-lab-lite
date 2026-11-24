@@ -1169,6 +1169,20 @@
           "src/lite/LiteSystemHealth.jsx",
           "src/lib/liteApi.js"
         ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.healthIntelligenceIncident",
+        "resolved": true,
+        "route": "/api/lite/system-health/incidents/{param}",
+        "source_module": "src/lite/LiteSystemHealth.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteSystemHealth.jsx",
+          "src/lib/liteApi.js"
+        ],
         "method": "POST",
         "mocked": false,
         "owner": "liteApi.healthIntelligenceDiagnose",
@@ -3887,7 +3901,6 @@
       "/api/lite/security/runs/{run_id}",
       "/api/lite/security/scan",
       "/api/lite/system-health/apps/{app_id}",
-      "/api/lite/system-health/incidents/{incident_id}",
       "/api/lite/system-health/incidents/{incident_id}/decisions",
       "/api/lite/system-health/incidents/{incident_id}/preflight",
       "/api/lite/system-health/incidents/{incident_id}/repair",
@@ -3903,7 +3916,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "2f9e6479e37999c19e7261a74baf90e07e539f7eb99aeae8c577a686ece2e063",
+    "aggregate_fingerprint": "95da5180f6b2252e64321b48a3c8f467c165c3c5dc898b97849170093a48e967",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3927,7 +3940,7 @@
       "src/lite/LiteDevices.jsx": "ab0f20d897c5aa26c132c9bd27fe77540fb414923992d56cc039764d8da8bda5",
       "src/lite/LiteDevices.stories.jsx": "1c65d09941343fb754748f57fcb9fb5200037f22f60741727f39d7a9a3d8bcab",
       "src/lite/LiteHelp.jsx": "06af915a9e7f9781ac852804a5d7ab40f5a061c12c8b80b3c888b11b94167a4c",
-      "src/lite/LiteHome.jsx": "e85d67bcacf7fa4b2273d7090b98b477ed191aaf8bff094ddc23cfceacbcd648",
+      "src/lite/LiteHome.jsx": "b791f80c66e28aac77f811dfc7ddad5928197ba6fcff6717450aaeb24196d885",
       "src/lite/LiteHome.stories.jsx": "61e87703baafbcbde1f6a730480c5f264eae1af00073962dc95827993dcd66b6",
       "src/lite/LiteHome.test.jsx": "cdc0c9f72794de08810f46903caef1a46e136b06286217ee8b58594c8e26ab5a",
       "src/lite/LiteHomeAzure.test.jsx": "304fb3af4c3a39909f9710801c44c22d690cfb4d91271f3deb1d6ebcbf36d1b1",
@@ -3938,7 +3951,7 @@
       "src/lite/LiteIdentityEnterprise.jsx": "9fb3549c7c6c806ae7b8595157a4b155cc20597b1d1b343cdbdaa80371da0bb3",
       "src/lite/LiteMotion.jsx": "cc27a120e0e2ddcc986bb137776d1e2a586df7bee3569f4662e513b571d43b45",
       "src/lite/LiteNativeInstallSurface.jsx": "27366c82bfe0a8e99ddfc87f62fb9960f72d8a50eb48f5dbb2c89a94a1fcae61",
-      "src/lite/LiteOverlay.jsx": "31af379fb90273647bb5b8fc2f3a7d378014319ba3c54bbb7b19034443947f30",
+      "src/lite/LiteOverlay.jsx": "06d22fcac9c5b44f80c8793823764740468f45608667076bfdbdbeb8f51de419",
       "src/lite/LiteOverlayUnified.test.jsx": "a01e65b63a2c9219e1db3d02907fc1aafb503bc216a3a569d019c3fc04b3ad3a",
       "src/lite/LiteP2.stories.jsx": "f66e0f95c35fb98e41958542676821d9dfd89331e5ebfc3ba7de6a575ea47577",
       "src/lite/LiteP3.stories.jsx": "f6d4a3d8e0e3a6f2b97e3462098fc84c9f99ddbaddeae5844c1ed9eb0926005e",
@@ -3955,15 +3968,15 @@
       "src/lite/LiteSecurity.jsx": "8c316074e2fdfa67405fbafb678c06aad9e97adaeb9c30181a95f95ed5ea4074",
       "src/lite/LiteSecurity.stories.jsx": "447e7d25c5669fa9b1af095afc6bc75bf70c1461bc37b3df9ccc23ac24fd29d0",
       "src/lite/LiteServiceWorkerUpdateNotice.jsx": "450c8d4f9d858bcfd2781e55ae52101c8f37bc57deceb1dbe847c775ffc2288a",
-      "src/lite/LiteSystemHealth.jsx": "dbf58c33f4d9324fda5e3de6b9ab52924195d5066441a0ba6e101d82416fcc55",
-      "src/lite/LiteSystemHealth.stories.jsx": "cd0f4c3089c8df13b20bbdd7698d663cad52cc743689dacaab8f40697ae70fb5",
-      "src/lite/LiteSystemHealth.test.jsx": "2ea14e4f0d44f1878be2b8be53dc0fc5e8321e7190a851f5659a1eb3ca1433a7",
+      "src/lite/LiteSystemHealth.jsx": "a6ed97cbf23610c181a7d9124e498c0709579ba8b6246b62ce25f302cbcd8953",
+      "src/lite/LiteSystemHealth.stories.jsx": "cf8ba49540391bcc63e70dc37b230c0d491482085f3352044744cb8a330a872b",
+      "src/lite/LiteSystemHealth.test.jsx": "d51fd0e6e07e3fc8b74780b31ad022466a438267650868592d4618416ae70164",
       "src/lite/LiteToastHost.jsx": "4f06f72d896b56b05e9e4e9bded54c077128cff3a52bb6a3ecf2a52a83214995",
-      "src/lite/LiteUi.jsx": "45d242fb51c6441659d51face499e55500541ce49e6b50f04710726e777b3b83",
+      "src/lite/LiteUi.jsx": "4aac25020333e0c6413f778201810210375047a080954460d85d561f426b281b",
       "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "f093c59d1866f706dbeb2f54472d42e67fcfce624c99bd342c5c5297ce63f4ac",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "213931b23ad569ef94aafda0d98ac5b165c185bb3bdc642458a2c4dcfd50ea06"
+      "src/mocks/handlers.js": "6b9f6480bd3a6576bdd97e774e708e13bc15167333acf5bab64f136de5f32037"
     },
     "validation_state": "generated"
   }

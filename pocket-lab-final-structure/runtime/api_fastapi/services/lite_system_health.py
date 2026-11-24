@@ -7,6 +7,7 @@ with existing supervisors/agents/workers, not this module.
 from __future__ import annotations
 
 import hashlib
+import re
 import uuid
 import sqlite3
 from datetime import datetime, timezone
@@ -16,7 +17,7 @@ from contextlib import closing
 from ..db.connection import begin_immediate, connection, open_fast_read_connection
 
 ACTIVE = frozenset({"detected", "diagnosing", "diagnosed", "repair_available", "repairing", "verifying", "blocked", "failed", "manual_attention_required"})
-UNHEALTHY = frozenset({"errored", "read_only", "recovery_required", "watch", "elevated", "storage_pressure", "degraded", "unavailable", "unhealthy", "critical", "offline", "stopped", "missing", "errored", "failed", "attention", "pressure"})
+UNHEALTHY = frozenset({"errored", "read_only", "recovery_required", "watch", "elevated", "storage_pressure", "degraded", "unavailable", "unhealthy", "critical", "offline", "stopped", "missing", "errored", "failed", "attention", "pressure", "agent_stopped_without_supervisor"})
 HEALTHY = frozenset({"normal", "healthy", "online", "ready", "running", "connected"})
 UNKNOWN = frozenset({"unknown", "stale", "unverified", "pending", "unsupported", "not_ready"})
 OBSERVATION_MAX_AGE_SECONDS = 300
@@ -59,6 +60,24 @@ def _safe(value: Any, limit: int = 180) -> str:
     return "".join(c for c in value if 32 <= ord(c) <= 126)[:limit]
 
 
+# Projections contain lists of typed records, never iterable device names.
+# Reject unsafe identities but allow legitimately short identifiers.
+_TARGET_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,119}")
+
+
+def _target_id(value: Any, limit: int = 100) -> str:
+    if not isinstance(value, str) or len(value) > limit:
+        return ""
+    return value if _TARGET_ID.fullmatch(value) else ""
+
+
+def _records(payload: dict[str, Any], field: str) -> list[dict[str, Any]]:
+    entries = payload.get(field)
+    if not isinstance(entries, list):
+        return []
+    return [item for item in entries[:64] if isinstance(item, dict)]
+
+
 def _status(value: Any) -> str:
     normalized = _safe(value, 32).lower()
     return normalized if normalized in UNHEALTHY | HEALTHY | UNKNOWN | {"watch", "elevated", "recovering", "maintenance", "active", "read_only"} else "unknown"
@@ -92,15 +111,18 @@ def _observations(domain: str, payload: dict[str, Any]):
     if not source or not isinstance(payload, dict):
         return
     if domain == "system.health":
-        for target, value in sorted((payload.get("components") or {}).items()):
+        components = payload.get("components") if isinstance(payload.get("components"), dict) else {}
+        for target in ("agent", "api", "nats", "processes", "remote_access",
+                       "sqlite", "storage", "supervisor", "telemetry"):
+            if target not in components:
+                continue
+            value = components[target]
             if target in {"api", "nats", "processes", "agent", "supervisor", "remote_access", "storage", "sqlite", "telemetry"}:
                 yield ("system", target, _status(value), "Component health requires review.")
         return
     if domain in {"system.agent", "system.supervisor"}:
-        for item in (payload.get("items") or [])[:64]:
-            if not isinstance(item, dict):
-                continue
-            target = _safe(item.get("device_id"), 100)
+        for item in _records(payload, "items"):
+            target = _target_id(item.get("device_id"))
             if not target:
                 continue
             raw = item.get("connection_state") if domain == "system.agent" else item.get("state")
@@ -114,10 +136,8 @@ def _observations(domain: str, payload: dict[str, Any]):
             lite_app_registry.app_definition(app_id).process: app_id
             for app_id in lite_app_registry.app_ids()
         }
-        for item in (payload.get("items") or [])[:64]:
-            if not isinstance(item, dict):
-                continue
-            target = _safe(item.get("name"), 100)
+        for item in _records(payload, "items"):
+            target = _target_id(item.get("name"))
             status = _status(item.get("status"))
             if target and item.get("expected"):
                 yield (source, target, status, "Required process needs attention.")
@@ -127,23 +147,25 @@ def _observations(domain: str, payload: dict[str, Any]):
                 yield ("app", registered[target], status, "Registered app process needs review.")
         return
     if domain == "system.telemetry_thresholds":
-        for item in (payload.get("devices") or [])[:64]:
-            if isinstance(item, dict):
-                device_id = _safe(item.get("device_id"), 100)
-                if device_id:
-                    yield (source, device_id, _status(item.get("status")), "Device resource or connectivity signal needs review.")
+        for item in _records(payload, "devices"):
+            device_id = _target_id(item.get("device_id"))
+            if device_id:
+                yield (source, device_id, _status(item.get("status")), "Device resource or connectivity signal needs review.")
         return
     if domain == "system.nats_remote":
         yield (source, "jetstream", _status(payload.get("status")), "Command delivery needs attention.")
-        for name, item in sorted((payload.get("durable_consumer_health") or {}).items()):
-            if isinstance(item, dict):
-                yield (source, "consumer:" + _safe(name, 60), "healthy" if item.get("healthy") else "degraded", "Command consumer readiness needs attention.")
+        for name, item in sorted((payload.get("durable_consumer_health") if isinstance(payload.get("durable_consumer_health"), dict) else {}).items(), key=lambda pair: str(pair[0])):
+            consumer_id = _target_id(name, 60)
+            if consumer_id and isinstance(item, dict) and isinstance(item.get("healthy"), bool):
+                yield (source, "consumer:" + consumer_id, "healthy" if item["healthy"] else "degraded", "Command consumer readiness needs attention.")
         return
     yield (source, source, _status(payload.get("status")), "System health signal needs review.")
 
 
 def ingest_projection(domain: str, payload: dict[str, Any]) -> int:
     """Call only after a worker-owned projection commit; never from a GET."""
+    if not isinstance(payload, dict):
+        return 0
     observations = list(_observations(domain, payload) or [])
     if not observations:
         return 0
@@ -214,8 +236,14 @@ def _read(sql: str, params: tuple = ()) -> list[dict[str, Any]]:
 
 def incidents(*, include_resolved: bool = False, limit: int = 40, offset: int = 0) -> dict[str, Any]:
     limit, offset = max(1, min(int(limit), 100)), max(0, min(int(offset), 10000))
-    where = "" if include_resolved else "WHERE state != 'resolved'"
-    items = _read(f"SELECT * FROM lite_system_health_incidents {where} ORDER BY last_seen_at DESC, incident_id LIMIT ? OFFSET ?", (limit, offset))
+    where = "" if include_resolved else "WHERE i.state != 'resolved'"
+    items = _read(
+        "SELECT i.*, o.status AS latest_observation_status, o.observed_at AS latest_observed_at "
+        "FROM lite_system_health_incidents i LEFT JOIN lite_system_health_observations o "
+        "ON o.source=i.source AND o.target_id=i.target_id "
+        + where + " ORDER BY i.last_seen_at DESC, i.incident_id LIMIT ? OFFSET ?",
+        (limit, offset),
+    )
     return {"items": [public_incident(item) for item in items], "limit": limit, "offset": offset, "next_offset": offset + len(items) if len(items) == limit else None}
 
 
@@ -225,6 +253,16 @@ def public_incident(item: dict[str, Any]) -> dict[str, Any]:
     result = dict(item)
     result["evidence_freshness"] = freshness(item.get("last_seen_at"))
     result["cause_confidence"] = "unconfirmed" if not item.get("verified_cause") else "verified"
+    observation_freshness = freshness(item.get("latest_observed_at"))
+    result["observation_freshness"] = observation_freshness
+    # An unresolved incident is current only with a fresh unhealthy observation.
+    # An unconfirmed or healthy signal cannot silently close a historical event.
+    result["concern_state"] = (
+        "resolved_observation" if item.get("state") == "resolved"
+        else "current_concern" if observation_freshness == "current"
+        and item.get("latest_observation_status") in UNHEALTHY
+        else "saved_concern"
+    )
     result["repair_available"] = False  # Explicitly off until owned command handlers are qualified.
     result["repair_guidance"] = "Review the existing protected recovery action for this component."
     return result
@@ -242,23 +280,42 @@ def freshness(timestamp: str | None) -> str:
 
 
 def incident(incident_id: str) -> dict[str, Any] | None:
-    rows = _read("SELECT * FROM lite_system_health_incidents WHERE incident_id=? LIMIT 1", (incident_id,))
+    rows = _read(
+        "SELECT i.*, o.status AS latest_observation_status, o.observed_at AS latest_observed_at "
+        "FROM lite_system_health_incidents i LEFT JOIN lite_system_health_observations o "
+        "ON o.source=i.source AND o.target_id=i.target_id WHERE i.incident_id=? LIMIT 1",
+        (incident_id,),
+    )
     return public_incident(rows[0]) if rows else None
 
 
 def summary() -> dict[str, Any]:
     signals = _read("SELECT source,target_id,status,observed_at FROM lite_system_health_observations ORDER BY source,target_id LIMIT 256")
-    active = _read("SELECT state,severity FROM lite_system_health_incidents WHERE state!='resolved' LIMIT 256")
+    active = _read("SELECT source,target_id,state,severity FROM lite_system_health_incidents WHERE state!='resolved' LIMIT 256")
     recent = _read("SELECT incident_id,state,summary,resolved_at FROM lite_system_health_incidents WHERE state='resolved' ORDER BY resolved_at DESC LIMIT 5")
     fresh = [s for s in signals if freshness(s["observed_at"]) == "current"]
     healthy = sum(1 for s in fresh if s["status"] in HEALTHY)
     unhealthy = sum(1 for s in fresh if s["status"] in UNHEALTHY)
     unknown_count = len(signals) - len(fresh) + sum(s["status"] not in (HEALTHY | UNHEALTHY) for s in fresh)
-    status = "unknown" if not signals or not fresh else "attention" if unhealthy or active else "unknown" if unknown_count else "healthy"
+    signal_by_target = {(s["source"], s["target_id"]): s for s in signals}
+    current = [
+        item for item in active
+        if (signal := signal_by_target.get((item["source"], item["target_id"])))
+        and freshness(signal["observed_at"]) == "current"
+        and signal["status"] in UNHEALTHY
+    ]
+    saved_count = len(active) - len(current)
+    status = ("unknown" if not signals or not fresh else
+              "attention" if unhealthy or current else
+              "unknown" if unknown_count or saved_count else "healthy")
     return {
         "status": status, "checked_at": _now(), "data_source": "persisted_projection",
         "observed_services": len(signals), "healthy_services": healthy,
+        # Legacy fields preserve unresolved-incident semantics for old clients.
         "active_problems": len(active), "critical_problems": sum(a["severity"] == "critical" for a in active),
+        "current_problems": len(current), "saved_problems": saved_count,
+        "current_critical_problems": sum(a["severity"] == "critical" for a in current),
+        "unresolved_critical_problems": sum(a["severity"] == "critical" for a in active),
         "unknown_services": unknown_count, "automatic_repairs_running": 0,
         "recent_verified_recoveries": 0,  # Healthy observation is not verified repair recovery.
         "recent_resolutions": recent,
