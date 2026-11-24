@@ -44,12 +44,12 @@ export const INCIDENT_STATE_LABELS = Object.freeze({
 
 const SAFE_LABEL = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/;
 
-export function componentLabel(source, targetId) {
+export function componentLabel(source, targetId, deviceLabel) {
   const sourceName = COMPONENT_NAMES[source] || 'Component';
   if (typeof targetId !== 'string' || !SAFE_LABEL.test(targetId)) return sourceName;
   if (COMPONENT_NAMES[targetId]) return COMPONENT_NAMES[targetId];
   if (source === 'agent' || source === 'supervisor' || source === 'telemetry') {
-    return 'Enrolled device';
+    return typeof deviceLabel === 'string' && deviceLabel.length <= 80 && /^[\p{L}\p{N} ._()-]+$/u.test(deviceLabel) ? deviceLabel : 'Device';
   }
   if (source === 'nats' && targetId.startsWith('consumer:')) return 'Command consumer';
   if (source === 'processes') return PROCESS_NAMES[targetId] || 'Running service';

@@ -185,3 +185,28 @@ test('System Health haptic uses shared native feedback and respects reduced moti
     .getByRole('button', { name: /Close/i }).click();
   expect(await page.evaluate(() => (window as Window & { __hapticCount?: number }).__hapticCount)).toBe(before);
 });
+
+
+// P4 membership qualification — ADDED, NOT RUN.
+test('offline enrollment is current and removed-device history is read-only', async ({ page }) => {
+  await installScenario(page, 'system-health-p4-membership');
+  const writes: string[] = [];
+  page.on('request', request => {
+    if (request.method() === 'POST' && request.url().includes('/system-health/')) writes.push(request.url());
+  });
+  await page.goto('/?screen=system-health');
+  await waitForLiteScreenToSettle(page, 'system-health');
+  const screen = page.locator('[data-system-health-page="true"]');
+  await expect(screen.getByText('Secondary phone', { exact: true })).toBeVisible();
+  await expect(screen.getByText('Previously removed phone', { exact: true })).toHaveCount(0);
+  await screen.getByRole('button', { name: /Review history/i }).click();
+  const panel = page.getByRole('dialog', { name: /System Health Manage/i });
+  await expect(panel.getByText('Device removed — historical record')).toBeVisible();
+  await panel.getByRole('button', { name: 'View history' }).last().click();
+  await expect(panel.getByText('Device removed — historical record')).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'Request recovery' })).toHaveCount(0);
+  await expect(panel.getByRole('button', { name: 'Check cause' })).toHaveCount(0);
+  const report = await new AxeBuilder({ page }).include('[role="dialog"]').analyze();
+  expect(report.violations.filter(v => ['critical', 'serious'].includes(v.impact || ''))).toEqual([]);
+  expect(writes).toEqual([]);
+});

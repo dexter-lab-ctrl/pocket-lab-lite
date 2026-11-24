@@ -52,7 +52,7 @@ export function SystemHealthIncidentCard({ incident, onDiagnose, saved = false }
     <div className="lite-system-health-incident-head">
       <span className="lite-system-health-health-icon"><AlertTriangle size={19} aria-hidden="true" /></span>
       <div>
-        <h3>{componentLabel(incident.source, incident.target_id)}</h3>
+        <h3>{componentLabel(incident.source, incident.target_id, incident.device_label)}</h3>
         <p>{older ? 'A previous concern was recorded; the current condition is not confirmed.' : (incident.summary || 'A current observation needs review.')}</p>
       </div>
       <span className={'lite-system-health-state is-' + (older ? 'unknown' : incident.severity === 'critical' ? 'attention' : 'watch')}>
@@ -72,7 +72,7 @@ export function SystemHealthIncidentCard({ incident, onDiagnose, saved = false }
 function EvidenceRows({ rows = [], emptyMessage = 'No authoritative records are available for this view.', onHistory }) {
   return Array.isArray(rows) && rows.length
     ? rows.slice(0, 30).map((row, i) => <LiteActionRow key={row.incident_id || row.target_id || i}
-      label={componentLabel(row.source, row.target_id || row.component)}
+      label={componentLabel(row.source, row.target_id || row.component, row.device_label)}
       value={row.membership_state === 'removed' || row.membership_state === 'retired' ? 'Device removed — historical record' : row.current_monitoring === false ? 'Membership not confirmed — historical record' : row.state ? (INCIDENT_STATE_LABELS[row.state] || healthStatusLabel(row.state)) : healthStatusLabel(row.status || row.observed_status)}
       summary={row.current_monitoring === false ? 'No longer monitored. Earlier evidence is retained; removal is not recovery.' : row.summary || ''}
       action={onHistory && row.incident_id ? { label: 'View history', haptic: true, onClick: () => onHistory(row) } : undefined}
@@ -89,7 +89,7 @@ function DetailContent({ incident, diagnosis, diagnosing, diagnosisError, onDiag
   const verifiedCause = typeof diagnosis?.verified_cause === 'string' && diagnosis.verified_cause
     ? diagnosis.verified_cause : null;
   return <section className="lite-system-health-detail" aria-label="Problem details">
-    <h3>{componentLabel(incident.source, incident.target_id)}</h3>
+    <h3>{componentLabel(incident.source, incident.target_id, incident.device_label)}</h3>
     <span className={'lite-system-health-state is-' + (isCurrent ? 'watch' : 'unknown')}>
       {historical ? (incident.membership_state === 'unknown' ? 'Membership not confirmed' : 'Device removed — historical record') : isCurrent ? 'Current concern' : evidenceState === 'resolved' ? 'Observed healthy' : 'Saved concern'}
     </span>
@@ -161,7 +161,7 @@ export default function LiteSystemHealth({ onNavigate }) {
   const incidentsQuery = useLiteQuery({
     queryKey: liteQueryKeys.healthIncidents(), path: '/api/lite/system-health/incidents',
     queryFn: liteApi.healthIntelligenceIncidents, enabled: !summaryQuery.savedStateOnly && summaryQuery.backendReachable !== false,
-    staleTime: 90_000, pollingMode: 'relaxed',
+    staleTime: 90_000, pollingMode: 'relaxed', refetchOnMount: 'always',
   });
   const history = useLiteQuery({
     queryKey: liteQueryKeys.healthHistory(), path: '/api/lite/system-health/history',
@@ -308,13 +308,13 @@ export default function LiteSystemHealth({ onNavigate }) {
         {section === 'incidents' ? <section className="lite-system-health-manage-section">
           <h3>Current confirmed concerns</h3>
           {groups.current.length ? groups.current.slice(0, 30).map(item => <LiteActionRow key={item.incident_id}
-            label={componentLabel(item.source, item.target_id)} value={item.severity === 'critical' ? 'Critical' : 'Review needed'}
+            label={componentLabel(item.source, item.target_id, item.device_label)} value={item.severity === 'critical' ? 'Critical' : 'Review needed'}
             summary={item.summary || 'Current evidence needs review.'} action={{ label: 'Review issue', haptic: true, onClick: () => viewIncident(item, 'diagnostics') }} />)
             : <StateSurface tone="empty" title="No current concern confirmed" description="Unknown and saved evidence are not treated as current problems." />}
           <h3>Saved concerns requiring revalidation</h3>
           <p className="lite-system-health-muted">These records are unresolved, but their current condition is not confirmed. Review a fresh status before recovery.</p>
           {groups.saved.length ? groups.saved.slice(0, 30).map(item => <LiteActionRow key={item.incident_id}
-            label={componentLabel(item.source, item.target_id)} value="Recheck needed"
+            label={componentLabel(item.source, item.target_id, item.device_label)} value="Recheck needed"
             summary={item.summary || 'A previous concern is recorded.'}
             action={{ label: 'Review issue', haptic: true, onClick: () => viewIncident(item, 'diagnostics') }} />)
             : <p className="lite-system-health-muted">No older unresolved records in the loaded page.</p>}

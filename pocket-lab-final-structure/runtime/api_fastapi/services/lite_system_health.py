@@ -113,7 +113,7 @@ MEMBERSHIP_JOIN = " LEFT JOIN device_enrollment_registry m ON m.device_id=i.targ
 MEMBERSHIP_STATE = """CASE WHEN i.source NOT IN ('agent','supervisor','telemetry') THEN 'shared'
     WHEN m.device_id IS NULL THEN 'unknown'
     WHEN m.protected_server_host=1 AND m.removal_status!='active' THEN 'protected_conflict'
-    WHEN m.removal_status='active' AND m.enrollment_status='enrolled' THEN 'active'
+    WHEN m.removal_status='active' THEN 'active'
     WHEN m.removal_status IN ('retired','removed') THEN m.removal_status
     ELSE 'unknown' END"""
 MONITORED = "(" + MEMBERSHIP_STATE + ") IN ('shared','active','protected_conflict')"
@@ -128,8 +128,7 @@ def _device_memberships(conn: sqlite3.Connection, observations: list) -> dict[st
         "SELECT device_id,removal_status,enrollment_status,protected_server_host "
         "FROM device_enrollment_registry WHERE device_id IN (" + placeholders + ")", ids,
     )
-    return {row["device_id"]: ("active" if row["removal_status"] == "active"
-            and row["enrollment_status"] == "enrolled" else "unknown") for row in rows}
+    return {row["device_id"]: ("active" if row["removal_status"] == "active" else "unknown") for row in rows}
 
 
 def _observation_rows(where: str = "", limit: int = 128) -> list[dict[str, Any]]:
@@ -278,7 +277,7 @@ def incidents(*, include_resolved: bool = False, limit: int = 40, offset: int = 
     where = "" if include_resolved else "WHERE i.state != 'resolved' AND " + MONITORED
     items = _read(
         "SELECT i.*, o.status AS latest_observation_status, o.observed_at AS latest_observed_at, "
-        + MEMBERSHIP_STATE + " AS membership_state, m.retired_at AS membership_retired_at "
+        + MEMBERSHIP_STATE + " AS membership_state, m.retired_at AS membership_retired_at, m.registry_revision AS membership_revision, m.device_name AS membership_device_name "
         "FROM lite_system_health_incidents i LEFT JOIN lite_system_health_observations o "
         "ON o.source=i.source AND o.target_id=i.target_id " + MEMBERSHIP_JOIN
         + where + " ORDER BY i.last_seen_at DESC, i.incident_id LIMIT ? OFFSET ?",
@@ -305,6 +304,7 @@ def public_incident(item: dict[str, Any]) -> dict[str, Any]:
     )
     membership = item.get("membership_state", "unknown")
     result["current_monitoring"] = membership in {"active", "shared", "protected_conflict"}
+    result["device_label"] = _safe(result.pop("membership_device_name", ""), 80) or None
     if membership in {"retired", "removed", "unknown"}:
         result["concern_state"] = "historical_record"
     elif membership == "protected_conflict":
@@ -329,7 +329,7 @@ def freshness(timestamp: str | None) -> str:
 def incident(incident_id: str) -> dict[str, Any] | None:
     rows = _read(
         "SELECT i.*, o.status AS latest_observation_status, o.observed_at AS latest_observed_at, "
-        + MEMBERSHIP_STATE + " AS membership_state, m.retired_at AS membership_retired_at "
+        + MEMBERSHIP_STATE + " AS membership_state, m.retired_at AS membership_retired_at, m.registry_revision AS membership_revision, m.device_name AS membership_device_name "
         "FROM lite_system_health_incidents i LEFT JOIN lite_system_health_observations o "
         "ON o.source=i.source AND o.target_id=i.target_id " + MEMBERSHIP_JOIN + " WHERE i.incident_id=? LIMIT 1",
         (incident_id,),

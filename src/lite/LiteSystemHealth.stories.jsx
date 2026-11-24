@@ -32,3 +32,7 @@ export const ManageDesktop = createLiteStory('system-health', 'system-health-mix
 export const ManageMobile = createLiteStory('system-health', 'system-health-mixed', { theme: 'dark', viewport: 'mobile390', notes: 'Open Manage for mobile sheet qualification.' });
 export const ManageLight = createLiteStory('system-health', 'system-health-attention', { theme: 'daylight', viewport: 'desktop' });
 export const ManageDark = createLiteStory('system-health', 'system-health-attention', { theme: 'dark', viewport: 'desktop' });
+
+/** P4 membership stories — ADDED, NOT RUN. */
+export const EnrolledAndRemovedDesktop = createLiteStory('system-health', 'system-health-p4-membership', { theme: 'daylight', viewport: 'desktop' });
+export const EnrolledAndRemovedMobile = createLiteStory('system-health', 'system-health-p4-membership', { theme: 'dark', viewport: 'mobile390' });

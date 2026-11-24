@@ -1147,6 +1147,14 @@ function mockSystemHealthIncident(resolved = false, override = {}) {
     ...override,
   };
 }
+function mockRemovedHealthDevice() {
+  return mockSystemHealthIncident(false, {
+    incident_id: 'health-333333333333333333333333', source: 'agent', target_id: 'removed-synthetic',
+    device_label: 'Previously removed phone', membership_state: 'removed', current_monitoring: false,
+    concern_state: 'historical_record', membership_retired_at: mockIso(-30000),
+    summary: 'A previous device connection issue was recorded.',
+  });
+}
 function mockSystemHealthItems() {
   const kind = rawScenario();
   const saved = mockSystemHealthIncident(false, {
@@ -1157,6 +1165,7 @@ function mockSystemHealthItems() {
     summary: 'A previously recorded device agent issue is awaiting a fresh check.',
   });
   const current = mockSystemHealthIncident();
+  if (kind === 'system-health-p4-membership') return [mockSystemHealthIncident(false, { source: 'agent', target_id: 'active-synthetic', device_label: 'Secondary phone', membership_state: 'active', current_monitoring: true, latest_observation_status: 'offline', summary: 'Enrolled device is offline.' })];
   if (kind === 'system-health-resolved' || kind === 'system-health-observed-recovery') return [];
   if (kind === 'system-health-saved-only' || kind === 'system-health-stale' || kind === 'system-health-offline') return [saved];
   if (kind === 'system-health-mixed') return [current, saved];
@@ -1183,6 +1192,7 @@ function mockSystemHealthSummary() {
     status: stale || unknown ? 'unknown' : attention ? 'attention' : 'healthy',
     checked_at: mockIso(), data_source: 'persisted_projection',
     observed_services: unknown ? 0 : 8, healthy_services: stale || unknown ? 0 : attention ? 7 : 8,
+    historical_device_records: kind === 'system-health-p4-membership' ? 1 : 0,
     active_problems: items.length, critical_problems: items.filter(item => item.severity === 'critical').length,
     current_problems: current, saved_problems: saved,
     current_critical_problems: items.filter(item => item.concern_state === 'current_concern' && item.severity === 'critical').length,
@@ -1204,11 +1214,13 @@ export const handlers = [
     return HttpResponse.json({ items, limit: 30, offset: 0, next_offset: null }, { headers: liteSafeReadHeaders(request) });
   }),
   http.get('/api/lite/system-health/incidents/:incidentId', ({ params }) =>
-    params.incidentId === MOCK_HEALTH_INCIDENT_ID
-      ? HttpResponse.json(mockSystemHealthIncident(rawScenario() === 'system-health-resolved'))
+    rawScenario() === 'system-health-p4-membership' && params.incidentId === mockRemovedHealthDevice().incident_id
+      ? HttpResponse.json(mockRemovedHealthDevice())
+      : params.incidentId === MOCK_HEALTH_INCIDENT_ID
+      ? HttpResponse.json(mockSystemHealthItems().find(item => item.incident_id === params.incidentId) || mockSystemHealthIncident(rawScenario() === 'system-health-resolved'))
       : HttpResponse.json({ detail: 'Problem not found' }, { status: 404 })),
   http.get('/api/lite/system-health/history', () => HttpResponse.json({
-    items: ['system-health-resolved', 'system-health-observed-recovery', 'system-health-verified-repair'].includes(rawScenario())
+    items: rawScenario() === 'system-health-p4-membership' ? [...mockSystemHealthItems(), mockRemovedHealthDevice()] : ['system-health-resolved', 'system-health-observed-recovery', 'system-health-verified-repair'].includes(rawScenario())
       ? [mockSystemHealthIncident(true)] : mockSystemHealthItems(),
     repairs: rawScenario() === 'system-health-verified-repair'
       ? [{ repair_id: 'synthetic-repair-verified', operation_id: 'app.repair',
