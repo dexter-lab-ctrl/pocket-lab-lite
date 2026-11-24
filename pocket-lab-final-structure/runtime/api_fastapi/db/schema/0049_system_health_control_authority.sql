@@ -3,7 +3,7 @@
 CREATE TABLE lite_system_health_request_authority (
     request_id TEXT PRIMARY KEY REFERENCES lite_system_health_recovery_requests(request_id) ON DELETE CASCADE,
     session_id TEXT NOT NULL CHECK(length(session_id) BETWEEN 1 AND 120),
-    actor_role TEXT NOT NULL CHECK(actor_role IN ('Owner','Admin','Operator')),
+    actor_role TEXT NOT NULL CHECK(actor_role IN ('Owner','Admin','Operator','Qualification')),
     authorization_version INTEGER NOT NULL CHECK(authorization_version >= 1),
     enterprise_enabled INTEGER NOT NULL CHECK(enterprise_enabled IN (0,1)),
     confirmed INTEGER NOT NULL CHECK(confirmed IN (0,1))
