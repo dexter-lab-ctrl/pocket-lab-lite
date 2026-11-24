@@ -157,10 +157,16 @@ def test_recovery_router_is_backend_governed_and_sanitizes_harness_denial(monkey
     monkeypatch.setattr(module.deps, "require_auth", lambda request, write=False: context)
     monkeypatch.setattr(module.health, "incident", lambda incident_id: found)
     monkeypatch.setattr(module.health, "repair_preflight", lambda *args: allowed_preflight)
-    monkeypatch.setattr(module.lite_policy_opa, "evaluate_authorization", lambda **kwargs: {
-        "allow": True, "reason_code": "qualification_owner_system_health_recovery",
-        "policy_revision": "test-policy", "decision_id": "decision-1",
-    })
+    policy_inputs = []
+
+    def allow_policy(**kwargs):
+        policy_inputs.append(kwargs)
+        return {
+            "allow": True, "reason_code": "qualification_owner_system_health_recovery",
+            "policy_revision": "test-policy", "decision_id": "decision-1",
+        }
+
+    monkeypatch.setattr(module.lite_policy_opa, "evaluate_authorization", allow_policy)
     monkeypatch.setattr(module.health, "admit_controlled_recovery", lambda *args, **kwargs: {
         "request": {"request_id": "recovery-1", "status": "admitted"}, "recorded": True,
     })
@@ -173,6 +179,9 @@ def test_recovery_router_is_backend_governed_and_sanitizes_harness_denial(monkey
         response = client.post("/api/lite/system-health/incidents/health-111111111111111111111111/repair", json=payload)
         assert response.status_code == 202
         assert response.json()["status"] == "admitted"
+        assert policy_inputs[0]["target"]["operation_id"] == "runtime.consumer.reconnect"
+        assert policy_inputs[0]["target"]["incident_generation"] == 1
+        assert "state" not in policy_inputs[0]["target"]
 
         def reject(*_args, **_kwargs):
             raise lite_harness.HarnessError("harness_capability_missing", "capability rejected", status_code=403)

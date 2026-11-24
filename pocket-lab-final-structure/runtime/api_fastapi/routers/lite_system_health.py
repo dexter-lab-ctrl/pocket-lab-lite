@@ -182,14 +182,17 @@ def system_health_repair(incident_id: str, payload: RepairRequest, request: Requ
             target_revision=f"{incident_id}:{payload.expected_generation}:{int(found.get('enrollment_generation') or 0)}",
             target={
                 "scope": "local_server_host_only",
-                "state": {
-                    "operation_id": payload.operation_id,
-                    "adapter_enabled": True,
-                    "preflight_valid": True,
-                    "incident_generation": int(payload.expected_generation),
-                    "enrollment_generation": int(found.get("enrollment_generation") or 0),
-                    "confirmed": bool(payload.confirm),
-                },
+                # `evaluate_authorization` wraps this target under the
+                # canonical OPA `target.state` field.  Keep the supplied
+                # state flat here so the policy sees the exact operation,
+                # generation and preflight facts instead of a nested
+                # target.state.state shape.
+                "operation_id": payload.operation_id,
+                "adapter_enabled": True,
+                "preflight_valid": True,
+                "incident_generation": int(payload.expected_generation),
+                "enrollment_generation": int(found.get("enrollment_generation") or 0),
+                "confirmed": bool(payload.confirm),
             },
             request_context={"confirmation_present": bool(payload.confirm), "idempotency_key_present": True},
         )
