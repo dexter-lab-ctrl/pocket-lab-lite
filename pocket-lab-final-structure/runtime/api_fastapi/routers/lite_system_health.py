@@ -102,8 +102,17 @@ def system_health_app_diagnostics(app_id: str, request: Request):
 
 @router.get("/policies")
 def system_health_policies(request: Request):
-    _require_authenticated(request)
-    return health.policy()
+    context = _require_authenticated(request)
+    from ..services import lite_infrastructure_authority as authority
+    from ..db.connection import connection
+    result = health.policy()
+    try:
+        with connection() as conn:
+            authority.require_owner(conn, context)
+        result["owner_controls_available"] = True
+    except PermissionError:
+        result["owner_controls_available"] = False
+    return result
 
 
 @router.get("/repairs")
