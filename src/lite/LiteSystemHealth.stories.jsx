@@ -45,3 +45,9 @@ export const ManageDark = createLiteStory('system-health', 'system-health-attent
 /** P4 membership stories — deterministic review states. */
 export const EnrolledAndRemovedDesktop = createLiteStory('system-health', 'system-health-p4-membership', { theme: 'daylight', viewport: 'desktop' });
 export const EnrolledAndRemovedMobile = createLiteStory('system-health', 'system-health-p4-membership', { theme: 'dark', viewport: 'mobile390' });
+
+// P5-P12 prepared diagnostic scenarios; synthetic, not qualification evidence.
+export const InfrastructurePressureDesktop = createLiteStory('system-health', 'system-health-infrastructure-pressure', { theme: 'daylight', viewport: 'desktop', notes: 'Open Manage > Storage and database.' });
+export const InfrastructurePressureMobile = createLiteStory('system-health', 'system-health-infrastructure-pressure', { theme: 'dark', viewport: 'mobile360', notes: 'Open Manage > Resource protection.' });
+export const AutomaticEvidenceDesktop = createLiteStory('system-health', 'system-health-infrastructure-automatic', { theme: 'dark', viewport: 'desktop' });
+export const AutomaticEvidenceMobile = createLiteStory('system-health', 'system-health-infrastructure-automatic', { theme: 'daylight', viewport: 'mobile390' });
