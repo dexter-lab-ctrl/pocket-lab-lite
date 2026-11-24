@@ -89,33 +89,42 @@ OPERATIONS = (
 )
 
 
+# Promotion is a reviewed source change after exact-candidate qualification.
+# No environment flag or preference can qualify an operation.
+PRODUCTION_QUALIFIED_OPERATIONS: frozenset[str] = frozenset()
+
+
 def controlled_recovery_enabled() -> bool:
-    # Production qualification must be explicitly promoted in a later reviewed
-    # source change; a runtime environment switch is not qualification evidence.
-    # Emergency disable applies to the controlled adapter, not the autonomous
-    # watchdog. Unknown values fail closed.
-    return (
-        os.environ.get("POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE", "0") == "0"
-        and os.environ.get("POCKETLAB_ENVIRONMENT", "").strip().casefold() == "qualification"
-        and os.environ.get("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER") == "1"
-    )
+    if os.environ.get("POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE", "0") != "0":
+        return False
+    if os.environ.get("POCKETLAB_ENVIRONMENT", "").strip().casefold() == "qualification":
+        return os.environ.get("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER") == "1"
+    if ("runtime.consumer.reconnect" not in PRODUCTION_QUALIFIED_OPERATIONS
+            or os.environ.get("POCKETLAB_SYSTEM_HEALTH_PRODUCTION_ASSISTED") != "1"):
+        return False
+    from . import lite_infrastructure_authority as authority
+    return authority.preferences()["recovery_mode"] == "assisted"
 
 
 def activation_policy() -> dict:
-    disabled = os.environ.get("POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE", "0") != "0"
+    from . import lite_infrastructure_authority as authority
+    qualified = "runtime.consumer.reconnect" in PRODUCTION_QUALIFIED_OPERATIONS
+    qualification = os.environ.get("POCKETLAB_ENVIRONMENT", "").strip().casefold() == "qualification"
+    enabled = controlled_recovery_enabled()
     return {
-        "environment": "qualification" if os.environ.get("POCKETLAB_ENVIRONMENT", "").strip().casefold() == "qualification" else "production",
+        "environment": "qualification" if qualification else "production",
         "adapter_implemented": True,
-        "qualification": "p4_isolated_only",
-        "production_qualified": False,
-        "production_assisted_enabled": False,
+        "qualification": "production_qualified" if qualified else "p4_isolated_only",
+        "production_qualified": qualified,
+        "production_assisted_enabled": bool(not qualification and enabled),
         "production_automatic_enabled": False,
-        "qualification_adapter_enabled": controlled_recovery_enabled(),
-        "emergency_disable": disabled,
+        "qualification_adapter_enabled": bool(qualification and enabled),
+        "emergency_disable": os.environ.get("POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE", "0") != "0",
         "emergency_disable_scope": "new_controlled_adapter_admission_and_claim",
         "existing_guardians_affected": False,
-        "available_modes": ["monitor"],
-        "reason": "Production qualification, activation authority and execution-time policy revalidation are required.",
+        "available_modes": ["monitor", "assisted"] if qualified else ["monitor"],
+        "preferences": authority.preferences(),
+        "reason": "Production activation requires source qualification, explicit runtime opt-in, owner preference and current execution authority.",
     }
 
 
