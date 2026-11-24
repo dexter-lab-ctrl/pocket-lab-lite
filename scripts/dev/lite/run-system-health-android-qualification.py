@@ -655,6 +655,7 @@ class SystemHealthAndroidQualification:
         self.ca_path, self.cert_path, self.key_path = self.controller._create_certificates(self.paths)
         self.local_api_port = _port()
         self.nats: Any | None = None
+        self.opa: Any | None = None
         self.remote: Any | None = None
         self.remote_root = ""
         self.remote_api_port = 0
@@ -662,6 +663,7 @@ class SystemHealthAndroidQualification:
         self.worker: Any | None = None
         self.driver: Any | None = None
         self.tunnels: list[Any] = []
+        self.opa_policy_path: Path | None = None
         self.principal_private = Ed25519PrivateKey.generate()
         public = self.principal_private.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
         self.public_key = _b64u(public)
@@ -767,6 +769,50 @@ class SystemHealthAndroidQualification:
         self.nats.start()
         self.results["disposable_nats"] = {"status": "PASS", "jetstream": True, "loopback": True, "production_nats_used": False}
 
+    def _start_local_opa(self) -> None:
+        """Run the exact candidate policy on an isolated Dev-PC loopback port."""
+        binary = shutil.which("opa")
+        if not binary:
+            raise QualificationError("opa is unavailable; no production policy endpoint fallback is permitted")
+        policy_source = self.paths.root / "candidate-opa.rego"
+        shown = _run(
+            ["git", "show", f"{self.candidate_sha}:security/policies/opa/pocketlab/pocketlab.rego"],
+            cwd=self.repo,
+            timeout=30,
+        )
+        if shown.returncode != 0 or not shown.stdout.strip():
+            raise QualificationError("candidate OPA policy source could not be read")
+        policy_source.write_text(shown.stdout, encoding="utf-8")
+        policy_source.chmod(0o600)
+        base_env = self.controller._scrubbed_environment()
+        base_env.update({
+            "HOME": str(self.paths.home),
+            "TMPDIR": str(self.paths.root / "tmp"),
+            "TMP": str(self.paths.root / "tmp"),
+            "TEMP": str(self.paths.root / "tmp"),
+            "POCKETLAB_QUALIFICATION_RUN_ID": self.run_id,
+        })
+        (self.paths.root / "tmp").mkdir(mode=0o700, parents=True, exist_ok=True)
+        self.opa_policy_path = policy_source
+        self.opa = self.controller.DisposableOpa(
+            paths=self.paths,
+            run_id=self.run_id,
+            policy_source=policy_source,
+            binary=binary,
+        )
+        while self.opa.port in {self.nats.port if self.nats is not None else 0, self.local_api_port}:
+            self.opa.port = _port()
+        self.opa.start(base_env=base_env)
+        policy_revision = self.opa.revision_path.read_text(encoding="utf-8").strip()[:24]
+        self.results["isolated_opa_policy"] = {
+            "status": "PASS",
+            "transport": "loopback_http_reverse_ssh",
+            "candidate_policy_source": "exact_candidate_git_object",
+            "policy_revision": policy_revision,
+            "devpc_owned": True,
+            "production_opa_used": False,
+        }
+
     def _stage_remote(self) -> None:
         assert self.remote is not None and self.database is not None
         self.remote_root = self.controller._android_create_remote_root(self.remote, self.run_id)
@@ -784,7 +830,7 @@ class SystemHealthAndroidQualification:
             "production_configuration_files": False, "source_snapshot_read_only": True,
         }
 
-    def _build_env(self, nats_origin: str, remote_api_port: int) -> dict[str, str]:
+    def _build_env(self, nats_origin: str, opa_origin: str, remote_api_port: int) -> dict[str, str]:
         assert self.remote is not None
         site_packages = [str(item) for item in (self.remote.baseline.get("python_site_packages") or []) if str(item).startswith((self.remote.home.rstrip("/") + "/", self.remote.prefix.rstrip("/") + "/"))]
         env: dict[str, str] = {
@@ -808,7 +854,7 @@ class SystemHealthAndroidQualification:
             "POCKETLAB_HARNESS_BOOTSTRAP_PURPOSE": self.bootstrap_purpose,
             "POCKETLAB_QUALIFICATION_ALLOW_TEST_DESTINATION": "1", "POCKETLAB_QUALIFICATION_CONTEXT_TOKEN": self.context_token, "POCKETLAB_QUALIFICATION_ROOT": self.remote_root, "POCKETLAB_QUALIFICATION_DESTINATION_ROOT": f"{self.remote_root}/destination",
             "POCKETLAB_QUALIFICATION_WEBDAV_USER": "qualification", "POCKETLAB_QUALIFICATION_WEBDAV_PASSWORD": self.webdav_password, "POCKETLAB_QUALIFICATION_TEST_ORIGIN": f"https://127.0.0.1:{remote_api_port}", "POCKETLAB_QUALIFICATION_CONTROL_ORIGIN": f"https://127.0.0.1:{remote_api_port}",
-            "POCKETLAB_API_BIND": "127.0.0.1", "POCKETLAB_API_PORT": str(remote_api_port), "POCKETLAB_OPA_URL": "http://127.0.0.1:1", "POCKETLAB_OPA_ACTIVE_POLICY_DIR": f"{self.remote_root}/opa/active",
+            "POCKETLAB_API_BIND": "127.0.0.1", "POCKETLAB_API_PORT": str(remote_api_port), "POCKETLAB_OPA_URL": opa_origin, "POCKETLAB_OPA_ACTIVE_POLICY_DIR": f"{self.remote_root}/opa/active",
             "POCKETLAB_NATS_URL": nats_origin, "POCKETLAB_LITE_PUBLIC_NATS_URL": nats_origin, "POCKETLAB_NATS_JETSTREAM": "1", "POCKETLAB_NATS_REQUIRED": "1", "POCKETLAB_NATS_REQUIRE_JETSTREAM": "1", "POCKETLAB_NATS_NAME": f"qualification-{self.run_id}",
             "POCKETLAB_NATS_USER": self.nats.user if self.nats else "", "POCKETLAB_NATS_PASSWORD": self.nats.password if self.nats else "", "POCKETLAB_AGENT_NATS_USER": self.nats.user if self.nats else "", "POCKETLAB_AGENT_NATS_PASSWORD": self.nats.password if self.nats else "",
             "POCKETLAB_NATS_INITIAL_CONNECT_DEADLINE": "5", "POCKETLAB_NATS_RECONNECT_WAIT": "1", "POCKETLAB_NATS_RECONNECT_MIN_SECONDS": "1", "POCKETLAB_NATS_RECONNECT_MAX_SECONDS": "5", "POCKETLAB_NATS_WATCHDOG_SECONDS": "2",
@@ -818,25 +864,35 @@ class SystemHealthAndroidQualification:
         return env
 
     def _start_transport_and_candidate(self) -> None:
-        assert self.remote is not None and self.nats is not None
+        assert self.remote is not None and self.nats is not None and self.opa is not None
         self.remote_api_port = self.controller._android_select_port(self.remote)
         reverse = self.controller.AndroidTunnel(
             host=self.remote.host, run_id=self.run_id, kind="system-health-nats", log=self.paths.logs / "ssh-nats.log", direction="reverse",
             local_port=self.nats.port, target_port=self.nats.port, remote_port=0,
         )
         reverse.start()
+        self.tunnels.append(reverse)
+        opa_tunnel = self.controller.AndroidTunnel(
+            host=self.remote.host, run_id=self.run_id, kind="system-health-opa", log=self.paths.logs / "ssh-opa.log", direction="reverse",
+            local_port=self.opa.port, target_port=self.opa.port, remote_port=0,
+        )
+        opa_tunnel.start()
+        self.tunnels.append(opa_tunnel)
         local_api = self.controller.AndroidTunnel(
             host=self.remote.host, run_id=self.run_id, kind="system-health-api", log=self.paths.logs / "ssh-api.log", direction="local",
             local_port=self.local_api_port, target_port=self.remote_api_port,
         )
         local_api.start()
-        self.tunnels = [reverse, local_api]
+        self.tunnels.append(local_api)
         nats_origin = f"nats://127.0.0.1:{reverse.remote_port}"
+        opa_origin = f"http://127.0.0.1:{opa_tunnel.remote_port}"
         assert self.database is not None
         # Dev-PC listener ports and the phone's loopback listener ports are
         # separate namespaces. Only local listeners can collide here.
-        assert_isolated_binding(self.paths.root, self.database, nats_origin, "127.0.0.1", self.local_api_port, occupied_ports=[self.nats.port])
-        env = self._build_env(nats_origin, self.remote_api_port)
+        if len({self.nats.port, self.opa.port, self.local_api_port}) != 3:
+            raise QualificationError("candidate local transport ports are not distinct")
+        assert_isolated_binding(self.paths.root, self.database, nats_origin, "127.0.0.1", self.local_api_port, occupied_ports=[self.nats.port, self.opa.port])
+        env = self._build_env(nats_origin, opa_origin, self.remote_api_port)
         self.env_path = f"{self.remote_root}/env/server.json"
         self.controller._android_remote_write(self.remote.host, self.env_path, json.dumps(env, sort_keys=True, separators=(",", ":")) + "\n", root=self.remote_root, mode="600")
         self.client = CandidateClient(self.api_origin, self.ca_path)
@@ -1131,6 +1187,9 @@ time.sleep(3)
         if self.nats is not None:
             with contextlib.suppress(Exception):
                 self.nats.stop()
+        if self.opa is not None:
+            with contextlib.suppress(Exception):
+                self.opa.stop()
         if self.remote is not None and self.remote_root:
             removed = False
             with contextlib.suppress(Exception):
@@ -1159,6 +1218,7 @@ time.sleep(3)
             # API owns the complete forward migration chain at startup.
             self._start_local_nats()
             self._stage_remote()
+            self._start_local_opa()
             before = self._remote_probe(expected=42)
             self.results.setdefault("isolated_sqlite", {})["phone_before_migration"] = before
             self._start_transport_and_candidate()
