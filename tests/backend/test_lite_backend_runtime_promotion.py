@@ -17,11 +17,19 @@ SCHEMA = ROOT / "pocket-lab-final-structure/runtime/api_fastapi/db/schema"
 def _artifact(tmp_path: Path, source_sha: str = "a" * 40):
     contract = promotion.migration_contract(SCHEMA)
     records = [
-        ("runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql", (SCHEMA / "0043_system_health_intelligence.sql").read_bytes(), 0o644),
-        ("runtime/api_fastapi/db/schema/0044_system_health_audit.sql", (SCHEMA / "0044_system_health_audit.sql").read_bytes(), 0o644),
+        (
+            f"runtime/api_fastapi/db/schema/{path.name}",
+            path.read_bytes(),
+            0o644,
+        )
+        for version in promotion.FEATURE_MIGRATIONS
+        for path in SCHEMA.glob(f"{version:04d}_*.sql")
+    ]
+    assert len(records) == len(promotion.FEATURE_MIGRATIONS)
+    records.extend([
         ("bootstrap/scripts/start-dashboard.sh", b"#!/usr/bin/env bash\nexit 0\n", 0o755),
         ("controller/backend_runtime_promotion.py", promotion.CONTROLLER_SOURCE.read_bytes(), 0o755),
-    ]
+    ])
     inner = promotion._artifact_inner_manifest(records, source_sha, contract)
     artifact = tmp_path / "backend.zip"
     manifest = tmp_path / "backend.manifest.json"
@@ -57,8 +65,8 @@ def test_backend_artifact_is_exact_sha_bound_and_rejects_path_traversal(tmp_path
 
     assert verified["status"] == "verified"
     assert verified["source_commit"] == "a" * 40
-    assert verified["required_schema"] == 44
-    assert verified["feature_migrations"] == [43, 44]
+    assert verified["required_schema"] == promotion.REQUIRED_SCHEMA
+    assert verified["feature_migrations"] == list(promotion.FEATURE_MIGRATIONS)
     assert promotion._safe_relative("runtime/api_fastapi/pocket.py").as_posix() == "runtime/api_fastapi/pocket.py"
     with pytest.raises(promotion.PromotionError, match="unsafe"):
         promotion._safe_relative("../escape.txt")
@@ -66,7 +74,7 @@ def test_backend_artifact_is_exact_sha_bound_and_rejects_path_traversal(tmp_path
     assert promotion._contains_embedded_secret_marker("runtime/key.txt", b"-----BEGIN PRIVATE KEY-----\n" + b"A" * 48 + b"\n-----END PRIVATE KEY-----")
 
 
-def test_backup_restore_and_schema_42_to_44_rehearsal_are_independent(tmp_path: Path):
+def test_backup_restore_and_schema_42_to_latest_rehearsal_are_independent(tmp_path: Path):
     artifact, manifest, checksums, external, contract = _artifact(tmp_path)
     database = _database(tmp_path, contract)
 
@@ -95,8 +103,8 @@ def test_backup_restore_and_schema_42_to_44_rehearsal_are_independent(tmp_path: 
     assert restore["status"] == "verified"
     assert migration["status"] == "verified"
     assert migration["source_schema"] == 42
-    assert migration["target_schema"] == 44
-    assert migration["applied_migrations"] == [43, 44]
+    assert migration["target_schema"] == promotion.REQUIRED_SCHEMA
+    assert migration["applied_migrations"] == list(promotion.FEATURE_MIGRATIONS)
     assert migration["old_runtime_code_rollback_compatible"] is False
     assert promotion.validate_database(database, contract, expected_schema=42)["sha256"] == before["sha256"]
     assert external["artifact_sha256"] == promotion.verify_artifact(artifact, manifest, checksums)["artifact_sha256"]
@@ -123,7 +131,7 @@ def _authorization_files(tmp_path: Path, *, candidate: str, current: str, device
         candidate_sha=candidate,
         current_sha=current,
         device_id=device,
-        target_schema=44,
+        target_schema=promotion.REQUIRED_SCHEMA,
         artifact_sha256=artifact_sha,
         backup_receipt_sha256=promotion._sha256_bytes(promotion._canonical(backup)),
         restore_receipt_sha256=promotion._sha256_bytes(promotion._canonical(restore)),
@@ -178,7 +186,7 @@ def test_atomic_lifecycle_commits_and_health_failure_rolls_back(tmp_path: Path):
     )
     committed = promotion.PromotionController(inputs, promotion.SimulationAdapter()).activate(authorization=auth, promotion_public_key=public, recovery_authorization=recovery, recovery_public_key=recovery_public, confirm_cutover=True, isolated=True)
     assert committed["status"] == "committed"
-    assert promotion.validate_database(database, contract, expected_schema=44)["schema_version"] == 44
+    assert promotion.validate_database(database, contract, expected_schema=promotion.REQUIRED_SCHEMA)["schema_version"] == promotion.REQUIRED_SCHEMA
     assert json.loads((state / "backend-runtime/active.json").read_text(encoding="utf-8"))["source_commit"] == "b" * 40
     with pytest.raises(promotion.PromotionError, match="already been consumed"):
         promotion.PromotionController(inputs, promotion.SimulationAdapter()).activate(authorization=auth, promotion_public_key=public, recovery_authorization=recovery, recovery_public_key=recovery_public, confirm_cutover=True, isolated=True)
@@ -206,7 +214,7 @@ def test_isolated_failure_modes_and_restart_reconciliation_fail_closed(tmp_path:
 def test_authority_and_final_confirmation_are_separate_gates(tmp_path: Path):
     _artifact(tmp_path)
     with pytest.raises(promotion.PromotionError, match="production promotion authority"):
-        promotion.authorization_payload(candidate_sha="a" * 40, current_sha="c" * 40, device_id="server", target_schema=44, artifact_sha256="d" * 64, backup_receipt_sha256="e" * 64, restore_receipt_sha256="f" * 64, preflight_sha256="1" * 64, audit_identity="qualification-owner", authority="qualification-owner")
+        promotion.authorization_payload(candidate_sha="a" * 40, current_sha="c" * 40, device_id="server", target_schema=promotion.REQUIRED_SCHEMA, artifact_sha256="d" * 64, backup_receipt_sha256="e" * 64, restore_receipt_sha256="f" * 64, preflight_sha256="1" * 64, audit_identity="qualification-owner", authority="qualification-owner")
 
     adapter = promotion.SimulationAdapter()
     assert adapter.snapshot()["services"]["pocket-worker"] == "online"

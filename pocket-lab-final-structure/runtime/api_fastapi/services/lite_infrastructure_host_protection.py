@@ -38,7 +38,12 @@ def battery(root: Path=Path("/sys/class/power_supply")) -> dict:
             for index,item in enumerate(items):
                 if index>=16:
                     return {"state":"unknown","percent":None,"charging":"unknown"}
-                entries.append(Path(item.path))
+                # Power-supply entries are directories.  Ignore unrelated
+                # files in the bounded root (for example the worker's local
+                # state file) and do not follow symlinked directories into an
+                # untrusted tree.
+                if item.is_dir(follow_symlinks=False):
+                    entries.append(Path(item.path))
         batteries=[p for p in entries if _small(p/"type")=="Battery"]
         if len(batteries)!=1:
             return {"state":"unsupported" if not batteries else "unknown","percent":None,"charging":"unknown"}

@@ -319,14 +319,26 @@ def _storage_material() -> dict[str, Any]:
         status = "read_only"
     else:
         status = _worst([free_band, wal_band])
+    total_bytes = readiness.get("total_bytes")
+    free_bytes = readiness.get("free_bytes")
+    total_capacity_mib = (
+        int(total_bytes // (1024 * 1024))
+        if type(total_bytes) in (int, float) and total_bytes >= 0
+        else None
+    )
+    free_capacity_mib = (
+        int(free_bytes // (1024 * 1024))
+        if percent_scaled is not None and type(free_bytes) in (int, float) and free_bytes >= 0
+        else None
+    )
     return {
         "policy_version": POLICY_VERSION,
         "database_instance": prepared._database_instance(),
         "status": status,
         "free_space_band": free_band,
         # Quantize capacity to MiB to avoid byte-level revision churn.
-        "total_capacity_mib": int(readiness["total_bytes"] // (1024 * 1024)) if readiness.get("total_bytes") is not None else None,
-        "free_capacity_mib": int(readiness["free_bytes"] // (1024 * 1024)) if percent_scaled is not None else None,
+        "total_capacity_mib": total_capacity_mib,
+        "free_capacity_mib": free_capacity_mib,
         "wal_size_mib": int(wal_bytes // (1024 * 1024)) if wal_bytes is not None else None,
         "wal_band": wal_band,
         "state_directory": "available" if available else "unavailable",
