@@ -2,7 +2,7 @@
 -- remains authoritative for delivery; this records scope and execution evidence.
 CREATE TABLE lite_system_health_maintenance_admissions (
     command_id TEXT PRIMARY KEY,
-    operation_id TEXT NOT NULL CHECK(operation_id IN ('storage.evidence.preview','storage.evidence.retention','sqlite.checkpoint.passive','recovery.database.rehearse','projection.reconcile','storage.logs.preview','storage.logs.cleanup','storage.temp.preview','storage.temp.cleanup')),
+    operation_id TEXT NOT NULL CHECK(operation_id IN ('storage.evidence.preview','storage.evidence.retention','sqlite.checkpoint.passive','recovery.database.rehearse','projection.reconcile','storage.logs.preview','storage.logs.cleanup','storage.temp.preview','storage.temp.cleanup','runtime.telemetry.recover','runtime.server_agent.recover')),
     actor_id TEXT NOT NULL,
     session_id TEXT NOT NULL,
     policy_revision TEXT NOT NULL,

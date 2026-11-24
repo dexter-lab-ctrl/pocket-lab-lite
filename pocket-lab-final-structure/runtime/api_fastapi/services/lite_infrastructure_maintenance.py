@@ -36,6 +36,7 @@ def _public(row: dict) -> dict:
         evidence = json.loads(row.get("evidence_json") or "{}")
     except (ValueError,TypeError):
         evidence = {}
+    evidence.pop("service_evidence_id",None)
     return {key: row.get(key) for key in ("command_id","operation_id","preview_id","status","requested_at","expires_at","completed_at")} | {"evidence": evidence, "resolution": row.get("disposition"), "sanitized": True}
 
 
@@ -114,6 +115,9 @@ def admit(context: dict, operation: str, preview_id: str, idempotency_key: str, 
                 if not backup:
                     raise ValueError("verified_backup_required")
                 candidate_json=json.dumps([dict(backup)])
+            elif operation in {"runtime.telemetry.recover","runtime.server_agent.recover"}:
+                from . import lite_infrastructure_service_control as service_control
+                candidate_json=json.dumps([service_control.binding(operation)])
             conn.execute("""INSERT INTO lite_system_health_maintenance_admissions
                 (command_id,operation_id,actor_id,session_id,policy_revision,decision_id,idempotency_digest,preview_id,status,requested_at,expires_at,candidate_json)
                 VALUES(?,?,?,?,?,?,?,?,'queued',?,?,?)""",
@@ -193,6 +197,12 @@ def _execute(command_id: str) -> dict:
     except Exception:
         return _finish(command_id,"blocked",{"reason":"authorization_or_readiness_unavailable"})
     try:
+        if operation in {"runtime.telemetry.recover","runtime.server_agent.recover"}:
+            with connection() as conn:
+                with begin_immediate(conn):
+                    conn.execute("UPDATE lite_system_health_maintenance_admissions SET evidence_json=?,expires_at=? WHERE command_id=? AND status='executing'",
+                        (json.dumps({"supervisor_requested":True}),_expires(180),command_id))
+            return {"status":"executing","command_id":command_id,"sanitized":True}
         if operation in {"storage.logs.preview","storage.temp.preview","storage.logs.cleanup","storage.temp.cleanup"}:
             from . import lite_infrastructure_cleanup as cleanup
             scope=operation.split(".")[1]
@@ -247,6 +257,13 @@ def reconcile() -> None:
 
 def _reconcile() -> None:
     # Existing watchdog invokes this at bounded cadence. No replay.
+    service_rows=health._read("SELECT command_id,evidence_json FROM lite_system_health_maintenance_admissions WHERE status='executing' AND operation_id IN ('runtime.telemetry.recover','runtime.server_agent.recover') LIMIT 1")
+    for row in service_rows:
+        key=json.loads(row["evidence_json"]).get("service_evidence_id")
+        if key:
+            proof=health._read("SELECT verification_state FROM lite_system_health_service_owner_evidence WHERE evidence_id=?",(key,))
+            if proof and proof[0]["verification_state"] in {"verified","unavailable"}:
+                _finish(row["command_id"],"verified" if proof[0]["verification_state"]=="verified" else "uncertain",{"independent_service_readiness":proof[0]["verification_state"]})
     rows = health._read("SELECT command_id,evidence_json FROM lite_system_health_maintenance_admissions WHERE status='executing' AND operation_id='projection.reconcile' LIMIT 1")
     for row in rows:
         evidence=json.loads(row["evidence_json"])
