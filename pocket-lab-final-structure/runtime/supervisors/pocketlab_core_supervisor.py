@@ -394,6 +394,9 @@ class LiteCoreSupervisor:
             from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
 
             CONTROL_PLANE.record_supervisor_evidence(evidence)
+            if repair_actions:
+                from api_fastapi.services import lite_infrastructure_service_evidence
+                lite_infrastructure_service_evidence.record_actions(repair_actions, processes)
         except Exception as exc:
             self._append_event({
                 "event": "canonical_supervisor_evidence_write_failed",
