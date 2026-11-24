@@ -675,6 +675,7 @@ def admit_controlled_recovery(
     decision: dict[str, Any],
 ) -> dict[str, Any] | None:
     """Durably admit one allowlisted request; the worker remains the executor."""
+    from . import lite_infrastructure_authority as authority
     found = incident(incident_id)
     if found is None:
         return None
@@ -692,6 +693,11 @@ def admit_controlled_recovery(
     actor = (auth_context or {}).get("actor") or {}
     actor_id = str(actor.get("identity_id") or "")[:120]
     actor_type = str(actor.get("type") or "unknown")[:32]
+    session = (auth_context or {}).get("session") or {}
+    authorization = (auth_context or {}).get("authorization") or {}
+    session_id = session.get("session_id") if actor_type == "human" else ((auth_context or {}).get("harness") or {}).get("session_id")
+    if not session_id or not session.get("authenticated") or authorization.get("role") not in {"Owner", "Admin", "Operator"}:
+        return {**assessment, "status": "blocked", "reasons": ["durable_authority_required"], "recorded": False}
     if not actor_id or actor_id == "anonymous":
         return {**assessment, "status": "blocked", "reasons": ["actor_identity_required"], "recorded": False}
     digest = hashlib.sha256(str(idempotency_key).encode("utf-8")).hexdigest()
@@ -715,6 +721,8 @@ def admit_controlled_recovery(
         decision.get("continuation_approval_id") or approval.get("approval_id") or ""
     )[:120]
     approval_required = str(decision.get("reason_code") or "") == "approval_required"
+    if approval_required:
+        deadline = (datetime.now(timezone.utc) + timedelta(seconds=900)).isoformat(timespec="seconds").replace("+00:00", "Z")
     status = "approval_required" if approval_required else "admitted" if allowed else "denied"
     execution_state = "queued" if allowed else "not_started"
     authorization_state = "approval_required" if approval_required else "authorized" if allowed else "denied"
@@ -747,18 +755,19 @@ def admit_controlled_recovery(
                         """UPDATE lite_system_health_recovery_requests
                            SET status='admitted',execution_state='queued',authorization_state='authorized',
                                approval_id=?,policy_revision=?,policy_decision_id=?,updated_at=?,available_at=?,
-                               safe_summary=?,outcome='queued',terminal_reason=''
-                           WHERE request_id=? AND status='approval_required'""",
+                               safe_summary=?,outcome='queued',terminal_reason='',deadline_at=?
+                           WHERE request_id=? AND status='approval_required' AND deadline_at>?""",
                         (
                             str(decision.get("continuation_approval_id") or approval_id)[:120],
                             str(decision.get("policy_revision") or "")[:80],
                             str(decision.get("decision_id") or "")[:120],
                             now, now,
                             "Independent approval revalidated; recovery queued for the existing worker owner.",
-                            previous["request_id"],
+                            deadline, previous["request_id"], now,
                         ),
                     ).rowcount
                     if promoted:
+                        authority.bind_request(conn, previous["request_id"], auth_context, confirm)
                         conn.execute(
                             """UPDATE lite_system_health_repair_attempts
                                SET execution_state='queued',authorization_state='authorized',safe_summary=?,outcome='queued'
@@ -816,6 +825,7 @@ def admit_controlled_recovery(
                  execution_state, authorization_state, "passed", "not_started", now, actor_type,
                  safe_summary, "approval_required" if approval_required else "not_executed" if not allowed else "queued"),
             )
+            authority.bind_request(conn, request_id, auth_context, confirm)
             _event(
                 conn,
                 incident_id,
@@ -998,6 +1008,13 @@ async def process_controlled_recovery_requests(bus: Any, durable: str) -> int:
     request = _claim_controlled_recovery(durable)
     if not request:
         return 0
+    from . import lite_infrastructure_authority as authority
+    import asyncio
+    if not await asyncio.to_thread(authority.revalidate, request):
+        _finish_controlled_recovery(request["request_id"], status="blocked", execution_state="blocked",
+                                    verification_state="not_started", before={}, after={},
+                                    outcome="authorization_stale", reason="execution_authority_unavailable")
+        return 1
     before_raw = bus.durable_consumer_status(durable) or {}
     before = {
         "durable": durable, "generation": int(before_raw.get("generation") or 0),
@@ -1017,14 +1034,13 @@ async def process_controlled_recovery_requests(bus: Any, durable: str) -> int:
         return 1
     accepted = False
     try:
-        accepted = bool(await bus.ensure_durable_consumer(durable, force=True))
+        accepted = bool(await asyncio.wait_for(bus.ensure_durable_consumer(durable, force=True), timeout=15))
     except Exception as exc:
         after = {"durable": durable, "checked_at": _now(), "source": "worker_recovery_owner", "error_type": type(exc).__name__}
-        if _schedule_controlled_recovery_retry(request["request_id"], before=before, after=after, reason="recovery_owner_error"):
-            return 1
-        _finish_controlled_recovery(request["request_id"], status="execution_failed", execution_state="failed",
+        # An exception can occur after the owner changed state. Never replay an uncertain execution.
+        _finish_controlled_recovery(request["request_id"], status="manual_attention_required", execution_state="failed",
                                     verification_state="unavailable", before=before, after=after,
-                                    outcome="execution_failed", reason="recovery_owner_error")
+                                    outcome="manual_attention_required", reason="recovery_owner_error")
         return 1
     if accepted:
         # Keep the owner hand-off observable before the independent evidence
@@ -1039,14 +1055,26 @@ async def process_controlled_recovery_requests(bus: Any, durable: str) -> int:
                     (_now(), "Accepted by the existing worker recovery owner; awaiting fresh verification.", request["request_id"]),
                 )
                 _event(conn, request["incident_id"], int(request["incident_generation"]), "recovery_accepted", "Existing worker recovery owner accepted the request; fresh verification is pending.")
+    # A newly allocated generation alone is insufficient. Wait only within the
+    # existing lease for a fetch observed after admission by that generation.
+    if accepted:
+        for _ in range(10):
+            candidate = bus.durable_consumer_status(durable) or {}
+            if (candidate.get("healthy") and candidate.get("generation", 0) > before["generation"]
+                    and freshness(candidate.get("last_fetch_at")) == "current"
+                    and str(candidate.get("last_fetch_at") or "") > before["checked_at"]):
+                break
+            await asyncio.sleep(0.5)
     after_raw = bus.durable_consumer_status(durable) or {}
     after = {
         "durable": durable, "generation": int(after_raw.get("generation") or 0),
         "healthy": bool(after_raw.get("healthy")), "callback_inflight": bool(after_raw.get("callback_inflight")),
         "checked_at": _now(), "source": "worker_recovery_owner",
     }
-    verified = accepted and after["healthy"] and not after["callback_inflight"] and after["generation"] > before["generation"]
-    if not verified and _schedule_controlled_recovery_retry(
+    verified = (accepted and after["healthy"] and not after["callback_inflight"] and after["generation"] > before["generation"]
+                and freshness(after_raw.get("last_fetch_at")) == "current"
+                and str(after_raw.get("last_fetch_at") or "") > before["checked_at"])
+    if not accepted and not verified and _schedule_controlled_recovery_retry(
         request["request_id"], before=before, after=after,
         reason="fresh_independent_verification_not_established",
     ):
