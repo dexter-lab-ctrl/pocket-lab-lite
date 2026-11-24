@@ -109,8 +109,8 @@ def _event(conn: sqlite3.Connection, incident_id: str, generation: int, kind: st
 
 def _prune(conn: sqlite3.Connection) -> None:
     conn.execute("DELETE FROM lite_system_health_events WHERE id NOT IN (SELECT id FROM lite_system_health_events ORDER BY id DESC LIMIT 4000)")
-    conn.execute("DELETE FROM lite_system_health_repair_attempts WHERE repair_id NOT IN (SELECT repair_id FROM lite_system_health_repair_attempts ORDER BY requested_at DESC LIMIT 2000)")
-    conn.execute("DELETE FROM lite_system_health_recovery_requests WHERE request_id NOT IN (SELECT request_id FROM lite_system_health_recovery_requests ORDER BY requested_at DESC LIMIT 2000)")
+    conn.execute("DELETE FROM lite_system_health_repair_attempts WHERE repair_id NOT IN (SELECT repair_id FROM lite_system_health_repair_attempts ORDER BY requested_at DESC LIMIT 2000) AND repair_id NOT IN (SELECT request_id FROM lite_system_health_recovery_requests WHERE completed_at IS NULL)")
+    conn.execute("DELETE FROM lite_system_health_recovery_requests WHERE completed_at IS NOT NULL AND request_id NOT IN (SELECT request_id FROM lite_system_health_recovery_requests ORDER BY requested_at DESC LIMIT 2000)")
     conn.execute(
         "DELETE FROM lite_system_health_incidents WHERE state='resolved' AND incident_id NOT IN "
         "(SELECT incident_id FROM lite_system_health_incidents ORDER BY last_seen_at DESC LIMIT ?) "
@@ -340,7 +340,7 @@ def public_incident(item: dict[str, Any]) -> dict[str, Any]:
         and result.get("concern_state") == "current_concern"
         and result.get("evidence_freshness") == "current"
         and result.get("source") == "nats"
-        and (target_id == "jetstream" or target_id.startswith("consumer:"))
+        and target_id in {"jetstream", "consumer:" + os.environ.get("POCKETLAB_WORKER_DURABLE", "pocketlab_command_worker_v1")}
     )
     result["repair_guidance"] = (
         "Review and request the governed worker-owned recovery action."
@@ -565,7 +565,7 @@ def repair_preflight(incident_id: str, operation_id: str, expected_generation: i
         reasons.append("operation_not_supported_by_controlled_adapter")
     elif found.get("source") != "nats" or not (
         found.get("target_id") == "jetstream"
-        or str(found.get("target_id") or "").startswith("consumer:")
+        or found.get("target_id") == "consumer:" + os.environ.get("POCKETLAB_WORKER_DURABLE", "pocketlab_command_worker_v1")
     ):
         reasons.append("target_not_allowlisted")
     elif not controlled_recovery_enabled():
@@ -772,14 +772,22 @@ def admit_controlled_recovery(
                         ).fetchone()
                 return {**assessment, "request": _public_recovery_request(dict(previous)), "recorded": True, "idempotent_replay": True}
             active = conn.execute(
-                "SELECT * FROM lite_system_health_recovery_requests WHERE incident_id=? AND operation_id=? "
+                "SELECT * FROM lite_system_health_recovery_requests WHERE operation_id=? "
                 "AND status IN ('requested','preflight_checked','approval_required','approved','admitted','accepted','executing','awaiting_verification') "
                 "ORDER BY requested_at LIMIT 1",
-                (incident_id, operation_id),
+                (operation_id,),
             ).fetchone()
             if active is not None:
                 return {**assessment, "status": "blocked", "reasons": ["single_flight_in_progress"],
                         "request": _public_recovery_request(dict(active)), "recorded": False}
+            # Both incident representations resolve to the same worker durable.
+            cutoff = (datetime.now(timezone.utc) - timedelta(seconds=10)).isoformat(timespec="seconds").replace("+00:00", "Z")
+            recent = conn.execute(
+                "SELECT 1 FROM lite_system_health_recovery_requests WHERE operation_id=? AND attempt>0 AND completed_at>? LIMIT 1",
+                (operation_id, cutoff),
+            ).fetchone()
+            if recent is not None:
+                return {**assessment, "status": "blocked", "reasons": ["recovery_cooldown_active"], "recorded": False}
             request_id = "recovery-" + uuid.uuid4().hex
             conn.execute(
                 """INSERT INTO lite_system_health_recovery_requests(
@@ -821,7 +829,60 @@ def admit_controlled_recovery(
     return {**assessment, "request": _public_recovery_request(dict(created)), "recorded": True, "idempotent_replay": False}
 
 
+def reconcile_controlled_recovery_requests() -> int:
+    """Existing watchdog reconciliation; uncertain execution is never replayed."""
+    now = _now()
+    enabled = controlled_recovery_enabled()
+    rows = _read(
+        """SELECT request_id,incident_id,incident_generation,status
+           FROM lite_system_health_recovery_requests
+           WHERE (status IN ('requested','preflight_checked','approval_required','approved','admitted')
+                  AND (deadline_at<=? OR ?=0))
+              OR (status IN ('accepted','executing','awaiting_verification')
+                  AND (deadline_at<=? OR (lease_until IS NOT NULL AND lease_until<=?)))
+           ORDER BY requested_at LIMIT 32""",
+        (now, int(enabled), now, now),
+    )
+    if not rows:
+        return 0
+    changed = 0
+    with connection() as conn:
+        with begin_immediate(conn):
+            for row in rows:
+                uncertain = row["status"] in {"accepted", "executing", "awaiting_verification"}
+                status = "manual_attention_required" if uncertain else "expired" if enabled else "blocked"
+                reason = "execution_lease_or_deadline_expired" if uncertain else "request_deadline_expired" if enabled else "controlled_adapter_disabled"
+                execution = "failed" if uncertain else "blocked"
+                verification = "unavailable" if uncertain else "not_started"
+                summary = ("The previous execution outcome is uncertain; review fresh evidence. No replay was attempted."
+                           if uncertain else "Recovery admission expired or was disabled before execution.")
+                updated = conn.execute(
+                    """UPDATE lite_system_health_recovery_requests
+                       SET status=?,execution_state=?,verification_state=?,updated_at=?,completed_at=?,
+                           lease_until=NULL,terminal_reason=?,outcome=?,safe_summary=?
+                       WHERE request_id=? AND status=? AND
+                         ((status IN ('requested','preflight_checked','approval_required','approved','admitted') AND (deadline_at<=? OR ?=0))
+                          OR (status IN ('accepted','executing','awaiting_verification') AND
+                              (deadline_at<=? OR (lease_until IS NOT NULL AND lease_until<=?))))""",
+                    (status, execution, verification, now, now, reason, status, summary,
+                     row["request_id"], row["status"], now, int(enabled), now, now),
+                ).rowcount
+                if not updated:
+                    continue
+                conn.execute(
+                    """UPDATE lite_system_health_repair_attempts
+                       SET execution_state=?,verification_state=?,completed_at=?,safe_summary=?,outcome=?
+                       WHERE repair_id=?""",
+                    (execution, verification, now, summary, status, row["request_id"]),
+                )
+                _event(conn, row["incident_id"], row["incident_generation"], "recovery_reconciled", summary)
+                changed += 1
+    return changed
+
+
 def _claim_controlled_recovery(durable: str) -> dict[str, Any] | None:
+    if not controlled_recovery_enabled():
+        return None
     now = _now()
     with connection() as conn:
         with begin_immediate(conn):
@@ -878,15 +939,17 @@ def _finish_controlled_recovery(request_id: str, *, status: str, execution_state
     safe_after = json.dumps(after, sort_keys=True, separators=(",", ":"))[:4096]
     with connection() as conn:
         with begin_immediate(conn):
-            conn.execute(
+            changed = conn.execute(
                 """UPDATE lite_system_health_recovery_requests
                    SET status=?,execution_state=?,verification_state=?,updated_at=?,completed_at=?,lease_until=NULL,
                        before_evidence_json=?,after_evidence_json=?,safe_summary=?,outcome=?,terminal_reason=?
-                   WHERE request_id=?""",
+                   WHERE request_id=? AND status IN ('executing','awaiting_verification')""",
                 (status, execution_state, verification_state, now, now, safe_before, safe_after,
                  "Controlled recovery completed with independently checked worker evidence." if status == "verified" else "Controlled recovery did not establish verified recovery.",
                  outcome[:80], reason[:120], request_id),
-            )
+            ).rowcount
+            if not changed:
+                return
             conn.execute(
                 """UPDATE lite_system_health_repair_attempts
                    SET execution_state=?,verification_state=?,completed_at=?,safe_summary=?,outcome=? WHERE repair_id=?""",
@@ -898,6 +961,8 @@ def _finish_controlled_recovery(request_id: str, *, status: str, execution_state
 
 def _schedule_controlled_recovery_retry(request_id: str, *, before: dict[str, Any], after: dict[str, Any], reason: str) -> bool:
     """Keep retries finite and delayed without interrupting an active callback."""
+    if not controlled_recovery_enabled():
+        return False
     now_dt = datetime.now(timezone.utc)
     now = now_dt.isoformat(timespec="seconds").replace("+00:00", "Z")
     try:
@@ -907,7 +972,7 @@ def _schedule_controlled_recovery_retry(request_id: str, *, before: dict[str, An
     available = (now_dt + timedelta(seconds=cooldown)).isoformat(timespec="seconds").replace("+00:00", "Z")
     with connection() as conn:
         with begin_immediate(conn):
-            row = conn.execute("SELECT attempt,max_attempts,deadline_at FROM lite_system_health_recovery_requests WHERE request_id=?", (request_id,)).fetchone()
+            row = conn.execute("SELECT attempt,max_attempts,deadline_at FROM lite_system_health_recovery_requests WHERE request_id=? AND status IN ('executing','awaiting_verification')", (request_id,)).fetchone()
             if not row or int(row["attempt"]) >= int(row["max_attempts"] or 0) or str(row["deadline_at"] or "") <= now:
                 return False
             conn.execute(
@@ -939,6 +1004,12 @@ async def process_controlled_recovery_requests(bus: Any, durable: str) -> int:
         "healthy": bool(before_raw.get("healthy")), "callback_inflight": bool(before_raw.get("callback_inflight")),
         "checked_at": _now(), "source": "worker_recovery_owner",
     }
+    if not controlled_recovery_enabled() or before["healthy"]:
+        _finish_controlled_recovery(request["request_id"], status="blocked", execution_state="blocked",
+                                    verification_state="unavailable", before=before, after={},
+                                    outcome="manual_attention_required",
+                                    reason="controlled_adapter_disabled" if not controlled_recovery_enabled() else "consumer_already_healthy")
+        return 1
     if before["callback_inflight"]:
         _finish_controlled_recovery(request["request_id"], status="blocked", execution_state="blocked",
                                     verification_state="unavailable", before=before, after={},
