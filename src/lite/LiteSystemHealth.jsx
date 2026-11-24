@@ -8,6 +8,7 @@ import { GlassCard, LiteButton, LiteRefreshButton, LiteActionRow, PageHeader, St
 import { LiteDetailsPanel } from './LiteOverlay.jsx';
 import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
 import { useLitePanelSectionNavigation } from './hooks/useLitePanelSectionNavigation.js';
+import SystemHealthOwnerControls from './components/SystemHealthOwnerControls.jsx';
 import HomeGroupedSections from './components/HomeGroupedSections.jsx';
 import './components/azureHome.css';
 import './components/homeCommand.css';
@@ -287,7 +288,7 @@ export default function LiteSystemHealth({ onNavigate }) {
   });
   const policies = useLiteQuery({
     queryKey: ['lite', 'system-health', 'policies'], path: '/api/lite/system-health/policies',
-    queryFn: liteApi.healthIntelligencePolicies, enabled: open && (section === 'policies' || section === 'repairs'),
+    queryFn: liteApi.healthIntelligencePolicies, enabled: open && ['policies','repairs','storage','protection','history','details'].includes(section),
     staleTime: 120_000, pollingMode: 'relaxed',
   });
   const current = useMemo(() => systemHealthPresentation(summaryQuery.data, summaryQuery.savedStateOnly || summaryQuery.backendReachable === false), [summaryQuery.data, summaryQuery.savedStateOnly, summaryQuery.backendReachable]);
@@ -419,10 +420,11 @@ export default function LiteSystemHealth({ onNavigate }) {
             'Current observations are not sufficient to confirm health.'}
       </p>
     </GlassCard>
-    {(summaryQuery.data?.automatic_recovery?.verified_count > 0 || summaryQuery.data?.automatic_recovery?.pending_count > 0) &&
+    {(summaryQuery.data?.automatic_recovery?.verified_count > 0 || summaryQuery.data?.automatic_recovery?.pending_count > 0 || summaryQuery.data?.automatic_recovery?.core_service_verified_count > 0 || summaryQuery.data?.automatic_recovery?.core_service_pending_count > 0) &&
       <GlassCard as="section" className="lite-system-health-history-preview" aria-label="Automatic recovery evidence">
         <h2>Automatic recovery</h2>
         <p>{readOnly ? 'Saved evidence · ' : ''}{summaryQuery.data.automatic_recovery.verified_count || 0} verified in the recorded history · {summaryQuery.data.automatic_recovery.pending_count || 0} awaiting verification.</p>
+        <p>{summaryQuery.data.automatic_recovery.core_service_verified_count || 0} core service recoveries verified · {summaryQuery.data.automatic_recovery.core_service_pending_count || 0} awaiting verification.</p>
         <LiteButton haptic tone="secondary" onClick={() => { setSection('history'); setOpen(true); }}>Review recovery history</LiteButton>
       </GlassCard>}
     <section className="lite-system-health-problems" aria-label="Current System Health concerns">
@@ -507,6 +509,7 @@ export default function LiteSystemHealth({ onNavigate }) {
           {(history.data?.automatic_recoveries || []).length ? history.data.automatic_recoveries.slice(0, 30).map((item, i) =>
             <LiteActionRow key={i} label="Command consumer recovery" value={item.verification_state === 'verified' ? 'Verified' : item.verification_state === 'pending' ? 'Awaiting verification' : 'Not verified'}
               summary="Existing watchdog evidence; not an operator request." />) : <p className="lite-system-health-muted">No automatic recovery evidence is available.</p>}
+          {(history.data?.core_service_recoveries || []).map((item, i) => <LiteActionRow key={'core-' + i} label={recoveryOperationLabel(item.operation_id)} value={item.verification_state === 'verified' ? 'Verified' : item.verification_state === 'pending' ? 'Awaiting verification' : 'Not verified'} summary="Core supervisor action; independent runtime readiness required." />)}
           <h3>Recorded repair attempts</h3>
           {(history.data?.repairs || []).length ? history.data.repairs.slice(0, 30).map((item, i) =>
             <LiteActionRow key={item.repair_id || i} label={recoveryOperationLabel(item.operation_id)}
@@ -549,6 +552,7 @@ export default function LiteSystemHealth({ onNavigate }) {
           <LiteActionRow label="Recurring components" value={String(intelligence.data?.recurring_components?.length ?? 'Not confirmed')} />
           <LiteActionRow label="Verified governed recoveries" value={String(intelligence.data?.reliability?.verified_count ?? 'Not confirmed')} summary="Bounded request history, not an uptime measure." />
           <LiteActionRow label="Observed availability" value="Not confirmed" />
+          <LiteActionRow label="Mean verified request elapsed time" value={typeof intelligence.data?.reliability?.mean_verified_request_elapsed_seconds === "number" ? intelligence.data.reliability.mean_verified_request_elapsed_seconds + " s" : "Not confirmed"} summary="Request elapsed time, not incident MTTR." />
           {(intelligence.data?.correlations || []).map((item, i) => <LiteActionRow key={i}
             label={componentLabel(item.upstream) + ' → ' + componentLabel(item.downstream)} value="Possible relationship" summary={item.summary} />)}
           <details className="lite-system-health-disclosure">
@@ -557,6 +561,9 @@ export default function LiteSystemHealth({ onNavigate }) {
           </details>
           <p className="lite-system-health-muted">Raw evidence, logs, credentials and private paths remain backend-only.</p>
         </section> : null}
+        {['policies','storage','protection','history','details'].includes(section) && <SystemHealthOwnerControls key={section} section={section}
+          policy={policies.data} history={history.data} refreshPolicy={policies.refresh} refreshHistory={history.refresh}
+          readOnly={readOnly || Boolean(policies.error) || policies.savedStateOnly || policies.backendReachable === false} />}
       </HomeGroupedSections>
     </LiteDetailsPanel>
   </div>;
