@@ -68,9 +68,10 @@ def _prepared_guard(operation: str) -> bool:
 def admit(context: dict, operation: str, preview_id: str, idempotency_key: str, confirm: bool) -> tuple[dict,bool]:
     if not confirm or operation not in OPERATIONS:
         raise ValueError("confirmation_or_operation_invalid")
-    if operation == "storage.evidence.retention" and not preview_id:
+    previews={"storage.evidence.retention":"storage.evidence.preview","storage.logs.cleanup":"storage.logs.preview","storage.temp.cleanup":"storage.temp.preview"}
+    if operation in previews and not preview_id:
         raise ValueError("preview_required")
-    if operation != "storage.evidence.retention" and preview_id:
+    if operation not in previews and preview_id:
         raise ValueError("unexpected_preview")
     digest = hashlib.sha256(idempotency_key.encode()).hexdigest()
     with connection() as conn:
@@ -101,8 +102,8 @@ def admit(context: dict, operation: str, preview_id: str, idempotency_key: str, 
             candidate_json = "[]"
             if preview_id:
                 preview = conn.execute("""SELECT * FROM lite_system_health_maintenance_admissions
-                    WHERE command_id=? AND operation_id='storage.evidence.preview' AND status='verified' AND actor_id=? AND expires_at>?""",
-                    (preview_id,actor,health._now())).fetchone()
+                    WHERE command_id=? AND operation_id=? AND status='verified' AND actor_id=? AND expires_at>?""",
+                    (preview_id,previews[operation],actor,health._now())).fetchone()
                 if not preview or not json.loads(preview["candidate_json"]):
                     raise ValueError("preview_expired_or_empty")
                 if conn.execute("SELECT 1 FROM lite_system_health_maintenance_admissions WHERE preview_id=? AND status IN ('queued','executing','verified','uncertain')",(preview_id,)).fetchone():
@@ -132,7 +133,7 @@ def _finish(command_id: str,status: str,evidence: dict,candidates: list[str] | N
             if row["status"]=="executing":
                 conn.execute("""UPDATE lite_system_health_maintenance_admissions SET status=?,completed_at=?,evidence_json=?,
                     candidate_json=?,expires_at=? WHERE command_id=? AND status='executing'""",
-                    (status,health._now(),json.dumps(evidence,separators=(",",":")),json.dumps(candidates or []),_expires(300) if row["operation_id"]=="storage.evidence.preview" and status=="verified" else row["expires_at"],command_id))
+                    (status,health._now(),json.dumps(evidence,separators=(",",":")),json.dumps(candidates or []),_expires(300) if row["operation_id"] in {"storage.evidence.preview","storage.logs.preview","storage.temp.preview"} and status=="verified" else row["expires_at"],command_id))
             row = conn.execute("SELECT * FROM lite_system_health_maintenance_admissions WHERE command_id=?",(command_id,)).fetchone()
     return _public(dict(row))
 
@@ -183,8 +184,8 @@ def _execute(command_id: str) -> dict:
             current = authority._human_authority(conn,request["actor_id"],request["session_id"])
             if request["preview_id"]:
                 preview = conn.execute("""SELECT candidate_json FROM lite_system_health_maintenance_admissions
-                    WHERE command_id=? AND actor_id=? AND operation_id='storage.evidence.preview' AND status='verified' AND expires_at>?""",
-                    (request["preview_id"],request["actor_id"],health._now())).fetchone()
+                    WHERE command_id=? AND actor_id=? AND operation_id=? AND status='verified' AND expires_at>?""",
+                    (request["preview_id"],request["actor_id"],{"storage.evidence.retention":"storage.evidence.preview","storage.logs.cleanup":"storage.logs.preview","storage.temp.cleanup":"storage.temp.preview"}[operation],health._now())).fetchone()
                 if not preview or preview["candidate_json"] != request["candidate_json"]:
                     current = None
         if not current or current != auth or not enabled(operation) or maintenance.maintenance_state().get("active") or maintenance.active_security_scan():
@@ -192,6 +193,14 @@ def _execute(command_id: str) -> dict:
     except Exception:
         return _finish(command_id,"blocked",{"reason":"authorization_or_readiness_unavailable"})
     try:
+        if operation in {"storage.logs.preview","storage.temp.preview","storage.logs.cleanup","storage.temp.cleanup"}:
+            from . import lite_infrastructure_cleanup as cleanup
+            scope=operation.split(".")[1]
+            if operation.endswith(".preview"):
+                candidates,evidence=cleanup.preview(scope)
+                return _finish(command_id,"verified",evidence,candidates)
+            result=cleanup.apply(scope,json.loads(request["candidate_json"]))
+            return _finish(command_id,"verified",result)
         if operation=="recovery.database.rehearse":
             from . import lite_database_recovery
             binding=json.loads(request["candidate_json"])[0]

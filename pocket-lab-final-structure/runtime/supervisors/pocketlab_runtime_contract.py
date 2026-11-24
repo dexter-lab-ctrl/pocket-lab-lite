@@ -9,6 +9,8 @@ and local readiness facts into bounded, schema-versioned evidence.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from contextlib import contextmanager
+import fcntl
 from datetime import datetime, timezone
 import json
 import math
@@ -685,7 +687,29 @@ def _pm2_log_file_snapshot(logs: Path) -> tuple[list[tuple[Path, os.stat_result]
     return files, complete
 
 
-def enforce_log_policy(
+@contextmanager
+def log_policy_lock(state_root: Path):
+    root=state_root/"runtime"
+    root.mkdir(parents=True,exist_ok=True)
+    fd=os.open(root/"pm2-log-policy.lock",os.O_CREAT|os.O_RDWR|os.O_NOFOLLOW,0o600)
+    try:
+        fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        yield
+    finally:
+        os.close(fd)
+
+
+def enforce_log_policy(state_root: Path, **kwargs) -> dict[str, Any]:
+    try:
+        with log_policy_lock(state_root):
+            return _enforce_log_policy(state_root,**kwargs)
+    except BlockingIOError:
+        previous=_read_json(state_root/"runtime"/"pm2-log-policy.json")
+        return {"pm2_log_bytes":previous.get("pm2_log_bytes"),"pm2_log_ceiling_bytes":LogPolicy.from_env().ceiling_bytes,
+                "within_policy":False,"cleanup_performed":False,"scan_complete":False,"sanitized":True}
+
+
+def _enforce_log_policy(
     state_root: Path,
     *,
     now: float | None = None,

@@ -324,7 +324,7 @@ def system_health_diagnostic_export(payload: DiagnosticExportRequest, request: R
 
 class MaintenanceRequest(BaseModel):
     model_config = {"extra":"forbid"}
-    operation_id: str = Field(pattern="^(storage[.]evidence[.](preview|retention)|sqlite[.]checkpoint[.]passive|recovery[.]database[.]rehearse|projection[.]reconcile)$")
+    operation_id: str = Field(pattern="^(storage[.]evidence[.](preview|retention)|storage[.](logs|temp)[.](preview|cleanup)|sqlite[.]checkpoint[.]passive|recovery[.]database[.]rehearse|projection[.]reconcile)$")
     preview_id: str = Field(default="",max_length=80)
     idempotency_key: str = Field(min_length=16,max_length=128)
     confirm: bool

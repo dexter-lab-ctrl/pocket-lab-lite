@@ -2608,8 +2608,10 @@ def rehearse_database_backup(backup_id: str, expected_sha256: str) -> dict[str, 
         readiness=lite_storage_guard.storage_readiness(root=state)
         if not readiness["ready"] or readiness["free_bytes"]-total*3<readiness["minimum_free_bytes"]:
             raise ValueError("rehearsal_storage_limit")
-        with tempfile.TemporaryDirectory(prefix="database-rehearsal-",dir=state) as scratch:
+        from .lite_infrastructure_cleanup import rehearsal_root,TEMP_MARKER,TEMP_MAGIC
+        with tempfile.TemporaryDirectory(prefix="database-rehearsal-",dir=rehearsal_root()) as scratch:
             staged=Path(scratch)
+            (staged/TEMP_MARKER).write_bytes(TEMP_MAGIC)
             for entry,expected_size in files:
                 fd=os.open(entry,os.O_RDONLY|os.O_NOFOLLOW)
                 with os.fdopen(fd,"rb") as source, (staged/entry.name).open("xb") as target:

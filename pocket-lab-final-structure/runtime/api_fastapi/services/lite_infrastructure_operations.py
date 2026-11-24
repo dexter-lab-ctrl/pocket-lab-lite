@@ -72,7 +72,9 @@ OPERATIONS = (
     Operation("network.remote_access.restore", "Review remote access", "existing_remote_access_owner", "B", "guided_existing_flow", "devices"),
     Operation("device.agent.recover", "Recover device agent", "node_supervisor", "A", "externally_managed", "devices"),
     Operation("app.repair", "Repair app", "existing_app_action", "B", "guided_existing_flow", "catalog"),
+    Operation("storage.logs.preview", "Review expired managed log archives", "security_maintenance", "A", "not_enabled"),
     Operation("storage.logs.cleanup", "Clean expired managed logs", "existing_retention_owner", "B", "not_enabled"),
+    Operation("storage.temp.preview", "Review abandoned database rehearsal files", "security_maintenance", "A", "not_enabled"),
     Operation("storage.temp.cleanup", "Free abandoned temporary files", "existing_maintenance_owner", "B", "not_enabled"),
     Operation("storage.cache.cleanup", "Review application cache", "existing_app_action", "B", "guided_existing_flow", "catalog"),
     Operation("storage.evidence.preview", "Preview old evidence records", "security_maintenance", "A", "not_enabled"),
@@ -101,7 +103,7 @@ OPERATIONS = (
 PRODUCTION_QUALIFIED_OPERATIONS: frozenset[str] = frozenset()
 
 
-MAINTENANCE_OPERATIONS = frozenset({"storage.evidence.preview", "storage.evidence.retention", "sqlite.checkpoint.passive", "recovery.database.rehearse", "projection.reconcile"})
+MAINTENANCE_OPERATIONS = frozenset({"storage.evidence.preview", "storage.evidence.retention", "sqlite.checkpoint.passive", "recovery.database.rehearse", "projection.reconcile", "storage.logs.preview", "storage.logs.cleanup", "storage.temp.preview", "storage.temp.cleanup"})
 
 
 def maintenance_enabled(operation: str) -> bool:
