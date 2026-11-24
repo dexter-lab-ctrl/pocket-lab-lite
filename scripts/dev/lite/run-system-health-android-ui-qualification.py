@@ -298,6 +298,11 @@ def main(argv: list[str] | None = None) -> int:
         run._run_projection_driver()
         run._bootstrap()
         run._qualify_api()
+        # The candidate's normal projection scheduler may observe the healthy
+        # disposable broker after the API recovery probe. Re-arm the bounded
+        # synthetic degraded NATS projection immediately before opening Chrome
+        # so the browser lane exercises the same current, eligible concern.
+        run._run_projection_driver()
         run._concurrency()
         run._measure()
 

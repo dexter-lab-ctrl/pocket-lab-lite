@@ -983,7 +983,6 @@ for payload in payloads:
     results.append({"changed": bool(result.changed), "revision": int(result.revision)})
     time.sleep(0.25)
 print(json.dumps({"results": results, "status": "PASS" if results and results[0]["changed"] and not results[1]["changed"] else "FAIL"}, sort_keys=True), flush=True)
-time.sleep(3)
 '''
         remote_path = f"{self.remote_root}/probe/system-health-driver.py"
         self.controller._android_remote_write(self.remote.host, remote_path, driver, root=self.remote_root, mode="400")
