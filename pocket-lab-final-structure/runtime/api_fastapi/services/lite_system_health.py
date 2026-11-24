@@ -575,7 +575,7 @@ def repair_preflight(incident_id: str, operation_id: str, expected_generation: i
         "operation_id": _safe(operation_id, 80), "risk_class": candidate["risk_class"] if candidate else "unknown",
         "allowed": not reasons, "status": "preflight_checked" if not reasons else "blocked",
         "reasons": reasons,
-        "requires_confirmation": bool(candidate and candidate["risk_class"] != "A"),
+        "requires_confirmation": bool(candidate),
         "requires_authorization": True, "requires_fresh_evidence": True,
         "max_retries": 2 if not reasons else 0, "cooldown_state": "ready" if not reasons else "not_applicable",
         "single_flight_state": "available" if not reasons else "not_applicable",
@@ -696,6 +696,8 @@ def admit_controlled_recovery(
     session = (auth_context or {}).get("session") or {}
     authorization = (auth_context or {}).get("authorization") or {}
     session_id = session.get("session_id") if actor_type == "human" else ((auth_context or {}).get("harness") or {}).get("session_id")
+    if not confirm:
+        return {**assessment, "status": "blocked", "reasons": ["confirmation_required"], "recorded": False}
     if not session_id or not session.get("authenticated") or authorization.get("role") not in {"Owner", "Admin", "Operator"}:
         return {**assessment, "status": "blocked", "reasons": ["durable_authority_required"], "recorded": False}
     if not actor_id or actor_id == "anonymous":
@@ -751,6 +753,8 @@ def admit_controlled_recovery(
                 # request. Once the exact approval is revalidated by OPA, move
                 # the same idempotent request into the existing owner queue.
                 if previous["status"] == "approval_required" and allowed:
+                    if previous["deadline_at"] <= now or previous["approval_id"] != approval_id:
+                        return {**assessment, "status": "blocked", "reasons": ["approval_expired_or_changed"], "recorded": False}
                     promoted = conn.execute(
                         """UPDATE lite_system_health_recovery_requests
                            SET status='admitted',execution_state='queued',authorization_state='authorized',
@@ -1004,6 +1008,9 @@ def _schedule_controlled_recovery_retry(request_id: str, *, before: dict[str, An
 async def process_controlled_recovery_requests(bus: Any, durable: str) -> int:
     """Worker-watchdog adapter; never starts a process or creates a consumer."""
     if not controlled_recovery_enabled():
+        return 0
+    # Avoid taking the SQLite writer on an idle watchdog tick.
+    if not _read("SELECT 1 FROM lite_system_health_recovery_requests WHERE status='admitted' AND available_at<=? AND deadline_at>? LIMIT 1", (_now(), _now())):
         return 0
     request = _claim_controlled_recovery(durable)
     if not request:
