@@ -945,10 +945,12 @@ class SystemHealthAndroidQualification:
             # ("POCKETLAB_QUALIFICATION_OWNER": "0"). The browser UI lane
             # opts into the existing non-destructive owner bridge explicitly.
             "POCKETLAB_ENVIRONMENT": "qualification", "POCKETLAB_HARNESS_ENABLED": "1", "POCKETLAB_HARNESS_DESTRUCTIVE": "0", "POCKETLAB_QUALIFICATION_OWNER": self.qualification_owner_flag, "POCKETLAB_TEST_AUTH_BYPASS": "0",
-            # Controlled recovery is enabled only inside the isolated browser
-            # candidate. The security-assurance lane and installed runtime
-            # remain default-off.
-            "POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1" if self.browser_ui else "0",
+            # The adapter is enabled only inside this disposable qualification
+            # candidate so the backend lane can exercise its fail-closed
+            # denial contract. The security-assurance profile remains
+            # non-owner and cannot execute recovery; the installed runtime and
+            # production activation remain default-off.
+            "POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1",
             "POCKETLAB_HARNESS_BOOTSTRAP_APPROVED": "1", "POCKETLAB_HARNESS_BOOTSTRAP_PROFILE": self.bootstrap_profile, "POCKETLAB_HARNESS_RUNTIME_ID": f"qualification-{self.run_id}",
             "POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID": self.principal_id, "POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT": self.fingerprint, "POCKETLAB_HARNESS_PROVISIONING_TOKEN": self.provisioning_token,
             "POCKETLAB_STATE_DIR": f"{self.remote_root}/state", "POCKETLAB_LITE_DB_PATH": f"{self.remote_root}/state/{SCHEMA_DB_NAME}", "POCKETLAB_BASE_DIR": f"{self.remote_root}/base", "POCKETLAB_API_DIR": f"{self.remote_root}/api", "POCKETLAB_IAC_DIR": f"{self.remote_root}/iac",

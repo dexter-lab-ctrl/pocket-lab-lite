@@ -72,6 +72,7 @@ def test_backend_lane_starts_its_recovery_fixture_before_api_contract():
     fixture_call = run_body.index("self._start_recovery_projection_fixture()")
     api_call = run_body.index("self._qualify_api()")
     assert fixture_call < api_call
+    assert '"POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1"' in source
 
 
 def test_isolated_binding_rejects_production_paths_and_collisions(tmp_path):
@@ -186,7 +187,7 @@ def test_readiness_sanitization_and_source_safety_contract():
     assert '"POCKETLAB_TEST_AUTH_BYPASS": "0"' in source
     assert '"POCKETLAB_QUALIFICATION_OWNER": self.qualification_owner_flag' in source
     assert '"POCKETLAB_HARNESS_DESTRUCTIVE": "0"' in source
-    assert '"POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1" if self.browser_ui else "0"' in source
+    assert '"POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1"' in source
     assert '"POCKETLAB_NATS_URL": nats_origin' in source
     assert "production_database_touched" in source
     assert "_REMOTE_RECOVERY_FIXTURE" in source
