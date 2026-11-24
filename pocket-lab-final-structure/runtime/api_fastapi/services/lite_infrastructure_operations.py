@@ -90,6 +90,7 @@ OPERATIONS = (
     Operation("security.scanner.review", "Review scanner readiness", "existing_security_owner", "A", "guided_existing_flow", "security"),
     Operation("recovery.backup.create", "Create recovery backup", "existing_recovery_owner", "B", "guided_existing_flow", "recovery"),
     Operation("recovery.backup.verify", "Verify existing backup", "existing_recovery_owner", "A", "guided_existing_flow", "recovery"),
+    Operation("recovery.database.rehearse", "Rehearse database restore on isolated copy", "existing_recovery_owner", "B", "not_enabled"),
     Operation("recovery.database.restore", "Restore Pocket Lab data", "recovery", "C", "never_automatic", "recovery"),
     Operation("diagnostics.support.export", "Review diagnostic export", "existing_evidence_owner", "B", "not_enabled"),
 )
@@ -100,7 +101,7 @@ OPERATIONS = (
 PRODUCTION_QUALIFIED_OPERATIONS: frozenset[str] = frozenset()
 
 
-MAINTENANCE_OPERATIONS = frozenset({"storage.evidence.preview", "storage.evidence.retention", "sqlite.checkpoint.passive"})
+MAINTENANCE_OPERATIONS = frozenset({"storage.evidence.preview", "storage.evidence.retention", "sqlite.checkpoint.passive", "recovery.database.rehearse", "projection.reconcile"})
 
 
 def maintenance_enabled(operation: str) -> bool:

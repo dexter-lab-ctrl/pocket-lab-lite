@@ -2579,3 +2579,59 @@ def database_recovery_summary() -> dict[str, Any]:
 
 def database_recovery_status() -> dict[str, Any]:
     return _database_recovery_base(backup_limit=25)
+
+
+def rehearse_database_backup(backup_id: str, expected_sha256: str) -> dict[str, Any]:
+    """Verify and migrate a bounded, private staged copy without promotion."""
+    import tempfile
+    import re
+    from . import lite_storage_guard
+    if not _is_safe_identifier(backup_id) or not re.fullmatch(r"[0-9a-f]{64}",expected_sha256):
+        raise ValueError("invalid_backup_binding")
+    with _database_recovery_lock("system-health-rehearsal"):
+        if maintenance.maintenance_state().get("active") or maintenance.active_security_scan():
+            raise RuntimeError("maintenance_conflict")
+        package=database_backup_package(backup_id)
+        if package.is_symlink() or not package.is_dir():
+            raise ValueError("backup_unavailable")
+        files=[]
+        total=0
+        for index,entry in enumerate(package.iterdir()):
+            if index>=32 or entry.is_symlink() or not entry.is_file():
+                raise ValueError("unsupported_backup_package")
+            size=entry.stat().st_size
+            total+=size
+            files.append((entry,size))
+            if total>256*1024*1024:
+                raise ValueError("rehearsal_size_limit")
+        state=deps.settings().state_dir
+        readiness=lite_storage_guard.storage_readiness(root=state)
+        if not readiness["ready"] or readiness["free_bytes"]-total*3<readiness["minimum_free_bytes"]:
+            raise ValueError("rehearsal_storage_limit")
+        with tempfile.TemporaryDirectory(prefix="database-rehearsal-",dir=state) as scratch:
+            staged=Path(scratch)
+            for entry,expected_size in files:
+                fd=os.open(entry,os.O_RDONLY|os.O_NOFOLLOW)
+                with os.fdopen(fd,"rb") as source, (staged/entry.name).open("xb") as target:
+                    copied=0
+                    while True:
+                        block=source.read(1024*1024)
+                        if not block:
+                            break
+                        copied+=len(block)
+                        if copied>expected_size:
+                            raise ValueError("backup_changed")
+                        target.write(block)
+                    if copied!=expected_size:
+                        raise ValueError("backup_changed")
+            manifest,validation=_verify_database_backup_package(staged,expected_backup_id=backup_id,persist_manifest=False)
+            if validation["sha256"]!=expected_sha256:
+                raise ValueError("backup_binding_changed")
+            database=staged/manifest["database_file"]
+            applied=_apply_migrations_to_database(database)
+            result=validate_database_file(database)
+            verified=bool(result["valid"] and result["schema_current"])
+            return {"verified":verified,"backup_schema":validation["schema_version"],
+                    "rehearsed_schema":result["schema_version"],"migrations_applied":len(applied),
+                    "integrity_ok":result["integrity_check"]=="ok","foreign_keys_clean":result["foreign_keys_clean"],
+                    "live_database_replaced":False,"full_restore_rehearsed":False,"sanitized":True}

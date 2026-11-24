@@ -108,6 +108,11 @@ def admit(context: dict, operation: str, preview_id: str, idempotency_key: str, 
                 if conn.execute("SELECT 1 FROM lite_system_health_maintenance_admissions WHERE preview_id=? AND status IN ('queued','executing','verified','uncertain')",(preview_id,)).fetchone():
                     raise ValueError("preview_already_used")
                 candidate_json = preview["candidate_json"]
+            elif operation=="recovery.database.rehearse":
+                backup=conn.execute("SELECT backup_id,sha256 FROM security_database_backups WHERE status='verified' ORDER BY created_at DESC,backup_id DESC LIMIT 1").fetchone()
+                if not backup:
+                    raise ValueError("verified_backup_required")
+                candidate_json=json.dumps([dict(backup)])
             conn.execute("""INSERT INTO lite_system_health_maintenance_admissions
                 (command_id,operation_id,actor_id,session_id,policy_revision,decision_id,idempotency_digest,preview_id,status,requested_at,expires_at,candidate_json)
                 VALUES(?,?,?,?,?,?,?,?,'queued',?,?,?)""",
@@ -187,6 +192,20 @@ def _execute(command_id: str) -> dict:
     except Exception:
         return _finish(command_id,"blocked",{"reason":"authorization_or_readiness_unavailable"})
     try:
+        if operation=="recovery.database.rehearse":
+            from . import lite_database_recovery
+            binding=json.loads(request["candidate_json"])[0]
+            result=lite_database_recovery.rehearse_database_backup(binding["backup_id"],binding["sha256"])
+            return _finish(command_id,"verified" if result["verified"] else "uncertain",result,[binding])
+        if operation=="projection.reconcile":
+            from . import lite_phase3c_projections
+            # Record the dispatch boundary before requesting existing owner work.
+            with connection() as conn:
+                with begin_immediate(conn):
+                    conn.execute("UPDATE lite_system_health_maintenance_admissions SET evidence_json=? WHERE command_id=? AND status='executing'",
+                        (json.dumps({"dispatch_at":health._now(),"domain":"system.activity_history"}),command_id))
+            lite_phase3c_projections.mark_dirty("system.activity_history",reason="reconcile_system_health")
+            return {"status":"executing","command_id":command_id,"sanitized":True}
         if operation=="storage.evidence.preview":
             with connection() as conn:
                 candidates = maintenance.reviewed_retention_plan(conn)
@@ -219,6 +238,12 @@ def reconcile() -> None:
 
 def _reconcile() -> None:
     # Existing watchdog invokes this at bounded cadence. No replay.
+    rows = health._read("SELECT command_id,evidence_json FROM lite_system_health_maintenance_admissions WHERE status='executing' AND operation_id='projection.reconcile' LIMIT 1")
+    for row in rows:
+        evidence=json.loads(row["evidence_json"])
+        completed=health._read("SELECT last_completed_at,last_error_type FROM projection_refresh_state WHERE domain='system.activity_history'")
+        if evidence.get("dispatch_at") and completed and not completed[0]["last_error_type"] and str(completed[0]["last_completed_at"] or "")>evidence["dispatch_at"]:
+            _finish(row["command_id"],"verified",{"fresh_projection_completed":True})
     rows = health._read("SELECT command_id,status FROM lite_system_health_maintenance_admissions WHERE status IN ('queued','executing') AND expires_at<=? LIMIT 20",(health._now(),))
     if not rows:
         return
@@ -264,3 +289,19 @@ def resolve_uncertain(context: dict, command_id: str, *, confirm: bool) -> dict:
                     VALUES(?,?,?,?,?,'closed_unverified')""",
                     (command_id,actor,decision["decision_id"],decision["policy_revision"],health._now()))
                 return _public(dict(row) | {"disposition":"closed_unverified"})
+
+
+def cancel_queued(context: dict, command_id: str) -> dict:
+    with connection() as conn:
+        with begin_immediate(conn):
+            actor=authority.require_owner(conn,context)
+            row=conn.execute("SELECT * FROM lite_system_health_maintenance_admissions WHERE command_id=?", (command_id,)).fetchone()
+            if not row:
+                raise LookupError("request_not_found")
+            if row["status"]=="cancelled":
+                return _public(dict(row))
+            if row["status"]!="queued":
+                raise ValueError("execution_already_started")
+            conn.execute("UPDATE lite_system_health_maintenance_admissions SET status='cancelled',completed_at=? WHERE command_id=? AND status='queued'",(health._now(),command_id))
+            authority.audit(conn,actor,"recovery_cancelled",command_id)
+            return _public(dict(conn.execute("SELECT * FROM lite_system_health_maintenance_admissions WHERE command_id=?",(command_id,)).fetchone()))

@@ -324,7 +324,7 @@ def system_health_diagnostic_export(payload: DiagnosticExportRequest, request: R
 
 class MaintenanceRequest(BaseModel):
     model_config = {"extra":"forbid"}
-    operation_id: str = Field(pattern="^(storage[.]evidence[.](preview|retention)|sqlite[.]checkpoint[.]passive)$")
+    operation_id: str = Field(pattern="^(storage[.]evidence[.](preview|retention)|sqlite[.]checkpoint[.]passive|recovery[.]database[.]rehearse|projection[.]reconcile)$")
     preview_id: str = Field(default="",max_length=80)
     idempotency_key: str = Field(min_length=16,max_length=128)
     confirm: bool
@@ -384,3 +384,13 @@ def system_health_resolve_maintenance(command_id: str, payload: ResolveMaintenan
         _control_error(exc)
     except lite_policy_opa.PolicyDecisionError as exc:
         raise HTTPException(exc.status_code,detail={"reason_code":exc.reason_code,"message":exc.message}) from exc
+
+
+@router.post("/maintenance/{command_id}/cancel")
+def system_health_cancel_maintenance(command_id: str, request: Request):
+    context = _require_authenticated(request,write=True)
+    from ..services import lite_infrastructure_maintenance as maintenance
+    try:
+        return maintenance.cancel_queued(context,command_id)
+    except (PermissionError,LookupError,ValueError) as exc:
+        _control_error(exc)
