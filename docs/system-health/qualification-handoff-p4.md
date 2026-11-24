@@ -1,6 +1,6 @@
 # PR #657 P4 qualification handoff
 
-**Status: QUALIFIED WITH A DOCUMENTED PERFORMANCE RESIDUAL**
+**Status: DEV-PC QUALIFIED; FINAL PHYSICAL ANDROID RERUN BLOCKED**
 
 This is the source-authored handoff for the P4.0–P4.7 completion candidate. It
 does not authorize merge, production activation, release or Server Phone
@@ -62,37 +62,50 @@ receipts, advanced/dependency/resource disclosures, inner scrolling, mobile
 sheet behavior, verification-pending and saved-state/reconnect behavior.
 Historical records performed no diagnosis or recovery writes.
 
-The final sanitized evidence record is:
+The earlier exact-SHA functional evidence record is:
+
+```text
+.pocketlab-dev/validation/pr657-system-health-android-ui-57985fac6946/
+  pr657-system-health-android-ui-57985fac6946.json
+```
+
+It records `status=PASS`, exact candidate/API identity, Android UI PASS,
+recovery lifecycle `verified`, SQLite migration/repeat-apply/integrity/rollback
+PASS, and sanitized landing, diagnosis, verified-recovery and Home captures.
+
+The later bounded wrapper evidence is:
 
 ```text
 .pocketlab-dev/validation/pr657-system-health-android-ui-57985fac6946/
   pr657-system-health-android-ui-final-57985fac6946.json
 ```
 
-It records `status=PASS`, API contract PASS, Android UI PASS, recovery lifecycle
-`verified` (API admission and execution were independently recorded before the
-browser run), SQLite migration/repeat-apply/integrity/rollback PASS,
-cleanup PASS and no production mutation. Sanitized screenshots include landing,
-diagnosis, verified recovery and Home summary captures.
+It records `status=BLOCKED`, with candidate runtime, standard-user CDP and
+cleanup PASS. The unchanged UI qualifier failed at its first full-page
+screenshot with a reproducible 30-second Playwright/CDP timeout while waiting
+for fonts. A stale qualification-owned candidate tab was removed and the exact
+candidate was retried once; the same failure reproduced. No production phone
+state was modified.
 
 ## Performance
 
 The System Health-only performance collector preserved the PR #588/#589
 thresholds, evidence schema, three-repetition baseline-normalized attribution,
-exit semantics and nine required interactions. The final aggregate was:
+exit semantics and nine required interactions, but the final exact-SHA wrapper
+stopped before the matrix could be completed. A retained aggregate with
+`0/0/9 MIXED/0` belongs to older staging source commit
+`ff67f01e465d2762cdb831fe22138609c2431c25`, not the frozen candidate, and is
+not promoted as PR #657 evidence.
 
-| Classification | Count | Absolute target | Hard gate |
-| --- | ---: | ---: | ---: |
-| Target/gate pass | 0 | 0 | 0 |
-| `PLATFORM_DOMINATED` | 0 | 0 | 0 |
-| `MIXED` | 9 | 0 | 0 |
-| `APP_INCREMENTAL_COST` | 0 | 0 | 0 |
+| Classification | Final exact-SHA status |
+| --- | --- |
+| Target/gate pass | BLOCKED / UNVALIDATED |
+| `PLATFORM_DOMINATED` | BLOCKED / UNVALIDATED |
+| `MIXED` | BLOCKED / UNVALIDATED |
+| `APP_INCREMENTAL_COST` | BLOCKED / UNVALIDATED |
 
-No stable actionable P4 application regression crossed the repository
-`APP_INCREMENTAL_COST` policy. The eight MIXED findings and raw normalized
-reports are retained as a legitimate residual; the absolute target and gate
-are not reported as globally passing. No broad seven-screen performance run was
-performed.
+No final exact-SHA physical attribution is claimed. No broad seven-screen
+performance run was performed.
 
 ## Device restoration and rollout
 
@@ -104,7 +117,9 @@ there was no production activation, release publication or deployment.
 
 ## Follow-up boundary
 
-The remaining performance residual is evidence, not an implementation blocker.
-Any production activation requires a separate policy decision, fresh production
+The remaining item is a bounded physical qualification blocker, not a source
+implementation claim: the final candidate wrapper must complete its screenshot
+step before exact-SHA performance evidence can be promoted. Any production
+activation also requires a separate policy decision, fresh production
 admission and explicit authorization. Existing guardian, worker, supervisor,
 agent and protected recovery ownership remains authoritative.

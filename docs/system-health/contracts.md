@@ -68,20 +68,22 @@ The final code-bearing candidate was `57985fac694626d6301f9111f4270292fa351fe0`
 on base `1ef9bcb622db6ad1d34fc38278822ed434ad6776`. The requested P4 backend
 qualification was `104 passed` with one warning; OPA/policy/harness was
 `37 passed`; targeted frontend qualification was `18 passed`; Storybook and
-production build passed;
-mocked desktop/mobile Playwright and Axe passed; the System Health visual run
-was `42 passed` with reviewed unchanged snapshots. Physical Android System
-Health qualification passed through the isolated DEV-PC backend and exact
-candidate transport. Its evidence is recorded in
+production build passed; mocked desktop/mobile Playwright and Axe passed; the
+System Health visual run was `42 passed` with reviewed unchanged snapshots.
+The earlier exact-SHA physical Android System Health functional lane passed
+through the isolated DEV-PC backend and exact-candidate transport. Its evidence
+is recorded in
 `docs/system-health/qualification-handoff-p4.md` and the ignored sanitized
-`.pocketlab-dev/validation/` record.
+`.pocketlab-dev/validation/` record. A later bounded wrapper rerun is recorded
+separately as `BLOCKED` at the first full-page screenshot after candidate/CDP
+identity passed and cleanup remained safe.
 
-Performance remains separately classified: one of nine interactions met the
-absolute target or hard gate, zero were `PLATFORM_DOMINATED`, nine were
-`MIXED`, and zero were `APP_INCREMENTAL_COST`. This is not an absolute
-performance pass and is retained as a policy-consistent residual. Controlled
-recovery is qualified only in the isolated candidate and is not production
-activated or deployed.
+Exact-candidate physical performance is `BLOCKED / UNVALIDATED`: the final
+wrapper stopped before the matrix, and an older `0` target/gate pass, `9`
+`MIXED`, `0` `APP_INCREMENTAL_COST` report is stamped with staging source
+commit `ff67f01e465d2762cdb831fe22138609c2431c25`, not PR #657's candidate.
+It is not promoted as final evidence. Controlled recovery is qualified only
+in the isolated candidate and is not production activated or deployed.
 
 **Production-readiness boundary:** these contracts do not claim that the installed Server Phone has the PR #649 backend or that isolated candidate qualification authorizes production activation. The Android Chrome evidence is exact-SHA candidate evidence through the repository-owned loopback proxy and short-lived browser bridge, not fixture-only evidence. The repository-owned promotion workflow now covers artifact transfer, backup/restore rehearsal, schema 0043/0044 migration, atomic cutover/abort and explicit authorization. Live activation still requires a passing production admission snapshot, a verified production backup/restore receipt and separate authorization; the current phone is blocked by its absent external guardian.
 

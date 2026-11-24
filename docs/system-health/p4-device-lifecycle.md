@@ -1,6 +1,6 @@
 # P4 — Controlled recovery and device lifecycle intelligence
 
-**Status: IMPLEMENTED and QUALIFIED on an isolated exact-SHA candidate.**
+**Status: IMPLEMENTED; DEV-PC QUALIFIED; final physical Android rerun BLOCKED.**
 This document is the source-authored P4 completion record for PR #657. It does
 not authorize production activation or deployment to the Server Phone.
 
@@ -8,7 +8,8 @@ not authorize production activation or deployment to the Server Phone.
 | --- | --- |
 | Base | `main` `1ef9bcb622db6ad1d34fc38278822ed434ad6776` |
 | Code-bearing candidate | `57985fac694626d6301f9111f4270292fa351fe0` |
-| Physical evidence | `.pocketlab-dev/validation/pr657-system-health-android-ui-57985fac6946/pr657-system-health-android-ui-final-57985fac6946.json` |
+| Physical functional evidence | `.pocketlab-dev/validation/pr657-system-health-android-ui-57985fac6946/pr657-system-health-android-ui-57985fac6946.json` (`PASS`) |
+| Final physical wrapper evidence | `.pocketlab-dev/validation/pr657-system-health-android-ui-57985fac6946/pr657-system-health-android-ui-final-57985fac6946.json` (`BLOCKED`; screenshot timeout) |
 | Production activation | Not performed; installed Server Phone remains on the authorized main runtime |
 
 ## Completion ledger
@@ -21,8 +22,8 @@ not authorize production activation or deployment to the Server Phone.
 | P4.3 history | PARTIAL | Historical incident identity, generation, observations, decisions, attempts and sanitized receipts remain bounded and read-only | Pagination, removal, receipt, retention and deep-link/history tests | IMPLEMENTED / QUALIFIED |
 | P4.4 recovery adapter | BLOCKED | Migration 0046 durable request ledger and watchdog-owned allowlisted recovery contract | Isolated worker-owner execution and restart/reconciliation evidence | IMPLEMENTED / QUALIFIED ISOLATED |
 | P4.5 lifecycle | OUTSTANDING | Migration 0047 approval compatibility; actor-bound admission, idempotency, lease, deadline, retry/cooldown and fresh verification | Authorization, OPA, replay, generation, approval, resource and verification tests | IMPLEMENTED / QUALIFIED |
-| P4.6 frontend | PARTIAL | Current/history/recovery states, safe invalidation, managed panel, haptics and responsive disclosures | Vitest, Storybook, mocked Playwright/Axe and physical System Health UI | IMPLEMENTED / QUALIFIED |
-| P4.7 qualification | NOT RUN | Existing suites and exact-candidate controllers completed and extended | Backend, frontend, Storybook, Playwright, visual, Android and performance evidence below | QUALIFIED WITH PERFORMANCE RESIDUAL |
+| P4.6 frontend | PARTIAL | Current/history/recovery states, safe invalidation, managed panel, haptics and responsive disclosures | Vitest, Storybook, mocked Playwright/Axe, visual review and earlier exact-SHA physical functional lane; final repeat blocked at screenshot capture | IMPLEMENTED / DEV-PC QUALIFIED; PHYSICAL RERUN BLOCKED |
+| P4.7 qualification | NOT RUN | Existing suites and exact-candidate controllers completed and extended | Backend, frontend, Storybook, Playwright, visual and isolated recovery evidence passed; final physical wrapper exited 1 before performance promotion | DEV-PC QUALIFIED; PHYSICAL ANDROID BLOCKED |
 
 ## P4.0 authority and architecture
 
@@ -178,37 +179,41 @@ code-bearing SHA. The focused/full evidence recorded for this continuation is:
 | Mocked Playwright and Axe | `42 passed` visual/interaction run; final System Health interaction lane `48 passed` |
 | Production build | PASS |
 | Visual snapshots | Reviewed; current run `42 passed`, no unintended snapshot changes |
-| Physical Android System Health | PASS on exact candidate; API, UI, recovery and cleanup evidence recorded |
+| Physical Android System Health | Earlier exact-SHA functional PASS; final wrapper rerun BLOCKED at first full-page screenshot |
 
-The physical evidence proves standard-user Android Chrome CDP 1.3, explicit
-Server Phone identity, exact candidate manifest/response/backend identity,
-isolated loopback transport, synthetic Owner authorization, diagnosis,
-preflight, recovery request, fresh verification, Home return and sanitized
-screenshots. The isolated API/read fixtures and mocked/UI suites separately
-cover saved/offline membership, historical receipts, advanced disclosures and
-read-only history. The physical lane used isolated DEV-PC
-SQLite/NATS/OPA/worker state and did not use the installed backend or production
-database.
+The earlier exact-SHA functional evidence proves standard-user Android Chrome
+CDP 1.3, explicit Server Phone identity, exact candidate
+manifest/response/backend identity, isolated loopback transport, synthetic
+Owner authorization, diagnosis, preflight, recovery request, fresh
+verification, Home return and sanitized screenshots. The later bounded wrapper
+reruns also proved candidate runtime identity, standard-user CDP and cleanup,
+but failed at the first full-page screenshot with a reproducible 30-second
+Playwright/CDP timeout while waiting for fonts. The isolated API/read fixtures
+and mocked/UI suites separately cover saved/offline membership, historical
+receipts, advanced disclosures and read-only history. The physical lane used
+isolated DEV-PC SQLite/NATS/OPA/worker state and did not use the installed
+backend or production database.
 
 ## Performance and residuals
 
-The PR #588/#589 thresholds and attribution policy were unchanged. The
-System-Health-only matrix used three comparable repetitions over nine
-interactions with baseline-normalized reports:
+The PR #588/#589 thresholds and attribution policy were unchanged. The final
+exact-SHA physical wrapper stopped before the System-Health-only matrix could
+be promoted because its functional screenshot step failed. A retained
+three-repetition report with `0` target passes, `0` gate passes, `9` `MIXED`
+and `0` `APP_INCREMENTAL_COST` belongs to older staging source commit
+`ff67f01e465d2762cdb831fe22138609c2431c25`, not the frozen PR #657 code
+candidate, and is therefore not PR #657 final evidence.
 
-| Classification | Count | Absolute target | Hard gate |
-| --- | ---: | ---: | ---: |
-| TARGET MET / GATE PASS | 0 | 0 | 0 |
-| PLATFORM_DOMINATED | 0 | 0 | 0 |
-| MIXED | 9 | 0 | 0 |
-| APP_INCREMENTAL_COST | 0 | 0 | 0 |
+| Classification | Final exact-SHA status |
+| --- | --- |
+| TARGET MET / GATE PASS | BLOCKED / UNVALIDATED |
+| PLATFORM_DOMINATED | BLOCKED / UNVALIDATED |
+| MIXED | BLOCKED / UNVALIDATED |
+| APP_INCREMENTAL_COST | BLOCKED / UNVALIDATED |
 
-The nine MIXED findings retain baseline misses and application/platform
-delta evidence; none crossed the repository `APP_INCREMENTAL_COST` policy and
-no reproducible PR-specific actionable root cause was established. This is a
-legitimate performance residual, not an absolute performance PASS. Historical
-PR #656 evidence remains separately recorded as nine MIXED, zero absolute
-passes. No broad seven-screen performance run was performed.
+The older report is retained only as historical diagnostic material; it is not
+used to claim an absolute performance result or PR-specific attribution for
+the frozen candidate. No broad seven-screen performance run was performed.
 
 ## Default-off rollout and device boundary
 
@@ -225,7 +230,8 @@ credentials, PM2/Caddy/NATS/OPA service or runtime release was modified.
 
 ## Final P4 status
 
-P4.0–P4.7 source implementation and applicable qualification are complete for
-the isolated candidate. The final state is **QUALIFIED WITH A DOCUMENTED
-PERFORMANCE RESIDUAL, DEFAULT-OFF CONTROLLED RECOVERY, NO PRODUCTION
-ACTIVATION, AND NO DEPLOYMENT**.
+P4.0–P4.7 source implementation and DEV-PC qualification are complete for the
+isolated candidate. The earlier exact-SHA physical functional lane passed, but
+the final bounded physical wrapper remains **BLOCKED at screenshot capture**
+and exact-candidate physical performance is **UNVALIDATED**. Controlled
+recovery remains default-off, with no production activation or deployment.
