@@ -76,3 +76,31 @@ Do not blindly accept generated visual differences. Review light/dark and 360px/
 ## Qualification verdict
 
 All execution and qualification: NOT RUN. No CI inspected or remediated. Canonical documentation/contract generation and repository gate checks: NOT RUN. No production configuration, phone, release, tag or main changes. Review the source risks and implement the outstanding scope before requesting production activation or merge.
+
+
+## Continuation of PR #658 — source-only implementation
+
+This section supersedes the earlier partial disposition where applicable. The earlier implementation is retained as provenance. **SOURCE AUTHORED — NOT QUALIFIED.** No production operation is promoted and the source-qualified production allowlist remains empty. The entire P5–P12 scope is still partial.
+
+| Phase | Additional source delivered | Residual implementation |
+|---|---|---|
+| P5 | Revisioned Owner preferences; durable actor/session/role binding; execution-time session, approval, policy and capability revalidation; confirmation and expiry guards; isolated qualification identity distinct from human Owner | Broader operation authorization coverage, approval UI continuation, durable production automatic policy |
+| P6 | Existing supervisor restart evidence correlated with later same-process stable reconciler readiness; runtime desired-state and restart-budget signals | New directly admitted service-specific repair contracts, additional remote/guardian evidence and end-to-end local/TLS readiness |
+| P7 | Measured filesystem and WAL capacity, managed log policy observations; fixed NATS maintenance preview/apply and passive checkpoint adapters with fresh evidence, Owner, policy, exact candidate, expiry, and single-flight guards | Physical reclaimable-byte attribution; protected log/temp/cache/raw-evidence cleanup contracts; uncertain maintenance resolution and additional maintenance window operations |
+| P8 | Owner cancellation before first execution; persisted request attempts; maintenance delivery/expiry reconciliation and no replay of uncertain outcomes | Generic workflow-specific cancellation/retry and reconciliation across app, backup, agent and other command owners |
+| P9 | Durable balanced/low-power/maintenance preferences; gated existing adaptive scheduler extension for stable history reconciliation only; return to balanced shortens next eligible history interval | Battery/charging collection, broader resource admission and hysteresis, verified effective policy projection |
+| P10 | Runtime desired-state comparison fields, managed log constraints, durable active/known-good policy pointer agreement distinct from loaded integrity | Certificate/time/scanner freshness, approved configuration restoration, verified backup rehearsal compatibility and owner reconciliation adapters |
+| P11 | Scoped Owner-confirmed audited no-store diagnostic export; verified request elapsed-time statistic distinct from incident MTTR; separate automatic supervisor evidence | Coverage-aware uptime, incident MTTR and broader recurrence presentation |
+| P12 | Layered assisted activation gate with empty production qualification allowlist; new qualification-only maintenance/resource candidates; existing guardians unchanged as execution owners | New selective automatic admission/activation rules and full cross-owner resource/maintenance conflict contract |
+
+### New source boundaries
+
+- Additive schemas 0049, 0050 and 0051 cover recovery authority, preferences/control audit, maintenance admissions, and core-service recovery evidence. No migration has been executed during this continuation.
+- Existing FastAPI auth and OPA are retained. New protected action `system_health.maintenance` is source-defined; deployed OPA source synchronization and generated policy metadata are deliberately deferred. Owner preference and export/cancellation endpoints re-check current human authority and audit the change. The browser does not supply actor identity, a command subject or a filesystem path.
+- Maintenance is restricted to `storage.evidence.preview`, `storage.evidence.retention`, `sqlite.checkpoint.passive`. Preview reports bounded candidates, not reclaimable bytes. Apply rechecks the exact eligible set and deletes only eligible historical Security scan database rows, never raw evidence files. SQLite physical free-space recovery is not asserted. A checkpoint is not verified while busy or when full completion cannot be established. Uncertain admissions block additional maintenance rather than being replayed; explicit resolution remains outstanding.
+- The existing worker owns execution through the canonical domain-command dispatcher or existing consumer watchdog. Core supervisor and runtime reconciler remain independent owners. No additional PM2 controller, NATS browser connection or arbitrary shell bridge.
+- Resource preferences affect only stable optional historical reconciliation when the source/environment gate allows it. Production is default-off. No battery readings or essential-service interruption are invented. The recorded preference is not evidence that a worker has applied it.
+- New UI controls reuse the existing Manage panel, LiteButton haptics, LiteActionRow and confirmation states. Owner eligibility is server-derived. No independent overlay or theme palette. 
+- Backend fixture/authority/maintenance/owner evidence regression and frontend owner confirmation cases authored — NOT RUN. Additional per-operation concurrency, policy, migration, UI, accessibility and runtime qualification cases remain outstanding.
+
+**Continuation status: partial source implementation, not ready for qualification or merge as the full P5–P12 delivery.** No tests, builds, checks, CI investigation, qualification, generated contracts/docs, runtime deployment, production activation, merge, release or tagging were performed.
