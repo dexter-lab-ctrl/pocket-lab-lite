@@ -4147,6 +4147,13 @@
       "domain": "system-health",
       "frontend_clients": [
         {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceDecisions",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "query"
+        },
+        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -8151,6 +8158,13 @@
           "resolved": true,
           "source_module": "src/lite/LiteSystemHealth.jsx",
           "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
         }
       ],
       "id": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
@@ -8177,6 +8191,13 @@
       "description": "System Health Preflight",
       "domain": "system-health",
       "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligencePreflight",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "mutation"
+        },
         {
           "mocked": true,
           "owner": "MSW handler",
@@ -8210,6 +8231,13 @@
       "domain": "system-health",
       "frontend_clients": [
         {
+          "mocked": false,
+          "owner": "liteApi.healthIntelligenceRepair",
+          "resolved": true,
+          "source_module": "src/lite/LiteSystemHealth.jsx",
+          "usage": "mutation"
+        },
+        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -8222,6 +8250,7 @@
       "name": "POST /api/lite/system-health/incidents/{incident_id}/repair",
       "operation_id": "system_health_repair_api_lite_system_health_incidents__incident_id__repair_post",
       "response_statuses": [
+        "202",
         "409",
         "422",
         "503"
@@ -17165,6 +17194,28 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The requested System Health action targets retained evidence for a device that is no longer a current recovery target.",
+      "domain": "system-health",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:historical_record",
+      "name": "historical_record",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "historical read-only record"
+      ],
+      "user_interpretation": "Review the earlier record; this device is no longer monitored."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The requested credential or session lifecycle action requires the signed-in local owner session.",
       "domain": "identity",
       "event_mapping": [],
@@ -22055,9 +22106,9 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:284",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:830",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:311",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1434",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1449",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:43",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:678"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:693"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22696,7 +22747,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:660"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:675"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22836,9 +22887,9 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1660",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:55",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:383",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:581",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:659"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:398",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:596",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:674"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -22861,7 +22912,7 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1659",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py:13",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:547"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:562"
       ],
       "stream": "POCKETLAB_COMMANDS",
       "subscribers": [
@@ -22887,8 +22938,8 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3415",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1411",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:607"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1426",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:622"
       ],
       "stream": "incomplete",
       "subscribers": [
@@ -23063,10 +23114,10 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py:231",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1193",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1201",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1410",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1432",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:635",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:676"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1425",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1447",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:650",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:691"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23130,9 +23181,9 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:548",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:559",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1424",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:633",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:668"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1439",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:648",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:683"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23155,9 +23206,9 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:489",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:500",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1420",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:632",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:664"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1435",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:647",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:679"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23181,9 +23232,9 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:578",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:589",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1428",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:634",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:672"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1443",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:649",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:687"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23430,7 +23481,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:450"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:465"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23451,9 +23502,9 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:419",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:478",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:719"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:434",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:493",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:734"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23494,7 +23545,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:626"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:641"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23515,7 +23566,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:765"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:780"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23536,8 +23587,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:397",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:645"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:412",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:660"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23558,8 +23609,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:466",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:689"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:481",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:704"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23580,8 +23631,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:391",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:639"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:406",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:654"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -25575,8 +25626,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:345",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:365"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:360",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:380"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -25714,7 +25765,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:343"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:358"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -25735,7 +25786,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:331"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:346"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -25778,7 +25829,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:294",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:890"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:905"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -25799,7 +25850,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:871"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:886"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -25822,7 +25873,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:296",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:892"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:907"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -26498,7 +26549,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:110",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:751"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:766"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -26520,7 +26571,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:107",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:971"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:986"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -26541,10 +26592,10 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1413",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:562",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:587",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:612"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1428",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:577",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:602",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:627"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -26565,7 +26616,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:529"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:544"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -26608,7 +26659,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1493"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1508"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -27151,6 +27202,7 @@
       "domain": "devices",
       "id": "table:device_enrollment_registry",
       "indexes": [
+        "idx_device_enrollment_generation",
         "idx_device_enrollment_last_seen",
         "idx_device_enrollment_name",
         "idx_device_enrollment_active_order",
@@ -27158,7 +27210,8 @@
       ],
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
       ],
       "name": "device_enrollment_registry",
       "owner": "not a prepared projection",
@@ -27173,7 +27226,8 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
       ],
       "type": "table",
       "writer": "device lifecycle and projection services"
@@ -27464,7 +27518,8 @@
         "sqlite_autoindex_device_removal_receipts_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
       ],
       "name": "device_removal_receipts",
       "owner": "not a prepared projection",
@@ -27476,7 +27531,8 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
       ],
       "type": "table",
       "writer": "device lifecycle and projection services"
@@ -27647,7 +27703,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "name": "enterprise_configuration",
       "owner": "not a prepared projection",
@@ -27659,7 +27716,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -27678,7 +27736,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "name": "enterprise_memberships",
       "owner": "not a prepared projection",
@@ -27690,7 +27749,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -27895,7 +27955,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -27916,7 +27977,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -28082,12 +28144,15 @@
       "domain": "control_plane",
       "id": "table:lite_system_health_incidents",
       "indexes": [
+        "idx_lite_system_health_incident_generation",
         "lite_system_health_incidents_target",
         "lite_system_health_incidents_current",
         "sqlite_autoindex_lite_system_health_incidents_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
       ],
       "name": "lite_system_health_incidents",
       "owner": "not a prepared projection",
@@ -28098,7 +28163,9 @@
       ],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -28110,10 +28177,12 @@
       "domain": "control_plane",
       "id": "table:lite_system_health_observations",
       "indexes": [
+        "idx_lite_system_health_observation_generation",
         "sqlite_autoindex_lite_system_health_observations_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
       ],
       "name": "lite_system_health_observations",
       "owner": "not a prepared projection",
@@ -28122,7 +28191,40 @@
       "sensitive_fields": [],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_recovery_requests",
+      "indexes": [
+        "lite_system_health_recovery_single_flight",
+        "lite_system_health_recovery_actor",
+        "lite_system_health_recovery_incident",
+        "lite_system_health_recovery_ready",
+        "sqlite_autoindex_lite_system_health_recovery_requests_2",
+        "sqlite_autoindex_lite_system_health_recovery_requests_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
+      ],
+      "name": "lite_system_health_recovery_requests",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "after_evidence_json",
+        "before_evidence_json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -28486,7 +28588,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "name": "policy_approvals",
       "owner": "not a prepared projection",
@@ -28500,7 +28603,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -34967,6 +35071,7 @@
         "table:lite_system_health_events",
         "table:lite_system_health_incidents",
         "table:lite_system_health_observations",
+        "table:lite_system_health_recovery_requests",
         "table:lite_system_health_repair_attempts",
         "table:lite_system_health_repair_denials",
         "table:owner_approved_operations",
@@ -35899,7 +36004,8 @@
         "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
         "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
         "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
-        "domain:system-health"
+        "domain:system-health",
+        "reason:historical_record"
       ],
       "telemetry": [
         "domain:telemetry",
@@ -36966,6 +37072,7 @@
         "reason:harness_session_not_found",
         "reason:harness_session_required",
         "reason:harness_transport_rejected",
+        "reason:historical_record",
         "reason:human_session_required",
         "reason:identity_current_password_invalid",
         "reason:identity_login_failed",
@@ -37452,6 +37559,7 @@
         "table:lite_system_health_events",
         "table:lite_system_health_incidents",
         "table:lite_system_health_observations",
+        "table:lite_system_health_recovery_requests",
         "table:lite_system_health_repair_attempts",
         "table:lite_system_health_repair_denials",
         "table:owner_approved_operations",
@@ -39101,6 +39209,10 @@
       ],
       "api:get:/api/lite/system-health/incidents/{incident_id}/decisions": [
         {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
           "source": "domain:system-health",
           "type": "owns"
         }
@@ -40303,11 +40415,19 @@
       ],
       "api:post:/api/lite/system-health/incidents/{incident_id}/preflight": [
         {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
           "source": "domain:system-health",
           "type": "owns"
         }
       ],
       "api:post:/api/lite/system-health/incidents/{incident_id}/repair": [
+        {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
         {
           "source": "domain:system-health",
           "type": "owns"
@@ -42346,6 +42466,12 @@
       "reason:harness_transport_rejected": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:historical_record": [
+        {
+          "source": "domain:system-health",
           "type": "owns"
         }
       ],
@@ -46029,6 +46155,12 @@
           "type": "owns"
         }
       ],
+      "table:lite_system_health_recovery_requests": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_system_health_repair_attempts": [
         {
           "source": "domain:control_plane",
@@ -47334,6 +47466,10 @@
         },
         {
           "source": "reason:harness_transport_rejected",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:historical_record",
           "type": "verified_by"
         },
         {
@@ -50871,15 +51007,39 @@
       ],
       "test:tests/backend/test_lite_system_health.py": [
         {
+          "source": "reason:approval_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:authentication_required",
           "type": "verified_by"
         },
         {
           "source": "reason:disabled",
           "type": "verified_by"
+        },
+        {
+          "source": "reason:historical_record",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:independent_approval_satisfied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:protected_server_host",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:storage_pressure",
+          "type": "verified_by"
         }
       ],
       "test:tests/backend/test_lite_system_health_android_qualification.py": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        },
         {
           "source": "reason:generation_changed",
           "type": "verified_by"
@@ -52889,6 +53049,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:historical_record",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:human_session_required",
           "type": "verified_by"
         },
@@ -54104,6 +54268,10 @@
         },
         {
           "source": "reason:harness_transport_rejected",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:historical_record",
           "type": "verified_by"
         },
         {
@@ -64633,6 +64801,10 @@
           "type": "owns"
         },
         {
+          "target": "table:lite_system_health_recovery_requests",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_system_health_repair_attempts",
           "type": "owns"
         },
@@ -68251,6 +68423,10 @@
         {
           "target": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
           "type": "owns"
+        },
+        {
+          "target": "reason:historical_record",
+          "type": "owns"
         }
       ],
       "domain:telemetry": [
@@ -70009,6 +70185,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_system_health.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_policy_source_reconciliation.py",
           "type": "verified_by"
         },
@@ -70919,6 +71099,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -71747,6 +71931,24 @@
           "type": "verified_by"
         }
       ],
+      "reason:historical_record": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_system_health.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:human_session_required": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -72032,6 +72234,10 @@
       "reason:independent_approval_satisfied": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_system_health.py",
           "type": "verified_by"
         },
         {
@@ -73617,6 +73823,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_system_health.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
           "type": "verified_by"
         },
@@ -74170,6 +74380,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_recovery.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_system_health.py",
           "type": "verified_by"
         },
         {
@@ -75319,6 +75533,10 @@
           "type": "calls"
         },
         {
+          "target": "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+          "type": "calls"
+        },
+        {
           "target": "api:get:/api/lite/system-health/intelligence",
           "type": "calls"
         },
@@ -75336,6 +75554,14 @@
         },
         {
           "target": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+          "type": "calls"
+        },
+        {
+          "target": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
           "type": "calls"
         }
       ]
@@ -76451,6 +76677,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:0730444c9fa64086",
+      "source": "reason:historical_record",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteIdentity.jsx"
       ],
       "id": "rel:0736b864a712c9b7",
@@ -76493,6 +76728,15 @@
       "source": "component:retirement-database-recovery",
       "target": "table:device_removal_receipts",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:078886afc27a5675",
+      "source": "ui:litesystemhealth",
+      "target": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+      "type": "calls"
     },
     {
       "evidence": [
@@ -76722,7 +76966,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:659"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:674"
       ],
       "id": "rel:090c64d8d660b60e",
       "source": "component:worker",
@@ -76836,6 +77080,15 @@
       "source": "domain:enterprise",
       "target": "api:post:/api/lite/enterprise/identity/enrollment/passkey/verify",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_system_health.py"
+      ],
+      "id": "rel:09f607789aa209a8",
+      "source": "reason:storage_pressure",
+      "target": "test:tests/backend/test_lite_system_health.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -77505,7 +77758,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:892"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:907"
       ],
       "id": "rel:0e23b8d8e8a8c375",
       "source": "component:app-lifecycle-worker",
@@ -78823,7 +79076,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:890"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:905"
       ],
       "id": "rel:161a9fa8964674d1",
       "source": "component:worker",
@@ -79806,7 +80059,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:765"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:780"
       ],
       "id": "rel:1c8ea430c89756f8",
       "source": "component:app-lifecycle-worker",
@@ -80360,7 +80613,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:331"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:346"
       ],
       "id": "rel:203dfd8e25f872f4",
       "source": "component:app-lifecycle-worker",
@@ -80684,7 +80937,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1493"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1508"
       ],
       "id": "rel:22e94d48586ddb01",
       "source": "component:worker",
@@ -81161,7 +81414,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:971"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:986"
       ],
       "id": "rel:2568922b46abb859",
       "source": "component:worker",
@@ -81814,7 +82067,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:450"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:465"
       ],
       "id": "rel:298a7e0786bc2c78",
       "source": "component:app-lifecycle-worker",
@@ -82022,7 +82275,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:664"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:679"
       ],
       "id": "rel:2ad1e2ad5c11cc90",
       "source": "component:worker",
@@ -82347,7 +82600,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:765"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:780"
       ],
       "id": "rel:2dc52098dedaa50a",
       "source": "component:worker",
@@ -83276,6 +83529,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:3457ba5b4e55cc7c",
+      "source": "ui:litesystemhealth",
+      "target": "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "contracts/generated/parity/accepted-limitations.json"
       ],
       "id": "rel:3471d1cd2bba9174",
@@ -83718,7 +83980,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:529"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:544"
       ],
       "id": "rel:372eac9db8b1b668",
       "source": "component:app-lifecycle-worker",
@@ -84070,6 +84332,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:38d3c55644b30173",
+      "source": "reason:historical_record",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:38d4c08116595386",
@@ -84169,7 +84440,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:689"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:704"
       ],
       "id": "rel:393100ac60374ebd",
       "source": "component:worker",
@@ -84698,7 +84969,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:676"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:691"
       ],
       "id": "rel:3c6d5418366a863a",
       "source": "component:worker",
@@ -85090,7 +85361,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:547"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:562"
       ],
       "id": "rel:3f400031ef01f3d6",
       "source": "component:app-lifecycle-worker",
@@ -86066,7 +86337,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:678"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:693"
       ],
       "id": "rel:447a749e1d832fa8",
       "source": "component:app-lifecycle-worker",
@@ -86111,7 +86382,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:871"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:886"
       ],
       "id": "rel:44ca6e0fe03db33c",
       "source": "component:worker",
@@ -88523,6 +88794,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_system_health.py"
+      ],
+      "id": "rel:5563de6a97916f7f",
+      "source": "reason:historical_record",
+      "target": "test:tests/backend/test_lite_system_health.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:5572937e9b19fd61",
@@ -88663,7 +88943,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:689"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:704"
       ],
       "id": "rel:565b4c38fc896073",
       "source": "component:app-lifecycle-worker",
@@ -88672,7 +88952,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:890"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:905"
       ],
       "id": "rel:565f7fa04c0d25d4",
       "source": "component:app-lifecycle-worker",
@@ -88708,7 +88988,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:719"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:734"
       ],
       "id": "rel:568246899aaa258a",
       "source": "component:app-lifecycle-worker",
@@ -88744,7 +89024,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:672"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:687"
       ],
       "id": "rel:56c122e4614e4a34",
       "source": "component:app-lifecycle-worker",
@@ -90389,7 +90669,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:660"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:675"
       ],
       "id": "rel:620074a7c895f5bb",
       "source": "component:worker",
@@ -91132,6 +91412,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_system_health_android_qualification.py"
+      ],
+      "id": "rel:673880a9aeaad99f",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_system_health_android_qualification.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_assurance.py"
       ],
       "id": "rel:673c12c22d038966",
@@ -91559,7 +91848,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1493"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1508"
       ],
       "id": "rel:6a1cd8eae8a43453",
       "source": "component:app-lifecycle-worker",
@@ -91816,7 +92105,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:971"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:986"
       ],
       "id": "rel:6bd444330c135bb4",
       "source": "component:app-lifecycle-worker",
@@ -92606,6 +92895,15 @@
     },
     {
       "evidence": [
+        "src/lite/LiteSystemHealth.jsx"
+      ],
+      "id": "rel:705e7bb32f1ee538",
+      "source": "ui:litesystemhealth",
+      "target": "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+      "type": "calls"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:70601f75361db622",
@@ -92867,7 +93165,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:626"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:641"
       ],
       "id": "rel:71d454511786a918",
       "source": "component:app-lifecycle-worker",
@@ -93218,7 +93516,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:659"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:674"
       ],
       "id": "rel:74192aa4c4d6d046",
       "source": "component:app-lifecycle-worker",
@@ -93929,7 +94227,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:892"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:907"
       ],
       "id": "rel:78f31924ee59c8c1",
       "source": "component:worker",
@@ -94623,7 +94921,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:343"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:358"
       ],
       "id": "rel:7e72f6e0ae0ded32",
       "source": "component:worker",
@@ -95166,7 +95464,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:678"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:693"
       ],
       "id": "rel:81db0dc1b7af98d4",
       "source": "component:worker",
@@ -95396,7 +95694,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:751"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:766"
       ],
       "id": "rel:84153a22ccfdd618",
       "source": "component:app-lifecycle-worker",
@@ -96105,7 +96403,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:676"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:691"
       ],
       "id": "rel:894e3f760e77af7e",
       "source": "component:app-lifecycle-worker",
@@ -98213,7 +98511,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:668"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:683"
       ],
       "id": "rel:984767d499bcbfd6",
       "source": "component:app-lifecycle-worker",
@@ -98240,7 +98538,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:639"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:654"
       ],
       "id": "rel:9864c0f85ca2118c",
       "source": "component:app-lifecycle-worker",
@@ -98448,7 +98746,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:612"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:627"
       ],
       "id": "rel:99eedb2e740a7cf4",
       "source": "component:worker",
@@ -98538,7 +98836,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:664"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:679"
       ],
       "id": "rel:9ae303b8540e22b3",
       "source": "component:app-lifecycle-worker",
@@ -99785,7 +100083,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:719"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:734"
       ],
       "id": "rel:a32d30d12a8f3763",
       "source": "component:worker",
@@ -99875,7 +100173,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:660"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:675"
       ],
       "id": "rel:a3e9fa1fa945c7f9",
       "source": "component:app-lifecycle-worker",
@@ -100132,6 +100430,15 @@
       "id": "rel:a5353dfd34346b67",
       "source": "reason:owner_request",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_system_health.py"
+      ],
+      "id": "rel:a54a920956e48dae",
+      "source": "reason:independent_approval_satisfied",
+      "target": "test:tests/backend/test_lite_system_health.py",
       "type": "verified_by"
     },
     {
@@ -100537,7 +100844,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:645"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:660"
       ],
       "id": "rel:a7f97b72bdae88c8",
       "source": "component:app-lifecycle-worker",
@@ -101654,7 +101961,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:365"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:380"
       ],
       "id": "rel:af2164558bfdc757",
       "source": "component:app-lifecycle-worker",
@@ -103719,7 +104026,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:365"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:380"
       ],
       "id": "rel:be8b75bf20724657",
       "source": "component:worker",
@@ -104016,7 +104323,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:607"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:622"
       ],
       "id": "rel:c04f43b17e6b918e",
       "source": "component:app-lifecycle-worker",
@@ -104212,6 +104519,15 @@
       "id": "rel:c19da73b98f6adb2",
       "source": "api:get:/api/lite/enterprise/identity/people/{human_id}",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_system_health.py"
+      ],
+      "id": "rel:c1d500a83a3b8bc3",
+      "source": "reason:protected_server_host",
+      "target": "test:tests/backend/test_lite_system_health.py",
       "type": "verified_by"
     },
     {
@@ -106164,7 +106480,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:529"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:544"
       ],
       "id": "rel:cf61242370b4156c",
       "source": "component:worker",
@@ -106299,7 +106615,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:751"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:766"
       ],
       "id": "rel:cfff270ca5d08b67",
       "source": "component:worker",
@@ -106362,7 +106678,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:607"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:622"
       ],
       "id": "rel:d08a9a871e8b7a8f",
       "source": "component:worker",
@@ -106508,7 +106824,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:668"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:683"
       ],
       "id": "rel:d15f77c9767e68e4",
       "source": "component:worker",
@@ -106888,7 +107204,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:612"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:627"
       ],
       "id": "rel:d3f14cfcbea22120",
       "source": "component:app-lifecycle-worker",
@@ -107484,7 +107800,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:639"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:654"
       ],
       "id": "rel:d7e433a4565ed799",
       "source": "component:worker",
@@ -107766,7 +108082,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:343"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:358"
       ],
       "id": "rel:d97387ca9a2330df",
       "source": "component:app-lifecycle-worker",
@@ -108484,6 +108800,15 @@
       "source": "component:security-profiles",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:de9baafa73469786",
+      "source": "domain:control_plane",
+      "target": "table:lite_system_health_recovery_requests",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -109205,7 +109530,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:626"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:641"
       ],
       "id": "rel:e42316759c423c47",
       "source": "component:worker",
@@ -109494,7 +109819,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:331"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:346"
       ],
       "id": "rel:e5b4d57da3a17fd1",
       "source": "component:worker",
@@ -109638,7 +109963,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:672"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:687"
       ],
       "id": "rel:e6636b7fefd38912",
       "source": "component:worker",
@@ -111304,7 +111629,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:871"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:886"
       ],
       "id": "rel:f188a08229a81a6c",
       "source": "component:app-lifecycle-worker",
@@ -112269,7 +112594,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:450"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:465"
       ],
       "id": "rel:f7f328dbd00204cf",
       "source": "component:worker",
@@ -112737,7 +113062,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:645"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:660"
       ],
       "id": "rel:fb080ded303746a5",
       "source": "component:worker",
@@ -112836,7 +113161,7 @@
     },
     {
       "evidence": [
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:547"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:562"
       ],
       "id": "rel:fbee382be8fe234d",
       "source": "component:worker",
@@ -112998,6 +113323,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_system_health.py"
+      ],
+      "id": "rel:fcc51665a078cf31",
+      "source": "reason:approval_required",
+      "target": "test:tests/backend/test_lite_system_health.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:fcef1ddcaec63b10",
@@ -113040,6 +113374,15 @@
       "source": "domain:harness",
       "target": "api:get:/api/lite/harness/security-assurance/capabilities",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:fd7eab48d7484bf8",
+      "source": "reason:historical_record",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -113196,6 +113539,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:fead88d4a5d784e5",
+      "source": "domain:system-health",
+      "target": "reason:historical_record",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:febe4aba9f966ff6",
@@ -113331,9 +113683,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "57cf8b4550e18f3e7fa688ad4af95976722d6d8767b6706cb21a593128a9ce45",
+  "source_fingerprint": "81084650377a487b849259cff5fe88015992935c129196e927c40325fb8884a6",
   "statistics": {
-    "entity_count": 1511,
+    "entity_count": 1513,
     "entity_type_counts": {
       "adr": 6,
       "api": 271,
@@ -113343,13 +113695,13 @@
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 284,
+      "reason-code": 285,
       "release": 3,
       "requirement": 10,
       "runbook": 5,
       "runtime-topology": 9,
       "subject": 221,
-      "table": 95,
+      "table": 96,
       "test": 339,
       "threat-boundary": 9,
       "threat-model": 9,
@@ -113357,7 +113709,7 @@
       "ui": 12,
       "vocabulary": 39
     },
-    "relation_count": 4190,
+    "relation_count": 4204,
     "source_count": 376
   }
 }

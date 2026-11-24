@@ -784,6 +784,7 @@
         "table:lite_system_health_events",
         "table:lite_system_health_incidents",
         "table:lite_system_health_observations",
+        "table:lite_system_health_recovery_requests",
         "table:lite_system_health_repair_attempts",
         "table:lite_system_health_repair_denials",
         "table:owner_approved_operations",
@@ -965,6 +966,7 @@
         "reason:harness_session_not_found",
         "reason:harness_session_required",
         "reason:harness_transport_rejected",
+        "reason:historical_record",
         "reason:human_session_required",
         "reason:identity_current_password_invalid",
         "reason:identity_login_failed",
@@ -1333,6 +1335,7 @@
         "reason:harness_session_not_found",
         "reason:harness_session_required",
         "reason:harness_transport_rejected",
+        "reason:historical_record",
         "reason:human_session_required",
         "reason:identity_current_password_invalid",
         "reason:identity_login_failed",
@@ -2117,6 +2120,31 @@
         "table:lite_system_health_repair_denials"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql"
+    },
+    {
+      "entities": [
+        "table:device_enrollment_registry",
+        "table:device_removal_receipts",
+        "table:lite_system_health_incidents",
+        "table:lite_system_health_observations"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
+    },
+    {
+      "entities": [
+        "table:lite_system_health_incidents",
+        "table:lite_system_health_recovery_requests"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
+    },
+    {
+      "entities": [
+        "table:enterprise_configuration",
+        "table:enterprise_memberships",
+        "table:human_identities",
+        "table:policy_approvals"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
     },
     {
       "entities": [
@@ -5002,6 +5030,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "57cf8b4550e18f3e7fa688ad4af95976722d6d8767b6706cb21a593128a9ce45"
+    "source_fingerprint": "81084650377a487b849259cff5fe88015992935c129196e927c40325fb8884a6"
   }
 }

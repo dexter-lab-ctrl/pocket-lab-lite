@@ -28,9 +28,9 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:284",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:830",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:311",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1434",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1449",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:43",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:678"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:693"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -669,7 +669,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:660"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:675"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -809,9 +809,9 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1660",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_assurance.py:55",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:383",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:581",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:659"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:398",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:596",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:674"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -834,7 +834,7 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1659",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py:13",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:547"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:562"
       ],
       "stream": "POCKETLAB_COMMANDS",
       "subscribers": [
@@ -860,8 +860,8 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py:3415",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1411",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:607"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1426",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:622"
       ],
       "stream": "incomplete",
       "subscribers": [
@@ -1036,10 +1036,10 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py:231",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1193",
         "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1201",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1410",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1432",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:635",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:676"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1425",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1447",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:650",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:691"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1103,9 +1103,9 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:548",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:559",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1424",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:633",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:668"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1439",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:648",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:683"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1128,9 +1128,9 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:489",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:500",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1420",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:632",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:664"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1435",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:647",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:679"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1154,9 +1154,9 @@
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:578",
         "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:589",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1428",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:634",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:672"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1443",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:649",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:687"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1403,7 +1403,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:450"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:465"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1424,9 +1424,9 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:419",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:478",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:719"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:434",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:493",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:734"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1467,7 +1467,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:626"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:641"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1488,7 +1488,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:765"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:780"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1509,8 +1509,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:397",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:645"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:412",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:660"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1531,8 +1531,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:466",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:689"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:481",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:704"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -1553,8 +1553,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:391",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:639"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:406",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:654"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -3548,8 +3548,8 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:345",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:365"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:360",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:380"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -3687,7 +3687,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:343"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:358"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -3708,7 +3708,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:331"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:346"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -3751,7 +3751,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:294",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:890"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:905"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -3772,7 +3772,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:871"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:886"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -3795,7 +3795,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:296",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:892"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:907"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4471,7 +4471,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:110",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:751"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:766"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4493,7 +4493,7 @@
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:107",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:971"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:986"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4514,10 +4514,10 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1413",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:562",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:587",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:612"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1428",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:577",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:602",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:627"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4538,7 +4538,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:529"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:544"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4581,7 +4581,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1493"
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1508"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -4657,6 +4657,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "57cf8b4550e18f3e7fa688ad4af95976722d6d8767b6706cb21a593128a9ce45"
+    "source_fingerprint": "81084650377a487b849259cff5fe88015992935c129196e927c40325fb8884a6"
   }
 }

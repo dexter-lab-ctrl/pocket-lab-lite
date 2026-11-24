@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 44,
+    "migration_count": 47,
     "objects": [
       {
         "checks": [],
@@ -2842,7 +2842,8 @@
           "protected_server_host IN (0,1",
           "length(canonical_identity_json",
           "length(last_valid_state_json",
-          "registry_revision >= 1"
+          "registry_revision >= 1",
+          "enrollment_generation >= 1"
         ],
         "classification": "restricted operational metadata",
         "columns": [
@@ -2999,11 +3000,29 @@
             "name": "updated_at_epoch_ms",
             "nullable": false,
             "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "1",
+            "name": "enrollment_generation",
+            "nullable": false,
+            "primary_key_position": 0
           }
         ],
         "domain": "devices",
         "foreign_keys": [],
         "indexes": [
+          {
+            "columns": [
+              "device_id",
+              "enrollment_generation",
+              "removal_status"
+            ],
+            "name": "idx_device_enrollment_generation",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
           {
             "columns": [
               "removal_status",
@@ -3050,7 +3069,8 @@
         ],
         "migration_sources": [
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
         ],
         "name": "device_enrollment_registry",
         "projection_owner": "not a prepared projection",
@@ -3064,7 +3084,7 @@
         "sensitive_fields": [
           "canonical_hash"
         ],
-        "sql": "CREATE TABLE device_enrollment_registry (\n    device_id TEXT PRIMARY KEY,\n    device_name TEXT NOT NULL,\n    normalized_name TEXT NOT NULL DEFAULT '',\n    role TEXT NOT NULL DEFAULT 'compute',\n    enrollment_status TEXT NOT NULL DEFAULT 'enrolled',\n    identity_status TEXT NOT NULL DEFAULT 'pending',\n    enrolled_at TEXT NOT NULL,\n    enrolled_at_epoch_ms INTEGER NOT NULL DEFAULT 0,\n    last_known_state TEXT NOT NULL DEFAULT 'offline',\n    last_seen_at TEXT,\n    last_seen_epoch_ms INTEGER NOT NULL DEFAULT 0,\n    retired_at TEXT,\n    retired_at_epoch_ms INTEGER NOT NULL DEFAULT 0,\n    removal_status TEXT NOT NULL DEFAULT 'active'\n        CHECK(removal_status IN ('active','retired','removed')),\n    removal_reason TEXT NOT NULL DEFAULT '',\n    protected_server_host INTEGER NOT NULL DEFAULT 0 CHECK(protected_server_host IN (0,1)),\n    canonical_identity_json TEXT NOT NULL DEFAULT '{}' CHECK(length(canonical_identity_json) <= 16384),\n    last_valid_state_json TEXT NOT NULL DEFAULT '{}' CHECK(length(last_valid_state_json) <= 65536),\n    registry_revision INTEGER NOT NULL DEFAULT 1 CHECK(registry_revision >= 1),\n    canonical_hash TEXT NOT NULL DEFAULT '',\n    updated_at TEXT NOT NULL,\n    updated_at_epoch_ms INTEGER NOT NULL DEFAULT 0\n)",
+        "sql": "CREATE TABLE device_enrollment_registry (\n    device_id TEXT PRIMARY KEY,\n    device_name TEXT NOT NULL,\n    normalized_name TEXT NOT NULL DEFAULT '',\n    role TEXT NOT NULL DEFAULT 'compute',\n    enrollment_status TEXT NOT NULL DEFAULT 'enrolled',\n    identity_status TEXT NOT NULL DEFAULT 'pending',\n    enrolled_at TEXT NOT NULL,\n    enrolled_at_epoch_ms INTEGER NOT NULL DEFAULT 0,\n    last_known_state TEXT NOT NULL DEFAULT 'offline',\n    last_seen_at TEXT,\n    last_seen_epoch_ms INTEGER NOT NULL DEFAULT 0,\n    retired_at TEXT,\n    retired_at_epoch_ms INTEGER NOT NULL DEFAULT 0,\n    removal_status TEXT NOT NULL DEFAULT 'active'\n        CHECK(removal_status IN ('active','retired','removed')),\n    removal_reason TEXT NOT NULL DEFAULT '',\n    protected_server_host INTEGER NOT NULL DEFAULT 0 CHECK(protected_server_host IN (0,1)),\n    canonical_identity_json TEXT NOT NULL DEFAULT '{}' CHECK(length(canonical_identity_json) <= 16384),\n    last_valid_state_json TEXT NOT NULL DEFAULT '{}' CHECK(length(last_valid_state_json) <= 65536),\n    registry_revision INTEGER NOT NULL DEFAULT 1 CHECK(registry_revision >= 1),\n    canonical_hash TEXT NOT NULL DEFAULT '',\n    updated_at TEXT NOT NULL,\n    updated_at_epoch_ms INTEGER NOT NULL DEFAULT 0\n, enrollment_generation INTEGER NOT NULL DEFAULT 1\n    CHECK(enrollment_generation >= 1))",
         "type": "table",
         "writer": "device lifecycle and projection services"
       },
@@ -4568,7 +4588,8 @@
       {
         "checks": [
           "removal_status IN ('retired','removed'",
-          "sanitized IN (0,1"
+          "sanitized IN (0,1",
+          "enrollment_generation >= 1"
         ],
         "classification": "internal operational metadata",
         "columns": [
@@ -4655,6 +4676,13 @@
             "name": "sanitized",
             "nullable": false,
             "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "1",
+            "name": "enrollment_generation",
+            "nullable": false,
+            "primary_key_position": 0
           }
         ],
         "domain": "devices",
@@ -4692,7 +4720,8 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
         ],
         "name": "device_removal_receipts",
         "projection_owner": "not a prepared projection",
@@ -4704,7 +4733,7 @@
         "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
         "semantic_status": "inferred",
         "sensitive_fields": [],
-        "sql": "CREATE TABLE device_removal_receipts (\n    receipt_id TEXT PRIMARY KEY,\n    device_id TEXT NOT NULL,\n    device_name TEXT NOT NULL DEFAULT '',\n    removal_status TEXT NOT NULL CHECK(removal_status IN ('retired','removed')),\n    reason_code TEXT NOT NULL DEFAULT 'explicit_operator_removal',\n    assessment_revision TEXT NOT NULL DEFAULT '',\n    awareness_revision INTEGER NOT NULL DEFAULT 0,\n    requested_by TEXT NOT NULL DEFAULT 'authenticated_operator',\n    created_at TEXT NOT NULL,\n    created_at_epoch_ms INTEGER NOT NULL,\n    summary TEXT NOT NULL DEFAULT '',\n    sanitized INTEGER NOT NULL DEFAULT 1 CHECK(sanitized IN (0,1)),\n    FOREIGN KEY(device_id) REFERENCES device_enrollment_registry(device_id) ON DELETE RESTRICT\n)",
+        "sql": "CREATE TABLE device_removal_receipts (\n    receipt_id TEXT PRIMARY KEY,\n    device_id TEXT NOT NULL,\n    device_name TEXT NOT NULL DEFAULT '',\n    removal_status TEXT NOT NULL CHECK(removal_status IN ('retired','removed')),\n    reason_code TEXT NOT NULL DEFAULT 'explicit_operator_removal',\n    assessment_revision TEXT NOT NULL DEFAULT '',\n    awareness_revision INTEGER NOT NULL DEFAULT 0,\n    requested_by TEXT NOT NULL DEFAULT 'authenticated_operator',\n    created_at TEXT NOT NULL,\n    created_at_epoch_ms INTEGER NOT NULL,\n    summary TEXT NOT NULL DEFAULT '',\n    sanitized INTEGER NOT NULL DEFAULT 1 CHECK(sanitized IN (0,1)), enrollment_generation INTEGER NOT NULL DEFAULT 1\n    CHECK(enrollment_generation >= 1),\n    FOREIGN KEY(device_id) REFERENCES device_enrollment_registry(device_id) ON DELETE RESTRICT\n)",
         "type": "table",
         "writer": "device lifecycle and projection services"
       },
@@ -5668,7 +5697,8 @@
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
         ],
         "name": "enterprise_configuration",
         "projection_owner": "not a prepared projection",
@@ -5801,7 +5831,8 @@
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
         ],
         "name": "enterprise_memberships",
         "projection_owner": "not a prepared projection",
@@ -6976,7 +7007,8 @@
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
         ],
         "name": "human_identities",
         "projection_owner": "not a prepared projection",
@@ -7621,6 +7653,7 @@
       {
         "checks": [
           "state IN ('detected','diagnosing','diagnosed','repair_available','repairing','verifying','resolved','blocked','failed','manual_attention_required'",
+          "enrollment_generation >= 0",
           "length(summary"
         ],
         "classification": "restricted operational metadata",
@@ -7736,11 +7769,29 @@
             "name": "verified_cause",
             "nullable": false,
             "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "enrollment_generation",
+            "nullable": false,
+            "primary_key_position": 0
           }
         ],
         "domain": "control_plane",
         "foreign_keys": [],
         "indexes": [
+          {
+            "columns": [
+              "target_id",
+              "enrollment_generation",
+              "last_seen_at"
+            ],
+            "name": "idx_lite_system_health_incident_generation",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
           {
             "columns": [
               "source",
@@ -7773,7 +7824,9 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
         ],
         "name": "lite_system_health_incidents",
         "projection_owner": "not a prepared projection",
@@ -7784,12 +7837,14 @@
         "sensitive_fields": [
           "evidence_revision"
         ],
-        "sql": "CREATE TABLE lite_system_health_incidents (\n  incident_id TEXT PRIMARY KEY,\n  source TEXT NOT NULL,\n  target_id TEXT NOT NULL,\n  kind TEXT NOT NULL,\n  state TEXT NOT NULL CHECK(state IN ('detected','diagnosing','diagnosed','repair_available','repairing','verifying','resolved','blocked','failed','manual_attention_required')),\n  severity TEXT NOT NULL,\n  generation INTEGER NOT NULL DEFAULT 1,\n  recurrence_count INTEGER NOT NULL DEFAULT 0,\n  observation_count INTEGER NOT NULL DEFAULT 1,\n  first_seen_at TEXT NOT NULL,\n  last_seen_at TEXT NOT NULL,\n  resolved_at TEXT,\n  evidence_revision TEXT NOT NULL DEFAULT '',\n  summary TEXT NOT NULL,\n  suspected_cause TEXT NOT NULL DEFAULT '',\n  verified_cause TEXT NOT NULL DEFAULT '',\n  CHECK(length(summary) <= 240)\n)",
+        "sql": "CREATE TABLE lite_system_health_incidents (\n  incident_id TEXT PRIMARY KEY,\n  source TEXT NOT NULL,\n  target_id TEXT NOT NULL,\n  kind TEXT NOT NULL,\n  state TEXT NOT NULL CHECK(state IN ('detected','diagnosing','diagnosed','repair_available','repairing','verifying','resolved','blocked','failed','manual_attention_required')),\n  severity TEXT NOT NULL,\n  generation INTEGER NOT NULL DEFAULT 1,\n  recurrence_count INTEGER NOT NULL DEFAULT 0,\n  observation_count INTEGER NOT NULL DEFAULT 1,\n  first_seen_at TEXT NOT NULL,\n  last_seen_at TEXT NOT NULL,\n  resolved_at TEXT,\n  evidence_revision TEXT NOT NULL DEFAULT '',\n  summary TEXT NOT NULL,\n  suspected_cause TEXT NOT NULL DEFAULT '',\n  verified_cause TEXT NOT NULL DEFAULT '', enrollment_generation INTEGER NOT NULL DEFAULT 0\n    CHECK(enrollment_generation >= 0),\n  CHECK(length(summary) <= 240)\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
       {
-        "checks": [],
+        "checks": [
+          "enrollment_generation >= 0"
+        ],
         "classification": "internal operational metadata",
         "columns": [
           {
@@ -7833,11 +7888,29 @@
             "name": "summary",
             "nullable": false,
             "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "enrollment_generation",
+            "nullable": false,
+            "primary_key_position": 0
           }
         ],
         "domain": "control_plane",
         "foreign_keys": [],
         "indexes": [
+          {
+            "columns": [
+              "target_id",
+              "enrollment_generation",
+              "observed_at"
+            ],
+            "name": "idx_lite_system_health_observation_generation",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
           {
             "columns": [
               "source",
@@ -7850,7 +7923,8 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql"
         ],
         "name": "lite_system_health_observations",
         "projection_owner": "not a prepared projection",
@@ -7859,7 +7933,342 @@
         "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
         "semantic_status": "inferred",
         "sensitive_fields": [],
-        "sql": "CREATE TABLE lite_system_health_observations (\n  source TEXT NOT NULL,\n  target_id TEXT NOT NULL,\n  status TEXT NOT NULL,\n  observed_at TEXT NOT NULL,\n  source_revision TEXT NOT NULL DEFAULT '',\n  summary TEXT NOT NULL DEFAULT '',\n  PRIMARY KEY (source, target_id)\n)",
+        "sql": "CREATE TABLE lite_system_health_observations (\n  source TEXT NOT NULL,\n  target_id TEXT NOT NULL,\n  status TEXT NOT NULL,\n  observed_at TEXT NOT NULL,\n  source_revision TEXT NOT NULL DEFAULT '',\n  summary TEXT NOT NULL DEFAULT '', enrollment_generation INTEGER NOT NULL DEFAULT 0\n    CHECK(enrollment_generation >= 0),\n  PRIMARY KEY (source, target_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "incident_generation >= 1",
+          "enrollment_generation >= 0",
+          "operation_id='runtime.consumer.reconnect'",
+          "target_type='system_health_incident'",
+          "authorization_state IN ('pending','authorized','approval_required','denied','stale'",
+          "status IN (\n        'requested','preflight_checked','approval_required','approved','admitted',\n        'accepted','executing','awaiting_verification','verified','denied',\n        'blocked','expired','cancelled','execution_failed','verification_failed',\n        'verification_unavailable','manual_attention_required'\n    ",
+          "execution_state IN ('not_started','queued','accepted','running','succeeded','failed','cancelled','blocked'",
+          "verification_state IN ('not_started','pending','verified','failed','unavailable'",
+          "attempt >= 0 AND attempt <= 3",
+          "max_attempts BETWEEN 0 AND 3",
+          "length(before_evidence_json",
+          "length(after_evidence_json",
+          "length(safe_summary",
+          "length(outcome",
+          "length(terminal_reason"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "request_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "incident_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "incident_generation",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "enrollment_generation",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "operation_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "target_type",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "target_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "target_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "idempotency_digest",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "request_digest",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "actor_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "actor_type",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "policy_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "policy_decision_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "authorization_state",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "approval_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "execution_state",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "verification_state",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "requested_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "available_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "deadline_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "lease_until",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "completed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "attempt",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "2",
+            "name": "max_attempts",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'{}'",
+            "name": "before_evidence_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'{}'",
+            "name": "after_evidence_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "safe_summary",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'not_executed'",
+            "name": "outcome",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "terminal_reason",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "incident_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "lite_system_health_incidents",
+            "sequence": 0,
+            "to": "incident_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "incident_id",
+              "operation_id"
+            ],
+            "name": "lite_system_health_recovery_single_flight",
+            "origin": "c",
+            "partial": true,
+            "unique": true
+          },
+          {
+            "columns": [
+              "actor_id",
+              "requested_at"
+            ],
+            "name": "lite_system_health_recovery_actor",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "incident_id",
+              "requested_at"
+            ],
+            "name": "lite_system_health_recovery_incident",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "status",
+              "available_at",
+              "requested_at"
+            ],
+            "name": "lite_system_health_recovery_ready",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "idempotency_digest"
+            ],
+            "name": "sqlite_autoindex_lite_system_health_recovery_requests_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "request_id"
+            ],
+            "name": "sqlite_autoindex_lite_system_health_recovery_requests_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
+        ],
+        "name": "lite_system_health_recovery_requests",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "after_evidence_json",
+          "before_evidence_json"
+        ],
+        "sql": "CREATE TABLE lite_system_health_recovery_requests (\n    request_id TEXT PRIMARY KEY,\n    incident_id TEXT NOT NULL REFERENCES lite_system_health_incidents(incident_id),\n    incident_generation INTEGER NOT NULL CHECK(incident_generation >= 1),\n    enrollment_generation INTEGER NOT NULL DEFAULT 0 CHECK(enrollment_generation >= 0),\n    operation_id TEXT NOT NULL CHECK(operation_id='runtime.consumer.reconnect'),\n    target_type TEXT NOT NULL CHECK(target_type='system_health_incident'),\n    target_id TEXT NOT NULL,\n    target_revision TEXT NOT NULL DEFAULT '',\n    idempotency_digest TEXT NOT NULL UNIQUE,\n    request_digest TEXT NOT NULL,\n    actor_id TEXT NOT NULL,\n    actor_type TEXT NOT NULL,\n    policy_revision TEXT NOT NULL DEFAULT '',\n    policy_decision_id TEXT NOT NULL DEFAULT '',\n    authorization_state TEXT NOT NULL CHECK(authorization_state IN ('pending','authorized','approval_required','denied','stale')),\n    approval_id TEXT NOT NULL DEFAULT '',\n    status TEXT NOT NULL CHECK(status IN (\n        'requested','preflight_checked','approval_required','approved','admitted',\n        'accepted','executing','awaiting_verification','verified','denied',\n        'blocked','expired','cancelled','execution_failed','verification_failed',\n        'verification_unavailable','manual_attention_required'\n    )),\n    execution_state TEXT NOT NULL CHECK(execution_state IN ('not_started','queued','accepted','running','succeeded','failed','cancelled','blocked')),\n    verification_state TEXT NOT NULL CHECK(verification_state IN ('not_started','pending','verified','failed','unavailable')),\n    requested_at TEXT NOT NULL,\n    updated_at TEXT NOT NULL,\n    available_at TEXT NOT NULL,\n    deadline_at TEXT NOT NULL,\n    lease_until TEXT,\n    completed_at TEXT,\n    attempt INTEGER NOT NULL DEFAULT 0 CHECK(attempt >= 0 AND attempt <= 3),\n    max_attempts INTEGER NOT NULL DEFAULT 2 CHECK(max_attempts BETWEEN 0 AND 3),\n    before_evidence_json TEXT NOT NULL DEFAULT '{}' CHECK(length(before_evidence_json) <= 4096),\n    after_evidence_json TEXT NOT NULL DEFAULT '{}' CHECK(length(after_evidence_json) <= 4096),\n    safe_summary TEXT NOT NULL DEFAULT '' CHECK(length(safe_summary) <= 240),\n    outcome TEXT NOT NULL DEFAULT 'not_executed' CHECK(length(outcome) <= 80),\n    terminal_reason TEXT NOT NULL DEFAULT '' CHECK(length(terminal_reason) <= 120)\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -9796,8 +10205,8 @@
       },
       {
         "checks": [
-          "action_id IN ('device.remove','device.invite','device.roles.change','app.remove'",
-          "target_type IN ('device','app'",
+          "action_id IN ('device.remove','device.invite','device.roles.change','app.remove','system_health.recovery'",
+          "target_type IN ('device','app','system_health_incident'",
           "initiating_authorization_version >= 1",
           "status IN ('pending','approved','rejected','cancelled','expired','consumed','invalidated'"
         ],
@@ -10057,7 +10466,8 @@
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
         ],
         "name": "policy_approvals",
         "projection_owner": "not a prepared projection",
@@ -10068,7 +10478,7 @@
         "sensitive_fields": [
           "evidence_ref"
         ],
-        "sql": "CREATE TABLE policy_approvals (\n    approval_id TEXT PRIMARY KEY,\n    originating_decision_id TEXT NOT NULL UNIQUE,\n    correlation_id TEXT NOT NULL,\n    action_id TEXT NOT NULL CHECK(action_id IN ('device.remove','device.invite','device.roles.change','app.remove')),\n    target_type TEXT NOT NULL CHECK(target_type IN ('device','app')),\n    target_id TEXT NOT NULL,\n    target_revision TEXT NOT NULL DEFAULT '',\n    initiating_human_id TEXT NOT NULL,\n    initiating_role TEXT NOT NULL,\n    initiating_authorization_version INTEGER NOT NULL DEFAULT 1 CHECK(initiating_authorization_version >= 1),\n    request_fingerprint TEXT NOT NULL DEFAULT '',\n    required_approver_roles_json TEXT NOT NULL,\n    required_assurance TEXT NOT NULL,\n    policy_revision TEXT NOT NULL,\n    status TEXT NOT NULL CHECK(status IN ('pending','approved','rejected','cancelled','expired','consumed','invalidated')),\n    created_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    approved_at TEXT, approved_by_human_id TEXT,\n    rejected_at TEXT, rejected_by_human_id TEXT,\n    cancelled_at TEXT, cancelled_by_human_id TEXT,\n    consumed_at TEXT,\n    reason_code TEXT NOT NULL DEFAULT '',\n    evidence_ref TEXT NOT NULL DEFAULT '',\n    FOREIGN KEY(initiating_human_id) REFERENCES human_identities(human_id),\n    FOREIGN KEY(approved_by_human_id) REFERENCES human_identities(human_id)\n)",
+        "sql": "CREATE TABLE policy_approvals (\n    approval_id TEXT PRIMARY KEY,\n    originating_decision_id TEXT NOT NULL UNIQUE,\n    correlation_id TEXT NOT NULL,\n    action_id TEXT NOT NULL CHECK(action_id IN ('device.remove','device.invite','device.roles.change','app.remove','system_health.recovery')),\n    target_type TEXT NOT NULL CHECK(target_type IN ('device','app','system_health_incident')),\n    target_id TEXT NOT NULL,\n    target_revision TEXT NOT NULL DEFAULT '',\n    initiating_human_id TEXT NOT NULL,\n    initiating_role TEXT NOT NULL,\n    initiating_authorization_version INTEGER NOT NULL DEFAULT 1 CHECK(initiating_authorization_version >= 1),\n    request_fingerprint TEXT NOT NULL DEFAULT '',\n    required_approver_roles_json TEXT NOT NULL,\n    required_assurance TEXT NOT NULL,\n    policy_revision TEXT NOT NULL,\n    status TEXT NOT NULL CHECK(status IN ('pending','approved','rejected','cancelled','expired','consumed','invalidated')),\n    created_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    approved_at TEXT, approved_by_human_id TEXT,\n    rejected_at TEXT, rejected_by_human_id TEXT,\n    cancelled_at TEXT, cancelled_by_human_id TEXT,\n    consumed_at TEXT,\n    reason_code TEXT NOT NULL DEFAULT '',\n    evidence_ref TEXT NOT NULL DEFAULT '',\n    FOREIGN KEY(initiating_human_id) REFERENCES human_identities(human_id),\n    FOREIGN KEY(approved_by_human_id) REFERENCES human_identities(human_id)\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -15204,7 +15614,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "d14b7a67c8ba4cfc0e1969b9a2e5fe1797598f29775d6e859accc233e58039ef",
+    "aggregate_fingerprint": "5f11dd19ab5a2957342023ad3be3905c7bbe02627675ec2d4d66025d621d8470",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -15215,7 +15625,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/metadata/documentation-platform.json": "4f70f5af5a679b2c402f663b011bfa1f14050527a3f2cd38d68b9b08b4f9372d",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "3b34f0debcf38e177dca50b99dea00a9b2710c4889dcb2b706d688ce0a9fcd9e",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -15260,6 +15670,9 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql": "af04a2a6d07ecf1925c797fb645409ea57a2fa4390c89c95a27b60dd58d79320",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql": "594bda04b30d11c55d165efb547ebe788fdeae68d06fad8b8def8c2818552831",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql": "d43f1bc6fa85609fea10132b21199200d414ba5d0fdd7baaa2591ce2a183c2c8",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql": "645b3c4d7ea51ab395c36cba4ef5123f6bcce74eddc5d845207c50a3ef88ee7b",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql": "05ab4630dc17d8eda5dac04ddae1f0ad0a74efe0994cbee35e9ebdc51597bc04",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql": "e3bfdbcfedf3159893491e97b993c5c1b4a0c267bc7ab55dd8cb45d7374ab857",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },
     "validation_state": "generated"

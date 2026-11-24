@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 412f31ab2d7232d94e8e1c885b19c4b1bd4f6a75ef4524c47ff5b65507754e26
+source_fingerprint: 2b245a5dd9c2a17e4564b28afa05ca2eee7ed43986458f4c723735a3ac9e6a09
 schema_revision: 1
 validation_status: generated
 ---
@@ -95,6 +95,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `NATS_CONTAINER`
 - `NATS_HARDENING_REPORT`
 - `NATS_HEALTH_URL`
+- `NATS_INCIDENT_READY_PROBE`
 - `NATS_LOOPBACK_RE`
 - `NATS_MONITOR_PORT`
 - `NATS_ONLY_REPORT`
@@ -272,7 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_LONG_GATE_PROGRESS_ETAG_EVERY`
 - `POCKETLAB_LONG_GATE_PROGRESS_MAX_AGE_MS`
 - `POCKETLAB_LONG_GATE_PROGRESS_MAX_BUDGET_SECONDS`
-- `POCKETLAB_LONG_GATE_PROGRESS_P95_BUDGET_SECONDS`
 
 ## Process roles
 

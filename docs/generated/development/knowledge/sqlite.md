@@ -251,7 +251,7 @@ Source-derived devices persistence object; detailed ownership is conservatively 
 | Readers | /api/lite/fleet, /api/lite/devices/{device_id} |
 | Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
 | Classification | restricted operational metadata |
-| Indexes | idx_device_enrollment_last_seen, idx_device_enrollment_name, idx_device_enrollment_active_order, sqlite_autoindex_device_enrollment_registry_1 |
+| Indexes | idx_device_enrollment_generation, idx_device_enrollment_last_seen, idx_device_enrollment_name, idx_device_enrollment_active_order, sqlite_autoindex_device_enrollment_registry_1 |
 | Confidence | inferred |
 
 ## `device_health_attention`
@@ -716,7 +716,7 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Readers | — |
 | Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
 | Classification | restricted operational metadata |
-| Indexes | lite_system_health_incidents_target, lite_system_health_incidents_current, sqlite_autoindex_lite_system_health_incidents_1 |
+| Indexes | idx_lite_system_health_incident_generation, lite_system_health_incidents_target, lite_system_health_incidents_current, sqlite_autoindex_lite_system_health_incidents_1 |
 | Confidence | inferred |
 
 ## `lite_system_health_observations`
@@ -731,7 +731,22 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Readers | — |
 | Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
 | Classification | internal operational metadata |
-| Indexes | sqlite_autoindex_lite_system_health_observations_1 |
+| Indexes | idx_lite_system_health_observation_generation, sqlite_autoindex_lite_system_health_observations_1 |
+| Confidence | inferred |
+
+## `lite_system_health_recovery_requests`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | restricted operational metadata |
+| Indexes | lite_system_health_recovery_single_flight, lite_system_health_recovery_actor, lite_system_health_recovery_incident, lite_system_health_recovery_ready, sqlite_autoindex_lite_system_health_recovery_requests_2, sqlite_autoindex_lite_system_health_recovery_requests_1 |
 | Confidence | inferred |
 
 ## `lite_system_health_repair_attempts`

@@ -65,12 +65,12 @@ def test_candidate_proxy_is_lite_api_only(path, allowed):
     "path,allowed",
     [
         ("/api/lite/system-health/incidents/health-0123456789abcdef01234567/diagnose", True),
-        ("/api/lite/system-health/incidents/health-0123456789abcdef01234567/repair", False),
-        ("/api/lite/system-health/incidents/health-0123456789abcdef01234567/preflight", False),
+        ("/api/lite/system-health/incidents/health-0123456789abcdef01234567/repair", True),
+        ("/api/lite/system-health/incidents/health-0123456789abcdef01234567/preflight", True),
         ("/api/lite/harness/browser/bridge", False),
     ],
 )
-def test_candidate_mode_allows_only_diagnosis_write(path, allowed):
+def test_candidate_mode_allows_only_qualified_system_health_writes(path, allowed):
     candidate = _module()
     assert candidate.is_allowed_candidate_write(path) is allowed
 

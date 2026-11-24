@@ -3,10 +3,11 @@
 
 This server is qualification-only.  It binds to DEV-PC loopback, serves one
 already-built ``dist`` tree, exposes a non-secret candidate manifest, and
-proxies only read-oriented ``/api/lite/*`` requests to the Server Phone's
-loopback Caddy listener through the checked-in SSH tunnel.  Harness authority
-is never proxied through this server; the browser bridge is a short-lived
-request header consumed by normal FastAPI authorization on the remote side.
+proxies read-oriented ``/api/lite/*`` requests plus the explicitly allowlisted
+System Health diagnosis/preflight/recovery writes to the isolated candidate
+API.  Harness authority is never proxied through this server; the browser
+bridge is a short-lived request header consumed by normal FastAPI authorization
+on the isolated candidate.
 """
 from __future__ import annotations
 
@@ -54,6 +55,9 @@ PREPARED_RUNTIME_PROBE_ATTEMPTS = 20
 PREPARED_RUNTIME_PROBE_INTERVAL_SECONDS = 0.25
 READ_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
 DIAGNOSE_PATH_RE = re.compile(r"^/api/lite/system-health/incidents/health-[0-9a-f]{24}/diagnose$")
+RECOVERY_WRITE_PATH_RE = re.compile(
+    r"^/api/lite/system-health/incidents/health-[0-9a-f]{24}/(?:preflight|repair)$"
+)
 HOP_BY_HOP_HEADERS = frozenset(
     {
         "connection",
@@ -128,8 +132,9 @@ def is_allowed_api_path(path: str) -> bool:
 
 
 def is_allowed_candidate_write(path: str) -> bool:
-    """Allow only the non-destructive, persisted diagnosis action in UI runs."""
-    return bool(DIAGNOSE_PATH_RE.fullmatch(urlsplit(str(path or "")).path))
+    """Allow only bounded System Health writes in isolated candidate UI runs."""
+    pathname = urlsplit(str(path or "")).path
+    return bool(DIAGNOSE_PATH_RE.fullmatch(pathname) or RECOVERY_WRITE_PATH_RE.fullmatch(pathname))
 
 
 def candidate_api_target() -> tuple[str, int, ssl.SSLContext | None]:
@@ -239,7 +244,7 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self) -> None:  # noqa: N802
         self.send_response(204)
-        self.send_header("Allow", "GET, HEAD, OPTIONS")
+        self.send_header("Allow", "GET, HEAD, OPTIONS, POST")
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
 
@@ -250,7 +255,7 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
         self._dispatch()
 
     def do_POST(self) -> None:  # noqa: N802
-        if not candidate_api_mode_enabled() or not is_allowed_candidate_write(self.path):
+        if self.command != "POST" or not candidate_api_mode_enabled() or not is_allowed_candidate_write(self.path):
             self._send_error_json(405, "candidate_write_not_qualified")
             return
         length = self.headers.get("Content-Length", "")

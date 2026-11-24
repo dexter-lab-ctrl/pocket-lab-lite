@@ -425,6 +425,19 @@
       ]
     },
     {
+      "api": "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+      "confidence": "unvalidated",
+      "method": "GET",
+      "route": "/api/lite/system-health/incidents/{incident_id}/decisions",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litesystemhealth"
+      ]
+    },
+    {
       "api": "api:get:/api/lite/system-health/intelligence",
       "confidence": "unvalidated",
       "method": "GET",
@@ -1017,6 +1030,32 @@
       ]
     },
     {
+      "api": "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/system-health/incidents/{incident_id}/preflight",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litesystemhealth"
+      ]
+    },
+    {
+      "api": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+      "confidence": "unvalidated",
+      "method": "POST",
+      "route": "/api/lite/system-health/incidents/{incident_id}/repair",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "sqlite": [],
+      "ui": [
+        "ui:litesystemhealth"
+      ]
+    },
+    {
       "api": "api:put:/api/lite/identity/passkeys/{credential_id}",
       "confidence": "unvalidated",
       "method": "PUT",
@@ -1036,6 +1075,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "57cf8b4550e18f3e7fa688ad4af95976722d6d8767b6706cb21a593128a9ce45"
+    "source_fingerprint": "81084650377a487b849259cff5fe88015992935c129196e927c40325fb8884a6"
   }
 }

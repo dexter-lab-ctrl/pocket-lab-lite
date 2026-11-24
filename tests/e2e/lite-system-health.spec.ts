@@ -2,7 +2,8 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { installScenario, waitForLiteScreenToSettle } from './lite-test-helpers';
 
-// Mock-only qualification source. Not executed in this implementation PR.
+// Mocked desktop/mobile qualification source; physical candidate qualification
+// is performed by the exact-SHA Android controller.
 test('System Health has an accessible summary and native Manage on both layouts', async ({ page }) => {
   await installScenario(page, 'system-health-attention');
   await page.goto('/?screen=system-health');
@@ -46,7 +47,7 @@ test('deep-linked incident opens diagnosis without initiating repair', async ({ 
   await page.goto('/?screen=system-health&incident=health-111111111111111111111111');
   const dialog = page.getByRole('dialog', { name: /System Health Manage/i });
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByText(/No repair executor is enabled/i)).toBeVisible();
+  await expect(dialog.getByText(/Recovery is not enabled for this evidence or candidate/i)).toBeVisible();
   expect(seenWrites).toEqual([]);
 });
 
@@ -60,7 +61,7 @@ test('Home exposes a compact System Health summary with direct navigation', asyn
 });
 
 
-// H5 qualification definitions — mocked only, NOT EXECUTED in the H0–H6 implementation.
+// P4 mocked desktop/mobile qualification coverage.
 test('current and saved concerns have distinct grouping without raw IDs', async ({ page }) => {
   await installScenario(page, 'system-health-mixed');
   await page.goto('/?screen=system-health');
@@ -93,6 +94,34 @@ test('review issue discloses a cause narrative without enabling repair', async (
   await panel.getByText('Advanced technical details').click();
   await expect(panel.getByText('Incident ID')).toBeVisible();
   expect(repairWrites).toEqual([]);
+});
+
+test('eligible controlled recovery exposes the real governed lifecycle and verified outcome', async ({ page }) => {
+  await installScenario(page, 'system-health-verified-recovery');
+  const writes: string[] = [];
+  page.on('request', request => {
+    if (request.method() === 'POST' && /\/system-health\/.*\/(?:preflight|repair)(?:\?|$)/.test(request.url())) writes.push(request.url());
+  });
+  await page.goto('/?screen=system-health');
+  await waitForLiteScreenToSettle(page, 'system-health');
+  await page.getByRole('button', { name: 'Review issue' }).first().click();
+  const panel = page.getByRole('dialog', { name: /System Health Manage/i });
+  await panel.getByRole('button', { name: 'Review recovery', exact: true }).click();
+  await expect(panel.locator('p[role="status"]')).toContainText('Verified recovery');
+  expect(writes.some(path => path.endsWith('/preflight'))).toBe(true);
+  expect(writes.some(path => path.endsWith('/repair'))).toBe(true);
+  await expect(panel).not.toContainText('recovery-synthetic-001');
+});
+
+test('enterprise approval remains visible without implying execution', async ({ page }) => {
+  await installScenario(page, 'system-health-approval-pending');
+  await page.goto('/?screen=system-health');
+  await waitForLiteScreenToSettle(page, 'system-health');
+  await page.getByRole('button', { name: 'Review issue' }).first().click();
+  const panel = page.getByRole('dialog', { name: /System Health Manage/i });
+  await panel.getByRole('button', { name: 'Review recovery', exact: true }).click();
+  await expect(panel.locator('p[role="status"]')).toContainText('Approval required');
+  await expect(panel).toContainText(/Independent approval is required/i);
 });
 
 test('previous unresolved evidence stays saved and unconfirmed in saved-only scenario', async ({ page }) => {
@@ -184,4 +213,29 @@ test('System Health haptic uses shared native feedback and respects reduced moti
   await page.getByRole('dialog', { name: /System Health Manage/i })
     .getByRole('button', { name: /Close/i }).click();
   expect(await page.evaluate(() => (window as Window & { __hapticCount?: number }).__hapticCount)).toBe(before);
+});
+
+
+// P4 membership qualification coverage.
+test('offline enrollment is current and removed-device history is read-only', async ({ page }) => {
+  await installScenario(page, 'system-health-p4-membership');
+  const writes: string[] = [];
+  page.on('request', request => {
+    if (request.method() === 'POST' && request.url().includes('/system-health/')) writes.push(request.url());
+  });
+  await page.goto('/?screen=system-health');
+  await waitForLiteScreenToSettle(page, 'system-health');
+  const screen = page.locator('[data-system-health-page="true"]');
+  await expect(screen.getByText('Secondary phone', { exact: true })).toBeVisible();
+  await expect(screen.getByText('Previously removed phone', { exact: true })).toHaveCount(0);
+  await screen.getByRole('button', { name: /Review history/i }).click();
+  const panel = page.getByRole('dialog', { name: /System Health Manage/i });
+  await expect(panel.getByText('Device removed — historical record')).toBeVisible();
+  await panel.getByRole('button', { name: 'View history' }).last().click();
+  await expect(panel.getByText('Device removed — historical record')).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'Request recovery' })).toHaveCount(0);
+  await expect(panel.getByRole('button', { name: 'Check cause' })).toHaveCount(0);
+  const report = await new AxeBuilder({ page }).include('[role="dialog"]').analyze();
+  expect(report.violations.filter(v => ['critical', 'serious'].includes(v.impact || ''))).toEqual([]);
+  expect(writes).toEqual([]);
 });

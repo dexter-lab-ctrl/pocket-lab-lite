@@ -20,6 +20,7 @@ fi
 check_only=0
 baseline_mode=0
 access_only=0
+system_health_only=0
 qualification_scope="${LITE_ANDROID_QUALIFICATION_SCOPE:-all}"
 relay_wsl_process=""
 relay_windows_process=""
@@ -31,6 +32,7 @@ for argument in "$@"; do
     --baseline) baseline_mode=1 ;;
     --home-only) qualification_scope=home ;;
     --access-only) access_only=1; qualification_scope=access ;;
+    --system-health-only) system_health_only=1; qualification_scope=system-health ;;
     '') ;;
     *)
       printf '[ui-performance-android-preflight] ERROR: unknown argument: %s\n' "$argument" >&2
@@ -39,9 +41,9 @@ for argument in "$@"; do
   esac
 done
 case "$qualification_scope" in
-  all|home|access) ;;
+  all|home|access|system-health) ;;
   *)
-    printf '[ui-performance-android-preflight] ERROR: LITE_ANDROID_QUALIFICATION_SCOPE must be all, home or access.\n' >&2
+    printf '[ui-performance-android-preflight] ERROR: LITE_ANDROID_QUALIFICATION_SCOPE must be all, home, access or system-health.\n' >&2
     exit 2
     ;;
 esac

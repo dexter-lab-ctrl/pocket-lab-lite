@@ -1663,6 +1663,7 @@ export function getLiteDeviceMutationInvalidations(actionId = '', result = {}) {
     || ['add_device', 'remove_device', 'restart_agent', 'update_device_model'].includes(normalized)
   );
   if (statusChanged) keys.push(['lite', 'status']);
+  if (['add_device', 'remove_device'].includes(normalized)) keys.push(['lite', 'system-health']);
   const placementChanged = Boolean(
     result?.capabilities_changed
     || result?.device_capabilities_changed

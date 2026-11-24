@@ -1,6 +1,21 @@
 {
   "reason_codes": [
     {
+      "audit_severity": "warning",
+      "code": "historical_record",
+      "deprecated_aliases": [],
+      "domain": "system-health",
+      "event_mapping": [],
+      "http_status": 409,
+      "meaning": "The requested System Health action targets retained evidence for a device that is no longer a current recovery target.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_system_health.py",
+      "terminal": true,
+      "ui_mapping": ["historical read-only record"],
+      "user_message": "Review the earlier record; this device is no longer monitored."
+    },
+    {
       "audit_severity": "info",
       "code": "legacy_telemetry_value",
       "deprecated_aliases": [],

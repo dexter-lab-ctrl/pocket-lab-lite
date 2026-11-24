@@ -15,6 +15,7 @@ APPROVAL_PURPOSES = {
     "device.invite": "policy.approval.device.invite",
     "device.roles.change": "policy.approval.device.roles.change",
     "app.remove": "policy.approval.app.remove",
+    "system_health.recovery": "policy.approval.system_health.recovery",
 }
 # Compatibility name for the original device-removal UI projection. New code
 # binds the purpose through APPROVAL_PURPOSES by action, while this bounded
@@ -200,7 +201,7 @@ def create_from_decision(
                 (str(decision_id)[:120],),
             ).fetchone()
             action_id = str(decision["action_id"] or "") if decision else ""
-            expected_target_type = "app" if action_id.startswith("app.") else "device"
+            expected_target_type = "system_health_incident" if action_id == "system_health.recovery" else "app" if action_id.startswith("app.") else "device"
             if (
                 not decision
                 or decision["reason_code"] != "approval_required"

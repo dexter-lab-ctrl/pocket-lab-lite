@@ -226,6 +226,21 @@ async def worker_recovery_watchdog(stop_event: asyncio.Event) -> None:
                         },
                     )
 
+            # Controlled System Health recovery is an opt-in qualification
+            # adapter owned by this same watchdog. It is intentionally polled
+            # independently of the command durable, so a broken command
+            # consumer cannot be the delivery mechanism for its own repair.
+            from api_fastapi.services import lite_system_health  # type: ignore
+            controlled = await lite_system_health.process_controlled_recovery_requests(
+                BUS, DURABLE_NAME
+            )
+            if controlled:
+                _worker_log(
+                    "worker.system_health_recovery_processed",
+                    count=controlled,
+                    durable=DURABLE_NAME,
+                )
+
             from api_fastapi.services import lite_photo_backup  # type: ignore
             from api_fastapi.services import lite_owner_operations  # type: ignore
             await asyncio.to_thread(

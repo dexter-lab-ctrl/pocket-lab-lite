@@ -8,7 +8,10 @@ import {
   sanitizeLitePerformanceName,
   summarizeLiteFrames,
 } from '../../../src/performance/litePerformanceBudget.js';
-import { LITE_UI_PERFORMANCE_MATRIX } from '../../../src/performance/litePerformanceMatrix.js';
+import {
+  LITE_SYSTEM_HEALTH_PERFORMANCE_MATRIX,
+  LITE_UI_PERFORMANCE_MATRIX,
+} from '../../../src/performance/litePerformanceMatrix.js';
 
 const cdpUrl = String(process.env.LITE_ANDROID_CDP_URL || '').trim();
 const baseUrl = String(process.env.LITE_BASE_URL || '').trim();
@@ -18,6 +21,7 @@ const qualificationScope = String(process.env.LITE_ANDROID_QUALIFICATION_SCOPE |
 const outputDir = resolve('.pocketlab-dev/performance');
 const homeOnly = qualificationScope === 'home';
 const recoveryOnly = qualificationScope === 'recovery';
+const systemHealthOnly = qualificationScope === 'system-health';
 const screens = recoveryOnly ? ['recovery'] : homeOnly ? ['home'] : ['home', 'catalog', 'devices', 'security', 'identity', 'rules', 'recovery'];
 const MINIMUM_FRAME_COUNT = 20;
 const MINIMUM_SAMPLER_INTERVAL_COUNT = MINIMUM_FRAME_COUNT + 3;
@@ -32,8 +36,8 @@ function fail(message) {
 if (browserBridgeEnabled !== Boolean(browserBridge)) {
   fail('Synthetic Android browser qualification requires an explicit browser bridge and LITE_QUALIFICATION_BROWSER_BRIDGE=1.');
 }
-if (!['all', 'home', 'recovery'].includes(qualificationScope)) {
-  fail('LITE_ANDROID_QUALIFICATION_SCOPE must be all, home or recovery.');
+if (!['all', 'home', 'recovery', 'system-health'].includes(qualificationScope)) {
+  fail('LITE_ANDROID_QUALIFICATION_SCOPE must be all, home, recovery or system-health.');
 }
 
 function sourceCommit() {
@@ -61,7 +65,10 @@ function validateEndpoint(value, label) {
 }
 
 function matrixEvidence(screen, interaction, nestedSurface) {
-  const entry = LITE_UI_PERFORMANCE_MATRIX.find((item) => (
+  const matrix = screen === 'system-health'
+    ? LITE_SYSTEM_HEALTH_PERFORMANCE_MATRIX
+    : LITE_UI_PERFORMANCE_MATRIX;
+  const entry = matrix.find((item) => (
     item.screen === screen
     && item.interaction === interaction
     && item.nestedSurface === nestedSurface
@@ -658,7 +665,9 @@ async function measurePhase4Interaction({
   };
 
   const fileName = [
-    recoveryOnly ? 'ui-performance-android-recovery' : 'ui-performance-android-cdp',
+    systemHealthOnly
+      ? 'ui-performance-android-system-health'
+      : recoveryOnly ? 'ui-performance-android-recovery' : 'ui-performance-android-cdp',
     sanitizeLitePerformanceName(scope),
     sanitizeLitePerformanceName(interaction),
   ].join('-') + '.json';
@@ -697,6 +706,203 @@ async function measureNestedInteraction({
   });
 }
 
+async function exerciseSystemHealthPanelScroll(panel, duration = 900) {
+  const scrollSurface = panel.locator('.lite-overlay-scroll').first();
+  await scrollSurface.evaluate(async (element, scrollDuration) => {
+    await new Promise((resolve) => {
+      const startedAt = performance.now();
+      const startTop = element.scrollTop;
+      const maxScroll = Math.max(0, element.scrollHeight - element.clientHeight);
+      const distance = Math.min(maxScroll, Math.max(220, Math.round(element.clientHeight * 0.65)));
+      const step = (now) => {
+        const phase = Math.min(1, (now - startedAt) / scrollDuration);
+        const wave = (1 - Math.cos(phase * Math.PI * 2)) / 2;
+        element.scrollTop = Math.min(maxScroll, startTop + (distance * wave));
+        if (phase < 1) requestAnimationFrame(step);
+        else {
+          element.scrollTop = startTop;
+          resolve();
+        }
+      };
+      requestAnimationFrame(step);
+    });
+  }, duration);
+}
+
+if (systemHealthOnly) {
+  /*
+   * P4 owns a physical System Health-only matrix. It deliberately exercises
+   * only prepared reads and the in-control read-only refresh indicator; the
+   * governed recovery lifecycle is qualified by the separate System Health
+   * Android controller against the isolated candidate runtime.
+   */
+  await page.addInitScript(() => {
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = async (input, init) => {
+      const rawUrl = typeof input === 'string' ? input : input?.url || '';
+      let pathname = '';
+      try { pathname = new URL(rawUrl, window.location.origin).pathname; } catch {}
+      if (pathname === '/api/lite/system-health/summary'
+        && window.sessionStorage.getItem('POCKETLAB_ANDROID_CDP_DELAY_NEXT_SYSTEM_HEALTH') === '1') {
+        window.sessionStorage.removeItem('POCKETLAB_ANDROID_CDP_DELAY_NEXT_SYSTEM_HEALTH');
+        await new Promise((resolve) => window.setTimeout(resolve, 250));
+      }
+      return nativeFetch(input, init);
+    };
+  });
+
+  await gotoScreen('system-health');
+  const systemHealthPage = page.locator('[data-system-health-page="true"]');
+  await systemHealthPage.locator('[data-health-incident]').first().waitFor({ state: 'visible', timeout: 20_000 });
+  await measurePhase4Interaction({
+    interaction: 'screen-steady',
+    scope: 'system-health',
+    surface: '[data-system-health-page="true"]',
+    action: async () => { await page.waitForTimeout(720); },
+    settleMs: 0,
+    evidenceId: matrixEvidence('system-health', 'screen-steady', 'System Health / overview'),
+  });
+
+  const manageButton = await firstVisible(
+    systemHealthPage.getByRole('button', { name: 'Manage System Health', exact: true }),
+    'System Health Manage button',
+  );
+  await measurePhase4Interaction({
+    interaction: 'manage-open',
+    scope: 'system-health-manage',
+    surface: 'System Health Manage sheet',
+    action: async () => {
+      await manageButton.click();
+      await page.getByRole('dialog', { name: /System Health Manage/i }).waitFor({ state: 'visible', timeout: 10_000 });
+    },
+    settleMs: 420,
+    evidenceId: matrixEvidence('system-health', 'manage-open', 'System Health Manage / opening'),
+  });
+  const manage = await firstVisible(page.getByRole('dialog', { name: /System Health Manage/i }), 'System Health Manage sheet');
+
+  await measureNestedInteraction({
+    screen: 'system-health',
+    nestedSurface: 'System Health Manage / Problems & Diagnosis',
+    interaction: 'section-switch',
+    scope: 'system-health-problems-section',
+    surface: 'System Health Manage / Problems & Diagnosis',
+    action: async () => {
+      await manage.getByRole('button', { name: 'Problems & Diagnosis', exact: true }).first().click();
+      await manage.getByRole('heading', { name: 'Current confirmed concerns', exact: true }).waitFor({ state: 'visible' });
+    },
+    settleMs: 480,
+  });
+
+  const reviewIssue = await firstVisible(
+    manage.getByRole('button', { name: 'Review issue', exact: true }),
+    'System Health Review issue action',
+  );
+  await measureNestedInteraction({
+    screen: 'system-health',
+    nestedSurface: 'System Health Manage / Advanced technical details',
+    interaction: 'nested-detail-open',
+    scope: 'system-health-technical-details',
+    surface: 'System Health incident technical details',
+    action: async () => {
+      await reviewIssue.click();
+      await manage.getByRole('heading', { name: 'What happened', exact: true }).waitFor({ state: 'visible' });
+      await manage.getByText('Advanced technical details', { exact: true }).click();
+      await manage.getByText('Incident ID', { exact: true }).waitFor({ state: 'visible' });
+    },
+  });
+  const technicalDetails = manage.getByText('Advanced technical details', { exact: true });
+  await measureNestedInteraction({
+    screen: 'system-health',
+    nestedSurface: 'System Health Manage / Advanced technical details',
+    interaction: 'nested-detail-close',
+    scope: 'system-health-technical-details',
+    surface: 'System Health incident technical details',
+    action: async () => { await technicalDetails.click(); },
+  });
+
+  await measureNestedInteraction({
+    screen: 'system-health',
+    nestedSurface: 'System Health Manage / long inner scroll',
+    interaction: 'list-scroll',
+    scope: 'system-health-manage-scroll',
+    surface: 'System Health Manage inner scroll',
+    action: async () => { await exerciseSystemHealthPanelScroll(manage); },
+    settleMs: 120,
+  });
+
+  await page.keyboard.press('Escape');
+  await manage.waitFor({ state: 'hidden', timeout: 10_000 }).catch(() => {});
+
+  async function systemHealthRefreshButton() {
+    await page.waitForFunction(
+      () => document.querySelector('button.lite-refresh-button')?.getAttribute('data-lite-refresh-state') === 'idle',
+      undefined,
+      { timeout: 20_000 },
+    );
+    return firstVisible(
+      systemHealthPage.locator('.lite-refresh-control').getByRole('button'),
+      'System Health Refresh button',
+    );
+  }
+
+  async function settleSystemHealthRefresh() {
+    const indicator = systemHealthPage.locator('.lite-refresh-progress-ring');
+    try {
+      await indicator.waitFor({ state: 'hidden', timeout: 7_000 });
+    } catch {
+      console.warn('[ui-performance-android] System Health refresh indicator did not settle within 7s; resetting the read-only page.');
+      await gotoScreen('system-health');
+    }
+  }
+
+  let refreshButton = await systemHealthRefreshButton();
+  await measurePhase4Interaction({
+    interaction: 'progress-update',
+    scope: 'system-health-refresh',
+    surface: 'System Health read-only refresh status lifecycle',
+    action: async () => {
+      await page.evaluate(() => window.sessionStorage.setItem('POCKETLAB_ANDROID_CDP_DELAY_NEXT_SYSTEM_HEALTH', '1'));
+      await refreshButton.click();
+      await refreshButton.locator('.lite-refresh-progress-ring').waitFor({ state: 'visible', timeout: 10_000 });
+      await page.waitForTimeout(760);
+    },
+    settleMs: 120,
+    evidenceId: matrixEvidence('system-health', 'progress-update', 'System Health / read-only refresh progress'),
+  });
+  await settleSystemHealthRefresh();
+
+  refreshButton = await systemHealthRefreshButton();
+  await measurePhase4Interaction({
+    interaction: 'toast-settle',
+    scope: 'system-health-refresh',
+    surface: 'System Health read-only refresh indicator settle',
+    action: async () => {
+      await page.evaluate(() => window.sessionStorage.setItem('POCKETLAB_ANDROID_CDP_DELAY_NEXT_SYSTEM_HEALTH', '1'));
+      await refreshButton.click();
+      const indicator = refreshButton.locator('.lite-refresh-progress-ring');
+      await indicator.waitFor({ state: 'visible', timeout: 10_000 });
+      try { await indicator.waitFor({ state: 'hidden', timeout: 7_000 }); }
+      catch { console.warn('[ui-performance-android] System Health refresh indicator did not settle during toast-settle; recording the bounded sample.'); }
+    },
+    settleMs: 0,
+    evidenceId: matrixEvidence('system-health', 'toast-settle', 'System Health / read-only refresh settle'),
+  });
+  await settleSystemHealthRefresh();
+
+  refreshButton = await systemHealthRefreshButton();
+  await measurePhase4Interaction({
+    interaction: 'refresh-feedback',
+    scope: 'system-health-refresh',
+    surface: 'System Health read-only refresh feedback',
+    action: async () => {
+      await page.evaluate(() => window.sessionStorage.setItem('POCKETLAB_ANDROID_CDP_DELAY_NEXT_SYSTEM_HEALTH', '1'));
+      await refreshButton.click();
+      await refreshButton.locator('.lite-refresh-progress-ring').waitFor({ state: 'visible', timeout: 10_000 });
+    },
+    settleMs: 420,
+    evidenceId: matrixEvidence('system-health', 'refresh-feedback', 'System Health / read-only refresh feedback'),
+  });
+} else {
 // Phase 4: screen-steady on all seven Lite screens.
 for (const screenId of screens) {
   await gotoScreen(screenId);
@@ -1502,11 +1708,14 @@ await measurePhase4Interaction({
 });
 
 }
+}
 
 const requiredInteractions = recoveryOnly
   ? ['screen-steady', 'list-scroll', 'manage-open', 'section-switch']
   : homeOnly
   ? ['screen-steady', 'screen-navigation', 'manage-open', 'manage-close', 'nested-detail-open', 'nested-detail-close', 'section-switch', 'progress-update', 'toast-settle', 'refresh-feedback']
+  : systemHealthOnly
+  ? ['screen-steady', 'manage-open', 'section-switch', 'nested-detail-open', 'nested-detail-close', 'list-scroll', 'progress-update', 'toast-settle', 'refresh-feedback']
   : LITE_PERFORMANCE_INTERACTIONS;
 const missingInteractions = requiredInteractions.filter((interaction) => !exercisedInteractions.has(interaction));
 const qualificationGaps = [

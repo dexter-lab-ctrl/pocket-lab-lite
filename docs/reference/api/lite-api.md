@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 48304cf52835f640d413c04711debd7502adb88b868ef049eab7aeb33e7b0f1a
+source_fingerprint: 37b48a086ee5356aeb449305109a3c62102e5608db14bbf654d0e47cd600232c
 schema_revision: 1
 validation_status: generated
 ---
@@ -5525,7 +5525,8 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 
 | Status | Description | Schema |
 | --- | --- | --- |
-| 409 | Successful Response | application/json: `object` |
+| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 

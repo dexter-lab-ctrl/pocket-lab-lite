@@ -15,11 +15,11 @@ command_lifecycle
 backup_manifest_index
 audit_evidence_index
 app_credential_metadata
-policy_approvals
 enterprise_memberships
 webauthn_challenges
 policy_temporary_exceptions
 policy_recovery_resolutions
+lite_system_health_recovery_requests
 policy_runtime_state
 human_enrollment_claims
 harness_recovery_receipts
@@ -64,13 +64,13 @@ assurance_findings
 assurance_execution_checkpoints
 app_action_lifecycle
 owner_approved_operations
+policy_approvals
 policy_activation_operations
 owner_operation_client_pairings
 device_lifecycle_events
 webauthn_credentials
 security_database_restores
 recovery_code_batches
-policy_decision_details
 harness_sessions
 auth_sessions
 security_scan_runs
@@ -80,6 +80,7 @@ assurance_runs
 policy_revisions
 security_database_backups
 workflow_event_index
+policy_decision_details
 app_current_state
 device_current_state
 human_identities

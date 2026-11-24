@@ -268,6 +268,108 @@ def response_contract(response: HttpResult) -> dict[str, Any]:
     }
 
 
+_REMOTE_RECOVERY_PROBE = r'''import json, sqlite3, sys
+path = sys.argv[1]
+conn = sqlite3.connect(path)
+conn.row_factory = sqlite3.Row
+def bounded(row):
+    return {key: row[key] for key in row.keys() if key in {
+        "request_id", "incident_id", "target_type", "target_id", "status", "execution_state", "verification_state",
+        "attempt", "max_attempts", "outcome", "terminal_reason", "safe_summary",
+        "before_evidence_json", "after_evidence_json", "updated_at", "completed_at",
+    }}
+requests = [bounded(row) for row in conn.execute(
+    "SELECT * FROM lite_system_health_recovery_requests ORDER BY requested_at DESC LIMIT 8"
+)]
+events = [
+    {key: row[key] for key in row.keys() if key in {"incident_id", "generation", "event_type", "created_at", "safe_summary"}}
+    for row in conn.execute(
+        "SELECT incident_id,generation,event_type,created_at,safe_summary FROM lite_system_health_events ORDER BY id DESC LIMIT 20"
+    )
+]
+print(json.dumps({"requests": requests, "events": events}, sort_keys=True, separators=(",", ":")))
+'''
+
+
+_REMOTE_RECOVERY_FIXTURE = r'''import json, sqlite3, sys, time
+runtime, database, deadline = sys.argv[1:]
+sys.path.insert(0, runtime)
+from api_fastapi.services import lite_phase3b_projections as projections
+
+degraded = {
+    "status": "degraded",
+    "connected": True,
+    "jetstream_enabled": True,
+    "durable_consumer_health": {
+        "pocketlab_command_worker_v1": {
+            "healthy": False,
+            "generation": 1,
+            "recoveries": 0,
+            "task_alive": False,
+            "subscription_present": False,
+            "callback_inflight": False,
+        }
+    },
+    "generation": 9001,
+    "summary": "Qualification recovery target needs attention.",
+    "sanitized": True,
+}
+healthy = {
+    **degraded,
+    "status": "healthy",
+    "durable_consumer_health": {
+        "pocketlab_command_worker_v1": {
+            "healthy": True,
+            "generation": 2,
+            "recoveries": 1,
+            "task_alive": True,
+            "subscription_present": True,
+            "callback_inflight": False,
+        }
+    },
+    "generation": 9002,
+    "summary": "Qualification recovery target is healthy.",
+}
+terminal = {"verified", "execution_failed", "verification_failed", "verification_unavailable", "manual_attention_required", "blocked", "expired", "cancelled"}
+conn = sqlite3.connect(database)
+try:
+    baseline_request_ids = {str(row[0]) for row in conn.execute(
+        "SELECT request_id FROM lite_system_health_recovery_requests"
+    ).fetchall() if row and row[0]}
+finally:
+    conn.close()
+started = time.monotonic()
+while time.monotonic() < float(deadline):
+    projections.project("system.nats_remote", degraded)
+    conn = sqlite3.connect(database)
+    try:
+        row = conn.execute(
+            "SELECT request_id,status FROM lite_system_health_recovery_requests ORDER BY requested_at DESC LIMIT 1"
+        ).fetchone()
+    finally:
+        conn.close()
+    if row and str(row[0] or "") not in baseline_request_ids and str(row[1] or "") in terminal:
+        projections.project("system.nats_remote", healthy)
+        print(json.dumps({"status": "PASS", "request_status": str(row[1]), "bounded": True}, sort_keys=True), flush=True)
+        raise SystemExit(0)
+    time.sleep(0.25)
+print(json.dumps({"status": "TIMEOUT", "bounded": True, "elapsed_seconds": round(time.monotonic() - started, 2)}, sort_keys=True), flush=True)
+raise SystemExit(1)
+'''
+
+
+_REMOTE_NATS_INCIDENT_READY_PROBE = r'''import json, sqlite3, sys
+conn = sqlite3.connect(sys.argv[1])
+try:
+    count = conn.execute(
+        "SELECT COUNT(*) FROM lite_system_health_incidents WHERE source='nats' AND state != 'resolved'"
+    ).fetchone()[0]
+finally:
+    conn.close()
+print(json.dumps({"active_nats_incidents": int(count)}, sort_keys=True))
+'''
+
+
 def _sql_statements(sql: str) -> Iterable[str]:
     buffer = ""
     for line in sql.splitlines(keepends=True):
@@ -387,9 +489,11 @@ def create_schema42_fixture(repo: Path, candidate_sha: str, run_root: Path) -> t
 
 
 def apply_isolated_health_migrations(repo: Path, candidate_sha: str, database: Path) -> dict[str, Any]:
-    migrations = [item for item in _candidate_migrations(repo, candidate_sha) if item[0] in {43, 44}]
-    if [item[0] for item in migrations] != [43, 44]:
-        raise QualificationError("candidate System Health migration chain 0043/0044 is incomplete")
+    all_migrations = _candidate_migrations(repo, candidate_sha)
+    migrations = [item for item in all_migrations if item[0] >= 43]
+    versions = [item[0] for item in migrations]
+    if not versions or versions != list(range(43, versions[-1] + 1)):
+        raise QualificationError("candidate forward migration chain after schema 42 is incomplete")
     conn = sqlite3.connect(str(database), timeout=20)
     try:
         conn.execute("PRAGMA foreign_keys=ON")
@@ -621,6 +725,10 @@ class SystemHealthAndroidQualification:
         self.repo = repo
         self.controller = _controller()
         self.candidate_sha = validate_candidate_sha(repo, candidate_sha, self.controller)
+        candidate_migrations = _candidate_migrations(repo, self.candidate_sha)
+        if not candidate_migrations:
+            raise QualificationError("candidate migration inventory is empty")
+        self.candidate_schema_version = max(item[0] for item in candidate_migrations)
         self.base_sha = str(base_sha or "").strip().casefold()
         if not SHA_RE.fullmatch(self.base_sha):
             raise QualificationError("base SHA must be an explicit commit")
@@ -649,13 +757,16 @@ class SystemHealthAndroidQualification:
         self.ca_path, self.cert_path, self.key_path = self.controller._create_certificates(self.paths)
         self.local_api_port = _port()
         self.nats: Any | None = None
+        self.opa: Any | None = None
         self.remote: Any | None = None
         self.remote_root = ""
         self.remote_api_port = 0
         self.api: Any | None = None
         self.worker: Any | None = None
         self.driver: Any | None = None
+        self.recovery_fixture: Any | None = None
         self.tunnels: list[Any] = []
+        self.opa_policy_path: Path | None = None
         self.principal_private = Ed25519PrivateKey.generate()
         public = self.principal_private.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
         self.public_key = _b64u(public)
@@ -727,7 +838,7 @@ class SystemHealthAndroidQualification:
     def _local_fixture(self) -> None:
         self.database, self.rollback_database, fixture = create_schema42_fixture(self.repo, self.candidate_sha, self.paths.root)
         apply = apply_isolated_health_migrations(self.repo, self.candidate_sha, self.database)
-        after = _verify_sqlite(self.database, expected_version=44)
+        after = _verify_sqlite(self.database, expected_version=self.candidate_schema_version)
         if after["status"] != "PASS":
             raise QualificationError("isolated System Health migrations failed local integrity verification")
         repeat = apply_isolated_health_migrations(self.repo, self.candidate_sha, self.database)
@@ -743,7 +854,8 @@ class SystemHealthAndroidQualification:
             "production_database_used": False,
         }
         # Recreate the schema-42 candidate DB after the local migration proof;
-        # the phone candidate must perform 0043/0044 itself at startup.
+        # the phone candidate must perform the complete forward chain itself at
+        # startup, including generation and recovery-request migrations.
         self.database.unlink()
         self.database, self.rollback_database, _ = create_schema42_fixture(self.repo, self.candidate_sha, self.paths.root)
 
@@ -759,6 +871,50 @@ class SystemHealthAndroidQualification:
         self.nats = self.controller.DisposableNats(paths=self.paths, env=base_env, run_id=self.run_id, binary=self.nats_binary)
         self.nats.start()
         self.results["disposable_nats"] = {"status": "PASS", "jetstream": True, "loopback": True, "production_nats_used": False}
+
+    def _start_local_opa(self) -> None:
+        """Run the exact candidate policy on an isolated Dev-PC loopback port."""
+        binary = shutil.which("opa")
+        if not binary:
+            raise QualificationError("opa is unavailable; no production policy endpoint fallback is permitted")
+        policy_source = self.paths.root / "candidate-opa.rego"
+        shown = _run(
+            ["git", "show", f"{self.candidate_sha}:security/policies/opa/pocketlab/pocketlab.rego"],
+            cwd=self.repo,
+            timeout=30,
+        )
+        if shown.returncode != 0 or not shown.stdout.strip():
+            raise QualificationError("candidate OPA policy source could not be read")
+        policy_source.write_text(shown.stdout, encoding="utf-8")
+        policy_source.chmod(0o600)
+        base_env = self.controller._scrubbed_environment()
+        base_env.update({
+            "HOME": str(self.paths.home),
+            "TMPDIR": str(self.paths.root / "tmp"),
+            "TMP": str(self.paths.root / "tmp"),
+            "TEMP": str(self.paths.root / "tmp"),
+            "POCKETLAB_QUALIFICATION_RUN_ID": self.run_id,
+        })
+        (self.paths.root / "tmp").mkdir(mode=0o700, parents=True, exist_ok=True)
+        self.opa_policy_path = policy_source
+        self.opa = self.controller.DisposableOpa(
+            paths=self.paths,
+            run_id=self.run_id,
+            policy_source=policy_source,
+            binary=binary,
+        )
+        while self.opa.port in {self.nats.port if self.nats is not None else 0, self.local_api_port}:
+            self.opa.port = _port()
+        self.opa.start(base_env=base_env)
+        policy_revision = self.opa.revision_path.read_text(encoding="utf-8").strip()[:24]
+        self.results["isolated_opa_policy"] = {
+            "status": "PASS",
+            "transport": "loopback_http_reverse_ssh",
+            "candidate_policy_source": "exact_candidate_git_object",
+            "policy_revision": policy_revision,
+            "devpc_owned": True,
+            "production_opa_used": False,
+        }
 
     def _stage_remote(self) -> None:
         assert self.remote is not None and self.database is not None
@@ -777,7 +933,7 @@ class SystemHealthAndroidQualification:
             "production_configuration_files": False, "source_snapshot_read_only": True,
         }
 
-    def _build_env(self, nats_origin: str, remote_api_port: int) -> dict[str, str]:
+    def _build_env(self, nats_origin: str, opa_origin: str, remote_api_port: int) -> dict[str, str]:
         assert self.remote is not None
         site_packages = [str(item) for item in (self.remote.baseline.get("python_site_packages") or []) if str(item).startswith((self.remote.home.rstrip("/") + "/", self.remote.prefix.rstrip("/") + "/"))]
         env: dict[str, str] = {
@@ -789,6 +945,10 @@ class SystemHealthAndroidQualification:
             # ("POCKETLAB_QUALIFICATION_OWNER": "0"). The browser UI lane
             # opts into the existing non-destructive owner bridge explicitly.
             "POCKETLAB_ENVIRONMENT": "qualification", "POCKETLAB_HARNESS_ENABLED": "1", "POCKETLAB_HARNESS_DESTRUCTIVE": "0", "POCKETLAB_QUALIFICATION_OWNER": self.qualification_owner_flag, "POCKETLAB_TEST_AUTH_BYPASS": "0",
+            # Controlled recovery is enabled only inside the isolated browser
+            # candidate. The security-assurance lane and installed runtime
+            # remain default-off.
+            "POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1" if self.browser_ui else "0",
             "POCKETLAB_HARNESS_BOOTSTRAP_APPROVED": "1", "POCKETLAB_HARNESS_BOOTSTRAP_PROFILE": self.bootstrap_profile, "POCKETLAB_HARNESS_RUNTIME_ID": f"qualification-{self.run_id}",
             "POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID": self.principal_id, "POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT": self.fingerprint, "POCKETLAB_HARNESS_PROVISIONING_TOKEN": self.provisioning_token,
             "POCKETLAB_STATE_DIR": f"{self.remote_root}/state", "POCKETLAB_LITE_DB_PATH": f"{self.remote_root}/state/{SCHEMA_DB_NAME}", "POCKETLAB_BASE_DIR": f"{self.remote_root}/base", "POCKETLAB_API_DIR": f"{self.remote_root}/api", "POCKETLAB_IAC_DIR": f"{self.remote_root}/iac",
@@ -797,35 +957,45 @@ class SystemHealthAndroidQualification:
             "POCKETLAB_HARNESS_BOOTSTRAP_PURPOSE": self.bootstrap_purpose,
             "POCKETLAB_QUALIFICATION_ALLOW_TEST_DESTINATION": "1", "POCKETLAB_QUALIFICATION_CONTEXT_TOKEN": self.context_token, "POCKETLAB_QUALIFICATION_ROOT": self.remote_root, "POCKETLAB_QUALIFICATION_DESTINATION_ROOT": f"{self.remote_root}/destination",
             "POCKETLAB_QUALIFICATION_WEBDAV_USER": "qualification", "POCKETLAB_QUALIFICATION_WEBDAV_PASSWORD": self.webdav_password, "POCKETLAB_QUALIFICATION_TEST_ORIGIN": f"https://127.0.0.1:{remote_api_port}", "POCKETLAB_QUALIFICATION_CONTROL_ORIGIN": f"https://127.0.0.1:{remote_api_port}",
-            "POCKETLAB_API_BIND": "127.0.0.1", "POCKETLAB_API_PORT": str(remote_api_port), "POCKETLAB_OPA_URL": "http://127.0.0.1:1", "POCKETLAB_OPA_ACTIVE_POLICY_DIR": f"{self.remote_root}/opa/active",
+            "POCKETLAB_API_BIND": "127.0.0.1", "POCKETLAB_API_PORT": str(remote_api_port), "POCKETLAB_OPA_URL": opa_origin, "POCKETLAB_OPA_ACTIVE_POLICY_DIR": f"{self.remote_root}/opa/active",
             "POCKETLAB_NATS_URL": nats_origin, "POCKETLAB_LITE_PUBLIC_NATS_URL": nats_origin, "POCKETLAB_NATS_JETSTREAM": "1", "POCKETLAB_NATS_REQUIRED": "1", "POCKETLAB_NATS_REQUIRE_JETSTREAM": "1", "POCKETLAB_NATS_NAME": f"qualification-{self.run_id}",
             "POCKETLAB_NATS_USER": self.nats.user if self.nats else "", "POCKETLAB_NATS_PASSWORD": self.nats.password if self.nats else "", "POCKETLAB_AGENT_NATS_USER": self.nats.user if self.nats else "", "POCKETLAB_AGENT_NATS_PASSWORD": self.nats.password if self.nats else "",
             "POCKETLAB_NATS_INITIAL_CONNECT_DEADLINE": "5", "POCKETLAB_NATS_RECONNECT_WAIT": "1", "POCKETLAB_NATS_RECONNECT_MIN_SECONDS": "1", "POCKETLAB_NATS_RECONNECT_MAX_SECONDS": "5", "POCKETLAB_NATS_WATCHDOG_SECONDS": "2",
-            "POCKETLAB_WORKER_HEARTBEAT_SECONDS": "5", "POCKETLAB_WORKER_NATS_RETRY_SECONDS": "1", "POCKETLAB_JETSTREAM_MAX_BYTES": "16777216", "POCKETLAB_QUALIFICATION_LOG_DIR": f"{self.remote_root}/logs", "POCKETLAB_DISABLE_RELEASE_UPDATER": "1",
+            "POCKETLAB_WORKER_DURABLE": "pocketlab_command_worker_v1", "POCKETLAB_WORKER_QUEUE": "pocketlab_command_worker_v1", "POCKETLAB_WORKER_RECOVERY_SECONDS": "2", "POCKETLAB_WORKER_HEARTBEAT_SECONDS": "5", "POCKETLAB_WORKER_NATS_RETRY_SECONDS": "1", "POCKETLAB_JETSTREAM_MAX_BYTES": "16777216", "POCKETLAB_QUALIFICATION_LOG_DIR": f"{self.remote_root}/logs", "POCKETLAB_DISABLE_RELEASE_UPDATER": "1",
             "POCKETLAB_LITE_SECURE_ORIGIN": "", "POCKETLAB_SECURE_ORIGIN": "", "CADDYFILE": "", "POCKET_LAB_CADDYFILE": "", "SSL_CERT_FILE": f"{self.remote_root}/qualification-ca.pem", "REQUESTS_CA_BUNDLE": f"{self.remote_root}/qualification-ca.pem",
         }
         return env
 
     def _start_transport_and_candidate(self) -> None:
-        assert self.remote is not None and self.nats is not None
+        assert self.remote is not None and self.nats is not None and self.opa is not None
         self.remote_api_port = self.controller._android_select_port(self.remote)
         reverse = self.controller.AndroidTunnel(
             host=self.remote.host, run_id=self.run_id, kind="system-health-nats", log=self.paths.logs / "ssh-nats.log", direction="reverse",
             local_port=self.nats.port, target_port=self.nats.port, remote_port=0,
         )
         reverse.start()
+        self.tunnels.append(reverse)
+        opa_tunnel = self.controller.AndroidTunnel(
+            host=self.remote.host, run_id=self.run_id, kind="system-health-opa", log=self.paths.logs / "ssh-opa.log", direction="reverse",
+            local_port=self.opa.port, target_port=self.opa.port, remote_port=0,
+        )
+        opa_tunnel.start()
+        self.tunnels.append(opa_tunnel)
         local_api = self.controller.AndroidTunnel(
             host=self.remote.host, run_id=self.run_id, kind="system-health-api", log=self.paths.logs / "ssh-api.log", direction="local",
             local_port=self.local_api_port, target_port=self.remote_api_port,
         )
         local_api.start()
-        self.tunnels = [reverse, local_api]
+        self.tunnels.append(local_api)
         nats_origin = f"nats://127.0.0.1:{reverse.remote_port}"
+        opa_origin = f"http://127.0.0.1:{opa_tunnel.remote_port}"
         assert self.database is not None
         # Dev-PC listener ports and the phone's loopback listener ports are
         # separate namespaces. Only local listeners can collide here.
-        assert_isolated_binding(self.paths.root, self.database, nats_origin, "127.0.0.1", self.local_api_port, occupied_ports=[self.nats.port])
-        env = self._build_env(nats_origin, self.remote_api_port)
+        if len({self.nats.port, self.opa.port, self.local_api_port}) != 3:
+            raise QualificationError("candidate local transport ports are not distinct")
+        assert_isolated_binding(self.paths.root, self.database, nats_origin, "127.0.0.1", self.local_api_port, occupied_ports=[self.nats.port, self.opa.port])
+        env = self._build_env(nats_origin, opa_origin, self.remote_api_port)
         self.env_path = f"{self.remote_root}/env/server.json"
         self.controller._android_remote_write(self.remote.host, self.env_path, json.dumps(env, sort_keys=True, separators=(",", ":")) + "\n", root=self.remote_root, mode="600")
         self.client = CandidateClient(self.api_origin, self.ca_path)
@@ -893,7 +1063,6 @@ for payload in payloads:
     results.append({"changed": bool(result.changed), "revision": int(result.revision)})
     time.sleep(0.25)
 print(json.dumps({"results": results, "status": "PASS" if results and results[0]["changed"] and not results[1]["changed"] else "FAIL"}, sort_keys=True), flush=True)
-time.sleep(3)
 '''
         remote_path = f"{self.remote_root}/probe/system-health-driver.py"
         self.controller._android_remote_write(self.remote.host, remote_path, driver, root=self.remote_root, mode="400")
@@ -923,6 +1092,49 @@ time.sleep(3)
             raise QualificationError("projection driver duplicate suppression did not pass")
         self.results["projection_driver"] = {"status": "PASS", "output_lines": line_count, "duplicate_suppression": True}
         return payload
+
+    def _start_recovery_projection_fixture(self) -> None:
+        """Keep one bounded degraded NATS target current during recovery admission."""
+        assert self.remote is not None
+        if self.recovery_fixture is not None and self.recovery_fixture.alive():
+            raise QualificationError("a recovery projection fixture is already running")
+        remote_path = f"{self.remote_root}/probe/system-health-recovery-fixture.py"
+        self.controller._android_remote_write(
+            self.remote.host, remote_path, _REMOTE_RECOVERY_FIXTURE, root=self.remote_root, mode="400"
+        )
+        self.recovery_fixture = self.controller.AndroidRemoteProcess(
+            remote=self.remote, run_id=self.run_id, root=self.remote_root, name="system-health-recovery-fixture", env_path=self.env_path,
+            argv=[self.remote.python, remote_path, self.runtime_root, f"{self.remote_root}/state/{SCHEMA_DB_NAME}", str(time.time() + 120)],
+            cwd=self.runtime_root, log_path=f"{self.remote_root}/logs/recovery-fixture.log",
+        )
+        self.recovery_fixture.launch()
+        ready = False
+        for _ in range(60):
+            if not self.recovery_fixture.alive():
+                raise QualificationError("recovery projection fixture exited before readiness")
+            probe = self.controller._android_ssh_run(
+                self.remote.host,
+                [self.remote.python, "-c", _REMOTE_NATS_INCIDENT_READY_PROBE, f"{self.remote_root}/state/{SCHEMA_DB_NAME}"],
+                timeout=15,
+            )
+            if probe.returncode == 0:
+                try:
+                    ready = int(json.loads(probe.stdout.strip().splitlines()[-1]).get("active_nats_incidents") or 0) > 0
+                except (ValueError, IndexError, TypeError):
+                    ready = False
+            if ready:
+                break
+            time.sleep(0.5)
+        if not ready:
+            raise QualificationError("recovery projection fixture did not publish an active NATS incident")
+        runs = self.results.setdefault("recovery_projection_fixture", [])
+        if isinstance(runs, list):
+            runs.append({"status": "PASS", "bounded_seconds": 120, "target": "nats/jetstream", "fault_injection": "candidate_sqlite_projection_only"})
+
+    def _stop_recovery_projection_fixture(self) -> None:
+        if self.recovery_fixture is not None:
+            with contextlib.suppress(Exception):
+                self.recovery_fixture.stop()
 
     def _bootstrap(self) -> None:
         assert self.client is not None
@@ -983,26 +1195,104 @@ time.sleep(3)
         items = incidents.body.get("items") if isinstance(incidents.body.get("items"), list) else []
         if incidents.status != 200 or not items:
             raise QualificationError("candidate System Health projection did not produce an incident")
-        incident = items[0] if isinstance(items[0], dict) else {}
-        incident_id = str(incident.get("incident_id") or "")
-        generation = int(incident.get("generation") or 0)
-        if not incident_id or generation < 1 or incident.get("state") == "resolved":
-            raise QualificationError("candidate incident state was not active and generation-bound")
-        detail = self.client.request("GET", f"/api/lite/system-health/incidents/{incident_id}", session=self.session)
-        decisions = self.client.request("GET", f"/api/lite/system-health/incidents/{incident_id}/decisions", session=self.session)
-        app = self.client.request("GET", "/api/lite/system-health/apps/photoprism", session=self.session)
-        if detail.status != 200 or decisions.status != 200 or app.status not in {200, 404}:
-            raise QualificationError("candidate System Health incident detail routes failed")
-        diagnosis = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/diagnose", session=self.session)
-        if diagnosis.status != 200:
-            raise QualificationError("candidate System Health diagnosis was not persisted")
-        repair_payload = {"operation_id": "runtime.consumer.reconnect", "expected_generation": generation, "idempotency_key": "qualification-system-health-001", "confirm": True}
-        preflight = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/preflight", repair_payload, session=self.session)
-        repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
-        replay = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
-        stale = dict(repair_payload); stale["expected_generation"] = generation + 99
-        stale_repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", stale, session=self.session)
-        unauthorized = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/diagnose")
+        self.results["incident_candidates"] = [
+            {
+                "source": _safe_text(item.get("source"), 64),
+                "target_id": _safe_text(item.get("target_id"), 128),
+                "state": _safe_text(item.get("state"), 48),
+                "current_monitoring": bool(item.get("current_monitoring")),
+                "repair_available": bool(item.get("repair_available")),
+                "concern_state": _safe_text(item.get("concern_state"), 48),
+            }
+            for item in items[:40]
+            if isinstance(item, dict)
+        ]
+
+        def eligible_incident(rows: Any) -> dict[str, Any]:
+            if not isinstance(rows, list):
+                return {}
+            return next(
+                (
+                    item for item in rows
+                    if isinstance(item, dict)
+                    and item.get("source") == "nats"
+                    and (item.get("target_id") == "jetstream" or str(item.get("target_id") or "").startswith("consumer:"))
+                    and item.get("current_monitoring") is True
+                    and item.get("repair_available") is True
+                    and item.get("state") != "resolved"
+                    and int(item.get("generation") or 0) >= 1
+                    and str(item.get("incident_id") or "")
+                ),
+                {},
+            )
+
+        incident: dict[str, Any] = {}
+        incident_id = ""
+        generation = 0
+        detail = decisions = app = diagnosis = None
+        repair_payload: dict[str, Any] = {}
+        preflight = repair = replay = stale_repair = unauthorized = None
+        repair_attempts: list[dict[str, Any]] = []
+        transient_race_reasons = {
+            "incident_already_resolved",
+            "evidence_not_current",
+            "unhealthy_evidence_not_confirmed",
+            "incident_generation_changed",
+        }
+        for attempt in range(1, 7):
+            current_incidents = self.client.request("GET", "/api/lite/system-health/incidents", session=self.session)
+            current_items = current_incidents.body.get("items") if isinstance(current_incidents.body, dict) else []
+            incident = eligible_incident(current_items)
+            if not incident:
+                time.sleep(0.4)
+                continue
+            incident_id = str(incident.get("incident_id") or "")
+            generation = int(incident.get("generation") or 0)
+            self.results["recovery_selection"] = {
+                "source": _safe_text(incident.get("source"), 64),
+                "target_id": _safe_text(incident.get("target_id"), 128),
+                "generation": generation,
+                "enrollment_generation": int(incident.get("enrollment_generation") or 0),
+                "attempt": attempt,
+            }
+            detail = self.client.request("GET", f"/api/lite/system-health/incidents/{incident_id}", session=self.session)
+            decisions = self.client.request("GET", f"/api/lite/system-health/incidents/{incident_id}/decisions", session=self.session)
+            app = self.client.request("GET", "/api/lite/system-health/apps/photoprism", session=self.session)
+            if detail.status != 200 or decisions.status != 200 or app.status not in {200, 404}:
+                raise QualificationError("candidate System Health incident detail routes failed")
+            diagnosis = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/diagnose", session=self.session)
+            if diagnosis.status != 200:
+                raise QualificationError("candidate System Health diagnosis was not persisted")
+            repair_payload = {
+                "operation_id": "runtime.consumer.reconnect",
+                "expected_generation": generation,
+                "idempotency_key": f"qualification-system-health-{attempt:03d}",
+                "confirm": True,
+            }
+            preflight = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/preflight", repair_payload, session=self.session)
+            repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
+            repair_detail = response_detail(repair)
+            repair_attempts.append({
+                "attempt": attempt,
+                "preflight_status": preflight.status,
+                "repair_status": repair.status,
+                "repair_reason_code": _safe_text(repair_detail.get("reason_code"), 80),
+            })
+            if repair.status == 202:
+                replay = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
+                stale = dict(repair_payload)
+                stale["expected_generation"] = generation + 99
+                stale["idempotency_key"] = f"{repair_payload['idempotency_key']}-stale"
+                stale_repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", stale, session=self.session)
+                unauthorized = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/diagnose")
+                break
+            if not self.browser_ui or repair_detail.get("reason_code") not in transient_race_reasons:
+                break
+            time.sleep(0.4)
+
+        if not incident or not incident_id or generation < 1 or repair is None:
+            raise QualificationError("candidate System Health projection did not produce an eligible NATS recovery incident")
+        self.results["recovery_attempts"] = repair_attempts
         self.results["repair_contract"] = {
             "preflight": response_contract(preflight),
             "repair": response_contract(repair),
@@ -1010,18 +1300,47 @@ time.sleep(3)
             "stale_repair": response_contract(stale_repair),
             "unauthorized_diagnosis": response_contract(unauthorized),
         }
-        if preflight.status != 200 or repair.status != 409 or replay.status != 409 or stale_repair.status != 409 or unauthorized.status != 401:
-            raise QualificationError("System Health repair denial/authentication contract failed")
         body = response_detail(repair)
         stale_body = response_detail(stale_repair)
-        if body.get("status") != "blocked" or body.get("recorded") is not True or stale_body.get("reason_code") != "incident_generation_changed":
-            raise QualificationError("System Health repair denial was not fail-closed")
+        lifecycle: list[str] = []
+        if self.browser_ui:
+            if preflight.status != 200 or repair.status != 202 or replay.status != 202 or stale_repair.status != 409 or unauthorized.status != 401:
+                raise QualificationError("System Health controlled recovery admission/authentication contract failed")
+            request = body.get("request") if isinstance(body.get("request"), dict) else {}
+            if body.get("status") != "admitted" or not request.get("request_id"):
+                raise QualificationError("System Health controlled recovery was not durably admitted")
+            deadline = time.monotonic() + 45
+            latest_request: dict[str, Any] = {}
+            while time.monotonic() < deadline:
+                decisions_now = self.client.request("GET", f"/api/lite/system-health/incidents/{incident_id}/decisions", session=self.session)
+                requests = decisions_now.body.get("recovery_requests") if isinstance(decisions_now.body, dict) else []
+                current_request = next((item for item in requests if isinstance(item, dict) and item.get("request_id") == request.get("request_id")), None)
+                if current_request:
+                    latest_request = current_request
+                    status = str(current_request.get("status") or "")
+                    if status and (not lifecycle or lifecycle[-1] != status):
+                        lifecycle.append(status)
+                    if status in {"verified", "execution_failed", "verification_failed", "verification_unavailable", "manual_attention_required", "blocked", "expired", "cancelled"}:
+                        break
+                time.sleep(1)
+            self.results["recovery_lifecycle"] = lifecycle
+            self.results["recovery_last_request"] = latest_request
+            if not lifecycle or lifecycle[-1] != "verified":
+                raise QualificationError("System Health recovery did not reach independently verified state")
+        else:
+            if preflight.status != 200 or repair.status != 409 or replay.status != 409 or stale_repair.status != 409 or unauthorized.status != 401:
+                raise QualificationError("System Health repair denial/authentication contract failed")
+            if body.get("status") != "blocked" or body.get("recorded") is not True:
+                raise QualificationError("System Health repair denial was not fail-closed")
+        if stale_body.get("reason_code") != "incident_generation_changed":
+            raise QualificationError("System Health stale generation was not rejected")
         self.results["system_health_api"] = {
             "status": "PASS", "anonymous_read_rejected": True, "authenticated_routes": route_results,
             "incident_id_class": "deterministic_health_identity", "incident_generation": generation, "incident_state": incident.get("state"),
             "detail": detail.status, "diagnosis": diagnosis.status, "preflight": preflight.status, "repair": repair.status,
-            "idempotent_replay": replay.status == 409, "generation_fencing": stale_body.get("reason_code"), "unauthorized_write": unauthorized.status,
-            "app_diagnostics_status": app.status, "new_executor_enabled": False, "raw_evidence_exposed": False,
+            "idempotent_replay": replay.status in {202, 409}, "generation_fencing": stale_body.get("reason_code"), "unauthorized_write": unauthorized.status,
+            "app_diagnostics_status": app.status, "new_executor_enabled": False, "controlled_recovery_verified": self.browser_ui,
+            "recovery_lifecycle": lifecycle, "raw_evidence_exposed": False,
         }
 
     def _measure(self) -> None:
@@ -1046,6 +1365,44 @@ time.sleep(3)
             "candidate_run_root_metrics": self.controller._android_metrics(self.remote, self.remote_root),
             "android_device_metrics": device_payload, "system_health_latency_ms": {"samples": latencies, "min": min(latencies), "max": max(latencies), "mean": round(sum(latencies) / len(latencies), 2)},
             "production_stress_or_fault_injection": False, "comparison_baseline": "candidate-only observation; no production improvement/regression claim",
+        }
+
+    def capture_candidate_diagnostics(self) -> None:
+        """Capture bounded, sanitized owner-state evidence before cleanup."""
+        if self.remote is None or not self.remote_root:
+            return
+        logs: dict[str, list[str]] = {}
+        for name in ("api.log", "worker.log", "driver.log", "recovery-fixture.log"):
+            try:
+                raw = self.controller._android_read_text(self.remote, f"{self.remote_root}/logs/{name}", root=self.remote_root)
+            except Exception:
+                continue
+            safe_lines: list[str] = []
+            for line in str(raw or "").splitlines()[-80:]:
+                if re.search(r"token|password|secret|cookie|authorization|private[_ -]?key", line, re.IGNORECASE):
+                    safe_lines.append("[redacted diagnostic line]")
+                    continue
+                safe_lines.append(re.sub(r"https?://[^\s]+", "[url]", _safe_text(line, 360)))
+            if safe_lines:
+                logs[name] = safe_lines
+        probe = self.controller._android_ssh_run(
+            self.remote.host,
+            [self.remote.python, "-c", _REMOTE_RECOVERY_PROBE, f"{self.remote_root}/state/{SCHEMA_DB_NAME}"],
+            timeout=20,
+        )
+        database: dict[str, Any] = {"status": "UNVALIDATED"}
+        if probe.returncode == 0:
+            try:
+                parsed = json.loads(probe.stdout.strip().splitlines()[-1])
+                database = sanitize(parsed)
+                database["status"] = "PASS"
+            except (ValueError, IndexError, TypeError):
+                database = {"status": "UNVALIDATED"}
+        self.results["candidate_recovery_diagnostics"] = {
+            "status": "PASS" if database.get("status") == "PASS" else "UNVALIDATED",
+            "database": database,
+            "log_tails": logs,
+            "sanitized": True,
         }
 
     def _concurrency(self) -> None:
@@ -1080,7 +1437,7 @@ time.sleep(3)
             with contextlib.suppress(Exception):
                 remote_processes_before = self.controller._android_run_owned_processes(self.remote, root=self.remote_root, run_id=self.run_id)
         self._cleanup_session()
-        for process in (self.driver, self.worker, self.api):
+        for process in (self.recovery_fixture, self.driver, self.worker, self.api):
             if process is not None:
                 with contextlib.suppress(Exception):
                     process.stop()
@@ -1095,6 +1452,9 @@ time.sleep(3)
         if self.nats is not None:
             with contextlib.suppress(Exception):
                 self.nats.stop()
+        if self.opa is not None:
+            with contextlib.suppress(Exception):
+                self.opa.stop()
         if self.remote is not None and self.remote_root:
             removed = False
             with contextlib.suppress(Exception):
@@ -1119,14 +1479,15 @@ time.sleep(3)
             self._discover_remote()
             self._local_fixture()
             assert self.database is not None and self.rollback_database is not None
-            # The phone receives only the schema-42 candidate DB.  The API owns
-            # the forward application of 0043/0044 at startup.
+            # The phone receives only the schema-42 candidate DB. The candidate
+            # API owns the complete forward migration chain at startup.
             self._start_local_nats()
             self._stage_remote()
+            self._start_local_opa()
             before = self._remote_probe(expected=42)
             self.results.setdefault("isolated_sqlite", {})["phone_before_migration"] = before
             self._start_transport_and_candidate()
-            after = self._remote_probe(expected=44)
+            after = self._remote_probe(expected=self.candidate_schema_version)
             if after.get("marker_revision") != 7 or after.get("status") != "PASS":
                 raise QualificationError("phone candidate migration did not preserve the isolated fixture")
             self.results.setdefault("isolated_sqlite", {})["phone_after_migration"] = after
@@ -1135,7 +1496,7 @@ time.sleep(3)
             self._qualify_api()
             self._concurrency()
             self._measure()
-            repeat = self._remote_probe(expected=44)
+            repeat = self._remote_probe(expected=self.candidate_schema_version)
             self.results.setdefault("isolated_sqlite", {})["after_gets"] = repeat
             self.results["status"] = "PASS"
             status = "PASS"
@@ -1149,7 +1510,7 @@ time.sleep(3)
             self._cleanup()
             self.results["finished_at"] = _now()
             self.results["status"] = status
-        evidence = self.external_evidence / f"pr649-system-health-android-{self.candidate_sha[:12]}.json"
+        evidence = self.external_evidence / f"pr657-system-health-android-{self.candidate_sha[:12]}.json"
         evidence.write_text(json.dumps(sanitize(self.results), indent=2, sort_keys=True) + "\n", encoding="utf-8")
         evidence.chmod(0o600)
         return status, evidence

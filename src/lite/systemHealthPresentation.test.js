@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   componentLabel, groupHealthIncidents, healthCounts, healthStatusLabel,
   incidentEvidenceState, recoveryAvailabilityLabel, recoveryDestination,
-  recoveryOperationLabel, systemHealthPresentation,
+  recoveryLifecycleLabel, recoveryOperationLabel, systemHealthPresentation,
 } from './systemHealthPresentation.js';
 
 // Deterministic presentation contract, tests authored but NOT RUN in H0–H6.
@@ -49,10 +49,18 @@ describe('System Health H2 evidence-first presentation', () => {
     expect(recoveryAvailabilityLabel('not_enabled')).toBe('Not available');
   });
 
+  it('maps durable recovery lifecycle states without treating admission as success', () => {
+    expect(recoveryLifecycleLabel('admitted')).toMatch(/queued/i);
+    expect(recoveryLifecycleLabel('awaiting_verification')).toMatch(/verification pending/i);
+    expect(recoveryLifecycleLabel('verified')).toMatch(/verified/i);
+    expect(recoveryLifecycleLabel('verification_failed')).toMatch(/failed/i);
+    expect(recoveryLifecycleLabel('unknown-state')).toMatch(/not confirmed/i);
+  });
+
   it('retains recognizable legitimate device identities, including short ones', () => {
-    expect(componentLabel('agent', 'pocket-node')).toContain('pocket-node');
-    expect(componentLabel('agent', '3')).toBe('Device · 3');
-    expect(componentLabel('supervisor', 'k-u')).toBe('Device · k-u');
+    expect(componentLabel('agent', 'pocket-node', 'Secondary phone')).toBe('Secondary phone');
+    expect(componentLabel('agent', '3')).toBe('Device');
+    expect(componentLabel('supervisor', 'k-u')).toBe('Device');
     expect(componentLabel('agent', '../../bad')).toBe('Device agent');
     expect(componentLabel('strange.source', 'secret.string')).toBe('Component');
     expect(componentLabel('nats', 'consumer:worker')).toBe('Command consumer');
@@ -72,4 +80,19 @@ describe('System Health H2 evidence-first presentation', () => {
     expect(groupHealthIncidents([{ ...current, concern_state: 'saved_concern',
       evidence_freshness: 'current' }]).saved).toHaveLength(1);
   });
+});
+
+
+// P4 qualification — ADDED, NOT RUN.
+it('does not treat a historical device as a current or resolved concern', () => {
+  const item = { source: 'agent', target_id: 'retired-id', state: 'detected',
+    current_monitoring: false, membership_state: 'removed', concern_state: 'historical_record',
+    evidence_freshness: 'current' };
+  expect(incidentEvidenceState(item)).toBe('historical');
+  expect(incidentEvidenceState(item, true)).toBe('historical');
+  const groups = groupHealthIncidents([item]);
+  expect(groups.historical).toEqual([item]);
+  expect(groups.current).toEqual([]);
+  expect(groups.saved).toEqual([]);
+  expect(groups.resolved).toEqual([]);
 });

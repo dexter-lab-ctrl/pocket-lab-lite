@@ -487,6 +487,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="enrollment_generation">enrollment_generation</span></td>
+                                    <td>INTEGER</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>1</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -530,6 +547,12 @@
                                     <td>removal_status + protected_server_host + device_name + device_id</td>
                                 </tr>
                                 <tr>
+                                    <td title='Indexed'>idx_device_enrollment_generation</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>device_id + enrollment_generation + removal_status</td>
+                                </tr>
+                                <tr>
                                     <td title='Indexed'>idx_device_enrollment_last_seen</td>
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
@@ -570,7 +593,7 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="device_removal_receipts.html" target="_top" title="device_removal_receipts" alt="" coords="556,5,860,187">
-<area shape="rect" id="node2" href="device_enrollment_registry.html" target="_top" title="device_enrollment_registry" alt="" coords="5,32,512,750">
+<area shape="rect" id="node2" href="device_enrollment_registry.html" target="_top" title="device_enrollment_registry" alt="" coords="5,32,512,780">
 </map>
                                         <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/device_enrollment_registry.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>

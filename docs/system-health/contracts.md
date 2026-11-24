@@ -4,6 +4,14 @@
 
 **PR #656 H0–H6 qualification provenance:** source candidate `b65d83c2f83229e3abd59e01b33aaecaa5797734`; Dev-PC-hosted isolated FastAPI/NATS/OPA candidate; short-lived synthetic qualification Owner; standard-user Android Chrome CDP `1.3`; candidate runtime transport `devpc_loopback_isolated_candidate`. Focused backend/UI/Storybook/mocked Playwright/Axe and reviewed visual snapshots passed. The saved-state correction preserves `X-PocketLab-Read-Nonce` through the candidate proxy and revalidates the System Health summary on mount; focused regressions cover both saved-to-fresh and fresh-to-saved transitions. Physical System Health UI passed for the exact candidate, including Manage, diagnosis `200`, Home return and no repair/preflight execution. The bounded Android System Health-only performance collector completed three repetitions over nine interactions; all nine comparisons are retained as `MIXED` residuals with zero absolute target/gate passes and no `APP_INCREMENTAL_COST` classification. No production Server Phone source, SQLite, PM2, credentials or services were changed, and no production deployment occurred.
 
+## PR #657 P4 completion boundary
+
+See [P4 controlled recovery and device lifecycle](p4-device-lifecycle.md) for
+the completed P4.0–P4.7 membership, generation, historical, recovery-owner,
+authorization, verification and frontend contracts. Historical PR #649 and
+#656 evidence above remains provenance only and does not substitute for the
+exact PR #657 candidate evidence.
+
 ## Incident and freshness
 
 Canonical incident: incident_id = hash(source + target), source, target_id, kind, state, severity, generation, recurrence_count, observation_count, first_seen_at, last_seen_at, resolved_at, evidence_revision, summary, suspected_cause and verified_cause. States: detected, diagnosing, diagnosed, repair_available, repairing, verifying, resolved, blocked, failed, manual_attention_required.
@@ -18,9 +26,20 @@ POST /api/lite/system-health/incidents/{id}/diagnose requires authenticated writ
 
 ## Preflight and repair
 
-Risk A: existing independently owned worker/NATS/agent supervisor self-recovery; no new executor. Risk B: existing protected Apps/Devices/Recovery guided actions. Risk C: restore/data/identity operations; never automatic.
+Risk A: existing independently owned worker/NATS/agent supervisor self-recovery;
+PR #657 adds only a requestable, candidate-only adapter consumed by that same
+owner. Risk B remains existing protected Apps/Devices/Recovery guided actions.
+Risk C remains restore/data/identity operations and is never automatic.
 
-Preflight checks allowlist, expected incident generation, incident terminal state and freshness. Currently every new System Health repair is blocked by the unqualified-executor gate. Actual repair endpoint responds 409, records bounded sanitized denial and SHA256 digest of idempotency key, never raw key, with no execution or false success.
+Preflight checks the allowlist, exact incident and enrollment generations,
+target membership, policy revision, actor scope, approval, freshness, resource
+admission, deadline and cooldown. In the default and installed production
+profile, the adapter remains disabled and repair is fail-closed. In the
+isolated qualification profile, the exact durable-consumer recovery candidate
+may be admitted through the existing worker watchdog, and only fresh
+correlated post-execution evidence can produce verified recovery. Every request
+records bounded sanitized evidence and a digest rather than a raw idempotency
+key; no acceptance acknowledgment is presented as execution or verification.
 
 ## Dependency authority
 
@@ -34,9 +53,37 @@ All UI reads via same-origin FastAPI, no browser shell/NATS/secret storage, no c
 
 - Anonymous reads are rejected by the authenticated API boundary; service and synthetic Owner qualification reads are target-bound.
 - Human diagnosis writes require CSRF; expired sessions are rejected. Diagnosis is sanitized and persisted.
-- Preflight is fail-closed and repair returns a recorded 409 denial because no new System Health executor is qualified. Duplicate denial requests do not execute work or claim recovery.
+- Preflight is fail-closed for disabled, unauthorized, stale, removed or
+  generation-mismatched targets. The isolated candidate qualified the
+  allowlisted recovery-owner request through admission, execution and fresh
+  verification; disabled/default production remains a recorded denial. Duplicate
+  requests are actor-bound single-flight replays or conflicts and do not claim
+  recovery without correlated evidence.
 - GET paths are read-only prepared reads; migration 0043/0044 registration and integrity were exercised in isolated DEV-PC tests.
-- Raw logs, evidence paths, secrets, command payloads and private runtime data remain outside the browser contract.
+- Raw logs, evidence paths, secrets, command payloads and private runtime data remain outside the browser contract. The PR #657 isolated evidence recorded exact candidate/backend identity, standard-user Android CDP, synthetic Owner scope, SQLite migrations 0045–0047, recovery lifecycle and sanitized screenshots.
+
+## PR #657 qualification addendum
+
+The final code-bearing candidate was `57985fac694626d6301f9111f4270292fa351fe0`
+on base `1ef9bcb622db6ad1d34fc38278822ed434ad6776`. The requested P4 backend
+qualification was `104 passed` with one warning; OPA/policy/harness was
+`37 passed`; targeted frontend qualification was `18 passed`; Storybook and
+production build passed; mocked desktop/mobile Playwright and Axe passed; the
+System Health visual run was `42 passed` with reviewed unchanged snapshots.
+The earlier exact-SHA physical Android System Health functional lane passed
+through the isolated DEV-PC backend and exact-candidate transport. Its evidence
+is recorded in
+`docs/system-health/qualification-handoff-p4.md` and the ignored sanitized
+`.pocketlab-dev/validation/` record. A later bounded wrapper rerun is recorded
+separately as `BLOCKED` at the first full-page screenshot after candidate/CDP
+identity passed and cleanup remained safe.
+
+Exact-candidate physical performance is `BLOCKED / UNVALIDATED`: the final
+wrapper stopped before the matrix, and an older `0` target/gate pass, `9`
+`MIXED`, `0` `APP_INCREMENTAL_COST` report is stamped with staging source
+commit `ff67f01e465d2762cdb831fe22138609c2431c25`, not PR #657's candidate.
+It is not promoted as final evidence. Controlled recovery is qualified only
+in the isolated candidate and is not production activated or deployed.
 
 **Production-readiness boundary:** these contracts do not claim that the installed Server Phone has the PR #649 backend or that isolated candidate qualification authorizes production activation. The Android Chrome evidence is exact-SHA candidate evidence through the repository-owned loopback proxy and short-lived browser bridge, not fixture-only evidence. The repository-owned promotion workflow now covers artifact transfer, backup/restore rehearsal, schema 0043/0044 migration, atomic cutover/abort and explicit authorization. Live activation still requires a passing production admission snapshot, a verified production backup/restore receipt and separate authorization; the current phone is blocked by its absent external guardian.
 

@@ -29,6 +29,7 @@ export const liteMutationInvalidations = {
   discover_recovery_location: [liteQueryKeys.recoveryLocations(), liteQueryKeys.recoverySummary(), liteQueryKeys.recoveryDetails()],
   select_recovery_location: [liteQueryKeys.recoveryLocations(), liteQueryKeys.recoverySummary(), liteQueryKeys.recoveryDetails(), liteQueryKeys.recoveryHistory()],
   forget_recovery_location: [liteQueryKeys.recoveryLocations(), liteQueryKeys.recoverySummary(), liteQueryKeys.recoveryDetails(), liteQueryKeys.recoveryHistory()],
+  system_health_recovery: [liteQueryKeys.healthIntelligence(), liteQueryKeys.healthIncidents(), liteQueryKeys.healthHistory()],
   restart_agent: [liteQueryKeys.fleet(), liteQueryKeys.status()],
   add_device: [liteQueryKeys.fleet(), liteQueryKeys.status()],
   remove_device: [liteQueryKeys.fleet(), liteQueryKeys.status()],

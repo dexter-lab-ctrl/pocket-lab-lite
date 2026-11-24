@@ -5,8 +5,9 @@ The existing System Health Android lane proves the exact candidate API with an
 isolated phone-side runtime.  This companion lane keeps that runtime alive,
 serves the exact frontend through the checked-in candidate server, and lets
 Android Chrome consume it through the existing standard-user CDP relay.  The
-candidate server forwards only loopback HTTPS API traffic and the diagnosis
-write; repair and preflight writes remain blocked.
+candidate server forwards only loopback HTTPS API traffic and the bounded
+System Health diagnosis, preflight and recovery writes to the isolated
+candidate API; no installed-phone API is used for mutation qualification.
 """
 from __future__ import annotations
 
@@ -256,13 +257,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--evidence-dir", type=Path, default=None)
     parser.add_argument("--dist-dir", type=Path, default=REPO_ROOT / "dist")
     parser.add_argument("--device-serial", required=True, help="Explicit Windows ADB serial selected by the operator")
+    parser.add_argument(
+        "--performance",
+        action="store_true",
+        help="Run the System Health-only three-repetition baseline-normalized Android performance matrix after functional UI qualification.",
+    )
     args = parser.parse_args(argv)
     base_result = _run(["git", "rev-parse", "--verify", f"{args.base_sha}^{{commit}}"], timeout=15)
     if base_result.returncode != 0:
         print(json.dumps({"status": "BLOCKED", "reason": "base SHA could not be resolved", "sanitized": True}, sort_keys=True))
         return 2
     base_sha = base_result.stdout.strip().casefold()
-    evidence_dir = (args.evidence_dir or (REPO_ROOT / ".pocketlab-dev" / "validation")) / f"pr649-system-health-android-ui-{str(args.candidate_sha)[:12]}"
+    evidence_dir = (args.evidence_dir or (REPO_ROOT / ".pocketlab-dev" / "validation")) / f"pr657-system-health-android-ui-{str(args.candidate_sha)[:12]}"
     evidence_dir = evidence_dir.absolute()
     evidence_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
     if not args.dist_dir.is_dir() or not (args.dist_dir / "index.html").is_file():
@@ -286,19 +292,35 @@ def main(argv: list[str] | None = None) -> int:
         run._local_fixture()
         run._start_local_nats()
         run._stage_remote()
+        run._start_local_opa()
         before = run._remote_probe(expected=42)
         run.results.setdefault("isolated_sqlite", {})["phone_before_migration"] = before
         run._start_transport_and_candidate()
-        after = run._remote_probe(expected=44)
+        after = run._remote_probe(expected=run.candidate_schema_version)
         if after.get("marker_revision") != 7 or after.get("status") != "PASS":
             raise health.QualificationError("phone candidate migration did not preserve the isolated fixture")
         run.results.setdefault("isolated_sqlite", {})["phone_after_migration"] = after
         run._run_projection_driver()
         run._bootstrap()
+        # Keep the injected unhealthy NATS evidence current while the API
+        # admission path races the normal projection scheduler.
+        run._start_recovery_projection_fixture()
         run._qualify_api()
+        # The API probe intentionally reaches verified recovery. Start a fresh
+        # bounded fixture for the browser lane so it exercises its own current
+        # concern and request lifecycle.
+        run._stop_recovery_projection_fixture()
+        run._start_recovery_projection_fixture()
         run._concurrency()
         run._measure()
 
+        # The API contract and concurrency probes intentionally consume their
+        # own recovery fixture. Rearm immediately before the physical browser
+        # lane so its current concern and recovery availability are fresh at
+        # the exact candidate boundary rather than relying on an earlier
+        # fixture surviving projection scheduling and transport setup.
+        run._stop_recovery_projection_fixture()
+        run._start_recovery_projection_fixture()
         candidate_server = _candidate_server(run, args.dist_dir.absolute(), evidence_dir)
         if _candidate_state_exists():
             raise health.QualificationError("an existing Android candidate reverse is owned by another session")
@@ -326,14 +348,83 @@ def main(argv: list[str] | None = None) -> int:
         (evidence_dir / "ui-qualifier.log").write_text(_safe_text(node_result.stdout, 6000) + "\n" + _safe_text(node_result.stderr, 6000) + "\n", encoding="utf-8")
         if node_result.returncode != 0:
             raise health.QualificationError("physical Android System Health UI qualifier failed")
-        ui_json = evidence_dir / f"pr649-system-health-android-ui-{run.candidate_sha[:12]}.json"
+        ui_json = evidence_dir / f"pr657-system-health-android-ui-{run.candidate_sha[:12]}.json"
         if not ui_json.is_file():
             raise health.QualificationError("physical Android UI evidence was not written")
         ui_evidence = json.loads(ui_json.read_text(encoding="utf-8"))
         if ui_evidence.get("status") != "PASS" or ui_evidence.get("candidate_sha") != run.candidate_sha:
             raise health.QualificationError("physical Android UI evidence was not exact-SHA bound")
         run.results["android_system_health_ui"] = ui_evidence
-        repeat = run._remote_probe(expected=44)
+
+        if args.performance:
+            # The functional browser lane consumes the injected degraded
+            # observation and reaches terminal verification. Rearm one fresh,
+            # bounded fixture before the read-only performance matrix so all
+            # nine System Health interactions measure the exact candidate's
+            # current concern surface without submitting diagnosis or repair.
+            run._stop_recovery_projection_fixture()
+            run._start_recovery_projection_fixture()
+            bridge = run.client.request("POST", "/api/lite/harness/browser/bridge", session=run.session)
+            bridge_token = str(bridge.body.get("browser_bridge_token") or "") if isinstance(bridge.body, dict) else ""
+            if bridge.status != 200 or len(bridge_token) < 32:
+                raise health.QualificationError("isolated performance browser bridge could not be renewed")
+            run.browser_bridge = bridge_token
+            performance_env = os.environ.copy()
+            for secret_key in (
+                "POCKETLAB_HARNESS_SESSION",
+                "POCKETLAB_HARNESS_PROVISIONING_TOKEN",
+                "POCKETLAB_HARNESS_BOOTSTRAP_APPROVED",
+                "POCKETLAB_HARNESS_API_URL",
+                "POCKETLAB_TEST_AUTH_BYPASS",
+            ):
+                performance_env.pop(secret_key, None)
+            performance_env.update({
+                "LITE_ANDROID_CDP_URL": CDP_LOCAL_URL,
+                "LITE_BASE_URL": CANDIDATE_URL,
+                "LITE_PERF_SOURCE_COMMIT": run.candidate_sha,
+                "LITE_ANDROID_QUALIFICATION_SCOPE": "system-health",
+                "LITE_ANDROID_EXPECTED_INTERACTION_REPORTS": "9",
+                "LITE_ANDROID_BASELINE_REPETITIONS": "3",
+                "POCKETLAB_ANDROID_DEVICE_SERIAL": args.device_serial,
+                "POCKETLAB_HARNESS_BROWSER_BRIDGE": run.browser_bridge,
+                "LITE_QUALIFICATION_BROWSER_BRIDGE": "1",
+            })
+            performance_script = REPO_ROOT / "scripts/dev/lite/run-ui-performance-android-baseline.sh"
+            performance_result = _run(
+                ["bash", str(performance_script)],
+                timeout=900,
+                env=performance_env,
+            )
+            (evidence_dir / "system-health-performance.log").write_text(
+                _safe_text(performance_result.stdout, 12_000)
+                + "\n"
+                + _safe_text(performance_result.stderr, 12_000)
+                + "\n",
+                encoding="utf-8",
+            )
+            if performance_result.returncode != 0:
+                raise health.QualificationError("physical Android System Health performance qualifier failed")
+            summary_path = REPO_ROOT / ".pocketlab-dev" / "performance" / "android-baseline-summary.json"
+            if not summary_path.is_file():
+                raise health.QualificationError("System Health Android performance summary was not written")
+            performance_summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            if performance_summary.get("report_count") != 9:
+                raise health.QualificationError("System Health Android performance did not produce exactly nine normalized reports")
+            if performance_summary.get("sanitized") is not True:
+                raise health.QualificationError("System Health Android performance summary was not sanitized")
+            run.results["android_system_health_performance"] = {
+                "status": "PASS",
+                "scope": "system-health",
+                "repetition_count": 3,
+                "interaction_count": 9,
+                "summary": performance_summary,
+                "absolute_target_passes": performance_summary.get("absolute_target_passes"),
+                "absolute_gate_passes": performance_summary.get("absolute_gate_passes"),
+                "classifications": performance_summary.get("classifications"),
+                "sanitized": True,
+            }
+
+        repeat = run._remote_probe(expected=run.candidate_schema_version)
         run.results.setdefault("isolated_sqlite", {})["after_ui_gets"] = repeat
         run.results["status"] = "PASS"
         status = "PASS"
@@ -344,6 +435,9 @@ def main(argv: list[str] | None = None) -> int:
         failure = f"{type(exc).__name__}: {_safe_text(exc)}"
         run.results["failure"] = {"type": type(exc).__name__, "message": _safe_text(exc), "sanitized": True}
     finally:
+        if status != "PASS":
+            with contextlib.suppress(Exception):
+                run.capture_candidate_diagnostics()
         _stop_process(candidate_server)
         relay.stop()
         if candidate_owned:
@@ -351,7 +445,7 @@ def main(argv: list[str] | None = None) -> int:
         run._cleanup()
         run.results["finished_at"] = health._now()
         run.results["status"] = status
-        final = evidence_dir / f"pr649-system-health-android-ui-final-{run.candidate_sha[:12]}.json"
+        final = evidence_dir / f"pr657-system-health-android-ui-final-{run.candidate_sha[:12]}.json"
         final.write_text(json.dumps(health.sanitize(run.results), indent=2, sort_keys=True) + "\n", encoding="utf-8")
         final.chmod(0o600)
     print(json.dumps({"status": status, "candidate_sha": run.candidate_sha, "base_sha": base_sha, "evidence": str(final), "failure": failure}, indent=2, sort_keys=True))

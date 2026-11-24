@@ -3292,6 +3292,7 @@ class ControlPlaneProjectionStore:
         protected = bool(
             item.get("protected_server_host")
             or item.get("is_current")
+            or existing.get("protected_server_host")
             or role in {"server_host", "server", "control_plane", "control_plane_host"}
         )
         connection = _safe_text(
@@ -3482,6 +3483,7 @@ class ControlPlaneProjectionStore:
                 "identity_status": row.get("identity_status") or "pending",
                 "enrolled_at": row.get("enrolled_at"),
                 "removal_status": row.get("removal_status") or "active",
+                "enrollment_generation": max(1, int(row.get("enrollment_generation") or 1)),
                 "enrollment_registry_revision": int(row.get("registry_revision") or 0),
                 "enrollment_canonical_hash": row.get("canonical_hash") or "",
                 "projection_only": not current_present,
@@ -3636,12 +3638,12 @@ class ControlPlaneProjectionStore:
                 """INSERT INTO device_removal_receipts(
                        receipt_id, device_id, device_name, removal_status, reason_code,
                        assessment_revision, awareness_revision, requested_by, created_at,
-                       created_at_epoch_ms, summary, sanitized
-                   ) VALUES (?, ?, ?, 'removed', ?, ?, ?, ?, ?, ?, ?, 1)""",
+                       created_at_epoch_ms, summary, sanitized, enrollment_generation
+                   ) VALUES (?, ?, ?, 'removed', ?, ?, ?, ?, ?, ?, ?, 1, ?)""",
                 (receipt_id, normalized, registry.get("device_name") or normalized,
                  _safe_text(reason_code, 80), _safe_text(assessment_revision, 80),
                  max(0, int(awareness_revision)), _safe_text(requested_by, 80),
-                 now, now_epoch, summary),
+                 now, now_epoch, summary, max(1, int(registry.get("enrollment_generation") or 1))),
             )
             conn.execute(
                 """INSERT OR IGNORE INTO audit_evidence_index(

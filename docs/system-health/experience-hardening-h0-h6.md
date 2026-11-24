@@ -50,7 +50,7 @@ Spacing uses the Apps premium reference's restrained card density and section rh
 
 `LiteButton`'s existing `haptic` behavior is reused on eligible System Health actions. The existing shared action row and grouped navigation add opt-in access to the same `triggerLiteHaptic` helper. Unsupported vibration or reduced-motion environments do not vibrate. Haptics are never triggered by background refresh or state transitions.
 
-## H5 — Qualification evidence
+## H5 — Historical H0–H6 qualification evidence
 
 The following evidence was captured on the feature branch before documentation regeneration:
 
@@ -70,11 +70,25 @@ The physical run used the Dev-PC-hosted isolated candidate and synthetic qualifi
 
 This source document, source audit, additive contract notes and qualification handoff record the bounded qualification above. Canonical generated documentation was regenerated only after source and device evidence converged. A detailed Draft PR describes exact changes, reuse, risks, qualification and rollback. Existing PR #649 historical qualification evidence is retained unchanged.
 
-## Security and future P4
+## Security boundary preserved; P4 completion
 
 UI → same-origin Caddy → FastAPI `/api/lite/system-health/*` → prepared SQLite state and approved backend-owned actions. Worker, agent, supervisor and existing recovery services own execution. Frontend does not run shell commands, speak to NATS, cache secrets, forge eligibility, alter identities, restore data or mark a process repaired merely because it is online.
 
-P4 controlled self-healing is deliberately **NOT IMPLEMENTED**. A future separate review must demonstrate authorized execution ownership, idempotency, cooldown, fresh evidence, policy, progress and independent recovery verification before presenting a Fix control.
+The historical H0–H6 candidate deliberately did not implement controlled
+self-healing. PR #657 now provides the separately qualified, allowlisted,
+actor-bound recovery request path through the existing worker watchdog, with
+durable admission, bounded execution and fresh independent verification. It is
+candidate-only and default-off; the installed Server Phone was not activated.
+
+The final PR #657 candidate is `57985fac694626d6301f9111f4270292fa351fe0`.
+The requested P4 backend qualification recorded `104 passed` with one warning,
+OPA/policy qualification recorded `37 passed`, targeted frontend qualification
+recorded `18 passed`, the mocked visual/interaction run recorded `42 passed`, and the
+physical System Health candidate run passed. The nine-interaction performance
+matrix retained zero absolute target/gate passes, zero `PLATFORM_DOMINATED`, nine
+`MIXED` and zero `APP_INCREMENTAL_COST` results; this residual is not an
+absolute performance pass. See [the PR #657 P4 handoff](qualification-handoff-p4.md)
+for the complete current record; the H0–H6 figures above remain historical.
 
 ## Known residuals
 

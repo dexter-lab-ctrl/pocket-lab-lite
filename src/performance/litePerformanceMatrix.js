@@ -261,3 +261,84 @@ export const LITE_UI_PERFORMANCE_MATRIX = Object.freeze([
     evidenceId: 'recovery.manage.action-details-open',
   },
 ]);
+
+/*
+ * System Health owns a separate physical matrix because P4 qualification is
+ * intentionally narrower than the general Lite seven-screen performance
+ * lane. These interactions are read-only projections; they are not an
+ * operation allow-list and cannot authorize diagnosis or recovery writes.
+ */
+export const LITE_SYSTEM_HEALTH_PERFORMANCE_MATRIX = Object.freeze([
+  {
+    screen: 'system-health',
+    nestedSurface: 'System Health / overview',
+    authorityRequired: 'system health read projection',
+    interaction: 'screen-steady',
+    safeExecutionMode: 'synthetic-owner read-only candidate; no writes',
+    evidenceId: 'system-health.overview.screen-steady',
+  },
+  {
+    screen: 'system-health',
+    nestedSurface: 'System Health Manage / opening',
+    authorityRequired: 'system health read projection',
+    interaction: 'manage-open',
+    safeExecutionMode: 'synthetic-owner read-only candidate; no writes',
+    evidenceId: 'system-health.manage.open',
+  },
+  {
+    screen: 'system-health',
+    nestedSurface: 'System Health Manage / Problems & Diagnosis',
+    authorityRequired: 'system health read projection',
+    interaction: 'section-switch',
+    safeExecutionMode: 'synthetic-owner read-only candidate; no writes',
+    evidenceId: 'system-health.manage.problems-section',
+  },
+  {
+    screen: 'system-health',
+    nestedSurface: 'System Health Manage / Advanced technical details',
+    authorityRequired: 'system health read projection',
+    interaction: 'nested-detail-open',
+    safeExecutionMode: 'synthetic-owner read-only candidate; no writes',
+    evidenceId: 'system-health.manage.technical-details.open',
+  },
+  {
+    screen: 'system-health',
+    nestedSurface: 'System Health Manage / Advanced technical details',
+    authorityRequired: 'system health read projection',
+    interaction: 'nested-detail-close',
+    safeExecutionMode: 'synthetic-owner read-only candidate; no writes',
+    evidenceId: 'system-health.manage.technical-details.close',
+  },
+  {
+    screen: 'system-health',
+    nestedSurface: 'System Health Manage / long inner scroll',
+    authorityRequired: 'system health read projection',
+    interaction: 'list-scroll',
+    safeExecutionMode: 'synthetic-owner read-only candidate; no writes',
+    evidenceId: 'system-health.manage.long-scroll',
+  },
+  {
+    screen: 'system-health',
+    nestedSurface: 'System Health / read-only refresh progress',
+    authorityRequired: 'system health read projection',
+    interaction: 'progress-update',
+    safeExecutionMode: 'synthetic-owner read-only candidate; no writes',
+    evidenceId: 'system-health.refresh.progress',
+  },
+  {
+    screen: 'system-health',
+    nestedSurface: 'System Health / read-only refresh settle',
+    authorityRequired: 'system health read projection',
+    interaction: 'toast-settle',
+    safeExecutionMode: 'synthetic-owner read-only candidate; no writes',
+    evidenceId: 'system-health.refresh.settle',
+  },
+  {
+    screen: 'system-health',
+    nestedSurface: 'System Health / read-only refresh feedback',
+    authorityRequired: 'system health read projection',
+    interaction: 'refresh-feedback',
+    safeExecutionMode: 'synthetic-owner read-only candidate; no writes',
+    evidenceId: 'system-health.refresh.feedback',
+  },
+]);

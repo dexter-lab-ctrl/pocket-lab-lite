@@ -1183,11 +1183,53 @@
           "src/lite/LiteSystemHealth.jsx",
           "src/lib/liteApi.js"
         ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.healthIntelligenceDecisions",
+        "resolved": true,
+        "route": "/api/lite/system-health/incidents/{param}/decisions",
+        "source_module": "src/lite/LiteSystemHealth.jsx",
+        "usage": "query"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteSystemHealth.jsx",
+          "src/lib/liteApi.js"
+        ],
         "method": "POST",
         "mocked": false,
         "owner": "liteApi.healthIntelligenceDiagnose",
         "resolved": true,
         "route": "/api/lite/system-health/incidents/{param}/diagnose",
+        "source_module": "src/lite/LiteSystemHealth.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteSystemHealth.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.healthIntelligencePreflight",
+        "resolved": true,
+        "route": "/api/lite/system-health/incidents/{param}/preflight",
+        "source_module": "src/lite/LiteSystemHealth.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": true,
+        "import_chain": [
+          "src/lite/LiteSystemHealth.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.healthIntelligenceRepair",
+        "resolved": true,
+        "route": "/api/lite/system-health/incidents/{param}/repair",
         "source_module": "src/lite/LiteSystemHealth.jsx",
         "usage": "mutation"
       },
@@ -2824,7 +2866,7 @@
         "import_chain": [
           "src/mocks/handlers.js"
         ],
-        "method": "GET",
+        "method": "POST",
         "mocked": true,
         "owner": "MSW handler",
         "resolved": true,
@@ -3901,9 +3943,6 @@
       "/api/lite/security/runs/{run_id}",
       "/api/lite/security/scan",
       "/api/lite/system-health/apps/{app_id}",
-      "/api/lite/system-health/incidents/{incident_id}/decisions",
-      "/api/lite/system-health/incidents/{incident_id}/preflight",
-      "/api/lite/system-health/incidents/{incident_id}/repair",
       "/api/lite/system-health/repairs",
       "/api/lite/system/agent",
       "/api/lite/system/health",
@@ -3916,7 +3955,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "95da5180f6b2252e64321b48a3c8f467c165c3c5dc898b97849170093a48e967",
+    "aggregate_fingerprint": "0c00d0f41e50864bbc49677bd358e9dd04e688cffe07d32fbd5540c2706687b5",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3926,11 +3965,11 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "38baff15a70648585d6011bf868a4d665931203c92b8affdd708f4d70a2f6fd8",
+      "contracts/generated/lite-openapi.json": "efe5e2a6c0b0932184a7070b0d812a7ad8af5fe2ec1e157b8d505668613c80a0",
       "contracts/metadata/documentation-platform.json": "4f70f5af5a679b2c402f663b011bfa1f14050527a3f2cd38d68b9b08b4f9372d",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "3b34f0debcf38e177dca50b99dea00a9b2710c4889dcb2b706d688ce0a9fcd9e",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a",
-      "src/lib/liteApi.js": "5212a0635b43fd3e37893435a70dddcd7ebf1bf446bffebddf496de9d66a6bea",
+      "src/lib/liteApi.js": "f3b7f4546b536659fed8fe9cde692c22bfbb97312e7582fb8ce872f7651f03a9",
       "src/lite/LiteActionProgress.jsx": "880d1bf891c3f76ef42e4565c01b0d2a39a9660a6f2d0ac9f909f0fce458f5a5",
       "src/lite/LiteApp.jsx": "809ff822ef1b6aa8d570f985a824240f5052d67a964d2cf71f8878ba33010b62",
       "src/lite/LiteAzureHorizon.stories.jsx": "a2ee55a0c896d4e6047164e8d08979241fe08c2a382992c87247cfd823811bf4",
@@ -3968,15 +4007,15 @@
       "src/lite/LiteSecurity.jsx": "8c316074e2fdfa67405fbafb678c06aad9e97adaeb9c30181a95f95ed5ea4074",
       "src/lite/LiteSecurity.stories.jsx": "447e7d25c5669fa9b1af095afc6bc75bf70c1461bc37b3df9ccc23ac24fd29d0",
       "src/lite/LiteServiceWorkerUpdateNotice.jsx": "450c8d4f9d858bcfd2781e55ae52101c8f37bc57deceb1dbe847c775ffc2288a",
-      "src/lite/LiteSystemHealth.jsx": "a6ed97cbf23610c181a7d9124e498c0709579ba8b6246b62ce25f302cbcd8953",
-      "src/lite/LiteSystemHealth.stories.jsx": "cf8ba49540391bcc63e70dc37b230c0d491482085f3352044744cb8a330a872b",
-      "src/lite/LiteSystemHealth.test.jsx": "d51fd0e6e07e3fc8b74780b31ad022466a438267650868592d4618416ae70164",
+      "src/lite/LiteSystemHealth.jsx": "09636954f1599872cfc581ec207b795b483e8c92f61a6d802cde42fd0ecf89f0",
+      "src/lite/LiteSystemHealth.stories.jsx": "95e1b12c1e161e8bcde3a1b05eb3e003c2cf4e11a5910de47c2b942ae0760e25",
+      "src/lite/LiteSystemHealth.test.jsx": "45c787cfeffd91d96ef0bb6905b1184b2f856827235276089e20979f45e31b7f",
       "src/lite/LiteToastHost.jsx": "4f06f72d896b56b05e9e4e9bded54c077128cff3a52bb6a3ecf2a52a83214995",
       "src/lite/LiteUi.jsx": "4aac25020333e0c6413f778201810210375047a080954460d85d561f426b281b",
       "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "f093c59d1866f706dbeb2f54472d42e67fcfce624c99bd342c5c5297ce63f4ac",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "6b9f6480bd3a6576bdd97e774e708e13bc15167333acf5bab64f136de5f32037"
+      "src/mocks/handlers.js": "d9a390c1c628160407ac12c584b33bcfe1728b1fa63ce196bd332380694dfd7f"
     },
     "validation_state": "generated"
   }

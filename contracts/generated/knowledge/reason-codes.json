@@ -2230,6 +2230,28 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The requested System Health action targets retained evidence for a device that is no longer a current recovery target.",
+      "domain": "system-health",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:historical_record",
+      "name": "historical_record",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "historical read-only record"
+      ],
+      "user_interpretation": "Review the earlier record; this device is no longer monitored."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The requested credential or session lifecycle action requires the signed-in local owner session.",
       "domain": "identity",
       "event_mapping": [],
@@ -5833,6 +5855,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "57cf8b4550e18f3e7fa688ad4af95976722d6d8767b6706cb21a593128a9ce45"
+    "source_fingerprint": "81084650377a487b849259cff5fe88015992935c129196e927c40325fb8884a6"
   }
 }

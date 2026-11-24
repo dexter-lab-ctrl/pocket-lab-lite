@@ -8,7 +8,7 @@ const cdpUrl = String(process.env.LITE_ANDROID_CDP_URL || 'http://127.0.0.1:1922
 const baseUrl = String(process.env.LITE_BASE_URL || 'http://127.0.0.1:18765').trim();
 const commit = String(process.env.LITE_PERF_SOURCE_COMMIT || '').trim().toLowerCase();
 const bridge = String(process.env.POCKETLAB_HARNESS_BROWSER_BRIDGE || '').trim();
-const qualificationId = String(process.env.LITE_SYSTEM_HEALTH_ANDROID_QUALIFICATION_ID || 'pr656-system-health-android-ui').trim().toLowerCase();
+const qualificationId = String(process.env.LITE_SYSTEM_HEALTH_ANDROID_QUALIFICATION_ID || 'pr657-system-health-android-ui').trim().toLowerCase();
 const expectedRuntimeTransport = String(process.env.LITE_EXPECTED_RUNTIME_TRANSPORT || 'ssh_loopback_to_isolated_phone_candidate').trim().toLowerCase();
 const outputDir = resolve(process.env.LITE_SYSTEM_HEALTH_ANDROID_OUTPUT_DIR || `.pocketlab-dev/validation/${qualificationId}`);
 
@@ -171,7 +171,11 @@ async function main() {
   }
   await page.screenshot({ path: resolve(outputDir, 'system-health-landing.png'), fullPage: true });
 
-  const incident = page.locator('[data-health-incident]').first();
+  const recoverableIncidents = page.locator('[data-health-incident]').filter({
+    has: page.getByRole('button', { name: 'Review recovery', exact: true }),
+  });
+  if (await recoverableIncidents.count() < 1) fail('Android System Health did not expose an eligible recovery incident');
+  const incident = recoverableIncidents.first();
   const incidentId = await incident.getAttribute('data-health-incident');
   if (!/^health-[0-9a-f]{24}$/.test(String(incidentId || ''))) fail('Android System Health did not expose a generation-bound incident');
   await incident.getByRole('button', { name: 'Review issue', exact: true }).click();
@@ -184,9 +188,20 @@ async function main() {
   if (await dialog.getByRole('button', { name: /^Fix/ }).count()) fail('System Health exposed an unsupported Fix action');
   await page.screenshot({ path: resolve(outputDir, 'system-health-diagnosis.png'), fullPage: true });
 
+  const preflightResponse = page.waitForResponse((response) => response.request().method() === 'POST'
+    && safePath(response.url()) === `/api/lite/system-health/incidents/${incidentId}/preflight` && response.status() === 200, { timeout: 30_000 });
+  const repairResponse = page.waitForResponse((response) => response.request().method() === 'POST'
+    && safePath(response.url()) === `/api/lite/system-health/incidents/${incidentId}/repair` && response.status() === 202, { timeout: 30_000 });
+  await dialog.getByRole('button', { name: 'Review recovery', exact: true }).click();
+  await Promise.all([preflightResponse, repairResponse]);
+  await dialog.getByRole('status').filter({ hasText: 'Verified recovery' }).waitFor({ state: 'visible', timeout: 60_000 });
+  await page.screenshot({ path: resolve(outputDir, 'system-health-recovery-verified.png'), fullPage: true });
+
   const { requests, responses, requestFailures } = selectedObservation;
-  const forbiddenWrites = requests.filter((item) => item.method === 'POST' && (item.path.endsWith('/repair') || item.path.endsWith('/preflight')));
-  if (forbiddenWrites.length) fail('Android System Health UI attempted an unauthorized repair or preflight write');
+  const recoveryWrites = requests.filter((item) => item.method === 'POST' && (item.path.endsWith('/repair') || item.path.endsWith('/preflight')));
+  if (recoveryWrites.length !== 2 || !recoveryWrites.some((item) => item.path.endsWith('/preflight')) || !recoveryWrites.some((item) => item.path.endsWith('/repair'))) {
+    fail('Android System Health UI did not use the bounded preflight and repair contract');
+  }
   if (requestFailures.length) fail('Android System Health API request failed');
   const apiResponsesHaveCandidate = responses.length > 0 && responses.every((item) => item.candidate_sha === expectedCommit);
   if (!apiResponsesHaveCandidate) fail('Android System Health API responses did not carry the exact candidate identity');
@@ -203,10 +218,10 @@ async function main() {
     android_chrome: { browser: String(version.Browser || ''), protocol_version: String(version['Protocol-Version'] || ''), package: String(version['Android-Package'] || ''), websocket_loopback: true },
     candidate_manifest: manifest,
     candidate_api_backend_verified: true,
-    system_health: { landing: true, active_incident: incidentId, review_issue_open: true, diagnosis_post_status: 200, manage_open: true, recovery_action_exposed: false, repair_execution: false, preflight_execution: false, home_return: true },
+    system_health: { landing: true, active_incident: incidentId, review_issue_open: true, diagnosis_post_status: 200, manage_open: true, recovery_action_exposed: true, repair_execution: true, preflight_execution: true, recovery_verification: 'verified', home_return: true },
     api_response_count: responses.length,
     api_response_paths: [...new Set(responses.map((item) => item.path))].sort(),
-    screenshots: ['system-health-landing.png', 'system-health-diagnosis.png', 'home-system-health-summary.png'],
+    screenshots: ['system-health-landing.png', 'system-health-diagnosis.png', 'system-health-recovery-verified.png', 'home-system-health-summary.png'],
     sanitized: true,
   };
   const evidencePath = resolve(outputDir, `${qualificationId}-${expectedCommit.slice(0, 12)}.json`);

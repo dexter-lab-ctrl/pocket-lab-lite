@@ -1,7 +1,8 @@
-"""System Health incident behavior. Source only; execution deferred."""
+"""System Health incident, membership and controlled-recovery behavior."""
 from __future__ import annotations
 
 from contextlib import contextmanager
+import asyncio
 from pathlib import Path
 import sqlite3
 
@@ -17,8 +18,13 @@ def health(tmp_path, monkeypatch):
     db = tmp_path / "health.sqlite3"
     schema_root = Path(__file__).parents[2] / "pocket-lab-final-structure/runtime/api_fastapi/db/schema"
     with sqlite3.connect(db) as conn:
+        # Use the actual registry/receipt DDL; skip legacy backfill in this isolated fixture.
+        registry_ddl = (schema_root / "0022_device_durable_enrollment.sql").read_text(encoding="utf-8")
+        conn.executescript(registry_ddl.split("-- Backfill only")[0])
         conn.executescript((schema_root / "0043_system_health_intelligence.sql").read_text(encoding="utf-8"))
         conn.executescript((schema_root / "0044_system_health_audit.sql").read_text(encoding="utf-8"))
+        conn.executescript((schema_root / "0045_system_health_enrollment_generation.sql").read_text(encoding="utf-8"))
+        conn.executescript((schema_root / "0046_system_health_recovery_requests.sql").read_text(encoding="utf-8"))
 
     def connect():
         conn = sqlite3.connect(db, isolation_level=None)
@@ -97,7 +103,9 @@ def test_repair_denial_audit_is_idempotent_and_never_executes(health):
 def test_stale_preflight_blocks_and_unknown_never_means_healthy(health, monkeypatch):
     health.ingest_projection("system.nats_remote", observed_nats())
     problem = health.incidents()["items"][0]
-    monkeypatch.setattr(health, "freshness", lambda _: "stale")
+    with health.connection() as conn:
+        conn.execute("UPDATE lite_system_health_observations SET observed_at='2001-01-01T00:00:00Z'")
+        conn.execute("UPDATE lite_system_health_incidents SET last_seen_at='2001-01-01T00:00:00Z'")
     preflight = health.repair_preflight(problem["incident_id"], "app.repair", problem["generation"])
     assert "evidence_not_current" in preflight["reasons"]
     assert preflight["allowed"] is False
@@ -128,7 +136,65 @@ def test_anonymous_system_health_incident_read_is_denied():
         assert attempt.status_code == 401
 
 
-# H1 source qualification: author only, never execute in this implementation session.
+def test_recovery_router_is_backend_governed_and_sanitizes_harness_denial(monkeypatch):
+    ensure_runtime_path()
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from api_fastapi.routers import lite_system_health as module
+    from api_fastapi.services import lite_harness
+
+    app = FastAPI()
+    app.include_router(module.router)
+    context = {
+        "actor": {"identity_id": "qualification-owner", "type": "qualification"},
+        "session": {"authenticated": True},
+    }
+    found = {
+        "incident_id": "health-111111111111111111111111", "generation": 1,
+        "enrollment_generation": 0, "target_id": "jetstream", "source": "nats",
+    }
+    allowed_preflight = {"allowed": True, "reasons": [], "risk_class": "A"}
+    monkeypatch.setattr(module.deps, "require_auth", lambda request, write=False: context)
+    monkeypatch.setattr(module.health, "incident", lambda incident_id: found)
+    monkeypatch.setattr(module.health, "repair_preflight", lambda *args: allowed_preflight)
+    policy_inputs = []
+
+    def allow_policy(**kwargs):
+        policy_inputs.append(kwargs)
+        return {
+            "allow": True, "reason_code": "qualification_owner_system_health_recovery",
+            "policy_revision": "test-policy", "decision_id": "decision-1",
+        }
+
+    monkeypatch.setattr(module.lite_policy_opa, "evaluate_authorization", allow_policy)
+    monkeypatch.setattr(module.health, "admit_controlled_recovery", lambda *args, **kwargs: {
+        "request": {"request_id": "recovery-1", "status": "admitted"}, "recorded": True,
+    })
+    with TestClient(app) as client:
+        payload = {
+            "operation_id": "runtime.consumer.reconnect", "expected_generation": 1,
+            "idempotency_key": "router-recovery-key-0001", "confirm": False,
+        }
+        monkeypatch.setattr(module.lite_harness, "enforce_capability", lambda *args, **kwargs: None)
+        response = client.post("/api/lite/system-health/incidents/health-111111111111111111111111/repair", json=payload)
+        assert response.status_code == 202
+        assert response.json()["status"] == "admitted"
+        assert policy_inputs[0]["target"]["operation_id"] == "runtime.consumer.reconnect"
+        assert policy_inputs[0]["target"]["incident_generation"] == 1
+        assert "state" not in policy_inputs[0]["target"]
+
+        def reject(*_args, **_kwargs):
+            raise lite_harness.HarnessError("harness_capability_missing", "capability rejected", status_code=403)
+
+        monkeypatch.setattr(module.lite_harness, "enforce_capability", reject)
+        denied = client.post("/api/lite/system-health/incidents/health-111111111111111111111111/repair", json=payload)
+        assert denied.status_code == 403
+        assert denied.json()["detail"] == {
+            "status": "denied", "reason_code": "harness_capability_missing", "summary": "capability rejected",
+        }
+
+
+# P4 qualification helpers and executed regression coverage.
 def test_fresh_vs_saved_incidents_are_counted_separately(health):
     assert health.ingest_projection("system.nats_remote", observed_nats("degraded", 1)) == 1
     initial = health.summary()
@@ -183,6 +249,7 @@ def test_malformed_projection_collection_cannot_create_incidents(health, domain,
 
 
 def test_short_but_explicit_valid_device_identity_is_preserved(health):
+    enroll(health, "3")
     payload = {"items": [{"device_id": "3", "connection_state": "offline",
                           "command_deliverable": False}], "generation": 1}
     assert health.ingest_projection("system.agent", payload) == 1
@@ -217,3 +284,243 @@ def test_observed_healthy_transition_is_not_verified_repair(health):
     assert health.policy()["engine_auto_repair"] is False
     assert health.repair_preflight(incident_id, "runtime.consumer.reconnect",
                                    item["generation"])["allowed"] is False
+
+
+# P4 qualification coverage.
+def enroll(health, device_id, *, protected=False, removal_status="active"):
+    with health.connection() as conn:
+        conn.execute(
+            "INSERT INTO device_enrollment_registry(device_id,device_name,enrolled_at,updated_at,"
+            "removal_status,protected_server_host) VALUES (?,?,?,?,?,?)",
+            (device_id, device_id, health._now(), health._now(), removal_status, int(protected)),
+        )
+
+
+def observe_device(health, device_id, revision=1, state="offline"):
+    return health.ingest_projection("system.agent", {
+        "generation": revision, "items": [{"device_id": device_id, "connection_state": state}],
+    })
+
+
+@pytest.mark.parametrize("removal_status", ["retired", "removed"])
+def test_p4_membership_history_and_late_event(health, removal_status):
+    enroll(health, "secondary")
+    enroll(health, "still-enrolled")
+    assert observe_device(health, "secondary") == 1
+    assert observe_device(health, "still-enrolled") == 1
+    original = next(i for i in health.incidents()["items"] if i["target_id"] == "secondary")
+    with health.connection() as conn:
+        conn.execute("UPDATE device_enrollment_registry SET removal_status=?, retired_at=? WHERE device_id=?",
+                     (removal_status, health._now(), "secondary"))
+    assert observe_device(health, "secondary", revision=2, state="online") == 0
+    assert health.summary()["current_problems"] == 1
+    assert health.summary()["historical_device_records"] == 1
+    page = health.incidents(limit=1)
+    assert page["items"][0]["target_id"] == "still-enrolled"
+    assert page["next_offset"] is None
+    historical = health.incident(original["incident_id"])
+    assert historical["state"] == original["state"]
+    assert historical["generation"] == original["generation"]
+    assert historical["concern_state"] == "historical_record"
+    assert historical["current_monitoring"] is False
+    assert historical["repair_available"] is False
+    assert any(i["incident_id"] == original["incident_id"] for i in health.history()["items"])
+    assert all(i["target_id"] != "secondary" for i in health.dependency_graph()["nodes"])
+    assert all(i["target_id"] != "secondary" for i in health.knowledge()["recurring_components"])
+    preflight = health.repair_preflight(original["incident_id"], "device.agent.recover", original["generation"])
+    assert "device_no_longer_enrolled" in preflight["reasons"]
+    assert preflight["allowed"] is False
+
+
+def test_p4_unknown_identity_cannot_create_current_incident(health):
+    assert observe_device(health, "unknown") == 0
+    assert health.incidents()["items"] == []
+
+
+def test_p4_protected_host_inconsistent_retirement_is_not_hidden(health):
+    enroll(health, "host", protected=True)
+    observe_device(health, "host")
+    with health.connection() as conn:
+        conn.execute("UPDATE device_enrollment_registry SET removal_status='removed' WHERE device_id='host'")
+    item = health.incidents()["items"][0]
+    assert item["membership_state"] == "protected_conflict"
+    assert item["concern_state"] == "saved_concern"
+    assert health.summary()["status"] == "unknown"
+    assert "protected_host_membership_conflict" in health.repair_preflight(
+        item["incident_id"], "device.agent.recover", item["generation"])["reasons"]
+
+
+def test_p4_resources_filter_removed_device_and_preserve_shared_signal(health):
+    enroll(health, "old")
+    enroll(health, "new")
+    health.ingest_projection("system.telemetry_thresholds", {"generation": 1, "devices": [
+        {"device_id": "old", "status": "degraded"},
+        {"device_id": "new", "status": "degraded"},
+    ]})
+    health.ingest_projection("system.storage_pressure", {"generation": 1, "status": "degraded"})
+    with health.connection() as conn:
+        conn.execute("UPDATE device_enrollment_registry SET removal_status='removed' WHERE device_id='old'")
+    targets = {r["target_id"] for r in health.resource_intelligence()["signals"]}
+    assert targets == {"new", "storage"}
+
+
+def test_p4_enrollment_generation_fences_late_observations(health):
+    enroll(health, "generation-device")
+    assert observe_device(health, "generation-device", revision=1) == 1
+    previous = health.incidents()["items"][0]
+    with health.connection() as conn:
+        conn.execute(
+            "UPDATE device_enrollment_registry SET enrollment_generation=2 WHERE device_id=?",
+            ("generation-device",),
+        )
+    # The new generation is a distinct current incident. The prior incident
+    # remains a historical record and cannot authorize a current repair.
+    assert observe_device(health, "generation-device", revision=2, state="offline") == 1
+    items = health.incidents(include_resolved=True, limit=10)["items"]
+    current = [item for item in items if item["current_monitoring"]]
+    historical = health.incident(previous["incident_id"])
+    assert len(current) == 1
+    assert current[0]["enrollment_generation"] == 2
+    assert historical["concern_state"] == "historical_record"
+    assert historical["current_monitoring"] is False
+    assert health.repair_preflight(previous["incident_id"], "device.agent.recover", previous["generation"])["allowed"] is False
+
+
+def test_p4_controlled_recovery_is_default_off(health):
+    health.ingest_projection("system.nats_remote", observed_nats())
+    item = health.incidents()["items"][0]
+    preflight = health.repair_preflight(item["incident_id"], "runtime.consumer.reconnect", item["generation"])
+    assert preflight["allowed"] is False
+    assert "system_health_recovery_disabled" in preflight["reasons"]
+
+
+def test_p4_controlled_recovery_preflight_rejects_non_nats_target(health, monkeypatch):
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")
+    assert health.ingest_projection("system.health", {
+        "status": "degraded", "generation": 1,
+        "components": {"supervisor": "degraded"}, "sanitized": True,
+    }) == 1
+    item = health.incidents()["items"][0]
+    preflight = health.repair_preflight(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"]
+    )
+    assert preflight["allowed"] is False
+    assert "target_not_allowlisted" in preflight["reasons"]
+
+
+def test_p4_controlled_recovery_is_actor_bound_and_idempotent(health, monkeypatch):
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")
+    health.ingest_projection("system.nats_remote", observed_nats())
+    item = health.incidents()["items"][0]
+    decision = {"allow": True, "reason_code": "qualification_owner_system_health_recovery", "policy_revision": "test-policy", "decision_id": "decision-test"}
+    context = {"actor": {"identity_id": "qualification-owner", "type": "qualification"}}
+    first = health.admit_controlled_recovery(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"],
+        "recovery-idempotency-key-0001", confirm=False, auth_context=context, decision=decision,
+    )
+    assert first["request"]["status"] == "admitted"
+    replay = health.admit_controlled_recovery(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"],
+        "recovery-idempotency-key-0001", confirm=False, auth_context=context, decision=decision,
+    )
+    assert replay["idempotent_replay"] is True
+    conflict = health.admit_controlled_recovery(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"],
+        "recovery-idempotency-key-0001", confirm=False,
+        auth_context={"actor": {"identity_id": "other-actor", "type": "qualification"}}, decision=decision,
+    )
+    assert conflict["reasons"] == ["idempotency_conflict"]
+    assert health.decision_history(item["incident_id"])["recovery_requests"][0]["status"] == "admitted"
+
+
+def test_p4_terminal_replay_precedes_resolved_incident_preflight(health, monkeypatch):
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")
+    health.ingest_projection("system.nats_remote", observed_nats())
+    item = health.incidents()["items"][0]
+    context = {"actor": {"identity_id": "qualification-owner", "type": "qualification"}}
+    key = "replay-after-health-0001"
+    decision = {"allow": True, "reason_code": "qualification_owner_system_health_recovery", "policy_revision": "test-policy", "decision_id": "decision-replay"}
+    first = health.admit_controlled_recovery(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"], key,
+        confirm=False, auth_context=context, decision=decision,
+    )
+    assert first["request"]["status"] == "admitted"
+    health.ingest_projection("system.nats_remote", observed_nats("healthy", 2))
+    replay = health.recovery_request_replay(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"], key,
+        confirm=False, auth_context=context,
+    )
+    assert replay["idempotent_replay"] is True
+    assert replay["request"]["request_id"] == first["request"]["request_id"]
+    conflict = health.recovery_request_replay(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"], key,
+        confirm=False, auth_context={"actor": {"identity_id": "other-owner", "type": "qualification"}},
+    )
+    assert conflict["reasons"] == ["idempotency_conflict"]
+
+
+def test_p4_controlled_recovery_uses_existing_owner_and_fresh_verification(health, monkeypatch):
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")
+    health.ingest_projection("system.nats_remote", observed_nats())
+    item = health.incidents()["items"][0]
+    request = health.admit_controlled_recovery(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"],
+        "recovery-owner-key-0001", confirm=False,
+        auth_context={"actor": {"identity_id": "qualification-owner", "type": "qualification"}},
+        decision={"allow": True, "reason_code": "qualification_owner_system_health_recovery", "policy_revision": "test-policy", "decision_id": "decision-owner"},
+    )
+
+    class FakeBus:
+        def __init__(self):
+            self.generation = 4
+            self.healthy = False
+
+        def durable_consumer_status(self, durable):
+            return {"generation": self.generation, "healthy": self.healthy, "callback_inflight": False}
+
+        async def ensure_durable_consumer(self, durable, *, force=False):
+            assert durable == "pocketlab_command_worker_v1"
+            assert force is True
+            self.generation += 1
+            self.healthy = True
+            return True
+
+    assert asyncio.run(health.process_controlled_recovery_requests(FakeBus(), "pocketlab_command_worker_v1")) == 1
+    history = health.decision_history(item["incident_id"])["recovery_requests"]
+    assert history[0]["status"] == "verified"
+    assert history[0]["verification_state"] == "verified"
+    assert history[0]["outcome"] == "verified_recovery"
+
+
+def test_p4_enterprise_approval_promotes_same_idempotent_request(health, monkeypatch):
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")
+    health.ingest_projection("system.nats_remote", observed_nats())
+    item = health.incidents()["items"][0]
+    context = {"actor": {"identity_id": "operator-1", "type": "human"}}
+    key = "enterprise-recovery-key-0001"
+    pending = health.admit_controlled_recovery(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"], key,
+        confirm=False, auth_context=context,
+        decision={
+            "allow": False, "reason_code": "approval_required", "policy_revision": "policy-1",
+            "decision_id": "decision-pending", "approval": {"approval_id": "apr-1"},
+        },
+    )
+    assert pending["request"]["status"] == "approval_required"
+    admitted = health.admit_controlled_recovery(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"], key,
+        confirm=False, auth_context=context,
+        decision={
+            "allow": True, "reason_code": "independent_approval_satisfied", "policy_revision": "policy-1",
+            "decision_id": "decision-approved", "continuation_approval_id": "apr-1",
+        },
+    )
+    assert admitted["idempotent_replay"] is True
+    assert admitted["request"]["status"] == "admitted"
+    assert admitted["request"]["authorization_state"] == "authorized"
+    assert health.decision_history(item["incident_id"])["recovery_requests"][0]["status"] == "admitted"

@@ -91,3 +91,52 @@ test_synthetic_owner_without_destructive_gate_is_denied if {
 	}
 	not result.allow
 }
+
+test_synthetic_owner_allows_qualified_system_health_recovery if {
+	result := decision with input as {
+		"actor": {"type": "qualification", "id": "qualification-owner", "role": "Owner", "owner_authority": true, "enterprise_enabled": false},
+		"session": {"authenticated": true, "auth_method": "harness_session"},
+		"harness": {
+			"enabled": true,
+			"principal_id": "qualification-owner",
+			"principal_class": "qualification",
+			"profile": "qualification-owner",
+			"purpose": "system-health-p4",
+			"capabilities": ["system_health.recovery"],
+			"target_scope": "local_server_host_only",
+			"qualification_environment": true,
+			"destructive_allowed": false,
+		},
+		"action": {"id": "system_health.recovery"},
+		"target": {"type": "system_health_incident", "id": "health-incident-1", "scope": "local_server_host_only", "revision": "incident:1:0", "state": {
+			"operation_id": "runtime.consumer.reconnect",
+			"adapter_enabled": true,
+			"preflight_valid": true,
+			"incident_generation": 1,
+			"enrollment_generation": 0,
+		}},
+		"request": {},
+	}
+	result.allow
+	result.reason_code == "qualification_owner_system_health_recovery"
+}
+
+test_enterprise_operator_system_health_recovery_requires_approval if {
+	result := decision with input as {
+		"actor": {"type": "human", "id": "human-operator", "role": "Operator", "enterprise_enabled": true, "owner_authority": false},
+		"session": {"authenticated": true, "auth_method": "passkey"},
+		"action": {"id": "system_health.recovery"},
+		"target": {"type": "system_health_incident", "id": "health-incident-1", "revision": "incident:1:0", "state": {
+			"operation_id": "runtime.consumer.reconnect",
+			"adapter_enabled": true,
+			"preflight_valid": true,
+			"incident_generation": 1,
+			"enrollment_generation": 0,
+		}},
+		"continuation": {"matching_independent_approval": false},
+		"request": {},
+	}
+	not result.allow
+	result.reason_code == "approval_required"
+	result.requirements.required_assurance == "policy.approval.system_health.recovery"
+}

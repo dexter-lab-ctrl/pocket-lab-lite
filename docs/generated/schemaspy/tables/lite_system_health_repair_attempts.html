@@ -440,6 +440,7 @@
                                 <h5>Close relationships within degrees of separation</h5>
                                 <ul class="nav nav-tabs pull-left ui-sortable-handle">
                                     <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
+                                    <li class=""><a href="#twodegreesDegreeImg-chart" data-toggle="tab" aria-expanded="true">Two degrees</a></li>
                                     <li class=""><a href="#oneimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">One implied</a></li>
                                     <li class=""><a href="#twoimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">Two implied</a></li>
                                 </ul>
@@ -447,24 +448,33 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="390,5,1011,519">
-<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,38,346,278">
+<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,38,346,308">
 </map>
                                         <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/lite_system_health_repair_attempts.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
+                                    </div>
+                                    <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
+<area shape="rect" id="node1" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="488,5,913,99">
+<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,76,346,346">
+<area shape="rect" id="node3" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="390,117,1011,630">
+</map>
+                                        <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/lite_system_health_repair_attempts.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
 <area shape="rect" id="node1" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="390,5,1011,519">
-<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,38,346,278">
+<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,38,346,308">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/lite_system_health_repair_attempts.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
 <area shape="rect" id="node1" href="lite_system_health_diagnoses.html" target="_top" title="lite_system_health_diagnoses" alt="" coords="526,5,876,99">
-<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,188,346,429">
+<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,227,346,497">
 <area shape="rect" id="node3" href="lite_system_health_events.html" target="_top" title="lite_system_health_events" alt="" coords="541,117,861,211">
-<area shape="rect" id="node4" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="390,229,1011,742">
-<area shape="rect" id="node5" href="lite_system_health_repair_denials.html" target="_top" title="lite_system_health_repair_denials" alt="" coords="508,760,894,854">
+<area shape="rect" id="node4" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="488,229,913,323">
+<area shape="rect" id="node5" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="390,341,1011,854">
+<area shape="rect" id="node6" href="lite_system_health_repair_denials.html" target="_top" title="lite_system_health_repair_denials" alt="" coords="508,872,894,966">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/lite_system_health_repair_attempts.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

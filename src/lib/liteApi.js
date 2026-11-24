@@ -247,6 +247,7 @@ export const liteApi = {
   healthIntelligenceSummary: safeGet('/api/lite/system-health/summary'),
   healthIntelligenceIncidents: (limit = 30, offset = 0) => readJson(`/api/lite/system-health/incidents?limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}`),
   healthIntelligenceIncident: (incidentId) => readJson(`/api/lite/system-health/incidents/${encodeURIComponent(incidentId)}`),
+  healthIntelligenceDecisions: (incidentId) => readJson(`/api/lite/system-health/incidents/${encodeURIComponent(incidentId)}/decisions`),
   healthIntelligenceHistory: (limit = 30, offset = 0) => readJson(`/api/lite/system-health/history?limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}`),
   healthIntelligenceDependencies: () => readJson('/api/lite/system-health/dependencies'),
   healthIntelligenceResources: () => readJson('/api/lite/system-health/resources'),
@@ -255,6 +256,8 @@ export const liteApi = {
   healthIntelligenceApp: (appId) => readJson(`/api/lite/system-health/apps/${encodeURIComponent(appId)}`),
   healthIntelligencePolicies: () => readJson('/api/lite/system-health/policies'),
   healthIntelligenceDiagnose: (incidentId) => postJson(`/api/lite/system-health/incidents/${encodeURIComponent(incidentId)}/diagnose`, {}),
+  healthIntelligencePreflight: (incidentId, body = {}) => postJson(`/api/lite/system-health/incidents/${encodeURIComponent(incidentId)}/preflight`, body),
+  healthIntelligenceRepair: (incidentId, body = {}) => postJson(`/api/lite/system-health/incidents/${encodeURIComponent(incidentId)}/repair`, body),
 
   systemProcesses: conditionalGet('/api/lite/system/processes'),
   systemAgent: conditionalGet('/api/lite/system/agent'),

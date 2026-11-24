@@ -2473,6 +2473,10 @@
         "title": "harness_transport_rejected",
         "url": "../../docs/generated/development/reason-codes.md#harness-transport-rejected"
       },
+      "reason:historical_record": {
+        "title": "historical_record",
+        "url": "../../docs/generated/development/reason-codes.md#historical-record"
+      },
       "reason:human_session_required": {
         "title": "human_session_required",
         "url": "../../docs/generated/development/reason-codes.md#human-session-required"
@@ -3453,6 +3457,11 @@
         "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_observations.html",
         "title": "lite_system_health_observations"
       },
+      "table:lite_system_health_recovery_requests": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-recovery-requests",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_recovery_requests.html",
+        "title": "lite_system_health_recovery_requests"
+      },
       "table:lite_system_health_repair_attempts": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-repair-attempts",
         "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_repair_attempts.html",
@@ -3691,7 +3700,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "a05c26472b10326b1b4c35617bc3e70b64f27643f46e65c38412c5c309025603",
+    "aggregate_fingerprint": "7b17315ead48a01827191521867915eadb4afa8ceeaf2a153a81b488a99505ac",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3701,9 +3710,9 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "38baff15a70648585d6011bf868a4d665931203c92b8affdd708f4d70a2f6fd8",
+      "contracts/generated/lite-openapi.json": "efe5e2a6c0b0932184a7070b0d812a7ad8af5fe2ec1e157b8d505668613c80a0",
       "contracts/metadata/documentation-platform.json": "4f70f5af5a679b2c402f663b011bfa1f14050527a3f2cd38d68b9b08b4f9372d",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "1cc6177e5d9d2988b3a434fe6e26c85dcbe9b5ee95c7d74d7d9daa758596c33d",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "3b34f0debcf38e177dca50b99dea00a9b2710c4889dcb2b706d688ce0a9fcd9e",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -3748,6 +3757,9 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql": "af04a2a6d07ecf1925c797fb645409ea57a2fa4390c89c95a27b60dd58d79320",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql": "594bda04b30d11c55d165efb547ebe788fdeae68d06fad8b8def8c2818552831",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql": "d43f1bc6fa85609fea10132b21199200d414ba5d0fdd7baaa2591ce2a183c2c8",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql": "645b3c4d7ea51ab395c36cba4ef5123f6bcce74eddc5d845207c50a3ef88ee7b",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql": "05ab4630dc17d8eda5dac04ddae1f0ad0a74efe0994cbee35e9ebdc51597bc04",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql": "e3bfdbcfedf3159893491e97b993c5c1b4a0c267bc7ab55dd8cb45d7374ab857",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },
     "validation_state": "generated"

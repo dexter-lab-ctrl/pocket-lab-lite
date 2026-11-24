@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 18d2d0704a382ae0772f3b59d9c3c79ce328be617294ee1d571189379aa5f2ee
+source_fingerprint: aab599ed000a6027087017cd904bd5f7c3d1ae26671852212db4390022f1b189
 schema_revision: 1
 validation_status: generated
 ---
@@ -43,7 +43,7 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `command_lifecycle` | table | 19 | 0 | 8 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0017_command_lifecycle_reconciliation.sql |
 | `device_awareness_state` | table | 33 | 1 | 4 | devices | device lifecycle and projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0011_device_trust_capability_awareness.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql |
 | `device_current_state` | table | 20 | 0 | 4 | devices | fleet/device projection writer | restricted operational metadata | verified | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0010_device_system_profiles.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0011_device_trust_capability_awareness.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql |
-| `device_enrollment_registry` | table | 22 | 0 | 4 | devices | device lifecycle and projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql |
+| `device_enrollment_registry` | table | 23 | 0 | 5 | devices | device lifecycle and projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql |
 | `device_health_attention` | table | 16 | 1 | 4 | devices | device lifecycle and projection services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql |
 | `device_health_current` | table | 27 | 1 | 3 | devices | device lifecycle and projection services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql |
 | `device_health_transitions` | table | 11 | 1 | 2 | devices | device lifecycle and projection services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql |
@@ -53,29 +53,30 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `device_lifecycle_events` | table | 16 | 1 | 5 | devices | device lifecycle and projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0011_device_trust_capability_awareness.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0013_device_lifecycle_idempotency.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql |
 | `device_lifecycle_transactions` | table | 16 | 2 | 5 | devices | device lifecycle and projection services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql |
 | `device_recovery_history` | table | 9 | 0 | 2 | devices | device lifecycle and projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql |
-| `device_removal_receipts` | table | 12 | 1 | 2 | devices | device lifecycle and projection services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql |
+| `device_removal_receipts` | table | 13 | 1 | 2 | devices | device lifecycle and projection services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql |
 | `device_role_assignments` | table | 15 | 0 | 3 | devices | device lifecycle and projection services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql |
 | `device_role_change_operations` | table | 16 | 0 | 4 | devices | device lifecycle and projection services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql |
 | `device_supervisor_state` | table | 15 | 0 | 2 | devices | device lifecycle and projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql |
 | `device_system_profiles` | table | 36 | 1 | 2 | devices | device lifecycle and projection services | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0010_device_system_profiles.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql |
 | `domain_revisions` | table | 3 | 0 | 1 | projections | prepared projection scheduler | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
-| `enterprise_configuration` | table | 8 | 1 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql |
-| `enterprise_memberships` | table | 8 | 3 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql |
+| `enterprise_configuration` | table | 8 | 1 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql |
+| `enterprise_memberships` | table | 8 | 3 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql |
 | `harness_audit_events` | table | 16 | 1 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql |
 | `harness_challenges` | table | 14 | 1 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql |
 | `harness_recovery_receipts` | table | 15 | 2 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql |
 | `harness_sessions` | table | 17 | 1 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql |
 | `human_credentials` | table | 10 | 1 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
 | `human_enrollment_claims` | table | 16 | 2 | 5 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql |
-| `human_identities` | table | 8 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql |
+| `human_identities` | table | 8 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql |
 | `identity_audit_events` | table | 8 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
 | `lite_home_activity_read_cursors` | table | 3 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql |
 | `lite_installed_release_identity` | table | 18 | 0 | 2 | release | release runtime and identity services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql |
 | `lite_revision_events` | table | 10 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql |
 | `lite_system_health_diagnoses` | table | 9 | 0 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql |
 | `lite_system_health_events` | table | 6 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql |
-| `lite_system_health_incidents` | table | 16 | 0 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql |
-| `lite_system_health_observations` | table | 6 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql |
+| `lite_system_health_incidents` | table | 17 | 0 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql |
+| `lite_system_health_observations` | table | 7 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql |
+| `lite_system_health_recovery_requests` | table | 32 | 1 | 6 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql |
 | `lite_system_health_repair_attempts` | table | 15 | 1 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql |
 | `lite_system_health_repair_denials` | table | 10 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql |
 | `owner_approved_operations` | table | 28 | 2 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql |
@@ -88,7 +89,7 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `phase3b_current_state` | table | 12 | 0 | 3 | prepared_state | prepared state projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
 | `phase3b_revision_events` | table | 16 | 0 | 4 | prepared_state | prepared state projection services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql |
 | `policy_activation_operations` | table | 14 | 3 | 3 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql |
-| `policy_approvals` | table | 26 | 2 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql |
+| `policy_approvals` | table | 26 | 2 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql |
 | `policy_continuation_events` | table | 9 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql |
 | `policy_decision_details` | table | 3 | 1 | 1 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql |
 | `policy_decisions` | table | 14 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql |
@@ -522,6 +523,7 @@ Source-derived devices persistence object; detailed ownership is conservatively 
 | `canonical_hash` | TEXT | no | '' | 0 |
 | `updated_at` | TEXT | no | — | 0 |
 | `updated_at_epoch_ms` | INTEGER | no | 0 | 0 |
+| `enrollment_generation` | INTEGER | no | 1 | 0 |
 
 <a id="device-health-attention"></a>
 ## `device_health_attention`
@@ -739,6 +741,7 @@ Source-derived devices persistence object; detailed ownership is conservatively 
 | `created_at_epoch_ms` | INTEGER | no | — | 0 |
 | `summary` | TEXT | no | '' | 0 |
 | `sanitized` | INTEGER | no | 1 | 0 |
+| `enrollment_generation` | INTEGER | no | 1 | 0 |
 
 <a id="device-role-assignments"></a>
 ## `device_role_assignments`
@@ -1174,6 +1177,7 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `summary` | TEXT | no | — | 0 |
 | `suspected_cause` | TEXT | no | '' | 0 |
 | `verified_cause` | TEXT | no | '' | 0 |
+| `enrollment_generation` | INTEGER | no | 0 | 0 |
 
 <a id="lite-system-health-observations"></a>
 ## `lite_system_health_observations`
@@ -1188,6 +1192,47 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `observed_at` | TEXT | no | — | 0 |
 | `source_revision` | TEXT | no | '' | 0 |
 | `summary` | TEXT | no | '' | 0 |
+| `enrollment_generation` | INTEGER | no | 0 | 0 |
+
+<a id="lite-system-health-recovery-requests"></a>
+## `lite_system_health_recovery_requests`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `request_id` | TEXT | yes | — | 1 |
+| `incident_id` | TEXT | no | — | 0 |
+| `incident_generation` | INTEGER | no | — | 0 |
+| `enrollment_generation` | INTEGER | no | 0 | 0 |
+| `operation_id` | TEXT | no | — | 0 |
+| `target_type` | TEXT | no | — | 0 |
+| `target_id` | TEXT | no | — | 0 |
+| `target_revision` | TEXT | no | '' | 0 |
+| `idempotency_digest` | TEXT | no | — | 0 |
+| `request_digest` | TEXT | no | — | 0 |
+| `actor_id` | TEXT | no | — | 0 |
+| `actor_type` | TEXT | no | — | 0 |
+| `policy_revision` | TEXT | no | '' | 0 |
+| `policy_decision_id` | TEXT | no | '' | 0 |
+| `authorization_state` | TEXT | no | — | 0 |
+| `approval_id` | TEXT | no | '' | 0 |
+| `status` | TEXT | no | — | 0 |
+| `execution_state` | TEXT | no | — | 0 |
+| `verification_state` | TEXT | no | — | 0 |
+| `requested_at` | TEXT | no | — | 0 |
+| `updated_at` | TEXT | no | — | 0 |
+| `available_at` | TEXT | no | — | 0 |
+| `deadline_at` | TEXT | no | — | 0 |
+| `lease_until` | TEXT | yes | — | 0 |
+| `completed_at` | TEXT | yes | — | 0 |
+| `attempt` | INTEGER | no | 0 | 0 |
+| `max_attempts` | INTEGER | no | 2 | 0 |
+| `before_evidence_json` | TEXT | no | '{}' | 0 |
+| `after_evidence_json` | TEXT | no | '{}' | 0 |
+| `safe_summary` | TEXT | no | '' | 0 |
+| `outcome` | TEXT | no | 'not_executed' | 0 |
+| `terminal_reason` | TEXT | no | '' | 0 |
 
 <a id="lite-system-health-repair-attempts"></a>
 ## `lite_system_health_repair_attempts`
