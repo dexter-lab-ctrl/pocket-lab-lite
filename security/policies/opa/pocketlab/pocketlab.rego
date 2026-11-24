@@ -866,3 +866,24 @@ decision := {
 	input.session.authenticated == true
 	not recent_passkey_step_up
 }
+
+
+# Fixed, owner-only maintenance adapter. Runtime qualification/activation,
+# exact preview binding and pre-execution authority checks are enforced by
+# FastAPI and the existing maintenance worker, never a browser.
+decision := {
+    "allow": true,
+    "constraints": ["owner_authority", "fixed_maintenance_operation", "confirmation"],
+    "reason_code": "owner_authority_system_health_maintenance",
+} if {
+    input.action.id == "system_health.maintenance"
+    authorized_actor
+    input.actor.type == "human"
+    input.actor.role == "Owner"
+    input.actor.owner_authority == true
+    input.target.type == "system_health_maintenance"
+    input.target.id != ""
+    input.target.state.operation_id in {"storage.evidence.preview", "storage.evidence.retention", "sqlite.checkpoint.passive"}
+    input.target.state.adapter_enabled == true
+    input.target.state.confirmed == true
+}
