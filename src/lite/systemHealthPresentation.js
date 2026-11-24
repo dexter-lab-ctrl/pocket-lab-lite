@@ -49,7 +49,7 @@ export function componentLabel(source, targetId) {
   if (typeof targetId !== 'string' || !SAFE_LABEL.test(targetId)) return sourceName;
   if (COMPONENT_NAMES[targetId]) return COMPONENT_NAMES[targetId];
   if (source === 'agent' || source === 'supervisor' || source === 'telemetry') {
-    return `Device · ${targetId}`;
+    return 'Enrolled device';
   }
   if (source === 'nats' && targetId.startsWith('consumer:')) return 'Command consumer';
   if (source === 'processes') return PROCESS_NAMES[targetId] || 'Running service';
@@ -85,6 +85,7 @@ export function healthTimestamp(value) {
 }
 
 export function incidentEvidenceState(incident, saved = false) {
+  if (incident?.current_monitoring === false || incident?.concern_state === 'historical_record') return 'historical';
   if (incident?.state === 'resolved' || incident?.concern_state === 'resolved_observation') return 'resolved';
   if (saved) return 'saved';
   if (incident?.concern_state === 'saved_concern') return 'saved';
@@ -94,7 +95,7 @@ export function incidentEvidenceState(incident, saved = false) {
 }
 
 export function groupHealthIncidents(items, saved = false) {
-  const groups = { current: [], saved: [], resolved: [] };
+  const groups = { current: [], saved: [], resolved: [], historical: [] };
   (Array.isArray(items) ? items : []).forEach((item) => {
     if (!item || typeof item !== 'object') return;
     groups[incidentEvidenceState(item, saved)].push(item);

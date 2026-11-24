@@ -69,12 +69,13 @@ export function SystemHealthIncidentCard({ incident, onDiagnose, saved = false }
   </GlassCard>;
 }
 
-function EvidenceRows({ rows = [], emptyMessage = 'No authoritative records are available for this view.' }) {
+function EvidenceRows({ rows = [], emptyMessage = 'No authoritative records are available for this view.', onHistory }) {
   return Array.isArray(rows) && rows.length
     ? rows.slice(0, 30).map((row, i) => <LiteActionRow key={row.incident_id || row.target_id || i}
       label={componentLabel(row.source, row.target_id || row.component)}
-      value={row.state ? (INCIDENT_STATE_LABELS[row.state] || healthStatusLabel(row.state)) : healthStatusLabel(row.status || row.observed_status)}
-      summary={row.summary || ''}
+      value={row.membership_state === 'removed' || row.membership_state === 'retired' ? 'Device removed — historical record' : row.current_monitoring === false ? 'Membership not confirmed — historical record' : row.state ? (INCIDENT_STATE_LABELS[row.state] || healthStatusLabel(row.state)) : healthStatusLabel(row.status || row.observed_status)}
+      summary={row.current_monitoring === false ? 'No longer monitored. Earlier evidence is retained; removal is not recovery.' : row.summary || ''}
+      action={onHistory && row.incident_id ? { label: 'View history', haptic: true, onClick: () => onHistory(row) } : undefined}
       attention={row.status === 'unavailable' || row.state === 'failed'} />)
     : <StateSurface tone="empty" title="Nothing recorded" description={emptyMessage} />;
 }
@@ -83,13 +84,14 @@ function DetailContent({ incident, diagnosis, diagnosing, diagnosisError, onDiag
   if (!incident) return <StateSurface tone="empty" title="Choose a problem" description="Select a concern to review what was observed and what to do next." />;
   const evidenceState = incidentEvidenceState(incident, readOnly);
   const isCurrent = evidenceState === 'current';
-  const destination = recoveryDestination(incident.source);
+  const historical = evidenceState === 'historical';
+  const destination = historical ? null : recoveryDestination(incident.source);
   const verifiedCause = typeof diagnosis?.verified_cause === 'string' && diagnosis.verified_cause
     ? diagnosis.verified_cause : null;
   return <section className="lite-system-health-detail" aria-label="Problem details">
     <h3>{componentLabel(incident.source, incident.target_id)}</h3>
     <span className={'lite-system-health-state is-' + (isCurrent ? 'watch' : 'unknown')}>
-      {isCurrent ? 'Current concern' : evidenceState === 'resolved' ? 'Observed healthy' : 'Saved concern'}
+      {historical ? (incident.membership_state === 'unknown' ? 'Membership not confirmed' : 'Device removed — historical record') : isCurrent ? 'Current concern' : evidenceState === 'resolved' ? 'Observed healthy' : 'Saved concern'}
     </span>
     <div className="lite-system-health-detail-block">
       <h4>What happened</h4>
@@ -97,7 +99,7 @@ function DetailContent({ incident, diagnosis, diagnosing, diagnosisError, onDiag
     </div>
     <div className="lite-system-health-detail-block">
       <h4>What we know</h4>
-      <p>{isCurrent ? 'The latest matching observation reports an unhealthy state.' :
+      <p>{historical ? 'This record is not a current recovery target. Earlier incident evidence is retained.' : isCurrent ? 'The latest matching observation reports an unhealthy state.' :
         evidenceState === 'resolved' ? 'A subsequent healthy observation was recorded. That does not establish a completed repair.' :
           'The previous concern remains unresolved; the current condition needs revalidation.'}</p>
       <p className="lite-system-health-muted">Last reported {healthTimestamp(incident.last_seen_at)} · {INCIDENT_STATE_LABELS[incident.state] || 'Status not confirmed'}</p>
@@ -116,12 +118,12 @@ function DetailContent({ incident, diagnosis, diagnosing, diagnosisError, onDiag
     </details> : null}
     <div className="lite-system-health-detail-block">
       <h4>Recommended next step</h4>
-      <p>{isCurrent ? 'Check the cause or review the component in its existing protected controls.' :
+      <p>{historical ? 'Review the earlier record. Device removal does not establish a successful recovery.' : isCurrent ? 'Check the cause or review the component in its existing protected controls.' :
         'Review a fresh status before requesting any recovery action.'}</p>
     </div>
     <div className="lite-system-health-actions">
-      <LiteButton haptic disabled={diagnosing || !isCurrent || readOnly} busy={diagnosing}
-        disabledReason={!isCurrent || readOnly ? 'Current evidence is required' : ''} onClick={onDiagnose} tone="primary">Check cause</LiteButton>
+      {!historical && <LiteButton haptic disabled={diagnosing || !isCurrent || readOnly} busy={diagnosing}
+        disabledReason={!isCurrent || readOnly ? 'Current evidence is required' : ''} onClick={onDiagnose} tone="primary">Check cause</LiteButton>}
       {destination && onOpenArea ? <LiteButton haptic tone="secondary" onClick={() => onOpenArea(destination)}>
         {destination === 'devices' ? 'Open device controls' : destination === 'catalog' ? 'Open app controls' :
           destination === 'recovery' ? 'Review recovery options' : 'Open safety controls'}
@@ -134,6 +136,7 @@ function DetailContent({ incident, diagnosis, diagnosing, diagnosisError, onDiag
         <div><dt>Source</dt><dd>{safeTechnicalIdentifier(incident.source)}</dd></div>
         <div><dt>Target ID</dt><dd>{safeTechnicalIdentifier(incident.target_id)}</dd></div>
         <div><dt>Generation</dt><dd>{incident.generation}</dd></div>
+        {historical && incident.membership_retired_at && <div><dt>Enrollment ended</dt><dd>{healthTimestamp(incident.membership_retired_at)}</dd></div>}
         <div><dt>Evidence revision</dt><dd>{safeTechnicalIdentifier(String(incident.evidence_revision || ''))}</dd></div>
         <div><dt>Observation freshness</dt><dd>{healthStatusLabel(incident.observation_freshness || incident.evidence_freshness)}</dd></div>
       </dl>
@@ -203,7 +206,7 @@ export default function LiteSystemHealth({ onNavigate }) {
     enabled: open && Boolean(selectedIncident) && !readOnly,
     staleTime: 90_000, pollingMode: 'relaxed',
   });
-  const selected = items.find((item) => item.incident_id === selectedIncident) || selectedQuery.data || null;
+  const selected = (selectedQuery.data?.incident_id === selectedIncident ? selectedQuery.data : null) || items.find((item) => item.incident_id === selectedIncident) || (history.data?.items || []).find((item) => item.incident_id === selectedIncident) || null;
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get('incident');
@@ -320,7 +323,7 @@ export default function LiteSystemHealth({ onNavigate }) {
         {section === 'diagnostics' ? <DetailContent incident={selected} diagnosis={diagnosis} diagnosing={diagnosing} diagnosisError={diagnosisError}
           onDiagnose={() => diagnose(selected)} readOnly={readOnly} onOpenArea={onNavigate ? (destination) => { close(); onNavigate(destination); } : null} /> : null}
         {section === 'repairs' ? <section className="lite-system-health-manage-section">
-          <p className="lite-system-health-muted">Existing supervisors and protected recovery workflows own execution. This workspace has no new repair executor.</p>
+          <p className="lite-system-health-muted">Existing supervisors and protected recovery workflows own execution. Requests from System Health are blocked until an independently verifiable recovery contract is qualified.</p>
           {(policies.data?.repair_catalog || []).map((item) => <LiteActionRow key={item.operation_id}
             label={recoveryOperationLabel(item.operation_id)}
             value={recoveryAvailabilityLabel(item.availability)}
@@ -331,7 +334,8 @@ export default function LiteSystemHealth({ onNavigate }) {
         </section> : null}
         {section === 'history' ? <section className="lite-system-health-manage-section">
           <h3>Previous observations</h3>
-          <EvidenceRows rows={history.data?.items || []} emptyMessage="No previous incident records are available." />
+          <p className="lite-system-health-muted">Removed-device records remain available here without being treated as active problems or successful repairs.</p>
+          <EvidenceRows rows={history.data?.items || []} onHistory={(item) => viewIncident(item, 'diagnostics')} emptyMessage="No previous incident records are available." />
           <h3>Recorded repair attempts</h3>
           {(history.data?.repairs || []).length ? history.data.repairs.slice(0, 30).map((item, i) =>
             <LiteActionRow key={item.repair_id || i} label={recoveryOperationLabel(item.operation_id)}
@@ -342,7 +346,7 @@ export default function LiteSystemHealth({ onNavigate }) {
             : <p className="lite-system-health-muted">No verified System Health repair attempts are recorded.</p>}
         </section> : null}
         {section === 'dependencies' ? <section className="lite-system-health-manage-section">
-          <p className="lite-system-health-muted">These relationships describe documented dependencies, not proof of live connectivity.</p>
+          <p className="lite-system-health-muted">These relationships describe documented dependencies, not proof of live connectivity. Previously removed devices are excluded from current monitoring.</p>
           {(dependencies.data?.edges || []).map((edge, i) => <LiteActionRow key={i}
             label={componentLabel(edge.upstream, edge.upstream) + ' → ' + componentLabel(edge.downstream, edge.downstream)}
             value={edge.authority === 'verified_contract' ? 'Documented relationship' : 'Possible relationship'}

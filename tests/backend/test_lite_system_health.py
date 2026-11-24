@@ -17,6 +17,9 @@ def health(tmp_path, monkeypatch):
     db = tmp_path / "health.sqlite3"
     schema_root = Path(__file__).parents[2] / "pocket-lab-final-structure/runtime/api_fastapi/db/schema"
     with sqlite3.connect(db) as conn:
+        # Use the actual registry/receipt DDL; skip legacy backfill in this isolated fixture.
+        registry_ddl = (schema_root / "0022_device_durable_enrollment.sql").read_text(encoding="utf-8")
+        conn.executescript(registry_ddl.split("-- Backfill only")[0])
         conn.executescript((schema_root / "0043_system_health_intelligence.sql").read_text(encoding="utf-8"))
         conn.executescript((schema_root / "0044_system_health_audit.sql").read_text(encoding="utf-8"))
 
@@ -97,7 +100,9 @@ def test_repair_denial_audit_is_idempotent_and_never_executes(health):
 def test_stale_preflight_blocks_and_unknown_never_means_healthy(health, monkeypatch):
     health.ingest_projection("system.nats_remote", observed_nats())
     problem = health.incidents()["items"][0]
-    monkeypatch.setattr(health, "freshness", lambda _: "stale")
+    with health.connection() as conn:
+        conn.execute("UPDATE lite_system_health_observations SET observed_at='2001-01-01T00:00:00Z'")
+        conn.execute("UPDATE lite_system_health_incidents SET last_seen_at='2001-01-01T00:00:00Z'")
     preflight = health.repair_preflight(problem["incident_id"], "app.repair", problem["generation"])
     assert "evidence_not_current" in preflight["reasons"]
     assert preflight["allowed"] is False
@@ -183,6 +188,7 @@ def test_malformed_projection_collection_cannot_create_incidents(health, domain,
 
 
 def test_short_but_explicit_valid_device_identity_is_preserved(health):
+    enroll(health, "3")
     payload = {"items": [{"device_id": "3", "connection_state": "offline",
                           "command_deliverable": False}], "generation": 1}
     assert health.ingest_projection("system.agent", payload) == 1
@@ -217,3 +223,81 @@ def test_observed_healthy_transition_is_not_verified_repair(health):
     assert health.policy()["engine_auto_repair"] is False
     assert health.repair_preflight(incident_id, "runtime.consumer.reconnect",
                                    item["generation"])["allowed"] is False
+
+
+# P4 qualification — ADDED, NOT RUN.
+def enroll(health, device_id, *, protected=False, removal_status="active"):
+    with health.connection() as conn:
+        conn.execute(
+            "INSERT INTO device_enrollment_registry(device_id,device_name,enrolled_at,updated_at,"
+            "removal_status,protected_server_host) VALUES (?,?,?,?,?,?)",
+            (device_id, device_id, health._now(), health._now(), removal_status, int(protected)),
+        )
+
+
+def observe_device(health, device_id, revision=1, state="offline"):
+    return health.ingest_projection("system.agent", {
+        "generation": revision, "items": [{"device_id": device_id, "connection_state": state}],
+    })
+
+
+@pytest.mark.parametrize("removal_status", ["retired", "removed"])
+def test_p4_membership_history_and_late_event(health, removal_status):
+    enroll(health, "secondary")
+    enroll(health, "still-enrolled")
+    assert observe_device(health, "secondary") == 1
+    assert observe_device(health, "still-enrolled") == 1
+    original = next(i for i in health.incidents()["items"] if i["target_id"] == "secondary")
+    with health.connection() as conn:
+        conn.execute("UPDATE device_enrollment_registry SET removal_status=?, retired_at=? WHERE device_id=?",
+                     (removal_status, health._now(), "secondary"))
+    assert observe_device(health, "secondary", revision=2, state="online") == 0
+    assert health.summary()["current_problems"] == 1
+    assert health.summary()["historical_device_records"] == 1
+    page = health.incidents(limit=1)
+    assert page["items"][0]["target_id"] == "still-enrolled"
+    assert page["next_offset"] is None
+    historical = health.incident(original["incident_id"])
+    assert historical["state"] == original["state"]
+    assert historical["generation"] == original["generation"]
+    assert historical["concern_state"] == "historical_record"
+    assert historical["current_monitoring"] is False
+    assert historical["repair_available"] is False
+    assert any(i["incident_id"] == original["incident_id"] for i in health.history()["items"])
+    assert all(i["target_id"] != "secondary" for i in health.dependency_graph()["nodes"])
+    assert all(i["target_id"] != "secondary" for i in health.knowledge()["recurring_components"])
+    preflight = health.repair_preflight(original["incident_id"], "device.agent.recover", original["generation"])
+    assert "device_no_longer_enrolled" in preflight["reasons"]
+    assert preflight["allowed"] is False
+
+
+def test_p4_unknown_identity_cannot_create_current_incident(health):
+    assert observe_device(health, "unknown") == 0
+    assert health.incidents()["items"] == []
+
+
+def test_p4_protected_host_inconsistent_retirement_is_not_hidden(health):
+    enroll(health, "host", protected=True)
+    observe_device(health, "host")
+    with health.connection() as conn:
+        conn.execute("UPDATE device_enrollment_registry SET removal_status='removed' WHERE device_id='host'")
+    item = health.incidents()["items"][0]
+    assert item["membership_state"] == "protected_conflict"
+    assert item["concern_state"] == "saved_concern"
+    assert health.summary()["status"] == "unknown"
+    assert "protected_host_membership_conflict" in health.repair_preflight(
+        item["incident_id"], "device.agent.recover", item["generation"])["reasons"]
+
+
+def test_p4_resources_filter_removed_device_and_preserve_shared_signal(health):
+    enroll(health, "old")
+    enroll(health, "new")
+    health.ingest_projection("system.telemetry_thresholds", {"generation": 1, "devices": [
+        {"device_id": "old", "status": "degraded"},
+        {"device_id": "new", "status": "degraded"},
+    ]})
+    health.ingest_projection("system.storage_pressure", {"generation": 1, "status": "degraded"})
+    with health.connection() as conn:
+        conn.execute("UPDATE device_enrollment_registry SET removal_status='removed' WHERE device_id='old'")
+    targets = {r["target_id"] for r in health.resource_intelligence()["signals"]}
+    assert targets == {"new", "storage"}
