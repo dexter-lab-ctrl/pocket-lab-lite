@@ -351,6 +351,18 @@ raise SystemExit(1)
 '''
 
 
+_REMOTE_NATS_INCIDENT_READY_PROBE = r'''import json, sqlite3, sys
+conn = sqlite3.connect(sys.argv[1])
+try:
+    count = conn.execute(
+        "SELECT COUNT(*) FROM lite_system_health_incidents WHERE source='nats' AND state != 'resolved'"
+    ).fetchone()[0]
+finally:
+    conn.close()
+print(json.dumps({"active_nats_incidents": int(count)}, sort_keys=True))
+'''
+
+
 def _sql_statements(sql: str) -> Iterable[str]:
     buffer = ""
     for line in sql.splitlines(keepends=True):
@@ -1089,9 +1101,25 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
             cwd=self.runtime_root, log_path=f"{self.remote_root}/logs/recovery-fixture.log",
         )
         self.recovery_fixture.launch()
-        time.sleep(0.8)
-        if not self.recovery_fixture.alive():
-            raise QualificationError("recovery projection fixture exited before readiness")
+        ready = False
+        for _ in range(60):
+            if not self.recovery_fixture.alive():
+                raise QualificationError("recovery projection fixture exited before readiness")
+            probe = self.controller._android_ssh_run(
+                self.remote.host,
+                [self.remote.python, "-c", _REMOTE_NATS_INCIDENT_READY_PROBE, f"{self.remote_root}/state/{SCHEMA_DB_NAME}"],
+                timeout=15,
+            )
+            if probe.returncode == 0:
+                try:
+                    ready = int(json.loads(probe.stdout.strip().splitlines()[-1]).get("active_nats_incidents") or 0) > 0
+                except (ValueError, IndexError, TypeError):
+                    ready = False
+            if ready:
+                break
+            time.sleep(0.5)
+        if not ready:
+            raise QualificationError("recovery projection fixture did not publish an active NATS incident")
         runs = self.results.setdefault("recovery_projection_fixture", [])
         if isinstance(runs, list):
             runs.append({"status": "PASS", "bounded_seconds": 120, "target": "nats/jetstream", "fault_injection": "candidate_sqlite_projection_only"})
