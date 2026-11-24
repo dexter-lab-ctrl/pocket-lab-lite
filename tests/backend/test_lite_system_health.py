@@ -394,6 +394,21 @@ def test_p4_controlled_recovery_is_default_off(health):
     assert "system_health_recovery_disabled" in preflight["reasons"]
 
 
+def test_p4_controlled_recovery_preflight_rejects_non_nats_target(health, monkeypatch):
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")
+    assert health.ingest_projection("system.health", {
+        "status": "degraded", "generation": 1,
+        "components": {"supervisor": "degraded"}, "sanitized": True,
+    }) == 1
+    item = health.incidents()["items"][0]
+    preflight = health.repair_preflight(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"]
+    )
+    assert preflight["allowed"] is False
+    assert "target_not_allowlisted" in preflight["reasons"]
+
+
 def test_p4_controlled_recovery_is_actor_bound_and_idempotent(health, monkeypatch):
     monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
     monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")

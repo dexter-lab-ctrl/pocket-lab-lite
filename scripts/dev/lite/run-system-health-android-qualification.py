@@ -1073,6 +1073,18 @@ time.sleep(3)
         items = incidents.body.get("items") if isinstance(incidents.body.get("items"), list) else []
         if incidents.status != 200 or not items:
             raise QualificationError("candidate System Health projection did not produce an incident")
+        self.results["incident_candidates"] = [
+            {
+                "source": _safe_text(item.get("source"), 64),
+                "target_id": _safe_text(item.get("target_id"), 128),
+                "state": _safe_text(item.get("state"), 48),
+                "current_monitoring": bool(item.get("current_monitoring")),
+                "repair_available": bool(item.get("repair_available")),
+                "concern_state": _safe_text(item.get("concern_state"), 48),
+            }
+            for item in items[:40]
+            if isinstance(item, dict)
+        ]
         eligible = [
             item for item in items
             if isinstance(item, dict)

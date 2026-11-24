@@ -564,6 +564,11 @@ def repair_preflight(incident_id: str, operation_id: str, expected_generation: i
         reasons.append("unhealthy_evidence_not_confirmed")
     if operation_id != CONTROLLED_RECOVERY_OPERATION:
         reasons.append("operation_not_supported_by_controlled_adapter")
+    elif found.get("source") != "nats" or not (
+        found.get("target_id") == "jetstream"
+        or str(found.get("target_id") or "").startswith("consumer:")
+    ):
+        reasons.append("target_not_allowlisted")
     elif not controlled_recovery_enabled():
         reasons.append("system_health_recovery_disabled")
     return {
