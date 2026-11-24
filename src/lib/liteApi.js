@@ -251,6 +251,7 @@ export const liteApi = {
   healthIntelligenceHistory: (limit = 30, offset = 0) => readJson(`/api/lite/system-health/history?limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}`),
   healthIntelligenceDependencies: () => readJson('/api/lite/system-health/dependencies'),
   healthIntelligenceResources: () => readJson('/api/lite/system-health/resources'),
+  healthIntelligenceInfrastructure: () => readJson('/api/lite/system-health/infrastructure'),
   healthIntelligenceKnowledge: () => readJson('/api/lite/system-health/intelligence'),
   healthIntelligenceDrift: () => readJson('/api/lite/system-health/configuration-drift'),
   healthIntelligenceApp: (appId) => readJson(`/api/lite/system-health/apps/${encodeURIComponent(appId)}`),
