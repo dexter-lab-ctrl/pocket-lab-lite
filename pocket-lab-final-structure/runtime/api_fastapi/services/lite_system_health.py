@@ -602,6 +602,69 @@ def _public_recovery_request(row: dict[str, Any]) -> dict[str, Any]:
     return item
 
 
+def recovery_request_replay(
+    incident_id: str,
+    operation_id: str,
+    expected_generation: int,
+    idempotency_key: str,
+    *,
+    confirm: bool,
+    auth_context: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Resolve an exact actor-bound replay before current-state preflight.
+
+    A terminal request must remain replayable even after its incident becomes
+    healthy. A digest reused for a different actor or canonical request is a
+    conflict, never a new admission. Approval-required requests remain on the
+    normal path so an explicit continuation approval can promote the same row.
+    """
+    actor = (auth_context or {}).get("actor") or {}
+    actor_id = str(actor.get("identity_id") or "")[:120]
+    actor_type = str(actor.get("type") or "unknown")[:32]
+    if not actor_id or actor_id == "anonymous":
+        return None
+    digest = hashlib.sha256(str(idempotency_key).encode("utf-8")).hexdigest()
+    with closing(open_fast_read_connection()) as conn:
+        row = conn.execute(
+            "SELECT * FROM lite_system_health_recovery_requests WHERE idempotency_digest=? LIMIT 1",
+            (digest,),
+        ).fetchone()
+    if row is None:
+        return None
+    found = incident(incident_id)
+    target_id = str(found.get("target_id") or "") if found else ""
+    request_material = {
+        "incident_id": incident_id,
+        "incident_generation": int(expected_generation),
+        "enrollment_generation": int(found.get("enrollment_generation") or 0) if found else int(row["enrollment_generation"] or 0),
+        "operation_id": operation_id,
+        "target_id": target_id,
+        "actor_id": actor_id,
+        "actor_type": actor_type,
+        "confirm": bool(confirm),
+    }
+    request_digest = hashlib.sha256(json.dumps(request_material, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+    same = (
+        row["incident_id"] == incident_id
+        and row["operation_id"] == operation_id
+        and int(row["incident_generation"]) == int(expected_generation)
+        and row["actor_id"] == actor_id
+        and row["request_digest"] == request_digest
+    )
+    if not same:
+        return {"status": "blocked", "reasons": ["idempotency_conflict"], "recorded": False}
+    if row["status"] == "approval_required":
+        return None
+    return {
+        "status": str(row["status"] or "admitted"),
+        "request": _public_recovery_request(dict(row)),
+        "recorded": True,
+        "idempotent_replay": True,
+        "allowed": True,
+        "reasons": [],
+    }
+
+
 def admit_controlled_recovery(
     incident_id: str,
     operation_id: str,
@@ -616,6 +679,12 @@ def admit_controlled_recovery(
     found = incident(incident_id)
     if found is None:
         return None
+    replay = recovery_request_replay(
+        incident_id, operation_id, expected_generation, idempotency_key,
+        confirm=confirm, auth_context=auth_context,
+    )
+    if replay is not None:
+        return replay
     assessment = repair_preflight(incident_id, operation_id, expected_generation)
     if assessment is None:
         return None

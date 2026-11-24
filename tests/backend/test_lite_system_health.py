@@ -435,6 +435,33 @@ def test_p4_controlled_recovery_is_actor_bound_and_idempotent(health, monkeypatc
     assert health.decision_history(item["incident_id"])["recovery_requests"][0]["status"] == "admitted"
 
 
+def test_p4_terminal_replay_precedes_resolved_incident_preflight(health, monkeypatch):
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")
+    health.ingest_projection("system.nats_remote", observed_nats())
+    item = health.incidents()["items"][0]
+    context = {"actor": {"identity_id": "qualification-owner", "type": "qualification"}}
+    key = "replay-after-health-0001"
+    decision = {"allow": True, "reason_code": "qualification_owner_system_health_recovery", "policy_revision": "test-policy", "decision_id": "decision-replay"}
+    first = health.admit_controlled_recovery(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"], key,
+        confirm=False, auth_context=context, decision=decision,
+    )
+    assert first["request"]["status"] == "admitted"
+    health.ingest_projection("system.nats_remote", observed_nats("healthy", 2))
+    replay = health.recovery_request_replay(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"], key,
+        confirm=False, auth_context=context,
+    )
+    assert replay["idempotent_replay"] is True
+    assert replay["request"]["request_id"] == first["request"]["request_id"]
+    conflict = health.recovery_request_replay(
+        item["incident_id"], "runtime.consumer.reconnect", item["generation"], key,
+        confirm=False, auth_context={"actor": {"identity_id": "other-owner", "type": "qualification"}},
+    )
+    assert conflict["reasons"] == ["idempotency_conflict"]
+
+
 def test_p4_controlled_recovery_uses_existing_owner_and_fresh_verification(health, monkeypatch):
     monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
     monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")

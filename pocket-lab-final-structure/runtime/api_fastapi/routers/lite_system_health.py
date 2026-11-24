@@ -146,6 +146,14 @@ def system_health_repair(incident_id: str, payload: RepairRequest, request: Requ
     found = health.incident(incident_id)
     if found is None:
         raise HTTPException(404, detail={"status": "not_found", "summary": "This problem was not found."})
+    replay = health.recovery_request_replay(
+        incident_id, payload.operation_id, payload.expected_generation, payload.idempotency_key,
+        confirm=payload.confirm, auth_context=context,
+    )
+    if replay is not None:
+        if replay.get("reasons"):
+            raise HTTPException(409, detail={"status": "blocked", "reason_code": replay["reasons"][0], "summary": "The idempotency key is bound to a different recovery request."})
+        return {"status": "admitted", "request": replay.get("request"), "summary": "The existing durable recovery request was returned.", "idempotent_replay": True}
     if found["generation"] != payload.expected_generation:
         raise HTTPException(409, detail={"status": "blocked", "reason_code": "incident_generation_changed", "summary": "Status changed. Diagnose again before attempting repair."})
     preflight = health.repair_preflight(incident_id, payload.operation_id, payload.expected_generation)
