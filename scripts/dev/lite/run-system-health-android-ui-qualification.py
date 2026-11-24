@@ -314,6 +314,13 @@ def main(argv: list[str] | None = None) -> int:
         run._concurrency()
         run._measure()
 
+        # The API contract and concurrency probes intentionally consume their
+        # own recovery fixture. Rearm immediately before the physical browser
+        # lane so its current concern and recovery availability are fresh at
+        # the exact candidate boundary rather than relying on an earlier
+        # fixture surviving projection scheduling and transport setup.
+        run._stop_recovery_projection_fixture()
+        run._start_recovery_projection_fixture()
         candidate_server = _candidate_server(run, args.dist_dir.absolute(), evidence_dir)
         if _candidate_state_exists():
             raise health.QualificationError("an existing Android candidate reverse is owned by another session")
