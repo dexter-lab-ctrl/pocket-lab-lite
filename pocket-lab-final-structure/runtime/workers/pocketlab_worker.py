@@ -235,7 +235,11 @@ async def worker_recovery_watchdog(stop_event: asyncio.Event) -> None:
                 BUS, DURABLE_NAME
             )
             if controlled:
-                _worker_log("worker.system_health_recovery_processed", count=controlled)
+                _worker_log(
+                    "worker.system_health_recovery_processed",
+                    count=controlled,
+                    durable=DURABLE_NAME,
+                )
 
             from api_fastapi.services import lite_photo_backup  # type: ignore
             from api_fastapi.services import lite_owner_operations  # type: ignore

@@ -274,7 +274,7 @@ conn = sqlite3.connect(path)
 conn.row_factory = sqlite3.Row
 def bounded(row):
     return {key: row[key] for key in row.keys() if key in {
-        "request_id", "incident_id", "status", "execution_state", "verification_state",
+        "request_id", "incident_id", "target_type", "target_id", "status", "execution_state", "verification_state",
         "attempt", "max_attempts", "outcome", "terminal_reason", "safe_summary",
         "before_evidence_json", "after_evidence_json", "updated_at", "completed_at",
     }}
@@ -881,7 +881,7 @@ class SystemHealthAndroidQualification:
             "POCKETLAB_NATS_URL": nats_origin, "POCKETLAB_LITE_PUBLIC_NATS_URL": nats_origin, "POCKETLAB_NATS_JETSTREAM": "1", "POCKETLAB_NATS_REQUIRED": "1", "POCKETLAB_NATS_REQUIRE_JETSTREAM": "1", "POCKETLAB_NATS_NAME": f"qualification-{self.run_id}",
             "POCKETLAB_NATS_USER": self.nats.user if self.nats else "", "POCKETLAB_NATS_PASSWORD": self.nats.password if self.nats else "", "POCKETLAB_AGENT_NATS_USER": self.nats.user if self.nats else "", "POCKETLAB_AGENT_NATS_PASSWORD": self.nats.password if self.nats else "",
             "POCKETLAB_NATS_INITIAL_CONNECT_DEADLINE": "5", "POCKETLAB_NATS_RECONNECT_WAIT": "1", "POCKETLAB_NATS_RECONNECT_MIN_SECONDS": "1", "POCKETLAB_NATS_RECONNECT_MAX_SECONDS": "5", "POCKETLAB_NATS_WATCHDOG_SECONDS": "2",
-            "POCKETLAB_WORKER_HEARTBEAT_SECONDS": "5", "POCKETLAB_WORKER_NATS_RETRY_SECONDS": "1", "POCKETLAB_JETSTREAM_MAX_BYTES": "16777216", "POCKETLAB_QUALIFICATION_LOG_DIR": f"{self.remote_root}/logs", "POCKETLAB_DISABLE_RELEASE_UPDATER": "1",
+            "POCKETLAB_WORKER_DURABLE": "pocketlab_command_worker_v1", "POCKETLAB_WORKER_QUEUE": "pocketlab_command_worker_v1", "POCKETLAB_WORKER_RECOVERY_SECONDS": "2", "POCKETLAB_WORKER_HEARTBEAT_SECONDS": "5", "POCKETLAB_WORKER_NATS_RETRY_SECONDS": "1", "POCKETLAB_JETSTREAM_MAX_BYTES": "16777216", "POCKETLAB_QUALIFICATION_LOG_DIR": f"{self.remote_root}/logs", "POCKETLAB_DISABLE_RELEASE_UPDATER": "1",
             "POCKETLAB_LITE_SECURE_ORIGIN": "", "POCKETLAB_SECURE_ORIGIN": "", "CADDYFILE": "", "POCKET_LAB_CADDYFILE": "", "SSL_CERT_FILE": f"{self.remote_root}/qualification-ca.pem", "REQUESTS_CA_BUNDLE": f"{self.remote_root}/qualification-ca.pem",
         }
         return env
@@ -1078,6 +1078,12 @@ time.sleep(3)
         generation = int(incident.get("generation") or 0)
         if not incident_id or generation < 1 or incident.get("state") == "resolved":
             raise QualificationError("candidate incident state was not active and generation-bound")
+        self.results["recovery_selection"] = {
+            "source": _safe_text(incident.get("source"), 64),
+            "target_id": _safe_text(incident.get("target_id"), 128),
+            "generation": generation,
+            "enrollment_generation": int(incident.get("enrollment_generation") or 0),
+        }
         detail = self.client.request("GET", f"/api/lite/system-health/incidents/{incident_id}", session=self.session)
         decisions = self.client.request("GET", f"/api/lite/system-health/incidents/{incident_id}/decisions", session=self.session)
         app = self.client.request("GET", "/api/lite/system-health/apps/photoprism", session=self.session)
