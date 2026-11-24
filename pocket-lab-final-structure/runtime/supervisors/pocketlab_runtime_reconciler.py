@@ -621,6 +621,15 @@ class RuntimeReconciler:
             "sanitized": True,
         }
         self._write_json(payload)
+        try:
+            runtime_root = str(Path(__file__).resolve().parents[1])
+            if runtime_root not in sys.path:
+                sys.path.insert(0, runtime_root)
+            from api_fastapi.services import lite_infrastructure_service_evidence
+            lite_infrastructure_service_evidence.verify_runtime_contract(runtime_contract, processes)
+        except Exception:
+            # Evidence failure must not change the existing reconciliation owner.
+            pass
         return payload
 
     def run(self) -> None:
