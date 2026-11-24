@@ -12,7 +12,7 @@ from typing import Any
 from . import lite_system_health as health
 
 DOMAINS = (
-    "system.health", "system.processes", "system.nats_remote",
+    "system.health", "system.processes", "system.nats_remote", "system.agent", "system.supervisor",
     "system.remote_access", "system.storage_pressure", "system.sqlite_health",
     "system.telemetry_thresholds", "system.activity_current",
     "system.activity_history", "security.summary", "security.progress",
@@ -34,9 +34,9 @@ SERVICE_IDENTITIES = (
     ("worker", "Background worker", "pocket-worker", None, "system.processes"),
     ("gateway", "Web gateway", "caddy-proxy", None, "system.processes"),
     ("policy", "Security policy engine", "pocket-opa", None, "system.processes"),
-    ("agent", "Server node agent", "pocket-node-agent", None, "system.processes"),
+    ("agent", "Server node agent", "pocket-node-agent", "agent", "system.agent"),
     ("monitoring", "Device monitoring", "pocket-telemetry", "telemetry", "system.health"),
-    ("supervisor", "Core supervisor", "pocketlab-core-supervisor", None, "system.processes"),
+    ("supervisor", "Core supervisor", "pocketlab-core-supervisor", "supervisor", "system.supervisor"),
     ("guardian", "External runtime guardian", None, None, "system.health"),
 )
 
@@ -102,15 +102,18 @@ def _services(snapshots: dict) -> list[dict]:
     nats = snapshots.get("system.nats_remote", {})
     components = _dict(system.get("components"))
     # Only fixed managed-service names; no arbitrary process labels or PIDs.
-    known = {item.get("name"): item for item in _items(processes.get("items"), 128)
-             if isinstance(item.get("name"), str)}
+    known = {item.get("service_id") or item.get("name"): item for item in _items(processes.get("items"), 128)
+             if isinstance(item.get("service_id") or item.get("name"), str)}
     output = []
     for key, label, process, component, domain in SERVICE_IDENTITIES:
         row = snapshots.get(domain, {})
         process_row = known.get(process, {})
         state = _enum(process_row.get("status")) if process_row else "unknown"
         process_freshness = _freshness(processes) if process_row else "unknown"
-        readiness = _enum(components.get(component)) if component else "unknown"
+        readiness = _enum(row.get("status")) if component and domain in {"system.agent","system.supervisor"} else _enum(components.get(component)) if component else "unknown"
+        if key in {"agent","supervisor"}:
+            # Aggregate fleet observations cannot establish the server-specific readiness.
+            readiness = "unknown"
         if key == "nats":
             readiness = _enum(nats.get("status"))
         # Process online is not functional readiness. A stopped known process
@@ -189,7 +192,9 @@ def infrastructure() -> dict:
         _field(storage, "Workspace directory", storage.get("state_directory")),
         _field(storage, "Workspace write access", storage.get("writeability")),
         _field(storage, "WAL pressure", storage.get("wal_band")),
-        _number({}, "Total capacity (bytes)", None),
+        _number(storage, "Total capacity (MiB)", storage.get("total_capacity_mib")),
+        _number(storage, "Available capacity (MiB)", storage.get("free_capacity_mib")),
+        _number(storage, "Database WAL (MiB)", storage.get("wal_size_mib")),
         _number({}, "Reclaimable storage (bytes)", None),
     ]
     database = [
@@ -217,7 +222,8 @@ def infrastructure() -> dict:
         _field(telemetry, "Resource signals", telemetry.get("status")),
         _field(storage, "Storage protection", storage.get("status")),
         _field(system, "Maintenance", "active" if system.get("maintenance_active") is True else "idle" if system.get("maintenance_active") is False else "unknown"),
-        _field({}, "Battery and charging", "unsupported"),
+        _field(telemetry, "Battery", _dict(telemetry.get("capabilities")).get("battery")),
+        _field(telemetry, "Charging", _dict(telemetry.get("capabilities")).get("charging")),
         _field({}, "Resource preference", "unknown"),
     ]
     security_rows = [
@@ -227,6 +233,8 @@ def infrastructure() -> dict:
         _field({}, "Vulnerability database freshness", "unknown"),
         _field({}, "System clock reliability", "unknown"),
     ]
+    from . import lite_infrastructure_authority as authority
+    preferences = authority.preferences()
     return {
         "source": "committed_sqlite_projections",
         "services": _services(snapshots), "network": network,
@@ -241,8 +249,9 @@ def infrastructure() -> dict:
         },
         "resource_policy": {
             "available": False, "proposed_modes": ["balanced", "low_power", "maintenance"],
+            "preference": preferences["resource_mode"], "preference_revision": preferences["revision"],
             "essential_services_protected": True,
-            "reason": "No qualified resource preference mutation is enabled.",
+            "reason": "Preference is recorded separately from effective scheduler behavior.",
         },
         "retry_available": False, "cancellation_available": False,
         "sanitized": True,
@@ -276,18 +285,31 @@ def reliability() -> dict:
     # Existing request evidence only. Limit to a recent bounded page; absence
     # of records is not proof of uptime or successful recovery.
     rows = health._read(
-        "SELECT status,execution_state,verification_state,completed_at "
+        "SELECT status,execution_state,verification_state,requested_at,completed_at "
         "FROM lite_system_health_recovery_requests ORDER BY requested_at DESC,request_id DESC LIMIT 100"
     )
     verified = sum(row["status"] == "verified" and row["verification_state"] == "verified"
                    and row["execution_state"] == "succeeded" for row in rows)
     terminal = sum(row["status"] in {"verified", "execution_failed", "verification_failed", "verification_unavailable",
                                     "manual_attention_required"} for row in rows)
+    from datetime import datetime
+    durations = []
+    for row in rows:
+        if row["status"] != "verified" or row["verification_state"] != "verified" or row["execution_state"] != "succeeded":
+            continue
+        try:
+            elapsed = (datetime.fromisoformat(row["completed_at"].replace("Z","+00:00")) - datetime.fromisoformat(row["requested_at"].replace("Z","+00:00"))).total_seconds()
+            if 0 <= elapsed <= 3600:
+                durations.append(elapsed)
+        except (TypeError, ValueError, AttributeError):
+            continue
     return {
         "scope": "latest_100_governed_requests", "sample_count": len(rows),
         "verified_count": verified, "terminal_execution_count": terminal,
         "verification_rate": round(verified / terminal, 4) if terminal else None,
         "observed_availability": None, "observation_coverage": None,
         "mean_recovery_seconds": None, "automatic_recovery_rate": None,
+        "mean_verified_request_elapsed_seconds": round(sum(durations)/len(durations), 1) if durations else None,
+        "verified_request_timing_samples": len(durations),
         "reason": "Continuous observation coverage and comparable timing evidence are not established.",
     }
