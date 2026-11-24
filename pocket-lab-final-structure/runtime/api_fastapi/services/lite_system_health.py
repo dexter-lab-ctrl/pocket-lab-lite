@@ -410,6 +410,10 @@ def summary() -> dict[str, Any]:
               "unknown" if unknown_count or saved_count else "healthy")
     from . import lite_infrastructure_owner_evidence as owner_evidence
     automatic = owner_evidence.summary()
+    from . import lite_infrastructure_service_evidence as service_evidence
+    core = service_evidence.history(30)
+    automatic["core_service_verified_count"] = sum(item["verification_state"]=="verified" for item in core)
+    automatic["core_service_pending_count"] = sum(item["verification_state"]=="pending" for item in core)
     return {
         "status": status, "checked_at": _now(), "data_source": "persisted_projection",
         "observed_services": total, "healthy_services": healthy,
@@ -447,6 +451,8 @@ def history(limit: int = 30, offset: int = 0) -> dict[str, Any]:
     )
     from . import lite_infrastructure_owner_evidence as owner_evidence
     result["automatic_recoveries"] = owner_evidence.history(limit)
+    from . import lite_infrastructure_service_evidence as service_evidence
+    result["core_service_recoveries"] = service_evidence.history(limit)
     return result
 
 
