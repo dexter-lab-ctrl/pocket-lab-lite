@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../hooks/useLiteQuery.js', () => ({ useLiteQuery: vi.fn() }));
 
 import { useLiteQuery } from '../hooks/useLiteQuery.js';
-import LiteSystemHealth, { SYSTEM_HEALTH_SUMMARY_QUERY_OPTIONS, SystemHealthIncidentCard, systemHealthPresentation } from './LiteSystemHealth.jsx';
+import LiteSystemHealth, { SYSTEM_HEALTH_SUMMARY_QUERY_OPTIONS, SystemHealthIncidentCard, infrastructureValue, systemHealthPresentation } from './LiteSystemHealth.jsx';
 
 afterEach(() => {
   cleanup();
@@ -96,5 +96,15 @@ describe('System Health authoritative presentation', () => {
         repair_available: false }}
       onDiagnose={vi.fn()} onRecover={onRecover} />);
     expect(document.body.textContent).not.toMatch(/Review recovery/);
+  });
+});
+
+
+describe('prepared infrastructure presentation', () => {
+  it('does not promote stale or missing counts to current readiness', () => {
+    expect(infrastructureValue({ status: 'healthy', freshness: 'stale' })).toMatch(/^Saved/);
+    expect(infrastructureValue({ status: 'unknown', freshness: 'unknown' })).toBe('Not confirmed');
+    expect(infrastructureValue({ count: 0, freshness: 'current' })).toBe('0');
+    expect(infrastructureValue({ count: 0, freshness: 'current' }, true)).toBe('Saved · 0');
   });
 });
