@@ -100,6 +100,8 @@ def admit(context: dict, operation: str, preview_id: str, idempotency_key: str, 
             conn.execute("UPDATE lite_system_health_maintenance_admissions SET status='expired',completed_at=? WHERE status='queued' AND expires_at<=?",(health._now(),health._now()))
             if conn.execute("SELECT 1 FROM lite_system_health_maintenance_admissions a WHERE status IN ('queued','executing','uncertain') AND NOT EXISTS (SELECT 1 FROM lite_system_health_maintenance_resolutions r WHERE r.command_id=a.command_id) LIMIT 1").fetchone():
                 raise ValueError("maintenance_single_flight")
+            if conn.execute("SELECT 1 FROM lite_system_health_automation_attempts WHERE status='pending' LIMIT 1").fetchone():
+                raise ValueError("automatic_reconciliation_pending")
             candidate_json = "[]"
             if preview_id:
                 preview = conn.execute("""SELECT * FROM lite_system_health_maintenance_admissions

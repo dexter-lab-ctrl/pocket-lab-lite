@@ -3,7 +3,7 @@ The existing worker/scheduler remains the execution owner. No new production
 operation is qualified here, no automatic cleanup/restart/restore is admitted.
 """
 from __future__ import annotations
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 import os
 import uuid
 from ..db.connection import connection,begin_immediate
@@ -158,8 +158,12 @@ def tick() -> None:
                 target={"operation_id":OP,"adapter_enabled":True,"risk_class":"A","owner_policy_current":True})
             if decision["policy_revision"]!=row["policy_revision"] or not _gate():
                 return
+            if safety.maintenance_state().get("active") or safety.active_security_scan():
+                return
             with connection() as conn:
                 with begin_immediate(conn):
+                    if conn.execute("SELECT 1 FROM lite_system_health_maintenance_admissions WHERE status IN ('queued','executing') LIMIT 1").fetchone():
+                        return
                     current=conn.execute("SELECT * FROM lite_system_health_automation_policy WHERE singleton_id=1").fetchone()
                     if not current or dict(current)!=row or _owner_versions(conn,row["owner_id"])!=(row["owner_auth_version"],row["membership_version"],row["configuration_version"]):
                         return

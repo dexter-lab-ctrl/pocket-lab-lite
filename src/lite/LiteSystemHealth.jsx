@@ -50,8 +50,8 @@ function InfrastructureSection({ section, query, readOnly, onOpenArea }) {
       <LiteActionRow label="Reclaimable space" value="Not confirmed" />
       {(data?.cleanup?.protected || []).map(label => <LiteActionRow key={label} label={label} value="Protected" />)}
     </div>}
-    {section === 'protection' && <LiteActionRow label="Resource preferences" value="Not available" summary="No qualified preference mutation is enabled." />}
-    {section === 'operations' && <LiteActionRow label="Retry and cancellation" value="Existing owner only" summary="No generic retry or cancellation is available." />}
+    {section === 'protection' && <LiteActionRow label="Effective resource mode" value={({balanced:"Balanced",low_power:"Low power",maintenance:"Maintenance"})[saved ? "" : data?.resource_policy?.effective_mode] || "Not confirmed"} summary="Recorded worker observation; preference alone does not establish execution." />}
+    {section === 'operations' && (data?.workflow_owners || []).map(owner => <LiteActionRow key={owner.destination} label={owner.label} value={infrastructureValue(owner,saved)} summary="Review retry or cancellation in the authoritative workflow." action={!saved && onOpenArea ? {label:"Open controls",haptic:true,onClick:()=>onOpenArea(owner.destination)} : undefined}/>)}
     {config.destination && onOpenArea && !saved && <LiteButton haptic tone="secondary" onClick={() => onOpenArea(config.destination)}>
       {config.destination === 'devices' ? 'Open Devices' : config.destination === 'security' ? 'Open Safety' : 'Open Recovery'}
     </LiteButton>}
@@ -288,7 +288,7 @@ export default function LiteSystemHealth({ onNavigate }) {
   });
   const policies = useLiteQuery({
     queryKey: ['lite', 'system-health', 'policies'], path: '/api/lite/system-health/policies',
-    queryFn: liteApi.healthIntelligencePolicies, enabled: open && ['policies','repairs','storage','protection','history','details'].includes(section),
+    queryFn: liteApi.healthIntelligencePolicies, enabled: open && ['policies','repairs','storage','protection','history','details','services','backup','operations'].includes(section),
     staleTime: 120_000, pollingMode: 'relaxed',
   });
   const current = useMemo(() => systemHealthPresentation(summaryQuery.data, summaryQuery.savedStateOnly || summaryQuery.backendReachable === false), [summaryQuery.data, summaryQuery.savedStateOnly, summaryQuery.backendReachable]);
@@ -551,7 +551,9 @@ export default function LiteSystemHealth({ onNavigate }) {
           <LiteActionRow label="Cloud AI" value="Not required" summary="This experience relies on backend-owned observations." />
           <LiteActionRow label="Recurring components" value={String(intelligence.data?.recurring_components?.length ?? 'Not confirmed')} />
           <LiteActionRow label="Verified governed recoveries" value={String(intelligence.data?.reliability?.verified_count ?? 'Not confirmed')} summary="Bounded request history, not an uptime measure." />
-          <LiteActionRow label="Observed availability" value="Not confirmed" />
+          <LiteActionRow label="Sampled availability (24h)" value={typeof intelligence.data?.reliability?.observed_availability === "number" ? (intelligence.data.reliability.observed_availability*100).toFixed(1) + "%" : "Not confirmed"} summary="Only observed samples; not continuous uptime." />
+          <LiteActionRow label="Observation coverage (24h)" value={typeof intelligence.data?.reliability?.observation_coverage === "number" ? (intelligence.data.reliability.observation_coverage*100).toFixed(1) + "%" : "Not confirmed"} />
+          <LiteActionRow label="Mean observed incident resolution" value={typeof intelligence.data?.reliability?.sampled_reliability?.mean_observed_incident_resolution_seconds === "number" ? intelligence.data.reliability.sampled_reliability.mean_observed_incident_resolution_seconds + " s" : "Not confirmed"} summary="Generation-specific observed resolution, not execution success." />
           <LiteActionRow label="Mean verified request elapsed time" value={typeof intelligence.data?.reliability?.mean_verified_request_elapsed_seconds === "number" ? intelligence.data.reliability.mean_verified_request_elapsed_seconds + " s" : "Not confirmed"} summary="Request elapsed time, not incident MTTR." />
           {(intelligence.data?.correlations || []).map((item, i) => <LiteActionRow key={i}
             label={componentLabel(item.upstream) + ' → ' + componentLabel(item.downstream)} value="Possible relationship" summary={item.summary} />)}
@@ -561,7 +563,7 @@ export default function LiteSystemHealth({ onNavigate }) {
           </details>
           <p className="lite-system-health-muted">Raw evidence, logs, credentials and private paths remain backend-only.</p>
         </section> : null}
-        {['policies','storage','protection','history','details'].includes(section) && <SystemHealthOwnerControls key={section} section={section}
+        {['policies','storage','protection','history','details','services','backup','operations'].includes(section) && <SystemHealthOwnerControls key={section} section={section}
           policy={policies.data} history={history.data} refreshPolicy={policies.refresh} refreshHistory={history.refresh}
           readOnly={readOnly || Boolean(policies.error) || policies.savedStateOnly || policies.backendReachable === false} />}
       </HomeGroupedSections>

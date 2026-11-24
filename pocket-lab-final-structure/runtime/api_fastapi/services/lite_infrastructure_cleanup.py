@@ -164,8 +164,9 @@ def apply(scope: str,candidates: list[dict]) -> dict:
         rootfd=os.open(root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
         try:
             if scope=="logs":
+                active=_active_logs(root)
                 for row in candidates:
-                    if (row["dev"],row["ino"]) in _active_logs(root):
+                    if (row["dev"],row["ino"]) in active:
                         raise RuntimeError("active_log_changed")
                     _remove_exact(rootfd,row)
             else:

@@ -156,6 +156,17 @@ def _backup_readiness(storage: dict, sqlite: dict) -> list[dict]:
     stamp = {"updated_at": completion[0].get("last_completed_at")} if completion else {}
     backup = rows[0] if rows else {}
     latest = _dict(sqlite.get("latest_backup"))
+    current_backup=health._read("SELECT backup_id,sha256 FROM security_database_backups WHERE status='verified' ORDER BY created_at DESC,backup_id DESC LIMIT 1")
+    rehearsals=health._read("SELECT candidate_json,evidence_json,completed_at FROM lite_system_health_maintenance_admissions WHERE operation_id='recovery.database.rehearse' AND status='verified' ORDER BY completed_at DESC LIMIT 1")
+    rehearsal={}
+    if current_backup and rehearsals:
+        try:
+            binding=json.loads(rehearsals[0]["candidate_json"])[0]
+            result=json.loads(rehearsals[0]["evidence_json"])
+            if binding==current_backup[0] and result.get("verified") is True and result.get("rehearsed_schema")==sqlite.get("schema_version"):
+                rehearsal={"updated_at":rehearsals[0]["completed_at"],"status":"verified"}
+        except (TypeError,ValueError,IndexError,KeyError):
+            pass
     return [
         _field(stamp, "Latest workspace backup", backup.get("status")),
         _field(stamp, "Backup integrity", backup.get("verification_status")),
@@ -163,8 +174,8 @@ def _backup_readiness(storage: dict, sqlite: dict) -> list[dict]:
         _field(sqlite, "Database backup", latest.get("status")),
         _number(sqlite, "Current database schema", sqlite.get("schema_version")),
         _number(sqlite, "Backup database schema", latest.get("schema_version")),
-        _field({}, "Restore rehearsal", "unknown"),
-        _field({}, "Restore compatibility", "unknown"),
+        _field(rehearsal, "Isolated database migration rehearsal (not full restore)", rehearsal.get("status")),
+        _field(rehearsal, "Current database schema compatibility", rehearsal.get("status")),
         _field({}, "Rollback readiness", "unknown"),
     ]
 
@@ -265,17 +276,21 @@ def infrastructure() -> dict:
     ]
     from . import lite_infrastructure_authority as authority
     preferences = authority.preferences()
+    workflow_owners=[]
+    for key,label,destination in (("devices","Device commands","devices"),("apps","App operations","catalog"),("recovery","Backup and restore","recovery"),("security","Safety checks","security")):
+        state=_dict(_dict(activity.get("workflows")).get(key))
+        workflow_owners.append({"label":label,"destination":destination,"status":_enum(state.get("status")),"freshness":_freshness(activity),"attention":_count(state.get("attention")) if active else None})
     return {
         "source": "committed_sqlite_projections",
         "services": _services(snapshots), "network": network,
         "storage": storage_rows, "database": database,
-        "workflows": workflows, "resources": resource, "security": security_rows,
+        "workflows": workflows, "workflow_owners":workflow_owners, "resources": resource, "security": security_rows,
         "backup": _backup_readiness(storage, sqlite),
         "cleanup": {
             "available": False, "estimated_bytes": None,
             "protected": ["Personal files and media", "Active databases and application data",
                           "Protected backups and audit evidence", "Current logs and recovery artifacts"],
-            "reason": "A qualified owner-bound cleanup manifest and execution contract are required.",
+            "reason": "Reviewed cleanup candidates are available only through eligible maintenance operations; allocated bytes are not guaranteed free space.",
         },
         "resource_policy": {
             "available": False, "proposed_modes": ["balanced", "low_power", "maintenance"],
