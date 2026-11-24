@@ -1493,6 +1493,12 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
             self.results.setdefault("isolated_sqlite", {})["phone_after_migration"] = after
             self._run_projection_driver()
             self._bootstrap()
+            # The backend-only lane owns its own bounded degraded projection
+            # fixture.  Without this, the API recovery contract is exercised
+            # against whichever incidental observations the candidate startup
+            # produced, so the required eligible NATS target is never
+            # guaranteed and the lane can fail before testing authorization.
+            self._start_recovery_projection_fixture()
             self._qualify_api()
             self._concurrency()
             self._measure()

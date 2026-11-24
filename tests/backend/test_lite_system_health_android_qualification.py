@@ -64,6 +64,16 @@ def test_candidate_sha_and_identity_fail_closed():
         )
 
 
+def test_backend_lane_starts_its_recovery_fixture_before_api_contract():
+    source = SCRIPT.read_text(encoding="utf-8")
+    run_start = source.index("    def run(self) -> tuple[str, Path]:")
+    run_end = source.index("\n\n\ndef main(", run_start)
+    run_body = source[run_start:run_end]
+    fixture_call = run_body.index("self._start_recovery_projection_fixture()")
+    api_call = run_body.index("self._qualify_api()")
+    assert fixture_call < api_call
+
+
 def test_isolated_binding_rejects_production_paths_and_collisions(tmp_path):
     module = _module()
     root = tmp_path / "run"
