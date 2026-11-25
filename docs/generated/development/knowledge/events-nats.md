@@ -57,6 +57,7 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.commands.lite.security.app_scan` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.security.assurance` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.lite.security.scan` | security | FastAPI | pocket-worker | JetStream durable pull | pocketlab_command_worker_v1 | bounded max-deliver and stale-run recovery |
+| `pocketlab.commands.lite.system_health.maintenance` | lite | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.node` | node | lite_photo_backup.py, pocketlab_worker.py | pocketlab_worker.py | incomplete | incomplete | incomplete |
 | `pocketlab.commands.node.all` | node | — | pocketlab_node_agent.py | incomplete | incomplete | incomplete |
 | `pocketlab.commands.node.all.{command.replace` | node | fleet.py | — | incomplete | incomplete | incomplete |

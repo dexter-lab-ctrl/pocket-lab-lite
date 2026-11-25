@@ -17,6 +17,7 @@ from typing import Any
 
 from contextlib import closing
 from ..db.connection import begin_immediate, connection, open_fast_read_connection
+from . import lite_infrastructure_operations as infrastructure_ops
 
 ACTIVE = frozenset({"detected", "diagnosing", "diagnosed", "repair_available", "repairing", "verifying", "blocked", "failed", "manual_attention_required"})
 UNHEALTHY = frozenset({"errored", "read_only", "recovery_required", "watch", "elevated", "storage_pressure", "degraded", "unavailable", "unhealthy", "critical", "offline", "stopped", "missing", "errored", "failed", "attention", "pressure", "agent_stopped_without_supervisor"})
@@ -33,14 +34,8 @@ DEPENDENCY_EDGES = (
     {"upstream": "processes", "downstream": "api", "authority": "inferred", "summary": "Process availability can affect API readiness."},
     {"upstream": "remote_access", "downstream": "agent", "authority": "inferred", "summary": "Connectivity can affect remote device reachability."},
 )
-# Explicitly descriptive: these are owned by existing runtime guardians.
-REPAIR_CATALOG = (
-    {"operation_id": "runtime.consumer.reconnect", "risk_class": "A", "execution_owner": "nats_worker_watchdog", "availability": "externally_managed", "summary": "Worker watchdog owns durable-consumer recovery."},
-    {"operation_id": "device.agent.recover", "risk_class": "A", "execution_owner": "node_supervisor", "availability": "externally_managed", "summary": "Device supervisor owns eligible stopped-agent recovery."},
-    {"operation_id": "app.repair", "risk_class": "B", "execution_owner": "existing_app_action", "availability": "guided_existing_flow", "summary": "Review app repair inside the existing Apps Manage flow."},
-    {"operation_id": "runtime.configuration.restore", "risk_class": "B", "execution_owner": "runtime_reconciler", "availability": "not_enabled", "summary": "No automatic configuration overwrite is enabled."},
-    {"operation_id": "recovery.database.restore", "risk_class": "C", "execution_owner": "recovery", "availability": "never_automatic", "summary": "Database restore requires the existing preview and confirmation workflow."},
-)
+# Registry metadata is descriptive; the P4 admission path remains allowlisted.
+REPAIR_CATALOG = tuple({"operation_id": item.operation_id, "risk_class": item.risk_class, "availability": item.availability, "summary": item.expected_impact} for item in infrastructure_ops.OPERATIONS)
 SOURCE_NAMES = {
     "system.health": "system", "system.nats_remote": "nats",
     "system.processes": "processes", "system.agent": "agent",
@@ -52,16 +47,8 @@ CONTROLLED_RECOVERY_OPERATION = "runtime.consumer.reconnect"
 
 
 def controlled_recovery_enabled() -> bool:
-    """Return true only for an explicitly isolated qualification candidate.
-
-    The adapter is implemented in the worker owner, but activation requires
-    both a qualification environment and a separate opt-in. Production and
-    the installed Server Phone therefore remain autonomous-watchdog only.
-    """
-    return (
-        os.environ.get("POCKETLAB_ENVIRONMENT", "").strip().casefold() == "qualification"
-        and os.environ.get("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER") == "1"
-    )
+    """Reuse the per-adapter activation boundary; production stays fail closed."""
+    return infrastructure_ops.controlled_recovery_enabled()
 
 
 def _now() -> str:
@@ -122,8 +109,8 @@ def _event(conn: sqlite3.Connection, incident_id: str, generation: int, kind: st
 
 def _prune(conn: sqlite3.Connection) -> None:
     conn.execute("DELETE FROM lite_system_health_events WHERE id NOT IN (SELECT id FROM lite_system_health_events ORDER BY id DESC LIMIT 4000)")
-    conn.execute("DELETE FROM lite_system_health_repair_attempts WHERE repair_id NOT IN (SELECT repair_id FROM lite_system_health_repair_attempts ORDER BY requested_at DESC LIMIT 2000)")
-    conn.execute("DELETE FROM lite_system_health_recovery_requests WHERE request_id NOT IN (SELECT request_id FROM lite_system_health_recovery_requests ORDER BY requested_at DESC LIMIT 2000)")
+    conn.execute("DELETE FROM lite_system_health_repair_attempts WHERE repair_id NOT IN (SELECT repair_id FROM lite_system_health_repair_attempts ORDER BY requested_at DESC LIMIT 2000) AND repair_id NOT IN (SELECT request_id FROM lite_system_health_recovery_requests WHERE completed_at IS NULL)")
+    conn.execute("DELETE FROM lite_system_health_recovery_requests WHERE completed_at IS NOT NULL AND request_id NOT IN (SELECT request_id FROM lite_system_health_recovery_requests ORDER BY requested_at DESC LIMIT 2000)")
     conn.execute(
         "DELETE FROM lite_system_health_incidents WHERE state='resolved' AND incident_id NOT IN "
         "(SELECT incident_id FROM lite_system_health_incidents ORDER BY last_seen_at DESC LIMIT ?) "
@@ -350,8 +337,10 @@ def public_incident(item: dict[str, Any]) -> dict[str, Any]:
     result["repair_available"] = bool(
         controlled_recovery_enabled()
         and result.get("current_monitoring")
+        and result.get("concern_state") == "current_concern"
+        and result.get("evidence_freshness") == "current"
         and result.get("source") == "nats"
-        and (target_id == "jetstream" or target_id.startswith("consumer:"))
+        and target_id in {"jetstream", "consumer:" + os.environ.get("POCKETLAB_WORKER_DURABLE", "pocketlab_command_worker_v1")}
     )
     result["repair_guidance"] = (
         "Review and request the governed worker-owned recovery action."
@@ -368,7 +357,7 @@ def freshness(timestamp: str | None) -> str:
         observed = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
         age = (datetime.now(timezone.utc) - observed).total_seconds()
         return "current" if 0 <= age <= OBSERVATION_MAX_AGE_SECONDS else "stale"
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, AttributeError):
         return "unknown"
 
 
@@ -419,6 +408,12 @@ def summary() -> dict[str, Any]:
     status = ("unknown" if not total or not fresh else
               "attention" if unhealthy or current else
               "unknown" if unknown_count or saved_count else "healthy")
+    from . import lite_infrastructure_owner_evidence as owner_evidence
+    automatic = owner_evidence.summary()
+    from . import lite_infrastructure_service_evidence as service_evidence
+    core = service_evidence.history(30)
+    automatic["core_service_verified_count"] = sum(item["verification_state"]=="verified" for item in core)
+    automatic["core_service_pending_count"] = sum(item["verification_state"]=="pending" for item in core)
     return {
         "status": status, "checked_at": _now(), "data_source": "persisted_projection",
         "observed_services": total, "healthy_services": healthy,
@@ -428,8 +423,9 @@ def summary() -> dict[str, Any]:
         "current_problems": current, "saved_problems": saved_count,
         "current_critical_problems": counts.get("current_critical") or 0,
         "unresolved_critical_problems": counts.get("critical") or 0,
-        "unknown_services": unknown_count, "automatic_repairs_running": 0,
-        "recent_verified_recoveries": 0,  # Healthy observation is not verified repair recovery.
+        "unknown_services": unknown_count, "automatic_repairs_running": automatic["pending_count"],
+        "recent_verified_recoveries": automatic["verified_count"],
+        "automatic_recovery": automatic,  # Only owner-correlated, independently verified evidence.
         "recent_resolutions": recent,
         "freshness": "current" if fresh else "stale" if total else "unavailable",
         "summary": "No authoritative health observations yet." if not total else
@@ -449,10 +445,14 @@ def history(limit: int = 30, offset: int = 0) -> dict[str, Any]:
     )
     result["recovery_requests"] = _read(
         "SELECT request_id,incident_id,incident_generation,enrollment_generation,operation_id,status,"
-        "execution_state,verification_state,requested_at,updated_at,completed_at,safe_summary,outcome,terminal_reason "
+        "execution_state,verification_state,attempt,requested_at,updated_at,completed_at,safe_summary,outcome,terminal_reason "
         "FROM lite_system_health_recovery_requests ORDER BY requested_at DESC,request_id DESC LIMIT ? OFFSET ?",
         (max(1, min(limit, 100)), max(0, min(offset, 10000))),
     )
+    from . import lite_infrastructure_owner_evidence as owner_evidence
+    result["automatic_recoveries"] = owner_evidence.history(limit)
+    from . import lite_infrastructure_service_evidence as service_evidence
+    result["core_service_recoveries"] = service_evidence.history(limit)
     return result
 
 
@@ -473,12 +473,17 @@ def resource_intelligence() -> dict[str, Any]:
 
 def knowledge() -> dict[str, Any]:
     rows = _read("SELECT i.source,i.target_id,SUM(i.recurrence_count) AS recurrences,COUNT(*) AS incidents FROM lite_system_health_incidents i" + MEMBERSHIP_JOIN + " WHERE " + MONITORED + " GROUP BY i.source,i.target_id ORDER BY recurrences DESC LIMIT 32")
-    return {"recurring_components": rows, "diagnostics": "deterministic", "ai_provider": "disabled", "evidence": "sanitized_summary_only"}
+    from . import lite_infrastructure_read_model as infrastructure
+    current = incidents(limit=100)["items"]
+    return {"recurring_components": rows, "diagnostics": "deterministic", "ai_provider": "disabled", "evidence": "sanitized_summary_only",
+            "correlations": infrastructure.correlate(current, list(DEPENDENCY_EDGES)),
+            "reliability": infrastructure.reliability()}
 
 
 def policy() -> dict[str, Any]:
     return {"automatic_execution": "existing_independent_guardians_only", "engine_auto_repair": False,
-            "mode": "fail_closed", "repair_catalog": list(REPAIR_CATALOG),
+            "mode": "fail_closed", "repair_catalog": infrastructure_ops.operation_catalog(),
+            "activation_policy": infrastructure_ops.activation_policy(),
             "cooldown": "owned_by_existing_executor", "resource_budget": "owned_by_existing_executor",
             "controlled_recovery_adapter": {
                 "implemented": True,
@@ -487,9 +492,9 @@ def policy() -> dict[str, Any]:
                 "operation_id": CONTROLLED_RECOVERY_OPERATION,
                 "execution_owner": "worker_recovery_watchdog",
                 "verification": "fresh_consumer_generation_and_health",
-                "activation_scope": "qualification_only",
+                "activation_scope": "source_qualified_assisted_only" if CONTROLLED_RECOVERY_OPERATION in infrastructure_ops.PRODUCTION_QUALIFIED_OPERATIONS else "qualification_only",
             },
-            "explanation": "The allowlisted recovery adapter is candidate-only and disabled by default; existing guardians remain authoritative."}
+            "explanation": "The allowlisted recovery adapter is isolated-qualification only and disabled by default; existing guardians remain authoritative."}
 
 
 def diagnose(incident_id: str) -> dict[str, Any] | None:
@@ -566,7 +571,7 @@ def repair_preflight(incident_id: str, operation_id: str, expected_generation: i
         reasons.append("operation_not_supported_by_controlled_adapter")
     elif found.get("source") != "nats" or not (
         found.get("target_id") == "jetstream"
-        or str(found.get("target_id") or "").startswith("consumer:")
+        or found.get("target_id") == "consumer:" + os.environ.get("POCKETLAB_WORKER_DURABLE", "pocketlab_command_worker_v1")
     ):
         reasons.append("target_not_allowlisted")
     elif not controlled_recovery_enabled():
@@ -576,7 +581,7 @@ def repair_preflight(incident_id: str, operation_id: str, expected_generation: i
         "operation_id": _safe(operation_id, 80), "risk_class": candidate["risk_class"] if candidate else "unknown",
         "allowed": not reasons, "status": "preflight_checked" if not reasons else "blocked",
         "reasons": reasons,
-        "requires_confirmation": bool(candidate and candidate["risk_class"] != "A"),
+        "requires_confirmation": bool(candidate),
         "requires_authorization": True, "requires_fresh_evidence": True,
         "max_retries": 2 if not reasons else 0, "cooldown_state": "ready" if not reasons else "not_applicable",
         "single_flight_state": "available" if not reasons else "not_applicable",
@@ -676,6 +681,7 @@ def admit_controlled_recovery(
     decision: dict[str, Any],
 ) -> dict[str, Any] | None:
     """Durably admit one allowlisted request; the worker remains the executor."""
+    from . import lite_infrastructure_authority as authority
     found = incident(incident_id)
     if found is None:
         return None
@@ -693,6 +699,14 @@ def admit_controlled_recovery(
     actor = (auth_context or {}).get("actor") or {}
     actor_id = str(actor.get("identity_id") or "")[:120]
     actor_type = str(actor.get("type") or "unknown")[:32]
+    session = (auth_context or {}).get("session") or {}
+    authorization = (auth_context or {}).get("authorization") or {}
+    session_id = session.get("session_id") if actor_type == "human" else ((auth_context or {}).get("harness") or {}).get("session_id")
+    if not confirm:
+        return {**assessment, "status": "blocked", "reasons": ["confirmation_required"], "recorded": False}
+    qualification_actor = actor_type == "qualification" and ((auth_context or {}).get("harness") or {}).get("profile") == "qualification-owner"
+    if not session_id or not session.get("authenticated") or not (qualification_actor or (actor_type == "human" and authorization.get("role") in {"Owner", "Admin", "Operator"})):
+        return {**assessment, "status": "blocked", "reasons": ["durable_authority_required"], "recorded": False}
     if not actor_id or actor_id == "anonymous":
         return {**assessment, "status": "blocked", "reasons": ["actor_identity_required"], "recorded": False}
     digest = hashlib.sha256(str(idempotency_key).encode("utf-8")).hexdigest()
@@ -716,6 +730,8 @@ def admit_controlled_recovery(
         decision.get("continuation_approval_id") or approval.get("approval_id") or ""
     )[:120]
     approval_required = str(decision.get("reason_code") or "") == "approval_required"
+    if approval_required:
+        deadline = (datetime.now(timezone.utc) + timedelta(seconds=900)).isoformat(timespec="seconds").replace("+00:00", "Z")
     status = "approval_required" if approval_required else "admitted" if allowed else "denied"
     execution_state = "queued" if allowed else "not_started"
     authorization_state = "approval_required" if approval_required else "authorized" if allowed else "denied"
@@ -744,22 +760,25 @@ def admit_controlled_recovery(
                 # request. Once the exact approval is revalidated by OPA, move
                 # the same idempotent request into the existing owner queue.
                 if previous["status"] == "approval_required" and allowed:
+                    if previous["deadline_at"] <= now or previous["approval_id"] != approval_id:
+                        return {**assessment, "status": "blocked", "reasons": ["approval_expired_or_changed"], "recorded": False}
                     promoted = conn.execute(
                         """UPDATE lite_system_health_recovery_requests
                            SET status='admitted',execution_state='queued',authorization_state='authorized',
                                approval_id=?,policy_revision=?,policy_decision_id=?,updated_at=?,available_at=?,
-                               safe_summary=?,outcome='queued',terminal_reason=''
-                           WHERE request_id=? AND status='approval_required'""",
+                               safe_summary=?,outcome='queued',terminal_reason='',deadline_at=?
+                           WHERE request_id=? AND status='approval_required' AND deadline_at>?""",
                         (
                             str(decision.get("continuation_approval_id") or approval_id)[:120],
                             str(decision.get("policy_revision") or "")[:80],
                             str(decision.get("decision_id") or "")[:120],
                             now, now,
                             "Independent approval revalidated; recovery queued for the existing worker owner.",
-                            previous["request_id"],
+                            deadline, previous["request_id"], now,
                         ),
                     ).rowcount
                     if promoted:
+                        authority.bind_request(conn, previous["request_id"], auth_context, confirm)
                         conn.execute(
                             """UPDATE lite_system_health_repair_attempts
                                SET execution_state='queued',authorization_state='authorized',safe_summary=?,outcome='queued'
@@ -773,14 +792,22 @@ def admit_controlled_recovery(
                         ).fetchone()
                 return {**assessment, "request": _public_recovery_request(dict(previous)), "recorded": True, "idempotent_replay": True}
             active = conn.execute(
-                "SELECT * FROM lite_system_health_recovery_requests WHERE incident_id=? AND operation_id=? "
+                "SELECT * FROM lite_system_health_recovery_requests WHERE operation_id=? "
                 "AND status IN ('requested','preflight_checked','approval_required','approved','admitted','accepted','executing','awaiting_verification') "
                 "ORDER BY requested_at LIMIT 1",
-                (incident_id, operation_id),
+                (operation_id,),
             ).fetchone()
             if active is not None:
                 return {**assessment, "status": "blocked", "reasons": ["single_flight_in_progress"],
                         "request": _public_recovery_request(dict(active)), "recorded": False}
+            # Both incident representations resolve to the same worker durable.
+            cutoff = (datetime.now(timezone.utc) - timedelta(seconds=10)).isoformat(timespec="seconds").replace("+00:00", "Z")
+            recent = conn.execute(
+                "SELECT 1 FROM lite_system_health_recovery_requests WHERE operation_id=? AND attempt>0 AND completed_at>? LIMIT 1",
+                (operation_id, cutoff),
+            ).fetchone()
+            if recent is not None:
+                return {**assessment, "status": "blocked", "reasons": ["recovery_cooldown_active"], "recorded": False}
             request_id = "recovery-" + uuid.uuid4().hex
             conn.execute(
                 """INSERT INTO lite_system_health_recovery_requests(
@@ -809,6 +836,7 @@ def admit_controlled_recovery(
                  execution_state, authorization_state, "passed", "not_started", now, actor_type,
                  safe_summary, "approval_required" if approval_required else "not_executed" if not allowed else "queued"),
             )
+            authority.bind_request(conn, request_id, auth_context, confirm)
             _event(
                 conn,
                 incident_id,
@@ -822,7 +850,60 @@ def admit_controlled_recovery(
     return {**assessment, "request": _public_recovery_request(dict(created)), "recorded": True, "idempotent_replay": False}
 
 
+def reconcile_controlled_recovery_requests() -> int:
+    """Existing watchdog reconciliation; uncertain execution is never replayed."""
+    now = _now()
+    enabled = controlled_recovery_enabled()
+    rows = _read(
+        """SELECT request_id,incident_id,incident_generation,status
+           FROM lite_system_health_recovery_requests
+           WHERE (status IN ('requested','preflight_checked','approval_required','approved','admitted')
+                  AND (deadline_at<=? OR ?=0))
+              OR (status IN ('accepted','executing','awaiting_verification')
+                  AND (deadline_at<=? OR (lease_until IS NOT NULL AND lease_until<=?)))
+           ORDER BY requested_at LIMIT 32""",
+        (now, int(enabled), now, now),
+    )
+    if not rows:
+        return 0
+    changed = 0
+    with connection() as conn:
+        with begin_immediate(conn):
+            for row in rows:
+                uncertain = row["status"] in {"accepted", "executing", "awaiting_verification"}
+                status = "manual_attention_required" if uncertain else "expired" if enabled else "blocked"
+                reason = "execution_lease_or_deadline_expired" if uncertain else "request_deadline_expired" if enabled else "controlled_adapter_disabled"
+                execution = "failed" if uncertain else "blocked"
+                verification = "unavailable" if uncertain else "not_started"
+                summary = ("The previous execution outcome is uncertain; review fresh evidence. No replay was attempted."
+                           if uncertain else "Recovery admission expired or was disabled before execution.")
+                updated = conn.execute(
+                    """UPDATE lite_system_health_recovery_requests
+                       SET status=?,execution_state=?,verification_state=?,updated_at=?,completed_at=?,
+                           lease_until=NULL,terminal_reason=?,outcome=?,safe_summary=?
+                       WHERE request_id=? AND status=? AND
+                         ((status IN ('requested','preflight_checked','approval_required','approved','admitted') AND (deadline_at<=? OR ?=0))
+                          OR (status IN ('accepted','executing','awaiting_verification') AND
+                              (deadline_at<=? OR (lease_until IS NOT NULL AND lease_until<=?))))""",
+                    (status, execution, verification, now, now, reason, status, summary,
+                     row["request_id"], row["status"], now, int(enabled), now, now),
+                ).rowcount
+                if not updated:
+                    continue
+                conn.execute(
+                    """UPDATE lite_system_health_repair_attempts
+                       SET execution_state=?,verification_state=?,completed_at=?,safe_summary=?,outcome=?
+                       WHERE repair_id=?""",
+                    (execution, verification, now, summary, status, row["request_id"]),
+                )
+                _event(conn, row["incident_id"], row["incident_generation"], "recovery_reconciled", summary)
+                changed += 1
+    return changed
+
+
 def _claim_controlled_recovery(durable: str) -> dict[str, Any] | None:
+    if not controlled_recovery_enabled():
+        return None
     now = _now()
     with connection() as conn:
         with begin_immediate(conn):
@@ -857,6 +938,7 @@ def _claim_controlled_recovery(durable: str) -> dict[str, Any] | None:
                 or current["source"] != "nats"
                 or current["target_id"] != row["target_id"]
                 or current["observation_status"] not in UNHEALTHY
+                or freshness(current["observed_at"]) != "current"
             ):
                 conn.execute(
                     "UPDATE lite_system_health_recovery_requests SET status='blocked',execution_state='blocked',authorization_state='stale',updated_at=?,completed_at=?,terminal_reason=?,safe_summary=? WHERE request_id=?",
@@ -878,15 +960,17 @@ def _finish_controlled_recovery(request_id: str, *, status: str, execution_state
     safe_after = json.dumps(after, sort_keys=True, separators=(",", ":"))[:4096]
     with connection() as conn:
         with begin_immediate(conn):
-            conn.execute(
+            changed = conn.execute(
                 """UPDATE lite_system_health_recovery_requests
                    SET status=?,execution_state=?,verification_state=?,updated_at=?,completed_at=?,lease_until=NULL,
                        before_evidence_json=?,after_evidence_json=?,safe_summary=?,outcome=?,terminal_reason=?
-                   WHERE request_id=?""",
+                   WHERE request_id=? AND status IN ('executing','awaiting_verification')""",
                 (status, execution_state, verification_state, now, now, safe_before, safe_after,
                  "Controlled recovery completed with independently checked worker evidence." if status == "verified" else "Controlled recovery did not establish verified recovery.",
                  outcome[:80], reason[:120], request_id),
-            )
+            ).rowcount
+            if not changed:
+                return
             conn.execute(
                 """UPDATE lite_system_health_repair_attempts
                    SET execution_state=?,verification_state=?,completed_at=?,safe_summary=?,outcome=? WHERE repair_id=?""",
@@ -898,6 +982,8 @@ def _finish_controlled_recovery(request_id: str, *, status: str, execution_state
 
 def _schedule_controlled_recovery_retry(request_id: str, *, before: dict[str, Any], after: dict[str, Any], reason: str) -> bool:
     """Keep retries finite and delayed without interrupting an active callback."""
+    if not controlled_recovery_enabled():
+        return False
     now_dt = datetime.now(timezone.utc)
     now = now_dt.isoformat(timespec="seconds").replace("+00:00", "Z")
     try:
@@ -907,7 +993,7 @@ def _schedule_controlled_recovery_retry(request_id: str, *, before: dict[str, An
     available = (now_dt + timedelta(seconds=cooldown)).isoformat(timespec="seconds").replace("+00:00", "Z")
     with connection() as conn:
         with begin_immediate(conn):
-            row = conn.execute("SELECT attempt,max_attempts,deadline_at FROM lite_system_health_recovery_requests WHERE request_id=?", (request_id,)).fetchone()
+            row = conn.execute("SELECT attempt,max_attempts,deadline_at FROM lite_system_health_recovery_requests WHERE request_id=? AND status IN ('executing','awaiting_verification')", (request_id,)).fetchone()
             if not row or int(row["attempt"]) >= int(row["max_attempts"] or 0) or str(row["deadline_at"] or "") <= now:
                 return False
             conn.execute(
@@ -930,15 +1016,31 @@ async def process_controlled_recovery_requests(bus: Any, durable: str) -> int:
     """Worker-watchdog adapter; never starts a process or creates a consumer."""
     if not controlled_recovery_enabled():
         return 0
+    # Avoid taking the SQLite writer on an idle watchdog tick.
+    if not _read("SELECT 1 FROM lite_system_health_recovery_requests WHERE status='admitted' AND available_at<=? AND deadline_at>? LIMIT 1", (_now(), _now())):
+        return 0
     request = _claim_controlled_recovery(durable)
     if not request:
         return 0
+    from . import lite_infrastructure_authority as authority
+    import asyncio
+    if not await asyncio.to_thread(authority.revalidate, request):
+        _finish_controlled_recovery(request["request_id"], status="blocked", execution_state="blocked",
+                                    verification_state="not_started", before={}, after={},
+                                    outcome="authorization_stale", reason="execution_authority_unavailable")
+        return 1
     before_raw = bus.durable_consumer_status(durable) or {}
     before = {
         "durable": durable, "generation": int(before_raw.get("generation") or 0),
         "healthy": bool(before_raw.get("healthy")), "callback_inflight": bool(before_raw.get("callback_inflight")),
         "checked_at": _now(), "source": "worker_recovery_owner",
     }
+    if not controlled_recovery_enabled() or before["healthy"]:
+        _finish_controlled_recovery(request["request_id"], status="blocked", execution_state="blocked",
+                                    verification_state="unavailable", before=before, after={},
+                                    outcome="manual_attention_required",
+                                    reason="controlled_adapter_disabled" if not controlled_recovery_enabled() else "consumer_already_healthy")
+        return 1
     if before["callback_inflight"]:
         _finish_controlled_recovery(request["request_id"], status="blocked", execution_state="blocked",
                                     verification_state="unavailable", before=before, after={},
@@ -946,14 +1048,13 @@ async def process_controlled_recovery_requests(bus: Any, durable: str) -> int:
         return 1
     accepted = False
     try:
-        accepted = bool(await bus.ensure_durable_consumer(durable, force=True))
+        accepted = bool(await asyncio.wait_for(bus.ensure_durable_consumer(durable, force=True), timeout=15))
     except Exception as exc:
         after = {"durable": durable, "checked_at": _now(), "source": "worker_recovery_owner", "error_type": type(exc).__name__}
-        if _schedule_controlled_recovery_retry(request["request_id"], before=before, after=after, reason="recovery_owner_error"):
-            return 1
-        _finish_controlled_recovery(request["request_id"], status="execution_failed", execution_state="failed",
+        # An exception can occur after the owner changed state. Never replay an uncertain execution.
+        _finish_controlled_recovery(request["request_id"], status="manual_attention_required", execution_state="failed",
                                     verification_state="unavailable", before=before, after=after,
-                                    outcome="execution_failed", reason="recovery_owner_error")
+                                    outcome="manual_attention_required", reason="recovery_owner_error")
         return 1
     if accepted:
         # Keep the owner hand-off observable before the independent evidence
@@ -968,14 +1069,26 @@ async def process_controlled_recovery_requests(bus: Any, durable: str) -> int:
                     (_now(), "Accepted by the existing worker recovery owner; awaiting fresh verification.", request["request_id"]),
                 )
                 _event(conn, request["incident_id"], int(request["incident_generation"]), "recovery_accepted", "Existing worker recovery owner accepted the request; fresh verification is pending.")
+    # A newly allocated generation alone is insufficient. Wait only within the
+    # existing lease for a fetch observed after admission by that generation.
+    if accepted:
+        for _ in range(10):
+            candidate = bus.durable_consumer_status(durable) or {}
+            if (candidate.get("healthy") and candidate.get("generation", 0) > before["generation"]
+                    and freshness(candidate.get("last_fetch_at")) == "current"
+                    and str(candidate.get("last_fetch_at") or "") > before["checked_at"]):
+                break
+            await asyncio.sleep(0.5)
     after_raw = bus.durable_consumer_status(durable) or {}
     after = {
         "durable": durable, "generation": int(after_raw.get("generation") or 0),
         "healthy": bool(after_raw.get("healthy")), "callback_inflight": bool(after_raw.get("callback_inflight")),
         "checked_at": _now(), "source": "worker_recovery_owner",
     }
-    verified = accepted and after["healthy"] and not after["callback_inflight"] and after["generation"] > before["generation"]
-    if not verified and _schedule_controlled_recovery_retry(
+    verified = (accepted and after["healthy"] and not after["callback_inflight"] and after["generation"] > before["generation"]
+                and freshness(after_raw.get("last_fetch_at")) == "current"
+                and str(after_raw.get("last_fetch_at") or "") > before["checked_at"])
+    if not accepted and not verified and _schedule_controlled_recovery_retry(
         request["request_id"], before=before, after=after,
         reason="fresh_independent_verification_not_established",
     ):
@@ -1064,7 +1177,7 @@ def decision_history(incident_id: str, *, limit: int = 20) -> dict[str, Any]:
         ),
         "recovery_requests": _read(
             "SELECT request_id,incident_id,incident_generation,enrollment_generation,operation_id,status,"
-            "execution_state,verification_state,requested_at,updated_at,completed_at,safe_summary,outcome,terminal_reason "
+            "execution_state,verification_state,attempt,requested_at,updated_at,completed_at,safe_summary,outcome,terminal_reason "
             "FROM lite_system_health_recovery_requests WHERE incident_id=? ORDER BY requested_at DESC LIMIT ?",
             (incident_id, max(1, min(limit, 50))),
         ),

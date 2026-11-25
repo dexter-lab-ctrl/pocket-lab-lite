@@ -59,8 +59,11 @@ DATABASE_NAME = "pocketlab-lite.sqlite3"
 TARGET_OS = "android-termux"
 TARGET_ARCHITECTURE = "aarch64"
 TARGET_RUNTIME = "proot-ubuntu"
-REQUIRED_SCHEMA = 44
-FEATURE_MIGRATIONS = (43, 44)
+# Schema 42 is the last runtime baseline. Every migration after that baseline
+# is part of the exact backend candidate, including the System Health
+# continuation migrations through the current schema.
+REQUIRED_SCHEMA = 54
+FEATURE_MIGRATIONS = tuple(range(43, REQUIRED_SCHEMA + 1))
 MAX_ARTIFACT_BYTES = 128 * 1024 * 1024
 MIN_FREE_BYTES = 512 * 1024 * 1024
 MIN_AVAILABLE_MEMORY_BYTES = 256 * 1024 * 1024
@@ -842,7 +845,7 @@ def migration_rehearsal(*, backup_manifest: Path, artifact: Path, artifact_manif
     added = apply_migrations(target, manifest_with_path)
     target_validation = validate_database(target, contract, expected_schema=REQUIRED_SCHEMA)
     code_rollback_compatible = old_schema is not None and int(old_schema) >= REQUIRED_SCHEMA
-    rollback_reason = "old-runtime-schema-does-not-accept-schema-44" if not code_rollback_compatible else "old-runtime-compatibility-tested"
+    rollback_reason = f"old-runtime-schema-does-not-accept-schema-{REQUIRED_SCHEMA}" if not code_rollback_compatible else "old-runtime-compatibility-tested"
     receipt = {
         "schema": RECEIPT_SCHEMA,
         "kind": "migration-rehearsal",
@@ -1486,12 +1489,17 @@ def _make_test_database(path: Path, contract: Sequence[Mapping[str, Any]], schem
     path.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(path)
     connection.execute("PRAGMA journal_mode=WAL")
+    schema_dir = RUNTIME_SOURCE / "api_fastapi" / "db" / "schema"
+    for item in contract[:schema]:
+        paths = list(schema_dir.glob(f"{int(item['version']):04d}_{item['name']}.sql"))
+        if len(paths) != 1:
+            raise PromotionError("migration_source_missing", "The isolated baseline is missing an authoritative migration file.")
+        for statement in _migration_statements(paths[0].read_text(encoding="utf-8")):
+            connection.execute(statement)
+        connection.execute("INSERT INTO schema_migrations(version,name,applied_at,checksum) VALUES (?,?,?,?)", (item["version"], item["name"], _utc(), item["checksum"]))
     connection.execute("CREATE TABLE IF NOT EXISTS qualification_marker (value TEXT NOT NULL)")
     connection.execute("DELETE FROM qualification_marker")
     connection.execute("INSERT INTO qualification_marker(value) VALUES ('isolated')")
-    connection.execute("CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER PRIMARY KEY, name TEXT NOT NULL, applied_at TEXT NOT NULL, checksum TEXT NOT NULL)")
-    for item in contract[:schema]:
-        connection.execute("INSERT INTO schema_migrations(version,name,applied_at,checksum) VALUES (?,?,?,?)", (item["version"], item["name"], _utc(), item["checksum"]))
     connection.commit()
     connection.close()
 
@@ -1536,7 +1544,7 @@ def qualify_isolated(*, artifact: Path, manifest_path: Path, checksums_path: Pat
     _atomic_json(Path(migration["migration_receipt"]), migration_receipt)
     preflight = {"status": "admissible", "admitted": True, "checks": {"device_identity": True, "worker_heartbeat": True, "external_guardian": True}, "sanitized": True}
     preflight_path = workspace / "preflight.json"; _atomic_json(preflight_path, preflight)
-    auth_payload = authorization_payload(candidate_sha=str(manifest["source_commit"]), current_sha="c" * 40, device_id=device_id, target_schema=44, artifact_sha256=str(verified["artifact_sha256"]), backup_receipt_sha256=_sha256_bytes(_canonical(_read_json(Path(backup["backup_receipt"]), label="backup receipt"))), restore_receipt_sha256=_sha256_bytes(_canonical(_read_json(Path(restore["restore_receipt"]), label="restore receipt"))), preflight_sha256=_sha256(preflight_path), audit_identity="isolated-qualification")
+    auth_payload = authorization_payload(candidate_sha=str(manifest["source_commit"]), current_sha="c" * 40, device_id=device_id, target_schema=REQUIRED_SCHEMA, artifact_sha256=str(verified["artifact_sha256"]), backup_receipt_sha256=_sha256_bytes(_canonical(_read_json(Path(backup["backup_receipt"]), label="backup receipt"))), restore_receipt_sha256=_sha256_bytes(_canonical(_read_json(Path(restore["restore_receipt"]), label="restore receipt"))), preflight_sha256=_sha256(preflight_path), audit_identity="isolated-qualification")
     auth_path = workspace / "authorization.json"
     issue_authorization(private_key=key_path, output=auth_path, payload=auth_payload)
     recovery_path = workspace / "recovery.json"

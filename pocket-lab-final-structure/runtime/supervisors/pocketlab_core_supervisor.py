@@ -394,6 +394,9 @@ class LiteCoreSupervisor:
             from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
 
             CONTROL_PLANE.record_supervisor_evidence(evidence)
+            if repair_actions:
+                from api_fastapi.services import lite_infrastructure_service_evidence
+                lite_infrastructure_service_evidence.record_actions(repair_actions, processes)
         except Exception as exc:
             self._append_event({
                 "event": "canonical_supervisor_evidence_write_failed",
@@ -1042,6 +1045,18 @@ class LiteCoreSupervisor:
         observed = self.collect()
         statuses: Dict[str, str] = observed["services"]
         actions: List[Dict[str, Any]] = []
+        try:
+            runtime_root = str(Path(__file__).resolve().parents[1])
+            if runtime_root not in sys.path:
+                sys.path.insert(0, runtime_root)
+            from api_fastapi.services import lite_infrastructure_service_control
+            requested=lite_infrastructure_service_control.process(self,load_pm2_processes,observed)
+            if requested:
+                actions.append(requested)
+                observed=self.collect()
+                statuses=observed["services"]
+        except Exception as exc:
+            self._append_event({"event":"system_health_owner_request_unavailable","error_type":type(exc).__name__,"acted":False})
         policy_action = self.reconcile_policy_activation()
         if policy_action is not None:
             actions.append(policy_action)

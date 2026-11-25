@@ -19,6 +19,7 @@ import os
 from pathlib import Path
 import signal
 import subprocess
+import sys
 import time
 from typing import Any, Iterable
 
@@ -575,7 +576,22 @@ class RuntimeReconciler:
         reasons.extend(remote_reconcile_reasons(remote, previous.get("remote_access")))
         reasons.extend(photoprism_reconcile_reasons(statuses))
         actions: list[dict[str, Any]] = []
-        if reasons:
+        controlled = None
+        try:
+            runtime_root = str(Path(__file__).resolve().parents[1])
+            if runtime_root not in sys.path:
+                sys.path.insert(0,runtime_root)
+            from api_fastapi.services import lite_infrastructure_configuration
+            controlled=lite_infrastructure_configuration.process(self,reasons,lifecycle_transition_active())
+        except Exception:
+            pass
+        if controlled is not None:
+            actions.append(controlled)
+            processes=load_pm2_processes()
+            statuses=pm2_statuses(processes)
+            versions,_=pm2_version_projection(processes)
+            remote=tailscale_state()
+        elif reasons:
             if lifecycle_transition_active():
                 event = {
                     "event": "runtime_reconcile_suppressed",
@@ -621,6 +637,17 @@ class RuntimeReconciler:
             "sanitized": True,
         }
         self._write_json(payload)
+        try:
+            runtime_root = str(Path(__file__).resolve().parents[1])
+            if runtime_root not in sys.path:
+                sys.path.insert(0, runtime_root)
+            from api_fastapi.services import lite_infrastructure_service_evidence
+            lite_infrastructure_service_evidence.verify_runtime_contract(runtime_contract, processes)
+            from api_fastapi.services import lite_infrastructure_configuration
+            lite_infrastructure_configuration.verify(self.state_dir.parent,runtime_contract,processes)
+        except Exception:
+            # Evidence failure must not change the existing reconciliation owner.
+            pass
         return payload
 
     def run(self) -> None:

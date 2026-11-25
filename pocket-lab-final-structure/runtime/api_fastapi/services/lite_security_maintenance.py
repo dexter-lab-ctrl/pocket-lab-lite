@@ -678,3 +678,41 @@ class LiteMaintenanceModeMiddleware:
             }
         )
         await send({"type": "http.response.body", "body": payload})
+
+
+def reviewed_retention_plan(conn: sqlite3.Connection) -> list[str]:
+    """Use the existing owner eligibility rules; no user-supplied paths or IDs."""
+    config = retention_config()
+    total = int(conn.execute("SELECT COUNT(*) FROM security_scan_runs").fetchone()[0])
+    protected, _ = _protected_run_ids(conn, config)
+    return _eligible_retention_candidates(conn, protected=protected,
+        excess=max(0,total-config["max_runs"]), batch_size=min(config["batch_size"],100))
+
+
+def apply_reviewed_retention(*, operation_id: str, candidates: list[str]) -> dict[str, Any]:
+    """Only the exact owner preview may be applied; no file/progress cleanup."""
+    if maintenance_state().get("active") or active_security_scan():
+        raise RuntimeError("maintenance_conflict")
+    if not candidates or len(candidates)>100 or len(set(candidates))!=len(candidates):
+        raise ValueError("reviewed_candidates_required")
+    requested_at = _utc()
+    with begin_immediate() as conn:
+        if reviewed_retention_plan(conn) != candidates:
+            raise ValueError("retention_preview_changed")
+        placeholders = ",".join("?" for _ in candidates)
+        deleted = conn.execute("DELETE FROM security_scan_runs WHERE run_id IN (" + placeholders + ")", tuple(candidates)).rowcount
+        if deleted != len(candidates):
+            raise RuntimeError("retention_candidate_count_changed")
+        _record_maintenance(conn, maintenance_id=operation_id,kind="retention",mode="apply",
+                            status="running",requested_at=requested_at,summary="Reviewed retention rows removed; integrity verification pending.",
+                            metadata={"runs_deleted":deleted,"evidence_files_deleted":0})
+    with connection() as conn:
+        check = str(conn.execute("PRAGMA quick_check").fetchone()[0])
+        remaining = conn.execute("SELECT COUNT(*) FROM security_scan_runs WHERE run_id IN (" + placeholders + ")",tuple(candidates)).fetchone()[0]
+        verified = check == "ok" and remaining == 0
+        _record_maintenance(conn,maintenance_id=operation_id,kind="retention",mode="apply",
+                            status="succeeded" if verified else "failed",requested_at=requested_at,
+                            summary="Reviewed retention verification completed.",
+                            metadata={"runs_deleted":deleted,"evidence_files_deleted":0,"quick_check_ok":check=="ok","remaining_candidates":remaining})
+        conn.commit()
+    return {"verified":verified,"runs_deleted":deleted,"evidence_files_deleted":0,"quick_check_ok":check=="ok"}

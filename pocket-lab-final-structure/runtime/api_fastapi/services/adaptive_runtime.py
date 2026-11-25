@@ -216,6 +216,7 @@ class AdaptiveRuntimeController:
         self._global_admitted = 0
         self._global_deferred = 0
         self._global_rejected = 0
+        self._resource_preference = "balanced"
 
     @staticmethod
     def _base_policy(*, critical: bool = False, active: float = 5.0, stable: float = 300.0, maximum: float = 1_800.0) -> AdaptivePolicy:
@@ -377,6 +378,23 @@ class AdaptiveRuntimeController:
                 cpu_budget_remaining_ms=round(remaining, 2),
             )
 
+    def set_resource_preference(self, mode: str) -> None:
+        """Optional historical reconciliation only; never gate active work."""
+        if mode not in {"balanced", "low_power", "maintenance"}:
+            mode = "balanced"
+        with self._lock:
+            prior = self._resource_preference
+            self._resource_preference = mode
+            if mode == "balanced" and prior != mode:
+                runtime = self._domains.get("system.activity_history")
+                if runtime and runtime.next_due_at > 0:
+                    runtime.next_due_at = min(runtime.next_due_at, _monotonic() + 30.0)
+
+    def _preferred_stable_interval(self, domain: str, policy: AdaptivePolicy) -> float:
+        if domain != "system.activity_history" or self._resource_preference == "balanced":
+            return policy.stable_interval_seconds
+        return min(policy.max_interval_seconds, 240.0, policy.stable_interval_seconds * 1.5)
+
     def _interval(self, domain: str, runtime: _DomainRuntime, policy: AdaptivePolicy, now: float) -> float:
         if runtime.load_state == "critical":
             runtime.cadence_state = "degraded"
@@ -387,12 +405,12 @@ class AdaptiveRuntimeController:
         if runtime.consecutive_unchanged >= 4:
             multiplier = min(4.0, 1.0 + (runtime.consecutive_unchanged - 3) * 0.5)
             runtime.cadence_state = "stable"
-            return min(policy.max_interval_seconds, policy.stable_interval_seconds * multiplier)
+            return min(policy.max_interval_seconds, self._preferred_stable_interval(domain, policy) * multiplier)
         if runtime.last_change_at and now - runtime.last_change_at < policy.transition_hold_seconds:
             runtime.cadence_state = "recently_changed"
             return min(policy.stable_interval_seconds, max(policy.active_interval_seconds * 3.0, 15.0))
         runtime.cadence_state = "stable"
-        return policy.stable_interval_seconds
+        return self._preferred_stable_interval(domain, policy)
 
     @staticmethod
     def _jitter(domain: str, interval: float) -> float:

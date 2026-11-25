@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 2b245a5dd9c2a17e4564b28afa05ca2eee7ed43986458f4c723735a3ac9e6a09
+source_fingerprint: 47787a753658e4830e2595239c14e0e182f7a2b0c26dc2f5c7625d69910ece21
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,7 +21,7 @@ validation_status: generated
 
 FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the generated Lite-only view.
 
-## Lite paths (258)
+## Lite paths (266)
 
 - `/api/lite/apps/lifecycle`
 - `/api/lite/apps/lifecycle/{app_id}`
@@ -256,8 +256,10 @@ FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the
 - `/api/lite/security/summary`
 - `/api/lite/status`
 - `/api/lite/system-health/apps/{app_id}`
+- `/api/lite/system-health/automatic-policy`
 - `/api/lite/system-health/configuration-drift`
 - `/api/lite/system-health/dependencies`
+- `/api/lite/system-health/diagnostic-export`
 - `/api/lite/system-health/history`
 - `/api/lite/system-health/incidents`
 - `/api/lite/system-health/incidents/{incident_id}`
@@ -265,8 +267,14 @@ FastAPI OpenAPI is the canonical browser/backend contract. Redocly validates the
 - `/api/lite/system-health/incidents/{incident_id}/diagnose`
 - `/api/lite/system-health/incidents/{incident_id}/preflight`
 - `/api/lite/system-health/incidents/{incident_id}/repair`
+- `/api/lite/system-health/infrastructure`
 - `/api/lite/system-health/intelligence`
+- `/api/lite/system-health/maintenance`
+- `/api/lite/system-health/maintenance/{command_id}/cancel`
+- `/api/lite/system-health/maintenance/{command_id}/resolve`
 - `/api/lite/system-health/policies`
+- `/api/lite/system-health/preferences`
+- `/api/lite/system-health/recovery-requests/{request_id}/cancel`
 - `/api/lite/system-health/repairs`
 - `/api/lite/system-health/resources`
 - `/api/lite/system-health/summary`

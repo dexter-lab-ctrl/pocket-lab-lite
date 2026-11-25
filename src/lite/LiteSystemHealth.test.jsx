@@ -6,7 +6,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../hooks/useLiteQuery.js', () => ({ useLiteQuery: vi.fn() }));
 
 import { useLiteQuery } from '../hooks/useLiteQuery.js';
-import LiteSystemHealth, { SYSTEM_HEALTH_SUMMARY_QUERY_OPTIONS, SystemHealthIncidentCard, systemHealthPresentation } from './LiteSystemHealth.jsx';
+import SystemHealthOwnerControls from './components/SystemHealthOwnerControls.jsx';
+import LiteSystemHealth, { SYSTEM_HEALTH_SUMMARY_QUERY_OPTIONS, SystemHealthIncidentCard, infrastructureValue, systemHealthPresentation } from './LiteSystemHealth.jsx';
 
 afterEach(() => {
   cleanup();
@@ -96,5 +97,50 @@ describe('System Health authoritative presentation', () => {
         repair_available: false }}
       onDiagnose={vi.fn()} onRecover={onRecover} />);
     expect(document.body.textContent).not.toMatch(/Review recovery/);
+  });
+});
+
+
+describe('prepared infrastructure presentation', () => {
+  it('does not promote stale or missing counts to current readiness', () => {
+    expect(infrastructureValue({ status: 'healthy', freshness: 'stale' })).toMatch(/^Saved/);
+    expect(infrastructureValue({ status: 'unknown', freshness: 'unknown' })).toBe('Not confirmed');
+    expect(infrastructureValue({ count: 0, freshness: 'current' })).toBe('0');
+    expect(infrastructureValue({ count: 0, freshness: 'current' }, true)).toBe('Saved · 0');
+  });
+});
+
+
+describe('System Health owner controls', () => {
+  const policy = { owner_controls_available: true, activation_policy: { preferences: { revision: 1, recovery_mode: 'monitor', resource_mode: 'balanced' } } };
+  it('hides owner controls without backend eligibility or on saved state', () => {
+    useLiteQuery.mockReturnValue({});
+    const view = render(<SystemHealthOwnerControls section="policies" policy={{...policy, owner_controls_available:false}} readOnly={false} />);
+    expect(view.queryByRole('region', { name: 'Owner controls' })).toBeNull();
+    view.rerender(<SystemHealthOwnerControls section="policies" policy={policy} readOnly={true} />);
+    expect(view.queryByRole('region', { name: 'Owner controls' })).toBeNull();
+  });
+  it('requires a separate confirmation and allows cancelling a preference review', () => {
+    useLiteQuery.mockReturnValue({});
+    const view = render(<SystemHealthOwnerControls section="policies" policy={policy} readOnly={false} />);
+    expect(view.queryByRole('button', { name: 'Confirm', exact:true })).toBeNull();
+    fireEvent.click(view.getByRole('button', { name: 'Prefer assisted recovery' }));
+    expect(view.getByRole('button', { name: 'Confirm', exact:true })).toBeTruthy();
+    fireEvent.click(view.getByRole('button', { name: 'Cancel', exact:true }));
+    expect(view.queryByRole('button', { name: 'Confirm', exact:true })).toBeNull();
+  });
+});
+
+
+describe('Selective System Health automation preference', () => {
+  it('keeps production qualification separate from a saved preference', () => {
+    useLiteQuery.mockReturnValue({});
+    const policy={owner_controls_available:true,selective_automation:{revision:1,preference_enabled:true,source_qualified:false}};
+    const view=render(<SystemHealthOwnerControls section="policies" policy={policy} readOnly={false}/>);
+    expect(view.getByText('Production qualification pending.')).toBeTruthy();
+    fireEvent.click(view.getByRole('button',{name:'Disable automatic preference'}));
+    expect(view.getByRole('button',{name:'Confirm',exact:true})).toBeTruthy();
+    fireEvent.click(view.getByRole('button',{name:'Cancel',exact:true}));
+    expect(view.queryByRole('button',{name:'Confirm',exact:true})).toBeNull();
   });
 });

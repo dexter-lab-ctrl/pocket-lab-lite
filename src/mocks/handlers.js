@@ -1230,7 +1230,8 @@ function mockSystemHealthSummary() {
     current_critical_problems: items.filter(item => item.concern_state === 'current_concern' && item.severity === 'critical').length,
     unresolved_critical_problems: items.filter(item => item.severity === 'critical').length,
     unknown_services: stale ? 8 : unknown ? 0 : 0,
-    automatic_repairs_running: 0, recent_verified_recoveries: 0,
+    automatic_repairs_running: 0, recent_verified_recoveries: kind === 'system-health-infrastructure-automatic' ? 1 : 0,
+    automatic_recovery: { verified_count: kind === 'system-health-infrastructure-automatic' ? 1 : 0, pending_count: 0 },
     recent_resolutions: resolved ? [mockSystemHealthIncident(true)] : [],
     freshness: stale ? 'stale' : unknown ? 'unavailable' : 'current',
     summary: stale || unknown ? 'Health evidence is incomplete or stale.' : attention ? 'One or more services need attention.' : 'Observed services are healthy.',
@@ -1261,6 +1262,7 @@ export const handlers = [
         ? [{ repair_id: 'synthetic-repair-outcome', operation_id: 'app.repair',
           execution_state: rawScenario() === 'system-health-failed-repair' ? 'failed' : 'blocked',
           verification_state: 'not_started', safe_summary: 'Synthetic non-success recovery fixture.' }] : [],
+    automatic_recoveries: rawScenario() === 'system-health-infrastructure-automatic' ? [{ operation_id: 'runtime.consumer.reconnect', verification_state: 'verified' }] : [],
     recovery_requests: mockRecoveryRequest(rawScenario()) ? [mockRecoveryRequest(rawScenario())] : [],
     limit: 30, offset: 0, next_offset: null,
   })),
@@ -1269,6 +1271,25 @@ export const handlers = [
     edges: [{ upstream: 'nats', downstream: 'worker', authority: 'verified_contract', summary: 'Commands use NATS/JetStream.' }],
     description: 'Contract edges are not live connectivity proof.',
   })),
+  http.get('/api/lite/system-health/infrastructure', () => {
+    const pressure = rawScenario() === 'system-health-infrastructure-pressure';
+    const fresh = !['system-health-stale', 'system-health-unknown', 'system-health-offline'].includes(rawScenario());
+    const row = (label, status) => ({ label, status, freshness: fresh ? 'current' : 'stale' });
+    return HttpResponse.json({
+      source: 'committed_sqlite_projections', sanitized: true,
+      services: [{ ...row('Control API', 'healthy'), id: 'api', process_status: 'online', process_freshness: fresh ? 'current' : 'stale' },
+        { ...row('Background worker', 'unknown'), id: 'worker', process_status: 'online', process_freshness: fresh ? 'current' : 'stale' }],
+      network: [row('Remote access', pressure ? 'not_ready' : 'ready')],
+      storage: [row('Storage pressure', pressure ? 'critical' : 'normal'), { label: 'Reclaimable storage (bytes)', count: null, freshness: 'unknown' }],
+      database: [row('Integrity check', 'ok')],
+      workflows: [{ label: 'Waiting', count: 0, freshness: fresh ? 'current' : 'stale' }],
+      resources: [row('Resource signals', pressure ? 'elevated' : 'normal'), row('Battery and charging', 'unsupported')],
+      security: [row('Safety evidence', 'unknown')],
+      backup: [row('Backup integrity', 'unknown')],
+      cleanup: { available: false, estimated_bytes: null, protected: ['Personal files and media'], reason: 'A qualified cleanup manifest is required.' },
+      resource_policy: { available: false, essential_services_protected: true }, retry_available: false, cancellation_available: false,
+    });
+  }),
   http.get('/api/lite/system-health/resources', () => HttpResponse.json({
     signals: [], forecast: 'not_enough_information', model: 'deterministic_only',
     explanation: 'Current history does not support a reliable forecast.',

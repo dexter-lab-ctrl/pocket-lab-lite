@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 37b48a086ee5356aeb449305109a3c62102e5608db14bbf654d0e47cd600232c
+source_fingerprint: 9aec656e63253d0705f8179b0a1f5ca5f17fa5580e44ca2b65cf2c1b9ebec9f8
 schema_revision: 1
 validation_status: generated
 ---
@@ -5325,6 +5325,29 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
+<a id="put-api-lite-system-health-automatic-policy"></a>
+## PUT `/api/lite/system-health/automatic-policy`
+
+- Operation ID: `system_health_automatic_policy_api_lite_system_health_automatic_policy_put`
+- Summary: System Health Automatic Policy
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `AutomaticPolicyRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
 <a id="get-api-lite-system-health-configuration-drift"></a>
 ## GET `/api/lite/system-health/configuration-drift`
 
@@ -5353,6 +5376,29 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-system-health-diagnostic-export"></a>
+## POST `/api/lite/system-health/diagnostic-export`
+
+- Operation ID: `system_health_diagnostic_export_api_lite_system_health_diagnostic_export_post`
+- Summary: System Health Diagnostic Export
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `DiagnosticExportRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-system-health-history"></a>
@@ -5530,6 +5576,21 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
+<a id="get-api-lite-system-health-infrastructure"></a>
+## GET `/api/lite/system-health/infrastructure`
+
+- Operation ID: `system_health_infrastructure_api_lite_system_health_infrastructure_get`
+- Summary: System Health Infrastructure
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
 <a id="get-api-lite-system-health-intelligence"></a>
 ## GET `/api/lite/system-health/intelligence`
 
@@ -5545,6 +5606,96 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | 200 | Successful Response | application/json: `object` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
+<a id="get-api-lite-system-health-maintenance"></a>
+## GET `/api/lite/system-health/maintenance`
+
+- Operation ID: `system_health_maintenance_history_api_lite_system_health_maintenance_get`
+- Summary: System Health Maintenance History
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-system-health-maintenance"></a>
+## POST `/api/lite/system-health/maintenance`
+
+- Operation ID: `system_health_maintenance_request_api_lite_system_health_maintenance_post`
+- Summary: System Health Maintenance Request
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `MaintenanceRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-system-health-maintenance-command-id-cancel"></a>
+## POST `/api/lite/system-health/maintenance/{command_id}/cancel`
+
+- Operation ID: `system_health_cancel_maintenance_api_lite_system_health_maintenance__command_id__cancel_post`
+- Summary: System Health Cancel Maintenance
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| command_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-system-health-maintenance-command-id-resolve"></a>
+## POST `/api/lite/system-health/maintenance/{command_id}/resolve`
+
+- Operation ID: `system_health_resolve_maintenance_api_lite_system_health_maintenance__command_id__resolve_post`
+- Summary: System Health Resolve Maintenance
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| command_id | path | yes | `string` |
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `ResolveMaintenanceRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
 <a id="get-api-lite-system-health-policies"></a>
 ## GET `/api/lite/system-health/policies`
 
@@ -5558,6 +5709,52 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="put-api-lite-system-health-preferences"></a>
+## PUT `/api/lite/system-health/preferences`
+
+- Operation ID: `system_health_preferences_api_lite_system_health_preferences_put`
+- Summary: System Health Preferences
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `PreferenceRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-system-health-recovery-requests-request-id-cancel"></a>
+## POST `/api/lite/system-health/recovery-requests/{request_id}/cancel`
+
+- Operation ID: `system_health_cancel_request_api_lite_system_health_recovery_requests__request_id__cancel_post`
+- Summary: System Health Cancel Request
+- Deprecated: no
+- Tags: `lite-system-health`
+
+### Parameters
+
+| Name | Location | Required | Schema |
+| --- | --- | --- | --- |
+| request_id | path | yes | `string` |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-system-health-repairs"></a>

@@ -128,6 +128,55 @@ def test_candidate_proxy_forwards_safe_read_nonce(monkeypatch):
     assert forwarded["X-PocketLab-Read-Nonce"] == nonce
 
 
+def test_candidate_repair_signals_parent_without_logging_request_data(monkeypatch, tmp_path):
+    candidate = _module()
+    signal_path = tmp_path / "browser-recovery-repair-seen"
+    monkeypatch.setenv("POCKETLAB_CANDIDATE_BROWSER_RECOVERY_SIGNAL_FILE", str(signal_path))
+
+    class FakeResponse:
+        status = 202
+        reason = "Accepted"
+
+        def getheaders(self):
+            return [("Content-Type", "application/json")]
+
+        def read(self, _size=-1):
+            return b'{"status":"admitted"}'
+
+    class FakeConnection:
+        def __init__(self, *_args, **_kwargs):
+            self.response = FakeResponse()
+
+        def request(self, method, path, *, body=None, headers=None):
+            assert method == "POST"
+            assert path.endswith("/repair")
+            assert body == b"{}"
+
+        def getresponse(self):
+            return self.response
+
+        def close(self):
+            return None
+
+    class FakeHandler(candidate.CandidateRequestHandler):
+        pass
+
+    handler = object.__new__(FakeHandler)
+    handler.command = "POST"
+    handler.path = "/api/lite/system-health/incidents/health-0123456789abcdef01234567/repair"
+    handler.server = SimpleNamespace(source_commit="a" * 40)
+    handler.headers = {"X-Pocket-Lab-Qualification-Bridge": "bridge"}
+    handler.wfile = BytesIO()
+    handler.send_response = lambda *_args: None
+    handler.send_header = lambda *_args: None
+    handler.end_headers = lambda: None
+    monkeypatch.setattr(candidate.http.client, "HTTPConnection", FakeConnection)
+
+    handler._proxy_api(body=b"{}")
+
+    assert signal_path.read_text(encoding="utf-8") == "repair_seen\n"
+
+
 def test_candidate_api_target_is_loopback_tls_and_fail_closed(monkeypatch, tmp_path):
     candidate = _module()
     assert candidate.candidate_api_target() == ("http", candidate.CADDY_HTTP_LOCAL_PORT, None)

@@ -64,6 +64,23 @@ def test_candidate_sha_and_identity_fail_closed():
         )
 
 
+def test_backend_lane_starts_its_recovery_fixture_before_api_contract():
+    source = SCRIPT.read_text(encoding="utf-8")
+    run_start = source.index("    def run(self) -> tuple[str, Path]:")
+    run_end = source.index("\n\n\ndef main(", run_start)
+    run_body = source[run_start:run_end]
+    fixture_call = run_body.index("self._start_recovery_projection_fixture()")
+    api_call = run_body.index("self._qualify_api()")
+    assert fixture_call < api_call
+    assert '"POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1"' in source
+    assert "harness_capability_denied" in source
+    assert "self.nats_tunnel.stop()" in source
+    assert "requested_remote_port = int(self.nats_tunnel.remote_port)" in source
+    assert '"POCKETLAB_NATS_RECONNECT_WAIT": "30"' in source
+    assert '"/api/lite/system/health"' in source
+    assert "candidate NATS disconnect was not observed by prepared health read" in source
+
+
 def test_isolated_binding_rejects_production_paths_and_collisions(tmp_path):
     module = _module()
     root = tmp_path / "run"
@@ -176,7 +193,7 @@ def test_readiness_sanitization_and_source_safety_contract():
     assert '"POCKETLAB_TEST_AUTH_BYPASS": "0"' in source
     assert '"POCKETLAB_QUALIFICATION_OWNER": self.qualification_owner_flag' in source
     assert '"POCKETLAB_HARNESS_DESTRUCTIVE": "0"' in source
-    assert '"POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1" if self.browser_ui else "0"' in source
+    assert '"POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1"' in source
     assert '"POCKETLAB_NATS_URL": nats_origin' in source
     assert "production_database_touched" in source
     assert "_REMOTE_RECOVERY_FIXTURE" in source
@@ -215,5 +232,15 @@ def test_physical_system_health_qualifier_activates_android_target():
     assert "What needs attention" in source
     assert "Review issue" in source
     assert "unsupported Fix action" in source
+    assert "Confirm recovery" in source
+    assert "confirmRecovery.waitFor" in source
+    assert "candidate_identity" in source
+    assert "rendered_page_meta_sha" in source
     assert "eligible NATS recovery incident" in SCRIPT.read_text(encoding="utf-8")
     assert "has: page.getByRole('button', { name: 'Review recovery', exact: true })" in UI_SCRIPT.read_text(encoding="utf-8")
+    runner_source = (REPO / "scripts" / "dev" / "lite" / "run-system-health-android-ui-qualification.py").read_text(encoding="utf-8")
+    assert "POCKETLAB_CANDIDATE_BROWSER_RECOVERY_SIGNAL_FILE" in runner_source
+    assert "_pause_candidate_nats_for_recovery" in runner_source
+    assert "watch_browser_recovery_signal" in runner_source
+    assert "wait_for_browser_recovery_claim" in runner_source
+    assert '"execution_state") or "") == "running"' in runner_source

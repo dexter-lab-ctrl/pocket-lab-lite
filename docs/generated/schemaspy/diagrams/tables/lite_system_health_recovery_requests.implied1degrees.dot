@@ -3,6 +3,7 @@ digraph "oneDegreeRelationshipsDiagramImplied" {
   "lite_system_health_recovery_requests":"approval_id":w -> "policy_approvals":"approval_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_system_health_recovery_requests":"incident_id":w -> "lite_system_health_incidents":"incident_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "lite_system_health_recovery_requests":"policy_decision_id":w -> "policy_decision_details":"decision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_system_health_request_authority":"request_id":w -> "lite_system_health_recovery_requests":"request_id.type":e [arrowhead=none dir=back arrowtail=teeodot];
   "policy_approvals":"originating_decision_id":w -> "policy_decision_details":"decision_id":e [arrowhead=none dir=back arrowtail=teeodot style=dashed];
   "lite_system_health_incidents" [
    label=<
@@ -57,11 +58,25 @@ digraph "oneDegreeRelationshipsDiagramImplied" {
       <TR><TD PORT="safe_summary" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="256" HEIGHT="16">safe_summary</TD></TR></TABLE></TD><TD PORT="safe_summary.type" ALIGN="LEFT">text[2000000000]</TD></TR>
       <TR><TD PORT="outcome" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="256" HEIGHT="16">outcome</TD></TR></TABLE></TD><TD PORT="outcome.type" ALIGN="LEFT">text[2000000000]</TD></TR>
       <TR><TD PORT="terminal_reason" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="256" HEIGHT="16">terminal_reason</TD></TR></TABLE></TD><TD PORT="terminal_reason.type" ALIGN="LEFT">text[2000000000]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
     </TABLE>>
     URL="lite_system_health_recovery_requests.html"
     target="_top"
     tooltip="lite_system_health_recovery_requests"
+  ];
+  "lite_system_health_request_authority" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="252" HEIGHT="16"><B>lite_system_health_request_authority</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="request_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="252" HEIGHT="16">request_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="session_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="252" HEIGHT="16">session_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="authorization_version" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="252" HEIGHT="16">authorization_version</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="lite_system_health_request_authority.html"
+    target="_top"
+    tooltip="lite_system_health_request_authority"
   ];
   "policy_approvals" [
    label=<
@@ -93,7 +108,7 @@ digraph "oneDegreeRelationshipsDiagramImplied" {
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16"><B>policy_decision_details</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="decision_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16">decision_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
     </TABLE>>
     URL="policy_decision_details.html"
     target="_top"

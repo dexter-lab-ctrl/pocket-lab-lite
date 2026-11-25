@@ -1161,11 +1161,27 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/system-health/infrastructure": [
+        {
+          "source": "ui:litesystemhealth",
+          "type": "calls"
+        },
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/system-health/intelligence": [
         {
           "source": "ui:litesystemhealth",
           "type": "calls"
         },
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/system-health/maintenance": [
         {
           "source": "domain:system-health",
           "type": "owns"
@@ -2347,6 +2363,12 @@
           "type": "owns"
         }
       ],
+      "api:post:/api/lite/system-health/diagnostic-export": [
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose": [
         {
           "source": "ui:litesystemhealth",
@@ -2372,6 +2394,30 @@
           "source": "ui:litesystemhealth",
           "type": "calls"
         },
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/system-health/maintenance": [
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/system-health/maintenance/{command_id}/cancel": [
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/system-health/maintenance/{command_id}/resolve": [
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/system-health/recovery-requests/{request_id}/cancel": [
         {
           "source": "domain:system-health",
           "type": "owns"
@@ -2420,6 +2466,18 @@
         },
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:put:/api/lite/system-health/automatic-policy": [
+        {
+          "source": "domain:system-health",
+          "type": "owns"
+        }
+      ],
+      "api:put:/api/lite/system-health/preferences": [
+        {
+          "source": "domain:system-health",
           "type": "owns"
         }
       ],
@@ -3867,6 +3925,12 @@
           "type": "owns"
         }
       ],
+      "reason:approved_spec_changed": [
+        {
+          "source": "domain:system",
+          "type": "owns"
+        }
+      ],
       "reason:assurance_deadline_exceeded": [
         {
           "source": "domain:validation",
@@ -3918,6 +3982,12 @@
       "reason:authentication_required": [
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "reason:authorization_or_readiness_unavailable": [
+        {
+          "source": "domain:system",
           "type": "owns"
         }
       ],
@@ -4014,6 +4084,12 @@
       "reason:deferred_resource_pressure": [
         {
           "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "reason:delivery_unconfirmed": [
+        {
+          "source": "domain:runtime",
           "type": "owns"
         }
       ],
@@ -4278,6 +4354,12 @@
       "reason:exception_unusable": [
         {
           "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:execution_authority_or_preflight_changed": [
+        {
+          "source": "domain:system",
           "type": "owns"
         }
       ],
@@ -4593,6 +4675,12 @@
           "type": "owns"
         }
       ],
+      "reason:maintenance_conflict_or_authority_changed": [
+        {
+          "source": "domain:system",
+          "type": "owns"
+        }
+      ],
       "reason:memory_pressure": [
         {
           "source": "domain:security",
@@ -4707,9 +4795,39 @@
           "type": "owns"
         }
       ],
+      "reason:owner_outcome_not_verified": [
+        {
+          "source": "domain:system",
+          "type": "owns"
+        }
+      ],
+      "reason:owner_reconciliation_not_verified": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
       "reason:owner_request": [
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "reason:owner_required": [
+        {
+          "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "reason:owner_restart_not_verified": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
+      "reason:owner_still_running": [
+        {
+          "source": "domain:runtime",
           "type": "owns"
         }
       ],
@@ -4953,6 +5071,12 @@
           "type": "owns"
         }
       ],
+      "reason:policy_revision_changed": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
       "reason:policy_revision_mismatch": [
         {
           "source": "domain:rules",
@@ -5049,6 +5173,12 @@
           "type": "owns"
         }
       ],
+      "reason:process_instance_unavailable": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
       "reason:process_start_failed": [
         {
           "source": "domain:validation",
@@ -5127,9 +5257,21 @@
           "type": "owns"
         }
       ],
+      "reason:request_not_found": [
+        {
+          "source": "domain:system",
+          "type": "owns"
+        }
+      ],
       "reason:restore_not_attempted": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:reviewed_plan_changed": [
+        {
+          "source": "domain:system",
           "type": "owns"
         }
       ],
@@ -5881,6 +6023,12 @@
         {
           "source": "component:security-profiles",
           "type": "related_to"
+        }
+      ],
+      "subject:pocketlab.commands.lite.system_health.maintenance": [
+        {
+          "source": "domain:lite",
+          "type": "owns"
         }
       ],
       "subject:pocketlab.commands.node": [
@@ -8075,6 +8223,30 @@
           "type": "owns"
         }
       ],
+      "table:lite_system_health_automation_attempts": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_automation_policy": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_availability_samples": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_control_audit": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_system_health_diagnoses": [
         {
           "source": "domain:control_plane",
@@ -8087,13 +8259,43 @@
           "type": "owns"
         }
       ],
+      "table:lite_system_health_host_protection": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_system_health_incidents": [
         {
           "source": "domain:control_plane",
           "type": "owns"
         }
       ],
+      "table:lite_system_health_maintenance_admissions": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_maintenance_resolutions": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_system_health_observations": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_owner_recovery_evidence": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_preferences": [
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -8112,6 +8314,18 @@
         }
       ],
       "table:lite_system_health_repair_denials": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_request_authority": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_service_owner_evidence": [
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -9049,6 +9263,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:approved_spec_changed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:assurance_deadline_exceeded",
           "type": "verified_by"
         },
@@ -9082,6 +9300,10 @@
         },
         {
           "source": "reason:authentication_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:authorization_or_readiness_unavailable",
           "type": "verified_by"
         },
         {
@@ -9146,6 +9368,10 @@
         },
         {
           "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:delivery_unconfirmed",
           "type": "verified_by"
         },
         {
@@ -9322,6 +9548,10 @@
         },
         {
           "source": "reason:exception_unusable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:execution_authority_or_preflight_changed",
           "type": "verified_by"
         },
         {
@@ -9533,6 +9763,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:maintenance_conflict_or_authority_changed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:memory_pressure",
           "type": "verified_by"
         },
@@ -9609,7 +9843,27 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:owner_outcome_not_verified",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owner_reconciliation_not_verified",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:owner_request",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owner_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owner_restart_not_verified",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owner_still_running",
           "type": "verified_by"
         },
         {
@@ -9773,6 +10027,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_revision_changed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_revision_mismatch",
           "type": "verified_by"
         },
@@ -9837,6 +10095,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:process_instance_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:process_start_failed",
           "type": "verified_by"
         },
@@ -9889,7 +10151,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:request_not_found",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:restore_not_attempted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:reviewed_plan_changed",
           "type": "verified_by"
         },
         {
@@ -10731,7 +11001,15 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/system-health/infrastructure",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/system-health/intelligence",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/maintenance",
           "type": "verified_by"
         },
         {
@@ -11255,6 +11533,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/system-health/diagnostic-export",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
           "type": "verified_by"
         },
@@ -11264,6 +11546,22 @@
         },
         {
           "source": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/maintenance",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/maintenance/{command_id}/cancel",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/maintenance/{command_id}/resolve",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/recovery-requests/{request_id}/cancel",
           "type": "verified_by"
         },
         {
@@ -11284,6 +11582,14 @@
         },
         {
           "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:put:/api/lite/system-health/automatic-policy",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:put:/api/lite/system-health/preferences",
           "type": "verified_by"
         },
         {
@@ -12950,6 +13256,10 @@
         }
       ],
       "test:tests/backend/test_lite_system_health.py": [
+        {
+          "source": "component:pwa",
+          "type": "verified_by"
+        },
         {
           "source": "reason:approval_required",
           "type": "verified_by"
@@ -14629,6 +14939,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:approved_spec_changed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:assurance_deadline_exceeded",
           "type": "verified_by"
         },
@@ -14662,6 +14976,10 @@
         },
         {
           "source": "reason:authentication_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:authorization_or_readiness_unavailable",
           "type": "verified_by"
         },
         {
@@ -14726,6 +15044,10 @@
         },
         {
           "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:delivery_unconfirmed",
           "type": "verified_by"
         },
         {
@@ -14902,6 +15224,10 @@
         },
         {
           "source": "reason:exception_unusable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:execution_authority_or_preflight_changed",
           "type": "verified_by"
         },
         {
@@ -15113,6 +15439,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:maintenance_conflict_or_authority_changed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:memory_pressure",
           "type": "verified_by"
         },
@@ -15189,7 +15519,27 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:owner_outcome_not_verified",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owner_reconciliation_not_verified",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:owner_request",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owner_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owner_restart_not_verified",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owner_still_running",
           "type": "verified_by"
         },
         {
@@ -15353,6 +15703,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_revision_changed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_revision_mismatch",
           "type": "verified_by"
         },
@@ -15417,6 +15771,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:process_instance_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:process_start_failed",
           "type": "verified_by"
         },
@@ -15469,7 +15827,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:request_not_found",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:restore_not_attempted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:reviewed_plan_changed",
           "type": "verified_by"
         },
         {
@@ -15851,6 +16217,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:approved_spec_changed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:assurance_deadline_exceeded",
           "type": "verified_by"
         },
@@ -15884,6 +16254,10 @@
         },
         {
           "source": "reason:authentication_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:authorization_or_readiness_unavailable",
           "type": "verified_by"
         },
         {
@@ -15948,6 +16322,10 @@
         },
         {
           "source": "reason:deferred_resource_pressure",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:delivery_unconfirmed",
           "type": "verified_by"
         },
         {
@@ -16124,6 +16502,10 @@
         },
         {
           "source": "reason:exception_unusable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:execution_authority_or_preflight_changed",
           "type": "verified_by"
         },
         {
@@ -16335,6 +16717,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:maintenance_conflict_or_authority_changed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:memory_pressure",
           "type": "verified_by"
         },
@@ -16411,7 +16797,27 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:owner_outcome_not_verified",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owner_reconciliation_not_verified",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:owner_request",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owner_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owner_restart_not_verified",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:owner_still_running",
           "type": "verified_by"
         },
         {
@@ -16575,6 +16981,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_revision_changed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_revision_mismatch",
           "type": "verified_by"
         },
@@ -16639,6 +17049,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:process_instance_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:process_start_failed",
           "type": "verified_by"
         },
@@ -16691,7 +17105,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:request_not_found",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:restore_not_attempted",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:reviewed_plan_changed",
           "type": "verified_by"
         },
         {
@@ -18021,7 +18443,15 @@
           "type": "verified_by"
         },
         {
+          "source": "api:get:/api/lite/system-health/infrastructure",
+          "type": "verified_by"
+        },
+        {
           "source": "api:get:/api/lite/system-health/intelligence",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/system-health/maintenance",
           "type": "verified_by"
         },
         {
@@ -18545,6 +18975,10 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/system-health/diagnostic-export",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
           "type": "verified_by"
         },
@@ -18554,6 +18988,22 @@
         },
         {
           "source": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/maintenance",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/maintenance/{command_id}/cancel",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/maintenance/{command_id}/resolve",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/system-health/recovery-requests/{request_id}/cancel",
           "type": "verified_by"
         },
         {
@@ -18574,6 +19024,14 @@
         },
         {
           "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:put:/api/lite/system-health/automatic-policy",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:put:/api/lite/system-health/preferences",
           "type": "verified_by"
         }
       ],
@@ -20927,7 +21385,27 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/system-health/infrastructure": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/system-health/intelligence": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:get:/api/lite/system-health/maintenance": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -22237,6 +22715,16 @@
           "type": "verified_by"
         }
       ],
+      "api:post:/api/lite/system-health/diagnostic-export": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -22258,6 +22746,46 @@
         }
       ],
       "api:post:/api/lite/system-health/incidents/{incident_id}/repair": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/system-health/maintenance": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/system-health/maintenance/{command_id}/cancel": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/system-health/maintenance/{command_id}/resolve": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/system-health/recovery-requests/{request_id}/cancel": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -22308,6 +22836,26 @@
         }
       ],
       "api:put:/api/lite/identity/passkeys/{credential_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:put:/api/lite/system-health/automatic-policy": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:put:/api/lite/system-health/preferences": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -25249,6 +25797,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_system_health.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
           "type": "verified_by"
         },
@@ -26729,6 +27281,22 @@
           "type": "owns"
         },
         {
+          "target": "table:lite_system_health_automation_attempts",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_automation_policy",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_availability_samples",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_control_audit",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_system_health_diagnoses",
           "type": "owns"
         },
@@ -26737,11 +27305,31 @@
           "type": "owns"
         },
         {
+          "target": "table:lite_system_health_host_protection",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_system_health_incidents",
           "type": "owns"
         },
         {
+          "target": "table:lite_system_health_maintenance_admissions",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_maintenance_resolutions",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_system_health_observations",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_owner_recovery_evidence",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_preferences",
           "type": "owns"
         },
         {
@@ -26754,6 +27342,14 @@
         },
         {
           "target": "table:lite_system_health_repair_denials",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_request_authority",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_service_owner_evidence",
           "type": "owns"
         },
         {
@@ -28051,6 +28647,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:owner_required",
+          "type": "owns"
+        },
+        {
           "target": "reason:passkey_already_registered",
           "type": "owns"
         },
@@ -28418,6 +29018,10 @@
         },
         {
           "target": "subject:pocketlab.commands.lite.security.assurance",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.commands.lite.system_health.maintenance",
           "type": "owns"
         },
         {
@@ -29559,6 +30163,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:policy_revision_changed",
+          "type": "owns"
+        },
+        {
           "target": "reason:policy_revision_mismatch",
           "type": "owns"
         },
@@ -29720,6 +30328,26 @@
       "domain:runtime": [
         {
           "target": "api:get:/api/lite/runtime",
+          "type": "owns"
+        },
+        {
+          "target": "reason:delivery_unconfirmed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:owner_reconciliation_not_verified",
+          "type": "owns"
+        },
+        {
+          "target": "reason:owner_restart_not_verified",
+          "type": "owns"
+        },
+        {
+          "target": "reason:owner_still_running",
+          "type": "owns"
+        },
+        {
+          "target": "reason:process_instance_unavailable",
           "type": "owns"
         },
         {
@@ -30271,7 +30899,19 @@
           "type": "owns"
         },
         {
+          "target": "reason:approved_spec_changed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:authorization_or_readiness_unavailable",
+          "type": "owns"
+        },
+        {
           "target": "reason:disabled",
+          "type": "owns"
+        },
+        {
+          "target": "reason:execution_authority_or_preflight_changed",
           "type": "owns"
         },
         {
@@ -30287,11 +30927,27 @@
           "type": "owns"
         },
         {
+          "target": "reason:maintenance_conflict_or_authority_changed",
+          "type": "owns"
+        },
+        {
           "target": "reason:not_found_in_restored_snapshot",
           "type": "owns"
         },
         {
+          "target": "reason:owner_outcome_not_verified",
+          "type": "owns"
+        },
+        {
           "target": "reason:read_degraded",
+          "type": "owns"
+        },
+        {
+          "target": "reason:request_not_found",
+          "type": "owns"
+        },
+        {
+          "target": "reason:reviewed_plan_changed",
           "type": "owns"
         },
         {
@@ -30337,7 +30993,15 @@
           "type": "owns"
         },
         {
+          "target": "api:get:/api/lite/system-health/infrastructure",
+          "type": "owns"
+        },
+        {
           "target": "api:get:/api/lite/system-health/intelligence",
+          "type": "owns"
+        },
+        {
+          "target": "api:get:/api/lite/system-health/maintenance",
           "type": "owns"
         },
         {
@@ -30357,6 +31021,10 @@
           "type": "owns"
         },
         {
+          "target": "api:post:/api/lite/system-health/diagnostic-export",
+          "type": "owns"
+        },
+        {
           "target": "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
           "type": "owns"
         },
@@ -30366,6 +31034,30 @@
         },
         {
           "target": "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/system-health/maintenance",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/system-health/maintenance/{command_id}/cancel",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/system-health/maintenance/{command_id}/resolve",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/system-health/recovery-requests/{request_id}/cancel",
+          "type": "owns"
+        },
+        {
+          "target": "api:put:/api/lite/system-health/automatic-policy",
+          "type": "owns"
+        },
+        {
+          "target": "api:put:/api/lite/system-health/preferences",
           "type": "owns"
         },
         {
@@ -32213,6 +32905,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:approved_spec_changed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:assurance_deadline_exceeded": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -32360,6 +33066,20 @@
         },
         {
           "target": "test:tests/backend/test_lite_system_health.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:authorization_or_readiness_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -32620,6 +33340,20 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_advanced_optimization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:delivery_unconfirmed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -33522,6 +34256,20 @@
         }
       ],
       "reason:exception_unusable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:execution_authority_or_preflight_changed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -34451,6 +35199,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:maintenance_conflict_or_authority_changed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:memory_pressure": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -34745,6 +35507,34 @@
           "type": "verified_by"
         }
       ],
+      "reason:owner_outcome_not_verified": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:owner_reconciliation_not_verified": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:owner_request": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -34752,6 +35542,48 @@
         },
         {
           "target": "test:tests/backend/test_policy_source_reconciliation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:owner_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:owner_restart_not_verified": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:owner_still_running": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -35383,6 +36215,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:policy_revision_changed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:policy_revision_mismatch": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -35618,6 +36464,20 @@
         }
       ],
       "reason:preflight_exception": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:process_instance_unavailable": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -35977,7 +36837,35 @@
           "type": "verified_by"
         }
       ],
+      "reason:request_not_found": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:restore_not_attempted": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:reviewed_plan_changed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -37481,6 +38369,10 @@
           "type": "calls"
         },
         {
+          "target": "api:get:/api/lite/system-health/infrastructure",
+          "type": "calls"
+        },
+        {
           "target": "api:get:/api/lite/system-health/intelligence",
           "type": "calls"
         },
@@ -37517,6 +38409,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "81084650377a487b849259cff5fe88015992935c129196e927c40325fb8884a6"
+    "source_fingerprint": "c71cee04d8d6c3e42e64ef602f64aba7577ee3a70cdc7966ec82e3073da571d4"
   }
 }

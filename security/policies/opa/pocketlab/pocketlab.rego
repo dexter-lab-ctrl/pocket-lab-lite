@@ -866,3 +866,45 @@ decision := {
 	input.session.authenticated == true
 	not recent_passkey_step_up
 }
+
+
+# Fixed, owner-only maintenance adapter. Runtime qualification/activation,
+# exact preview binding and pre-execution authority checks are enforced by
+# FastAPI and the existing maintenance worker, never a browser.
+decision := {
+    "allow": true,
+    "constraints": ["owner_authority", "fixed_maintenance_operation", "confirmation"],
+    "reason_code": "owner_authority_system_health_maintenance",
+} if {
+    input.action.id == "system_health.maintenance"
+    authorized_actor
+    input.actor.type == "human"
+    input.actor.role == "Owner"
+    input.actor.owner_authority == true
+    input.target.type == "system_health_maintenance"
+    input.target.id != ""
+    input.target.state.operation_id in {"storage.evidence.preview", "storage.evidence.retention", "sqlite.checkpoint.passive", "maintenance.uncertain.resolve", "recovery.database.rehearse", "projection.reconcile", "storage.logs.preview", "storage.logs.cleanup", "storage.temp.preview", "storage.temp.cleanup", "automation.policy.update", "runtime.telemetry.recover", "runtime.server_agent.recover", "runtime.configuration.restore"}
+    input.target.state.adapter_enabled == true
+    input.target.state.confirmed == true
+}
+
+
+# Internal worker-only fixed Risk A projection reconciliation. The durable
+# Owner policy and all runtime gates are constructed by the worker, not HTTP.
+decision := {
+    "allow": true,
+    "constraints": ["fixed_projection", "risk_a_only", "current_owner_policy"],
+    "reason_code": "system_health_projection_reconciliation",
+} if {
+    input.action.id == "system_health.automatic"
+    authorized_actor
+    input.actor.type == "service"
+    input.actor.id == "system-health-scheduler"
+    input.session.auth_method == "internal_worker"
+    input.target.type == "system_health_projection"
+    input.target.id == "system.activity_history"
+    input.target.state.operation_id == "projection.reconcile"
+    input.target.state.risk_class == "A"
+    input.target.state.adapter_enabled == true
+    input.target.state.owner_policy_current == true
+}

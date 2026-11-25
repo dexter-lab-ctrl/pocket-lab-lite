@@ -2,7 +2,7 @@
   "database": "temporary data-free SQLite generated from repository migrations",
   "generated_at": "uncommitted",
   "generator": "scripts/docs/sqlite/generate_schemaspy.py",
-  "migration_count": 47,
+  "migration_count": 54,
   "migration_fingerprints": {
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -50,7 +50,14 @@
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql": "d43f1bc6fa85609fea10132b21199200d414ba5d0fdd7baaa2591ce2a183c2c8",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql": "645b3c4d7ea51ab395c36cba4ef5123f6bcce74eddc5d845207c50a3ef88ee7b",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql": "05ab4630dc17d8eda5dac04ddae1f0ad0a74efe0994cbee35e9ebdc51597bc04",
-    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql": "e3bfdbcfedf3159893491e97b993c5c1b4a0c267bc7ab55dd8cb45d7374ab857"
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql": "e3bfdbcfedf3159893491e97b993c5c1b4a0c267bc7ab55dd8cb45d7374ab857",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0048_system_health_owner_recovery_evidence.sql": "615ddf0d828aeb5b45c9e1f68ca40c14ffb4c5f357f88f69193efc7bbb9f2bab",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql": "0600bb107eeddd59396fcbe1b5b0f390baca62f76a5bfa83bf5e9836abba6ba4",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0050_system_health_maintenance_admission.sql": "894555c0c9addbb95b26da133cadbf57507a0a17e9252ca6ccfc760c44dc9c48",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0051_system_health_service_owner_evidence.sql": "dbc9edd93448656afe994ffa1a643c95a43b722f7ba18b9aeb8b2c3623797af1",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql": "b638b291b99780032fa71a1077a77c44bda39f9cbba55caf567785ffa12d75f1",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql": "cdcad7a2e9379023be73e79eeab7ee1497cbf6a41e90ecd0e6291c2fa4de4a5c",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql": "df830f0948f0b6fc689cb7a65e835d1039f35bf0fe42a7cca73309a12005f6c5"
   },
   "migrations": [
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql",
@@ -99,7 +106,14 @@
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql",
-    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0048_system_health_owner_recovery_evidence.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0050_system_health_maintenance_admission.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0051_system_health_service_owner_evidence.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql"
   ],
   "row_count_enforced": 0,
   "schema_revision": 1,

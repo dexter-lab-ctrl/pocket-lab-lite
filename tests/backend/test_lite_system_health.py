@@ -25,6 +25,9 @@ def health(tmp_path, monkeypatch):
         conn.executescript((schema_root / "0044_system_health_audit.sql").read_text(encoding="utf-8"))
         conn.executescript((schema_root / "0045_system_health_enrollment_generation.sql").read_text(encoding="utf-8"))
         conn.executescript((schema_root / "0046_system_health_recovery_requests.sql").read_text(encoding="utf-8"))
+        conn.executescript((schema_root / "0048_system_health_owner_recovery_evidence.sql").read_text(encoding="utf-8"))
+        for migration in ("0049_system_health_control_authority.sql", "0050_system_health_maintenance_admission.sql", "0051_system_health_service_owner_evidence.sql", "0052_system_health_resolution_and_samples.sql", "0053_system_health_host_protection.sql", "0054_system_health_selective_automation.sql"):
+            conn.executescript((schema_root / migration).read_text(encoding="utf-8"))
 
     def connect():
         conn = sqlite3.connect(db, isolation_level=None)
@@ -42,6 +45,12 @@ def health(tmp_path, monkeypatch):
     monkeypatch.setattr(health_engine, "connection", writing)
     monkeypatch.setattr(health_engine, "open_fast_read_connection", connect)
     return health_engine
+
+
+def qualification_context(actor_id="qualification-owner"):
+    return {"actor": {"identity_id": actor_id, "type": "qualification"},
+            "session": {"authenticated": True}, "harness": {"session_id": "test-harness", "profile": "qualification-owner"},
+            "authorization": {"role": None, "authorization_version": 1, "enterprise_enabled": False}}
 
 
 def observed_nats(status="degraded", revision=1):
@@ -173,7 +182,7 @@ def test_recovery_router_is_backend_governed_and_sanitizes_harness_denial(monkey
     with TestClient(app) as client:
         payload = {
             "operation_id": "runtime.consumer.reconnect", "expected_generation": 1,
-            "idempotency_key": "router-recovery-key-0001", "confirm": False,
+            "idempotency_key": "router-recovery-key-0001", "confirm": True,
         }
         monkeypatch.setattr(module.lite_harness, "enforce_capability", lambda *args, **kwargs: None)
         response = client.post("/api/lite/system-health/incidents/health-111111111111111111111111/repair", json=payload)
@@ -415,21 +424,21 @@ def test_p4_controlled_recovery_is_actor_bound_and_idempotent(health, monkeypatc
     health.ingest_projection("system.nats_remote", observed_nats())
     item = health.incidents()["items"][0]
     decision = {"allow": True, "reason_code": "qualification_owner_system_health_recovery", "policy_revision": "test-policy", "decision_id": "decision-test"}
-    context = {"actor": {"identity_id": "qualification-owner", "type": "qualification"}}
+    context = qualification_context()
     first = health.admit_controlled_recovery(
         item["incident_id"], "runtime.consumer.reconnect", item["generation"],
-        "recovery-idempotency-key-0001", confirm=False, auth_context=context, decision=decision,
+        "recovery-idempotency-key-0001", confirm=True, auth_context=context, decision=decision,
     )
     assert first["request"]["status"] == "admitted"
     replay = health.admit_controlled_recovery(
         item["incident_id"], "runtime.consumer.reconnect", item["generation"],
-        "recovery-idempotency-key-0001", confirm=False, auth_context=context, decision=decision,
+        "recovery-idempotency-key-0001", confirm=True, auth_context=context, decision=decision,
     )
     assert replay["idempotent_replay"] is True
     conflict = health.admit_controlled_recovery(
         item["incident_id"], "runtime.consumer.reconnect", item["generation"],
-        "recovery-idempotency-key-0001", confirm=False,
-        auth_context={"actor": {"identity_id": "other-actor", "type": "qualification"}}, decision=decision,
+        "recovery-idempotency-key-0001", confirm=True,
+        auth_context=qualification_context("other-actor"), decision=decision,
     )
     assert conflict["reasons"] == ["idempotency_conflict"]
     assert health.decision_history(item["incident_id"])["recovery_requests"][0]["status"] == "admitted"
@@ -440,24 +449,24 @@ def test_p4_terminal_replay_precedes_resolved_incident_preflight(health, monkeyp
     monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")
     health.ingest_projection("system.nats_remote", observed_nats())
     item = health.incidents()["items"][0]
-    context = {"actor": {"identity_id": "qualification-owner", "type": "qualification"}}
+    context = qualification_context()
     key = "replay-after-health-0001"
     decision = {"allow": True, "reason_code": "qualification_owner_system_health_recovery", "policy_revision": "test-policy", "decision_id": "decision-replay"}
     first = health.admit_controlled_recovery(
         item["incident_id"], "runtime.consumer.reconnect", item["generation"], key,
-        confirm=False, auth_context=context, decision=decision,
+        confirm=True, auth_context=context, decision=decision,
     )
     assert first["request"]["status"] == "admitted"
     health.ingest_projection("system.nats_remote", observed_nats("healthy", 2))
     replay = health.recovery_request_replay(
         item["incident_id"], "runtime.consumer.reconnect", item["generation"], key,
-        confirm=False, auth_context=context,
+        confirm=True, auth_context=context,
     )
     assert replay["idempotent_replay"] is True
     assert replay["request"]["request_id"] == first["request"]["request_id"]
     conflict = health.recovery_request_replay(
         item["incident_id"], "runtime.consumer.reconnect", item["generation"], key,
-        confirm=False, auth_context={"actor": {"identity_id": "other-owner", "type": "qualification"}},
+        confirm=True, auth_context=qualification_context("other-owner"),
     )
     assert conflict["reasons"] == ["idempotency_conflict"]
 
@@ -469,10 +478,13 @@ def test_p4_controlled_recovery_uses_existing_owner_and_fresh_verification(healt
     item = health.incidents()["items"][0]
     request = health.admit_controlled_recovery(
         item["incident_id"], "runtime.consumer.reconnect", item["generation"],
-        "recovery-owner-key-0001", confirm=False,
-        auth_context={"actor": {"identity_id": "qualification-owner", "type": "qualification"}},
+        "recovery-owner-key-0001", confirm=True,
+        auth_context=qualification_context(),
         decision={"allow": True, "reason_code": "qualification_owner_system_health_recovery", "policy_revision": "test-policy", "decision_id": "decision-owner"},
     )
+
+    from api_fastapi.services import lite_infrastructure_authority as authority
+    monkeypatch.setattr(authority, "revalidate", lambda request: True)
 
     class FakeBus:
         def __init__(self):
@@ -480,11 +492,12 @@ def test_p4_controlled_recovery_uses_existing_owner_and_fresh_verification(healt
             self.healthy = False
 
         def durable_consumer_status(self, durable):
-            return {"generation": self.generation, "healthy": self.healthy, "callback_inflight": False}
+            return {"generation": self.generation, "healthy": self.healthy, "callback_inflight": False, "last_fetch_at": health._now() if self.healthy else None}
 
         async def ensure_durable_consumer(self, durable, *, force=False):
             assert durable == "pocketlab_command_worker_v1"
             assert force is True
+            await asyncio.sleep(1.1)
             self.generation += 1
             self.healthy = True
             return True
@@ -501,11 +514,11 @@ def test_p4_enterprise_approval_promotes_same_idempotent_request(health, monkeyp
     monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")
     health.ingest_projection("system.nats_remote", observed_nats())
     item = health.incidents()["items"][0]
-    context = {"actor": {"identity_id": "operator-1", "type": "human"}}
+    context = {"actor": {"identity_id": "operator-1", "type": "human"}, "session": {"authenticated": True, "session_id": "operator-test"}, "authorization": {"role": "Operator", "authorization_version": 1, "enterprise_enabled": True}}
     key = "enterprise-recovery-key-0001"
     pending = health.admit_controlled_recovery(
         item["incident_id"], "runtime.consumer.reconnect", item["generation"], key,
-        confirm=False, auth_context=context,
+        confirm=True, auth_context=context,
         decision={
             "allow": False, "reason_code": "approval_required", "policy_revision": "policy-1",
             "decision_id": "decision-pending", "approval": {"approval_id": "apr-1"},
@@ -514,7 +527,7 @@ def test_p4_enterprise_approval_promotes_same_idempotent_request(health, monkeyp
     assert pending["request"]["status"] == "approval_required"
     admitted = health.admit_controlled_recovery(
         item["incident_id"], "runtime.consumer.reconnect", item["generation"], key,
-        confirm=False, auth_context=context,
+        confirm=True, auth_context=context,
         decision={
             "allow": True, "reason_code": "independent_approval_satisfied", "policy_revision": "policy-1",
             "decision_id": "decision-approved", "continuation_approval_id": "apr-1",
@@ -524,3 +537,221 @@ def test_p4_enterprise_approval_promotes_same_idempotent_request(health, monkeyp
     assert admitted["request"]["status"] == "admitted"
     assert admitted["request"]["authorization_state"] == "authorized"
     assert health.decision_history(item["incident_id"])["recovery_requests"][0]["status"] == "admitted"
+
+
+def test_infrastructure_registry_cannot_enable_production_or_generic_execution(health, monkeypatch):
+    from api_fastapi.services import lite_infrastructure_operations as ops
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "production")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")
+    assert not ops.controlled_recovery_enabled()
+    assert not ops.activation_policy()["production_automatic_enabled"]
+    assert not any(row["system_health_requestable"] for row in ops.operation_catalog())
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE", "0")
+    assert ops.controlled_recovery_enabled()
+    assert [r["operation_id"] for r in ops.operation_catalog() if r["system_health_requestable"]] == ["runtime.consumer.reconnect"]
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE", "1")
+    assert not ops.controlled_recovery_enabled()
+
+
+def test_infrastructure_prepared_reads_do_not_leak_payloads_or_invent_capacity(health):
+    import json
+    from api_fastapi.services import lite_infrastructure_read_model as model
+    with health.connection() as conn:
+        conn.execute("CREATE TABLE phase3b_current_state(domain TEXT, status TEXT, payload_json TEXT, updated_at TEXT)")
+        conn.execute("INSERT INTO phase3b_current_state VALUES(?,?,?,?)",
+                     ("system.processes", "healthy", json.dumps({"items": [
+                         {"name": "pocket-worker", "status": "online", "command": "SECRET_COMMAND"},
+                         {"name": "private-process", "status": "online"}]}), health._now()))
+    result = model.infrastructure()
+    worker = next(row for row in result["services"] if row["id"] == "worker")
+    assert worker["process_status"] == "online"
+    assert worker["functional_readiness"] == "unknown"
+    assert "SECRET_COMMAND" not in json.dumps(result)
+    assert "private-process" not in json.dumps(result)
+    assert result["cleanup"]["estimated_bytes"] is None
+    assert result["cleanup"]["available"] is False
+    assert result["retry_available"] is False
+    assert model.reliability()["observed_availability"] is None
+
+
+def test_correlation_excludes_history_and_never_claims_verified_cause(health):
+    from api_fastapi.services import lite_infrastructure_read_model as model
+    edges = [{"upstream": "nats", "downstream": "worker", "authority": "verified_contract"}]
+    rows = [{"source": "system", "target_id": name, "concern_state": "current_concern", "current_monitoring": True}
+            for name in ("nats", "worker")]
+    assert model.correlate(rows, edges)[0]["cause_confidence"] == "inferred"
+    rows[1]["current_monitoring"] = False
+    assert model.correlate(rows, edges) == []
+
+
+def test_owner_evidence_requires_later_same_generation_fetch(health, monkeypatch):
+    from datetime import datetime, timedelta, timezone
+    from api_fastapi.services import lite_infrastructure_owner_evidence as evidence
+    monkeypatch.setattr(evidence, "connection", health.connection)
+    then = (datetime.now(timezone.utc) - timedelta(seconds=10)).isoformat(timespec="seconds").replace("+00:00", "Z")
+    fetched = (datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat(timespec="seconds").replace("+00:00", "Z")
+    assert evidence.record_consumer_recovery(owner_instance="test-worker", durable="worker",
+        before={"generation": 1}, after={"generation": 1}, started_at=then) is None
+    for _ in range(2):
+        evidence.record_consumer_recovery(owner_instance="test-worker", durable="worker",
+            before={"generation": 1}, after={"generation": 2}, started_at=then)
+    assert evidence.summary()["recorded_count"] == 1
+    assert evidence.summary()["verified_count"] == 0
+    with health.connection() as conn:
+        conn.execute("UPDATE lite_system_health_owner_recovery_evidence SET completed_at=?", (then,))
+    evidence.verify_consumer_recoveries("test-worker", {"generation": 2, "healthy": True, "task_alive": True,
+        "subscription_present": True, "last_fetch_at": fetched})
+    assert evidence.summary()["verified_count"] == 1
+    assert "test-worker" not in str(evidence.history())
+
+
+def test_owner_restart_does_not_verify_previous_worker_execution(health, monkeypatch):
+    from api_fastapi.services import lite_infrastructure_owner_evidence as evidence
+    monkeypatch.setattr(evidence, "connection", health.connection)
+    evidence.record_consumer_recovery(owner_instance="previous", durable="worker", before={"generation": 1},
+                                     after={"generation": 2}, started_at=health._now())
+    evidence.verify_consumer_recoveries("replacement", {"generation": 2, "healthy": True})
+    assert evidence.summary()["verified_count"] == 0
+    assert evidence.summary()["unverified_count"] == 1
+
+
+def test_unconfirmed_or_unbound_recovery_is_rejected(health, monkeypatch):
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")
+    health.ingest_projection("system.nats_remote", observed_nats())
+    item = health.incidents()["items"][0]
+    decision = {"allow": True, "policy_revision": "test-policy", "decision_id": "decision-1"}
+    result = health.admit_controlled_recovery(item["incident_id"], "runtime.consumer.reconnect",
+        item["generation"], "unconfirmed-request-0001", confirm=False, auth_context=qualification_context(), decision=decision)
+    assert result["reasons"]
+    assert not health.decision_history(item["incident_id"])["recovery_requests"]
+
+
+def test_new_maintenance_cannot_be_activated_by_production_environment_alone(health, monkeypatch):
+    from api_fastapi.services import lite_infrastructure_maintenance as maintenance
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "production")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_MAINTENANCE_ADAPTER", "1")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_PRODUCTION_ASSISTED", "1")
+    assert all(not maintenance.enabled(op) for op in maintenance.OPERATIONS)
+
+
+def test_system_health_frontend_recovery_cancel_path_is_contract_discoverable():
+    api = Path("src/lib/liteApi.js").read_text(encoding="utf-8")
+    assert "postJson(`/api/lite/system-health/recovery-requests/${encodeURIComponent(id)}/cancel`, {})" in api
+
+
+def test_preferences_are_revision_bound_and_audited(health, monkeypatch):
+    from api_fastapi.services import lite_infrastructure_authority as authority
+    monkeypatch.setattr(authority, "connection", health.connection)
+    monkeypatch.setattr(authority, "require_owner", lambda conn, context: "test-owner")
+    saved = authority.save_preferences({}, expected_revision=0, recovery_mode="assisted", resource_mode="low_power")
+    assert saved["revision"] == 1
+    assert saved["resource_mode"] == "low_power"
+    with pytest.raises(ValueError, match="preference_revision_changed"):
+        authority.save_preferences({}, expected_revision=0, recovery_mode="monitor", resource_mode="balanced")
+    assert health._read("SELECT event_type FROM lite_system_health_control_audit")[0]["event_type"] == "preferences_changed"
+
+
+def test_service_evidence_requires_later_same_instance_readiness(health, monkeypatch):
+    from datetime import datetime, timedelta, timezone
+    from api_fastapi.services import lite_infrastructure_service_evidence as evidence
+    monkeypatch.setattr(evidence, "connection", health.connection)
+    process = {"name": "pocket-worker", "pid": 123, "pm2_env": {"pm_uptime": 123456, "restart_time": 2, "status": "online"}}
+    evidence.record_actions([{"event": "restart_attempted", "acted": True, "service": "pocket-worker", "restart_generation": 2}], [process])
+    assert evidence.history()[0]["verification_state"] == "pending"
+    then = (datetime.now(timezone.utc) - timedelta(seconds=10)).isoformat(timespec="seconds").replace("+00:00","Z")
+    with health.connection() as conn:
+        conn.execute("UPDATE lite_system_health_service_owner_evidence SET completed_at=?", (then,))
+    evidence.verify_runtime_contract({"observed_at": health._now(), "services": [{"process": "pocket-worker", "stable": True, "health": "ready"}]}, [process])
+    assert evidence.history()[0]["verification_state"] == "verified"
+    assert "process_instance_digest" not in evidence.history()[0]
+
+
+def test_battery_measurements_do_not_invent_values(health,tmp_path):
+    from api_fastapi.services import lite_infrastructure_host_protection as host
+    supply=tmp_path/"battery"
+    supply.mkdir()
+    (supply/"type").write_text("Battery")
+    (supply/"capacity").write_text("19")
+    (supply/"status").write_text("Discharging")
+    assert host.battery(tmp_path)=={"state":"available","percent":19,"charging":"discharging"}
+    (supply/"capacity").write_text("105")
+    assert host.battery(tmp_path)["percent"] is None
+    (supply/"capacity").write_text("19")
+    second=tmp_path/"second"
+    second.mkdir()
+    (second/"type").write_text("Battery")
+    assert host.battery(tmp_path)["state"]=="unknown"
+
+
+def test_resource_pressure_has_dwell_and_recovery_hysteresis(health,monkeypatch):
+    from api_fastapi.services import lite_infrastructure_host_protection as host
+    monkeypatch.setattr(host,"_pressure",False)
+    monkeypatch.setattr(host,"_pressure_since",None)
+    monkeypatch.setattr(host,"_clear_since",None)
+    low={"percent":15,"charging":"discharging"}
+    charged={"percent":40,"charging":"charging"}
+    assert host._effective("balanced",low,thermal="normal",enabled=True,now=0)=="balanced"
+    assert host._effective("balanced",low,thermal="normal",enabled=True,now=60)=="low_power"
+    assert host._effective("balanced",charged,thermal="normal",enabled=True,now=120)=="low_power"
+    assert host._effective("balanced",charged,thermal="normal",enabled=True,now=240)=="balanced"
+    assert host._effective("maintenance",low,thermal="critical",enabled=False,now=300)=="balanced"
+
+
+def test_sampled_availability_reports_coverage_separately(health,monkeypatch):
+    from api_fastapi.services import lite_infrastructure_reliability as reliability
+    monkeypatch.setattr(reliability.time,"time",lambda: 120000.0)
+    with health.connection() as conn:
+        conn.execute("INSERT INTO lite_system_health_availability_samples VALUES(1999,'api','healthy')")
+        conn.execute("INSERT INTO lite_system_health_availability_samples VALUES(1999,'nats','unknown')")
+    result=reliability.statistics()
+    assert result["known_samples"]==1
+    assert result["observed_availability"]==1.0
+    assert result["observation_coverage"] < 0.001
+    assert result["continuous_uptime"] is None
+
+
+def test_automatic_preference_cannot_qualify_production(health,monkeypatch):
+    from api_fastapi.services import lite_infrastructure_automation as automation
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT","production")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_PRODUCTION_AUTOMATIC","1")
+    assert automation._gate() is False
+    assert automation.public()["source_qualified"] is False
+
+
+def test_cleanup_rejects_symlink_and_hardlink(health,tmp_path):
+    from api_fastapi.services import lite_infrastructure_cleanup as cleanup
+    import os
+    original=tmp_path/"owned"
+    original.write_bytes(b"sample")
+    link=tmp_path/"linked"
+    link.symlink_to(original)
+    with pytest.raises(ValueError):
+        cleanup._identity(link.lstat())
+    hard=tmp_path/"hard"
+    os.link(original,hard)
+    with pytest.raises(ValueError):
+        cleanup._identity(original.lstat())
+
+
+def test_service_control_requires_fresh_stopped_generation(health,monkeypatch):
+    from api_fastapi.services import lite_infrastructure_service_control as control
+    from api_fastapi.services import lite_infrastructure_read_model as model
+    snapshot={"system.processes":{"updated_at":health._now(),"items":[{"name":"pocket-telemetry","status":"online","restart_generation":3}]}}
+    monkeypatch.setattr(model,"_snapshots",lambda:snapshot)
+    with pytest.raises(ValueError,match="stopped_service_not_confirmed"):
+        control.binding("runtime.telemetry.recover")
+    snapshot["system.processes"]["items"][0]["status"]="stopped"
+    assert control.binding("runtime.telemetry.recover")["generation"]==3
+
+
+def test_configuration_binding_does_not_accept_healthy_gateway(health,monkeypatch):
+    from api_fastapi.services import lite_infrastructure_configuration as config
+    from api_fastapi.services import lite_infrastructure_read_model as model
+    data={"system.status":{"runtime":{"observed_at":health._now(),"services":[{"process":"caddy-proxy","desired_state_match":True,"state":"online","restart_generation":4}]}}}
+    monkeypatch.setattr(model,"_snapshots",lambda:data)
+    with pytest.raises(ValueError,match="configuration_mismatch_not_confirmed"):
+        config.binding()
+    data["system.status"]["runtime"]["services"][0]["desired_state_match"]=False
+    assert config.binding()=={"target":"caddy-proxy","restart_generation":4}

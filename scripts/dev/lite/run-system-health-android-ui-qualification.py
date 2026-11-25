@@ -21,6 +21,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
 from urllib import request as urllib_request
 from urllib.error import HTTPError, URLError
@@ -184,11 +185,14 @@ class StandardUserCdpRelay:
 
 def _candidate_server(run: health.SystemHealthAndroidQualification, dist_dir: Path, output_dir: Path) -> subprocess.Popen[str]:
     env = os.environ.copy()
+    browser_recovery_signal = output_dir / "browser-recovery-repair-seen"
+    browser_recovery_signal.unlink(missing_ok=True)
     env.update({
         "POCKETLAB_CANDIDATE_API_LOCAL_PORT": str(run.local_api_port),
         "POCKETLAB_CANDIDATE_API_SCHEME": "https",
         "POCKETLAB_CANDIDATE_API_CA_FILE": str(run.ca_path),
         "LITE_PERF_SOURCE_COMMIT": run.candidate_sha,
+        "POCKETLAB_CANDIDATE_BROWSER_RECOVERY_SIGNAL_FILE": str(browser_recovery_signal),
     })
     log = (output_dir / "candidate-server.log").open("w", encoding="utf-8")
     process = subprocess.Popen(
@@ -282,6 +286,12 @@ def main(argv: list[str] | None = None) -> int:
     candidate_server: subprocess.Popen[str] | None = None
     relay = StandardUserCdpRelay(evidence_dir)
     candidate_owned = False
+    browser_recovery_paused = False
+    browser_recovery_stop = threading.Event()
+    browser_recovery_resumed = threading.Event()
+    browser_recovery_watcher: threading.Thread | None = None
+    browser_recovery_resume_errors: list[str] = []
+    browser_recovery_lock = threading.Lock()
     status = "BLOCKED"
     failure = ""
     ui_evidence: dict = {}
@@ -337,6 +347,76 @@ def main(argv: list[str] | None = None) -> int:
         node = shutil.which("node")
         if not node:
             raise health.QualificationError("repository Node.js toolchain is unavailable")
+
+        browser_recovery_signal = evidence_dir / "browser-recovery-repair-seen"
+        browser_recovery_paused = run._pause_candidate_nats_for_recovery()
+
+        def wait_for_browser_recovery_claim() -> bool:
+            """Wait for the worker owner to claim the admitted browser request."""
+            if run.client is None or not run.session:
+                return False
+            deadline = time.monotonic() + 15.0
+            while time.monotonic() < deadline:
+                incidents = run.client.request("GET", "/api/lite/system-health/incidents", session=run.session)
+                items = incidents.body.get("items") if isinstance(incidents.body, dict) else []
+                if incidents.status == 200 and isinstance(items, list):
+                    for item in items[:40]:
+                        if not isinstance(item, dict):
+                            continue
+                        incident_id = str(item.get("incident_id") or "")
+                        if not incident_id.startswith("health-"):
+                            continue
+                        decisions = run.client.request(
+                            "GET", f"/api/lite/system-health/incidents/{incident_id}/decisions", session=run.session
+                        )
+                        requests = decisions.body.get("recovery_requests") if isinstance(decisions.body, dict) else []
+                        if decisions.status != 200 or not isinstance(requests, list):
+                            continue
+                        if any(
+                            isinstance(request, dict)
+                            and str(request.get("operation_id") or "") == "runtime.consumer.reconnect"
+                            and str(request.get("status") or "") == "executing"
+                            and str(request.get("execution_state") or "") == "running"
+                            for request in requests[:20]
+                        ):
+                            run.results.setdefault("recovery_transport", {})["browser_owner_claim_observed"] = True
+                            return True
+                time.sleep(0.2)
+            return False
+
+        def resume_browser_recovery_once(*, require_claim: bool = False) -> None:
+            with browser_recovery_lock:
+                if browser_recovery_resumed.is_set():
+                    return
+                try:
+                    if require_claim and not wait_for_browser_recovery_claim():
+                        raise health.QualificationError("browser recovery request was not claimed by the isolated worker owner")
+                    run._resume_candidate_nats_after_recovery_admission(browser_recovery_paused)
+                except Exception as exc:  # pragma: no cover - bounded device wrapper
+                    browser_recovery_resume_errors.append(type(exc).__name__)
+                    # Always restore the isolated transport after a failed
+                    # coordination wait so cleanup cannot leave the candidate
+                    # worker disconnected.
+                    if browser_recovery_paused:
+                        with contextlib.suppress(Exception):
+                            run._resume_candidate_nats_after_recovery_admission(True)
+                finally:
+                    browser_recovery_resumed.set()
+
+        def watch_browser_recovery_signal() -> None:
+            deadline = time.monotonic() + 150
+            while not browser_recovery_stop.is_set() and time.monotonic() < deadline:
+                if browser_recovery_signal.is_file():
+                    resume_browser_recovery_once(require_claim=True)
+                    return
+                browser_recovery_stop.wait(0.1)
+
+        browser_recovery_watcher = threading.Thread(
+            target=watch_browser_recovery_signal,
+            name="system-health-browser-recovery",
+            daemon=True,
+        )
+        browser_recovery_watcher.start()
         node_env = os.environ.copy()
         node_env.update({
             "LITE_ANDROID_CDP_URL": CDP_LOCAL_URL, "LITE_BASE_URL": CANDIDATE_URL,
@@ -345,6 +425,13 @@ def main(argv: list[str] | None = None) -> int:
             "LITE_SYSTEM_HEALTH_ANDROID_OUTPUT_DIR": str(evidence_dir),
         })
         node_result = _run([node, str(UI_QUALIFIER)], timeout=180, env=node_env)
+        browser_recovery_stop.set()
+        if browser_recovery_watcher is not None:
+            browser_recovery_watcher.join(timeout=2)
+        if browser_recovery_paused and not browser_recovery_resumed.is_set():
+            resume_browser_recovery_once()
+        if browser_recovery_resume_errors:
+            raise health.QualificationError("isolated browser recovery transport could not be resumed")
         (evidence_dir / "ui-qualifier.log").write_text(_safe_text(node_result.stdout, 6000) + "\n" + _safe_text(node_result.stderr, 6000) + "\n", encoding="utf-8")
         if node_result.returncode != 0:
             raise health.QualificationError("physical Android System Health UI qualifier failed")
@@ -435,6 +522,12 @@ def main(argv: list[str] | None = None) -> int:
         failure = f"{type(exc).__name__}: {_safe_text(exc)}"
         run.results["failure"] = {"type": type(exc).__name__, "message": _safe_text(exc), "sanitized": True}
     finally:
+        browser_recovery_stop.set()
+        if browser_recovery_watcher is not None:
+            browser_recovery_watcher.join(timeout=2)
+        if browser_recovery_paused and not browser_recovery_resumed.is_set():
+            with contextlib.suppress(Exception):
+                resume_browser_recovery_once()
         if status != "PASS":
             with contextlib.suppress(Exception):
                 run.capture_candidate_diagnostics()

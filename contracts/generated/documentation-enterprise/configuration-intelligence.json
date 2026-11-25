@@ -6825,6 +6825,32 @@
       "affects_release": false,
       "affects_runtime": true,
       "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_CANDIDATE_BROWSER_RECOVERY_SIGNAL_FILE",
+      "owner": "repository tooling",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "source-dependent",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "scripts/dev/lite/run-system-health-android-ui-qualification.py",
+        "scripts/dev/lite/ui_performance_candidate_server.py",
+        "tests/backend/test_lite_system_health_android_qualification.py",
+        "tests/backend/test_lite_ui_candidate_server.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "repository tooling"
+      ],
+      "affects_release": false,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
       "name": "POCKETLAB_CANDIDATE_RUNTIME_TRANSPORT",
       "owner": "repository tooling",
       "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -8770,8 +8796,8 @@
         "pocket-lab-final-structure/runtime/api_fastapi/deps.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_assurance_faults.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_harness.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/qualification_context.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_authority.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_automation.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -18700,7 +18726,8 @@
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
         "scripts/dev/lite/run-isolated-runtime-qualification.py",
-        "scripts/dev/lite/run-system-health-android-qualification.py"
+        "scripts/dev/lite/run-system-health-android-qualification.py",
+        "tests/backend/test_lite_system_health_android_qualification.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -21322,6 +21349,7 @@
     },
     {
       "affected_components": [
+        "FastAPI",
         "bootstrap/runtime",
         "repository tooling"
       ],
@@ -21341,11 +21369,11 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_configuration.py",
         "pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_contract.py",
         "pocket-lab-final-structure/runtime/supervisors/pocketlab_runtime_reconciler.py",
         "tests/backend/test_lite_pm2_idempotency.py",
-        "tests/backend/test_lite_pm2_runtime_contract.py",
-        "tests/backend/test_lite_pm2_version_projection.py"
+        "tests/backend/test_lite_pm2_runtime_contract.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -26296,6 +26324,105 @@
     },
     {
       "affected_components": [
+        "FastAPI"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SYSTEM_HEALTH_AUTOMATIC_ADAPTER",
+      "owner": "FastAPI/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_automation.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "FastAPI",
+        "repository tooling"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SYSTEM_HEALTH_MAINTENANCE_ADAPTER",
+      "owner": "FastAPI/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py",
+        "tests/backend/test_lite_system_health.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "FastAPI",
+        "repository tooling"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SYSTEM_HEALTH_PRODUCTION_ASSISTED",
+      "owner": "FastAPI/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_authority.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py",
+        "tests/backend/test_lite_system_health.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "FastAPI",
+        "repository tooling"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SYSTEM_HEALTH_PRODUCTION_AUTOMATIC",
+      "owner": "FastAPI/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_automation.py",
+        "tests/backend/test_lite_system_health.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
         "FastAPI",
         "repository tooling"
       ],
@@ -26314,7 +26441,7 @@
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
-        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py",
         "scripts/dev/lite/run-system-health-android-qualification.py",
         "tests/backend/test_lite_system_health.py",
         "tests/backend/test_lite_system_health_android_qualification.py"
@@ -26341,6 +26468,56 @@
       "secret": false,
       "source": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "FastAPI",
+        "repository tooling"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE",
+      "owner": "FastAPI/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_authority.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_automation.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py",
+        "tests/backend/test_lite_system_health.py"
+      ],
+      "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+    },
+    {
+      "affected_components": [
+        "FastAPI"
+      ],
+      "affects_release": true,
+      "affects_runtime": true,
+      "default": "source-defined/unvalidated",
+      "name": "POCKETLAB_SYSTEM_HEALTH_RESOURCE_ADAPTER",
+      "owner": "FastAPI/runtime",
+      "purpose": "Pocket Lab runtime/development configuration discovered from source",
+      "related_troubleshooting": [
+        "Development Troubleshooting",
+        "Production Troubleshooting"
+      ],
+      "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+      "restart_required": "likely-runtime-restart",
+      "runtime_scope": "runtime or development depending on source",
+      "secret": false,
+      "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_authority.py"
       ],
       "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
     },
@@ -27062,23 +27239,25 @@
     },
     {
       "affected_components": [
+        "FastAPI",
         "repository tooling"
       ],
-      "affects_release": false,
+      "affects_release": true,
       "affects_runtime": true,
       "default": "source-defined/unvalidated",
       "name": "POCKETLAB_WORKER_DURABLE",
-      "owner": "repository tooling",
+      "owner": "FastAPI/runtime",
       "purpose": "Pocket Lab runtime/development configuration discovered from source",
       "related_troubleshooting": [
         "Development Troubleshooting",
         "Production Troubleshooting"
       ],
       "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
-      "restart_required": "source-dependent",
+      "restart_required": "likely-runtime-restart",
       "runtime_scope": "runtime or development depending on source",
       "secret": false,
       "source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py",
         "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py",
         "scripts/dev/lite/run-system-health-android-qualification.py"
       ],

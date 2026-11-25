@@ -4692,7 +4692,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 537,
+  "page_count": 538,
   "page_types": [
     "overview",
     "guide",
@@ -17548,6 +17548,29 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "system-health/p5-p12-implementation-ledger.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:system-health/p5-p12-implementation-ledger",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "system-health/p5-p12-implementation-ledger.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "system-health/p5-p12-implementation-ledger.md",
+      "title": "P5–P12 infrastructure operations implementation ledger",
+      "url": "/system-health/p5-p12-implementation-ledger/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "system-health/qualification-handoff-h0-h6.md"
       ],
       "confidence": "source-derived",
@@ -18712,7 +18735,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "f92ae028701a83d3bc93939ca10a646d776ea5f116bb0b509a5e65bbbf716156",
+  "source_fingerprint": "26e08f13dccbe71276fbce1177b9036bbe59836c5cdb941da1d02445907b143c",
   "top_level": [
     "start-here",
     "use",

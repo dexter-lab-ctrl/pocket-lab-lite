@@ -107,6 +107,7 @@ test('eligible controlled recovery exposes the real governed lifecycle and verif
   await page.getByRole('button', { name: 'Review issue' }).first().click();
   const panel = page.getByRole('dialog', { name: /System Health Manage/i });
   await panel.getByRole('button', { name: 'Review recovery', exact: true }).click();
+  await panel.getByRole('button', { name: 'Confirm recovery', exact: true }).click();
   await expect(panel.locator('p[role="status"]')).toContainText('Verified recovery');
   expect(writes.some(path => path.endsWith('/preflight'))).toBe(true);
   expect(writes.some(path => path.endsWith('/repair'))).toBe(true);
@@ -120,6 +121,7 @@ test('enterprise approval remains visible without implying execution', async ({ 
   await page.getByRole('button', { name: 'Review issue' }).first().click();
   const panel = page.getByRole('dialog', { name: /System Health Manage/i });
   await panel.getByRole('button', { name: 'Review recovery', exact: true }).click();
+  await panel.getByRole('button', { name: 'Confirm recovery', exact: true }).click();
   await expect(panel.locator('p[role="status"]')).toContainText('Approval required');
   await expect(panel).toContainText(/Independent approval is required/i);
 });
@@ -238,4 +240,30 @@ test('offline enrollment is current and removed-device history is read-only', as
   const report = await new AxeBuilder({ page }).include('[role="dialog"]').analyze();
   expect(report.violations.filter(v => ['critical', 'serious'].includes(v.impact || ''))).toEqual([]);
   expect(writes).toEqual([]);
+});
+
+
+test('prepared storage details are on-demand and cannot execute cleanup', async ({ page }) => {
+  await installScenario(page, 'system-health-infrastructure-pressure');
+  const writes: string[] = [];
+  page.on('request', request => { if (request.method() !== 'GET' && request.url().includes('/system-health/')) writes.push(request.url()); });
+  await page.goto('/?screen=system-health');
+  await waitForLiteScreenToSettle(page, 'system-health');
+  await page.getByRole('button', { name: /Manage System Health/i }).click();
+  const panel = page.getByRole('dialog', { name: /System Health Manage/i });
+  await panel.getByRole('button', { name: /Storage and database/i }).click();
+  await expect(panel.getByText('Cleanup protection')).toBeVisible();
+  await expect(panel.getByText('Personal files and media')).toBeVisible();
+  expect(writes).toEqual([]);
+  const report = await new AxeBuilder({ page }).analyze();
+  expect(report.violations.filter(v => ['critical', 'serious'].includes(v.impact || ''))).toEqual([]);
+});
+
+test('automatic evidence is separate from operator requests', async ({ page }) => {
+  await installScenario(page, 'system-health-infrastructure-automatic');
+  await page.goto('/?screen=system-health');
+  await waitForLiteScreenToSettle(page, 'system-health');
+  await expect(page.getByRole('heading', { name: 'Automatic recovery' })).toBeVisible();
+  await page.getByRole('button', { name: 'Review recovery history' }).click();
+  await expect(page.getByText('Automatic recovery evidence', { exact: true })).toBeVisible();
 });

@@ -1359,6 +1359,103 @@
       "writer": "source-defined control-plane service"
     },
     {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_automation_attempts",
+      "indexes": [
+        "lite_system_health_auto_recent",
+        "lite_system_health_auto_singleflight",
+        "sqlite_autoindex_lite_system_health_automation_attempts_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql"
+      ],
+      "name": "lite_system_health_automation_attempts",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_automation_policy",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql"
+      ],
+      "name": "lite_system_health_automation_policy",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_availability_samples",
+      "indexes": [
+        "lite_system_health_availability_service",
+        "sqlite_autoindex_lite_system_health_availability_samples_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql"
+      ],
+      "name": "lite_system_health_availability_samples",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_control_audit",
+      "indexes": [
+        "lite_system_health_control_audit_recent"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql"
+      ],
+      "name": "lite_system_health_control_audit",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
       "classification": "restricted operational metadata",
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
@@ -1414,6 +1511,30 @@
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "control_plane",
+      "id": "table:lite_system_health_host_protection",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql"
+      ],
+      "name": "lite_system_health_host_protection",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "payload_json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
       "id": "table:lite_system_health_incidents",
       "indexes": [
         "idx_lite_system_health_incident_generation",
@@ -1438,6 +1559,64 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0043_system_health_intelligence.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_maintenance_admissions",
+      "indexes": [
+        "lite_system_health_maintenance_recent",
+        "lite_system_health_maintenance_singleflight",
+        "sqlite_autoindex_lite_system_health_maintenance_admissions_2",
+        "sqlite_autoindex_lite_system_health_maintenance_admissions_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0050_system_health_maintenance_admission.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql"
+      ],
+      "name": "lite_system_health_maintenance_admissions",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "command_id",
+        "evidence_json"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0050_system_health_maintenance_admission.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_maintenance_resolutions",
+      "indexes": [
+        "sqlite_autoindex_lite_system_health_maintenance_resolutions_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql"
+      ],
+      "name": "lite_system_health_maintenance_resolutions",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "command_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1474,6 +1653,57 @@
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "control_plane",
+      "id": "table:lite_system_health_owner_recovery_evidence",
+      "indexes": [
+        "lite_system_health_owner_recovery_pending",
+        "lite_system_health_owner_recovery_recent",
+        "sqlite_autoindex_lite_system_health_owner_recovery_evidence_2",
+        "sqlite_autoindex_lite_system_health_owner_recovery_evidence_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0048_system_health_owner_recovery_evidence.sql"
+      ],
+      "name": "lite_system_health_owner_recovery_evidence",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "evidence_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0048_system_health_owner_recovery_evidence.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_preferences",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql"
+      ],
+      "name": "lite_system_health_preferences",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
       "id": "table:lite_system_health_recovery_requests",
       "indexes": [
         "lite_system_health_recovery_single_flight",
@@ -1484,7 +1714,8 @@
         "sqlite_autoindex_lite_system_health_recovery_requests_1"
       ],
       "migration_sources": [
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql"
       ],
       "name": "lite_system_health_recovery_requests",
       "owner": "not a prepared projection",
@@ -1496,7 +1727,8 @@
       ],
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1549,6 +1781,58 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0044_system_health_audit.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_request_authority",
+      "indexes": [
+        "sqlite_autoindex_lite_system_health_request_authority_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql"
+      ],
+      "name": "lite_system_health_request_authority",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_system_health_service_owner_evidence",
+      "indexes": [
+        "lite_system_health_service_owner_recent",
+        "lite_system_health_service_owner_pending",
+        "sqlite_autoindex_lite_system_health_service_owner_evidence_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0051_system_health_service_owner_evidence.sql"
+      ],
+      "name": "lite_system_health_service_owner_evidence",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "evidence_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0051_system_health_service_owner_evidence.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -2869,6 +3153,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "81084650377a487b849259cff5fe88015992935c129196e927c40325fb8884a6"
+    "source_fingerprint": "c71cee04d8d6c3e42e64ef602f64aba7577ee3a70cdc7966ec82e3073da571d4"
   }
 }

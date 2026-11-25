@@ -72,6 +72,13 @@ def system_health_resources(request: Request):
     return health.resource_intelligence()
 
 
+@router.get("/infrastructure")
+def system_health_infrastructure(request: Request):
+    _require_authenticated(request)
+    from ..services import lite_infrastructure_read_model as infrastructure
+    return infrastructure.infrastructure()
+
+
 @router.get("/intelligence")
 def system_health_intelligence(request: Request):
     _require_authenticated(request)
@@ -95,8 +102,19 @@ def system_health_app_diagnostics(app_id: str, request: Request):
 
 @router.get("/policies")
 def system_health_policies(request: Request):
-    _require_authenticated(request)
-    return health.policy()
+    context = _require_authenticated(request)
+    from ..services import lite_infrastructure_authority as authority
+    from ..db.connection import connection
+    result = health.policy()
+    from ..services import lite_infrastructure_automation as automation
+    result["selective_automation"] = automation.public()
+    try:
+        with connection() as conn:
+            authority.require_owner(conn, context)
+        result["owner_controls_available"] = True
+    except PermissionError:
+        result["owner_controls_available"] = False
+    return result
 
 
 @router.get("/repairs")
@@ -143,6 +161,8 @@ def system_health_preflight(incident_id: str, payload: RepairRequest, request: R
 @router.post("/incidents/{incident_id}/repair", status_code=202)
 def system_health_repair(incident_id: str, payload: RepairRequest, request: Request):
     context = _require_authenticated(request, write=True)
+    if not payload.confirm:
+        raise HTTPException(422, detail={"status":"blocked","reason_code":"confirmation_required"})
     found = health.incident(incident_id)
     if found is None:
         raise HTTPException(404, detail={"status": "not_found", "summary": "This problem was not found."})
@@ -153,7 +173,7 @@ def system_health_repair(incident_id: str, payload: RepairRequest, request: Requ
     if replay is not None:
         if replay.get("reasons"):
             raise HTTPException(409, detail={"status": "blocked", "reason_code": replay["reasons"][0], "summary": "The idempotency key is bound to a different recovery request."})
-        return {"status": "admitted", "request": replay.get("request"), "summary": "The existing durable recovery request was returned.", "idempotent_replay": True}
+        return {"status": replay.get("status", "blocked"), "request": replay.get("request"), "summary": "The existing durable recovery request was returned.", "idempotent_replay": True}
     if found["generation"] != payload.expected_generation:
         raise HTTPException(409, detail={"status": "blocked", "reason_code": "incident_generation_changed", "summary": "Status changed. Diagnose again before attempting repair."})
     preflight = health.repair_preflight(incident_id, payload.operation_id, payload.expected_generation)
@@ -235,4 +255,163 @@ def system_health_repair(incident_id: str, payload: RepairRequest, request: Requ
         raise HTTPException(409, detail={"status": "blocked", "reason_code": result["reasons"][0], "summary": "The recovery request was blocked before execution."})
     if decision.get("reason_code") == "approval_required":
         raise HTTPException(409, detail={"status": "approval_required", "request": result.get("request"), "summary": "Independent Enterprise approval is required before recovery can be admitted."})
-    return {"status": "admitted", "request": result.get("request"), "summary": "Recovery was admitted to the existing worker recovery owner."}
+    return {"status": (result.get("request") or {}).get("status", "blocked"), "request": result.get("request"), "summary": "Review the recorded recovery state."}
+
+
+class PreferenceRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    expected_revision: int = Field(ge=0)
+    recovery_mode: str = Field(pattern="^(monitor|assisted)$")
+    resource_mode: str = Field(pattern="^(balanced|low_power|maintenance)$")
+
+
+def _control_error(exc: Exception):
+    if isinstance(exc, PermissionError):
+        raise HTTPException(403, detail={"reason_code": "owner_required", "message": "A current Owner session is required."}) from exc
+    if isinstance(exc, LookupError):
+        raise HTTPException(404, detail={"reason_code": "request_not_found"}) from exc
+    raise HTTPException(409, detail={"reason_code": str(exc), "message": "The operation is no longer eligible."}) from exc
+
+
+@router.put("/preferences")
+def system_health_preferences(payload: PreferenceRequest, request: Request):
+    context = _require_authenticated(request, write=True)
+    from ..services import lite_infrastructure_authority as authority
+    try:
+        return authority.save_preferences(context, **payload.model_dump())
+    except (PermissionError, ValueError) as exc:
+        _control_error(exc)
+
+
+@router.post("/recovery-requests/{request_id}/cancel")
+def system_health_cancel_request(request_id: str, request: Request):
+    context = _require_authenticated(request, write=True)
+    from ..services import lite_infrastructure_authority as authority
+    try:
+        return authority.cancel_request(context, request_id)
+    except (PermissionError, LookupError, ValueError) as exc:
+        _control_error(exc)
+
+
+class DiagnosticExportRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    scope: str = Field(pattern="^(infrastructure|recovery_statistics)$")
+    confirm: bool
+
+
+@router.post("/diagnostic-export")
+def system_health_diagnostic_export(payload: DiagnosticExportRequest, request: Request):
+    context = _require_authenticated(request, write=True)
+    from ..services import lite_infrastructure_authority as authority
+    from ..services import lite_infrastructure_read_model as model
+    from ..db.connection import connection, begin_immediate
+    if not payload.confirm:
+        raise HTTPException(422, detail={"reason_code": "confirmation_required"})
+    try:
+        with connection() as conn:
+            authority.require_owner(conn, context)
+        # Explicit scope, no incident identifiers, raw logs, credentials, paths,
+        # network addresses, database content or arbitrary file selection.
+        content = model.infrastructure() if payload.scope == "infrastructure" else model.reliability()
+        with connection() as conn:
+            with begin_immediate(conn):
+                actor = authority.require_owner(conn, context)
+                authority.audit(conn, actor, "diagnostics_exported", payload.scope)
+    except PermissionError as exc:
+        _control_error(exc)
+    from fastapi.responses import JSONResponse
+    return JSONResponse({"scope": payload.scope, "created_at": health._now(), "sanitized": True, "data": content},
+                        headers={"Cache-Control": "no-store", "Content-Disposition": 'attachment; filename="pocketlab-system-health.json"'})
+
+
+class MaintenanceRequest(BaseModel):
+    model_config = {"extra":"forbid"}
+    operation_id: str = Field(pattern="^(storage[.]evidence[.](preview|retention)|storage[.](logs|temp)[.](preview|cleanup)|sqlite[.]checkpoint[.]passive|recovery[.]database[.]rehearse|projection[.]reconcile|runtime[.](telemetry|server_agent)[.]recover|runtime[.]configuration[.]restore)$")
+    preview_id: str = Field(default="",max_length=80)
+    idempotency_key: str = Field(min_length=16,max_length=128)
+    confirm: bool
+
+
+@router.get("/maintenance")
+def system_health_maintenance_history(request: Request):
+    context = _require_authenticated(request)
+    from ..services import lite_infrastructure_authority as authority
+    from ..services import lite_infrastructure_maintenance as maintenance
+    from ..db.connection import connection
+    try:
+        with connection() as conn:
+            authority.require_owner(conn,context)
+    except PermissionError as exc:
+        _control_error(exc)
+    return {"items":maintenance.history(),"available_operations":[op for op in sorted(maintenance.OPERATIONS) if maintenance.enabled(op)]}
+
+
+@router.post("/maintenance",status_code=202)
+async def system_health_maintenance_request(payload: MaintenanceRequest, request: Request):
+    context = _require_authenticated(request,write=True)
+    from ..services import lite_infrastructure_maintenance as maintenance
+    from ..services.action_queue import submit_domain_command
+    import asyncio
+    try:
+        result,created = await asyncio.to_thread(maintenance.admit,context,payload.operation_id,payload.preview_id,payload.idempotency_key,payload.confirm)
+    except (PermissionError,ValueError) as exc:
+        _control_error(exc)
+    except lite_policy_opa.PolicyDecisionError as exc:
+        raise HTTPException(exc.status_code,detail={"reason_code":exc.reason_code,"message":exc.message}) from exc
+    if created:
+        try:
+            await submit_domain_command(maintenance.SUBJECT,"lite.system_health.maintenance.queued",{"command_id":result["command_id"]})
+        except Exception as exc:
+            # Publication may have succeeded before an evidence error. Never
+            # resubmit the same admission blindly or assert execution failed.
+            raise HTTPException(503,detail={"reason_code":"delivery_unconfirmed","command_id":result["command_id"],
+                                           "message":"Delivery is unconfirmed; review the recorded operation."}) from exc
+    return result
+
+
+class ResolveMaintenanceRequest(BaseModel):
+    model_config = {"extra":"forbid"}
+    confirm: bool
+
+
+@router.post("/maintenance/{command_id}/resolve")
+def system_health_resolve_maintenance(command_id: str, payload: ResolveMaintenanceRequest, request: Request):
+    context = _require_authenticated(request,write=True)
+    from ..services import lite_infrastructure_maintenance as maintenance
+    try:
+        return maintenance.resolve_uncertain(context,command_id,confirm=payload.confirm)
+    except BlockingIOError as exc:
+        raise HTTPException(409, detail={"reason_code":"owner_still_running"}) from exc
+    except (PermissionError,LookupError,ValueError) as exc:
+        _control_error(exc)
+    except lite_policy_opa.PolicyDecisionError as exc:
+        raise HTTPException(exc.status_code,detail={"reason_code":exc.reason_code,"message":exc.message}) from exc
+
+
+@router.post("/maintenance/{command_id}/cancel")
+def system_health_cancel_maintenance(command_id: str, request: Request):
+    context = _require_authenticated(request,write=True)
+    from ..services import lite_infrastructure_maintenance as maintenance
+    try:
+        return maintenance.cancel_queued(context,command_id)
+    except (PermissionError,LookupError,ValueError) as exc:
+        _control_error(exc)
+
+
+class AutomaticPolicyRequest(BaseModel):
+    model_config={"extra":"forbid"}
+    expected_revision: int=Field(ge=0)
+    enabled: bool
+    confirm: bool
+
+
+@router.put("/automatic-policy")
+def system_health_automatic_policy(payload: AutomaticPolicyRequest,request: Request):
+    context=_require_authenticated(request,write=True)
+    from ..services import lite_infrastructure_automation as automation
+    try:
+        return automation.save(context,**payload.model_dump())
+    except (PermissionError,ValueError) as exc:
+        _control_error(exc)
+    except lite_policy_opa.PolicyDecisionError as exc:
+        raise HTTPException(exc.status_code,detail={"reason_code":exc.reason_code,"message":exc.message}) from exc

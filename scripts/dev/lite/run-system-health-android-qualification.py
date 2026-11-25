@@ -763,6 +763,7 @@ class SystemHealthAndroidQualification:
         self.remote_api_port = 0
         self.api: Any | None = None
         self.worker: Any | None = None
+        self.nats_tunnel: Any | None = None
         self.driver: Any | None = None
         self.recovery_fixture: Any | None = None
         self.tunnels: list[Any] = []
@@ -945,10 +946,12 @@ class SystemHealthAndroidQualification:
             # ("POCKETLAB_QUALIFICATION_OWNER": "0"). The browser UI lane
             # opts into the existing non-destructive owner bridge explicitly.
             "POCKETLAB_ENVIRONMENT": "qualification", "POCKETLAB_HARNESS_ENABLED": "1", "POCKETLAB_HARNESS_DESTRUCTIVE": "0", "POCKETLAB_QUALIFICATION_OWNER": self.qualification_owner_flag, "POCKETLAB_TEST_AUTH_BYPASS": "0",
-            # Controlled recovery is enabled only inside the isolated browser
-            # candidate. The security-assurance lane and installed runtime
-            # remain default-off.
-            "POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1" if self.browser_ui else "0",
+            # The adapter is enabled only inside this disposable qualification
+            # candidate so the backend lane can exercise its fail-closed
+            # denial contract. The security-assurance profile remains
+            # non-owner and cannot execute recovery; the installed runtime and
+            # production activation remain default-off.
+            "POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER": "1",
             "POCKETLAB_HARNESS_BOOTSTRAP_APPROVED": "1", "POCKETLAB_HARNESS_BOOTSTRAP_PROFILE": self.bootstrap_profile, "POCKETLAB_HARNESS_RUNTIME_ID": f"qualification-{self.run_id}",
             "POCKETLAB_HARNESS_BOOTSTRAP_PRINCIPAL_ID": self.principal_id, "POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT": self.fingerprint, "POCKETLAB_HARNESS_PROVISIONING_TOKEN": self.provisioning_token,
             "POCKETLAB_STATE_DIR": f"{self.remote_root}/state", "POCKETLAB_LITE_DB_PATH": f"{self.remote_root}/state/{SCHEMA_DB_NAME}", "POCKETLAB_BASE_DIR": f"{self.remote_root}/base", "POCKETLAB_API_DIR": f"{self.remote_root}/api", "POCKETLAB_IAC_DIR": f"{self.remote_root}/iac",
@@ -960,7 +963,7 @@ class SystemHealthAndroidQualification:
             "POCKETLAB_API_BIND": "127.0.0.1", "POCKETLAB_API_PORT": str(remote_api_port), "POCKETLAB_OPA_URL": opa_origin, "POCKETLAB_OPA_ACTIVE_POLICY_DIR": f"{self.remote_root}/opa/active",
             "POCKETLAB_NATS_URL": nats_origin, "POCKETLAB_LITE_PUBLIC_NATS_URL": nats_origin, "POCKETLAB_NATS_JETSTREAM": "1", "POCKETLAB_NATS_REQUIRED": "1", "POCKETLAB_NATS_REQUIRE_JETSTREAM": "1", "POCKETLAB_NATS_NAME": f"qualification-{self.run_id}",
             "POCKETLAB_NATS_USER": self.nats.user if self.nats else "", "POCKETLAB_NATS_PASSWORD": self.nats.password if self.nats else "", "POCKETLAB_AGENT_NATS_USER": self.nats.user if self.nats else "", "POCKETLAB_AGENT_NATS_PASSWORD": self.nats.password if self.nats else "",
-            "POCKETLAB_NATS_INITIAL_CONNECT_DEADLINE": "5", "POCKETLAB_NATS_RECONNECT_WAIT": "1", "POCKETLAB_NATS_RECONNECT_MIN_SECONDS": "1", "POCKETLAB_NATS_RECONNECT_MAX_SECONDS": "5", "POCKETLAB_NATS_WATCHDOG_SECONDS": "2",
+            "POCKETLAB_NATS_INITIAL_CONNECT_DEADLINE": "5", "POCKETLAB_NATS_RECONNECT_WAIT": "30", "POCKETLAB_NATS_RECONNECT_MIN_SECONDS": "1", "POCKETLAB_NATS_RECONNECT_MAX_SECONDS": "5", "POCKETLAB_NATS_WATCHDOG_SECONDS": "2",
             "POCKETLAB_WORKER_DURABLE": "pocketlab_command_worker_v1", "POCKETLAB_WORKER_QUEUE": "pocketlab_command_worker_v1", "POCKETLAB_WORKER_RECOVERY_SECONDS": "2", "POCKETLAB_WORKER_HEARTBEAT_SECONDS": "5", "POCKETLAB_WORKER_NATS_RETRY_SECONDS": "1", "POCKETLAB_JETSTREAM_MAX_BYTES": "16777216", "POCKETLAB_QUALIFICATION_LOG_DIR": f"{self.remote_root}/logs", "POCKETLAB_DISABLE_RELEASE_UPDATER": "1",
             "POCKETLAB_LITE_SECURE_ORIGIN": "", "POCKETLAB_SECURE_ORIGIN": "", "CADDYFILE": "", "POCKET_LAB_CADDYFILE": "", "SSL_CERT_FILE": f"{self.remote_root}/qualification-ca.pem", "REQUESTS_CA_BUNDLE": f"{self.remote_root}/qualification-ca.pem",
         }
@@ -974,6 +977,7 @@ class SystemHealthAndroidQualification:
             local_port=self.nats.port, target_port=self.nats.port, remote_port=0,
         )
         reverse.start()
+        self.nats_tunnel = reverse
         self.tunnels.append(reverse)
         opa_tunnel = self.controller.AndroidTunnel(
             host=self.remote.host, run_id=self.run_id, kind="system-health-opa", log=self.paths.logs / "ssh-opa.log", direction="reverse",
@@ -1026,6 +1030,59 @@ class SystemHealthAndroidQualification:
             raise QualificationError("candidate worker exited during readiness")
         validate_candidate_readiness(api_status=200, api_owned=self.api.alive(), worker_owned=self.worker.alive())
         self.results["candidate_runtime"] = {"status": "PASS", "candidate_sha": self.candidate_sha, "api_owned": True, "worker_owned": True, "api_loopback_only": True, "production_pm2_used": False, "production_caddy_used": False}
+
+    def _pause_candidate_nats_for_recovery(self) -> bool:
+        """Create a bounded unhealthy owner state in the isolated candidate only."""
+        if not self.browser_ui or self.nats_tunnel is None:
+            return False
+        # The candidate environment already contains the first dynamic
+        # reverse-forward port. Pin that owned port before restarting the
+        # tunnel; otherwise the phone would receive a new port while the
+        # worker still points at the original NATS origin.
+        if self.nats_tunnel.remote_port:
+            self.nats_tunnel.requested_remote_port = int(self.nats_tunnel.remote_port)
+        if not self.nats_tunnel.stop():
+            raise QualificationError("candidate NATS tunnel ownership could not be paused")
+        # Let the worker's existing disconnect callback publish the unhealthy
+        # owner state before an independent API admission request is sent.
+        # A fixed sleep is not sufficient on Termux: the SSH process can close
+        # before the NATS client and its prepared projection observe the loss.
+        # This is a read-only prepared read; it does not collect, mutate, or
+        # execute anything on the candidate API path.
+        if self.client is None or not self.session:
+            raise QualificationError("candidate recovery transport has no authenticated read session")
+        deadline = time.monotonic() + 30.0
+        last_status = "unknown"
+        last_response = 0
+        while time.monotonic() < deadline:
+            response = self.client.request("GET", "/api/lite/system/health", session=self.session)
+            last_response = response.status
+            if response.status == 200:
+                components = response.body.get("components") if isinstance(response.body, dict) else None
+                if isinstance(components, dict):
+                    last_status = str(components.get("nats") or "unknown").strip().lower()
+                    if last_status in {"degraded", "unavailable", "unhealthy"}:
+                        self.results["recovery_transport"] = {
+                            "status": "PASS",
+                            "candidate_nats_tunnel_paused": True,
+                            "candidate_nats_prepared_status": last_status,
+                            "production_transport_touched": False,
+                        }
+                        return True
+            time.sleep(0.5)
+        raise QualificationError(
+            f"candidate NATS disconnect was not observed by prepared health read (status={last_status}, response={last_response})"
+        )
+
+    def _resume_candidate_nats_after_recovery_admission(self, paused: bool) -> None:
+        if not paused or self.nats_tunnel is None:
+            return
+        self.nats_tunnel.start()
+        self.results["recovery_transport"] = {
+            "status": "PASS",
+            "candidate_nats_tunnel_restarted": True,
+            "production_transport_touched": False,
+        }
 
     def _remote_probe(self, *, expected: int | None = None) -> dict[str, Any]:
         assert self.remote is not None
@@ -1270,7 +1327,11 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
                 "confirm": True,
             }
             preflight = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/preflight", repair_payload, session=self.session)
-            repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
+            nats_paused = self._pause_candidate_nats_for_recovery()
+            try:
+                repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
+            finally:
+                self._resume_candidate_nats_after_recovery_admission(nats_paused)
             repair_detail = response_detail(repair)
             repair_attempts.append({
                 "attempt": attempt,
@@ -1278,6 +1339,19 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
                 "repair_status": repair.status,
                 "repair_reason_code": _safe_text(repair_detail.get("reason_code"), 80),
             })
+            if not self.browser_ui and repair.status == 403:
+                # The security-assurance profile is intentionally not granted
+                # the qualification-owner recovery capability. Exercise the
+                # same request again, then prove generation fencing and
+                # anonymous-write rejection without treating the expected
+                # fail-closed 403 as an execution failure.
+                replay = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
+                stale = dict(repair_payload)
+                stale["expected_generation"] = generation + 99
+                stale["idempotency_key"] = f"{repair_payload['idempotency_key']}-stale"
+                stale_repair = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", stale, session=self.session)
+                unauthorized = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/diagnose")
+                break
             if repair.status == 202:
                 replay = self.client.request("POST", f"/api/lite/system-health/incidents/{incident_id}/repair", repair_payload, session=self.session)
                 stale = dict(repair_payload)
@@ -1328,9 +1402,12 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
             if not lifecycle or lifecycle[-1] != "verified":
                 raise QualificationError("System Health recovery did not reach independently verified state")
         else:
-            if preflight.status != 200 or repair.status != 409 or replay.status != 409 or stale_repair.status != 409 or unauthorized.status != 401:
+            if preflight.status != 200 or repair.status not in {403, 409} or stale_repair.status != 409 or unauthorized.status != 401:
                 raise QualificationError("System Health repair denial/authentication contract failed")
-            if body.get("status") != "blocked" or body.get("recorded") is not True:
+            if repair.status == 403:
+                if body.get("status") != "denied" or body.get("reason_code") != "harness_capability_denied" or replay.status != 403:
+                    raise QualificationError("System Health capability denial was not fail-closed")
+            elif body.get("status") != "blocked" or body.get("recorded") is not True or replay.status != 409:
                 raise QualificationError("System Health repair denial was not fail-closed")
         if stale_body.get("reason_code") != "incident_generation_changed":
             raise QualificationError("System Health stale generation was not rejected")
@@ -1338,7 +1415,7 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
             "status": "PASS", "anonymous_read_rejected": True, "authenticated_routes": route_results,
             "incident_id_class": "deterministic_health_identity", "incident_generation": generation, "incident_state": incident.get("state"),
             "detail": detail.status, "diagnosis": diagnosis.status, "preflight": preflight.status, "repair": repair.status,
-            "idempotent_replay": replay.status in {202, 409}, "generation_fencing": stale_body.get("reason_code"), "unauthorized_write": unauthorized.status,
+            "idempotent_replay": replay.status in {202, 409}, "denial_replay": (not self.browser_ui and replay.status == repair.status), "generation_fencing": stale_body.get("reason_code"), "unauthorized_write": unauthorized.status,
             "app_diagnostics_status": app.status, "new_executor_enabled": False, "controlled_recovery_verified": self.browser_ui,
             "recovery_lifecycle": lifecycle, "raw_evidence_exposed": False,
         }
@@ -1493,6 +1570,12 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
             self.results.setdefault("isolated_sqlite", {})["phone_after_migration"] = after
             self._run_projection_driver()
             self._bootstrap()
+            # The backend-only lane owns its own bounded degraded projection
+            # fixture.  Without this, the API recovery contract is exercised
+            # against whichever incidental observations the candidate startup
+            # produced, so the required eligible NATS target is never
+            # guaranteed and the lane can fail before testing authorization.
+            self._start_recovery_projection_fixture()
             self._qualify_api()
             self._concurrency()
             self._measure()

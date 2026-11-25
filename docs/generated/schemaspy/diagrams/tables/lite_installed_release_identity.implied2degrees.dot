@@ -16,6 +16,12 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
   "human_identities":"elipses":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_installed_release_identity":"schema_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_revision_events":"elipses":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_system_health_automation_attempts":"elipses":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_system_health_automation_policy":"elipses":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_system_health_automation_policy":"elipses":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_system_health_automation_policy":"elipses":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_system_health_request_authority":"elipses":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_system_health_request_authority":"elipses":w -> "auth_sessions":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "owner_approved_operations":"elipses":w -> "human_identities":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "owner_approved_operations":"elipses":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "owner_approved_operations":"elipses":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
@@ -41,7 +47,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="94" HEIGHT="16"><B>auth_sessions</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">5 &gt;</TD></TR>
     </TABLE>>
     URL="auth_sessions.html"
     target="_top"
@@ -163,6 +169,39 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
     target="_top"
     tooltip="lite_revision_events"
   ];
+  "lite_system_health_automation_attempts" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="277" HEIGHT="16"><B>lite_system_health_automation_attempts</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="lite_system_health_automation_attempts.html"
+    target="_top"
+    tooltip="lite_system_health_automation_attempts"
+  ];
+  "lite_system_health_automation_policy" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="255" HEIGHT="16"><B>lite_system_health_automation_policy</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="lite_system_health_automation_policy.html"
+    target="_top"
+    tooltip="lite_system_health_automation_policy"
+  ];
+  "lite_system_health_request_authority" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="252" HEIGHT="16"><B>lite_system_health_request_authority</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="lite_system_health_request_authority.html"
+    target="_top"
+    tooltip="lite_system_health_request_authority"
+  ];
   "owner_approved_operations" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -202,7 +241,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="130" HEIGHT="16"><B>schema_migrations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="version" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="130" HEIGHT="16">version</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">16 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">21 &gt;</TD></TR>
     </TABLE>>
     URL="schema_migrations.html"
     target="_top"
