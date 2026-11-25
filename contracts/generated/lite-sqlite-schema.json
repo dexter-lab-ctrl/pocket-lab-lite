@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 47,
+    "migration_count": 54,
     "objects": [
       {
         "checks": [],
@@ -7469,6 +7469,339 @@
         "writer": "source-defined control-plane service"
       },
       {
+        "checks": [
+          "operation_id='projection.reconcile'",
+          "status IN ('pending','verified','unavailable'"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "attempt_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "policy_version",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "operation_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "requested_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "completed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "decision_id",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "requested_at"
+            ],
+            "name": "lite_system_health_auto_recent",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              null
+            ],
+            "name": "lite_system_health_auto_singleflight",
+            "origin": "c",
+            "partial": true,
+            "unique": true
+          },
+          {
+            "columns": [
+              "attempt_id"
+            ],
+            "name": "sqlite_autoindex_lite_system_health_automation_attempts_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql"
+        ],
+        "name": "lite_system_health_automation_attempts",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE lite_system_health_automation_attempts (\n    attempt_id TEXT PRIMARY KEY,\n    policy_version INTEGER NOT NULL,\n    operation_id TEXT NOT NULL CHECK(operation_id='projection.reconcile'),\n    status TEXT NOT NULL CHECK(status IN ('pending','verified','unavailable')),\n    requested_at TEXT NOT NULL,\n    completed_at TEXT,\n    decision_id TEXT NOT NULL\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "singleton_id=1",
+          "revision>0",
+          "enabled IN (0,1"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "singleton_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "enabled",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "owner_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "owner_auth_version",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "membership_version",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "configuration_version",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "policy_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "decision_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql"
+        ],
+        "name": "lite_system_health_automation_policy",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE lite_system_health_automation_policy (\n    singleton_id INTEGER PRIMARY KEY CHECK(singleton_id=1),\n    revision INTEGER NOT NULL CHECK(revision>0),\n    enabled INTEGER NOT NULL CHECK(enabled IN (0,1)),\n    owner_id TEXT NOT NULL,\n    owner_auth_version INTEGER NOT NULL,\n    membership_version INTEGER NOT NULL,\n    configuration_version INTEGER NOT NULL,\n    policy_revision TEXT NOT NULL,\n    decision_id TEXT NOT NULL,\n    updated_at TEXT NOT NULL\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "state IN ('healthy','unhealthy','unknown'"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "bucket",
+            "nullable": false,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "service_id",
+            "nullable": false,
+            "primary_key_position": 2
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "state",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "service_id",
+              "bucket"
+            ],
+            "name": "lite_system_health_availability_service",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "bucket",
+              "service_id"
+            ],
+            "name": "sqlite_autoindex_lite_system_health_availability_samples_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql"
+        ],
+        "name": "lite_system_health_availability_samples",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE lite_system_health_availability_samples (\n    bucket INTEGER NOT NULL,\n    service_id TEXT NOT NULL,\n    state TEXT NOT NULL CHECK(state IN ('healthy','unhealthy','unknown')),\n    PRIMARY KEY(bucket,service_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "event_type IN ('preferences_changed','recovery_cancelled','diagnostics_exported'"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "event_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "actor_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "event_type",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "subject_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "occurred_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "event_id"
+            ],
+            "name": "lite_system_health_control_audit_recent",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql"
+        ],
+        "name": "lite_system_health_control_audit",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE lite_system_health_control_audit (\n    event_id INTEGER PRIMARY KEY AUTOINCREMENT,\n    actor_id TEXT NOT NULL,\n    event_type TEXT NOT NULL CHECK(event_type IN ('preferences_changed','recovery_cancelled','diagnostics_exported')),\n    subject_id TEXT NOT NULL DEFAULT '',\n    occurred_at TEXT NOT NULL\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
         "checks": [],
         "classification": "restricted operational metadata",
         "columns": [
@@ -7647,6 +7980,61 @@
         "semantic_status": "inferred",
         "sensitive_fields": [],
         "sql": "CREATE TABLE lite_system_health_events (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  incident_id TEXT NOT NULL,\n  generation INTEGER NOT NULL,\n  event_type TEXT NOT NULL,\n  created_at TEXT NOT NULL,\n  safe_summary TEXT NOT NULL\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "singleton_id=1",
+          "length(payload_json"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "singleton_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "observed_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "metadata_observed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "payload_json",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql"
+        ],
+        "name": "lite_system_health_host_protection",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "payload_json"
+        ],
+        "sql": "CREATE TABLE lite_system_health_host_protection (\n    singleton_id INTEGER PRIMARY KEY CHECK(singleton_id=1),\n    observed_at TEXT NOT NULL,\n    metadata_observed_at TEXT,\n    payload_json TEXT NOT NULL CHECK(length(payload_json)<=4096)\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -7843,6 +8231,260 @@
       },
       {
         "checks": [
+          "operation_id IN ('storage.evidence.preview','storage.evidence.retention','sqlite.checkpoint.passive','recovery.database.rehearse','projection.reconcile','storage.logs.preview','storage.logs.cleanup','storage.temp.preview','storage.temp.cleanup','runtime.telemetry.recover','runtime.server_agent.recover','runtime.configuration.restore'",
+          "status IN ('queued','executing','verified','blocked','uncertain','expired','cancelled'",
+          "length(candidate_json",
+          "length(evidence_json"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "command_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "operation_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "actor_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "session_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "policy_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "decision_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "idempotency_digest",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "preview_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "requested_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "completed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'[]'",
+            "name": "candidate_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "'{}'",
+            "name": "evidence_json",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "requested_at"
+            ],
+            "name": "lite_system_health_maintenance_recent",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              null
+            ],
+            "name": "lite_system_health_maintenance_singleflight",
+            "origin": "c",
+            "partial": true,
+            "unique": true
+          },
+          {
+            "columns": [
+              "idempotency_digest"
+            ],
+            "name": "sqlite_autoindex_lite_system_health_maintenance_admissions_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "command_id"
+            ],
+            "name": "sqlite_autoindex_lite_system_health_maintenance_admissions_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0050_system_health_maintenance_admission.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql"
+        ],
+        "name": "lite_system_health_maintenance_admissions",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "command_id",
+          "evidence_json"
+        ],
+        "sql": "CREATE TABLE lite_system_health_maintenance_admissions (\n    command_id TEXT PRIMARY KEY,\n    operation_id TEXT NOT NULL CHECK(operation_id IN ('storage.evidence.preview','storage.evidence.retention','sqlite.checkpoint.passive','recovery.database.rehearse','projection.reconcile','storage.logs.preview','storage.logs.cleanup','storage.temp.preview','storage.temp.cleanup','runtime.telemetry.recover','runtime.server_agent.recover','runtime.configuration.restore')),\n    actor_id TEXT NOT NULL,\n    session_id TEXT NOT NULL,\n    policy_revision TEXT NOT NULL,\n    decision_id TEXT NOT NULL,\n    idempotency_digest TEXT NOT NULL UNIQUE,\n    preview_id TEXT NOT NULL DEFAULT '',\n    status TEXT NOT NULL CHECK(status IN ('queued','executing','verified','blocked','uncertain','expired','cancelled')),\n    requested_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    completed_at TEXT,\n    candidate_json TEXT NOT NULL DEFAULT '[]' CHECK(length(candidate_json)<=32768),\n    evidence_json TEXT NOT NULL DEFAULT '{}' CHECK(length(evidence_json)<=4096)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "disposition='closed_unverified'"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "command_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "actor_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "decision_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "policy_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "resolved_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "disposition",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "command_id",
+            "id": 0,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "lite_system_health_maintenance_admissions",
+            "sequence": 0,
+            "to": "command_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "command_id"
+            ],
+            "name": "sqlite_autoindex_lite_system_health_maintenance_resolutions_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql"
+        ],
+        "name": "lite_system_health_maintenance_resolutions",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "command_id"
+        ],
+        "sql": "CREATE TABLE lite_system_health_maintenance_resolutions (\n    command_id TEXT PRIMARY KEY REFERENCES lite_system_health_maintenance_admissions(command_id) ON DELETE CASCADE,\n    actor_id TEXT NOT NULL,\n    decision_id TEXT NOT NULL,\n    policy_revision TEXT NOT NULL,\n    resolved_at TEXT NOT NULL,\n    disposition TEXT NOT NULL CHECK(disposition='closed_unverified')\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
           "enrollment_generation >= 0"
         ],
         "classification": "internal operational metadata",
@@ -7934,6 +8576,221 @@
         "semantic_status": "inferred",
         "sensitive_fields": [],
         "sql": "CREATE TABLE lite_system_health_observations (\n  source TEXT NOT NULL,\n  target_id TEXT NOT NULL,\n  status TEXT NOT NULL,\n  observed_at TEXT NOT NULL,\n  source_revision TEXT NOT NULL DEFAULT '',\n  summary TEXT NOT NULL DEFAULT '', enrollment_generation INTEGER NOT NULL DEFAULT 0\n    CHECK(enrollment_generation >= 0),\n  PRIMARY KEY (source, target_id)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "operation_id='runtime.consumer.reconnect'",
+          "execution_owner='nats_worker_watchdog'",
+          "target_scope='local_worker_consumer'",
+          "consumer_generation >= 0",
+          "verification_state IN ('pending','verified','failed','unavailable'"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "evidence_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "operation_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "execution_owner",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "target_scope",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "owner_instance",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "consumer_generation",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "incident_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "incident_generation",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "started_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "completed_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "verification_state",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "verified_at",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "verification_state",
+              "completed_at"
+            ],
+            "name": "lite_system_health_owner_recovery_pending",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "completed_at"
+            ],
+            "name": "lite_system_health_owner_recovery_recent",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "owner_instance",
+              "consumer_generation"
+            ],
+            "name": "sqlite_autoindex_lite_system_health_owner_recovery_evidence_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "evidence_id"
+            ],
+            "name": "sqlite_autoindex_lite_system_health_owner_recovery_evidence_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0048_system_health_owner_recovery_evidence.sql"
+        ],
+        "name": "lite_system_health_owner_recovery_evidence",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "evidence_id"
+        ],
+        "sql": "CREATE TABLE lite_system_health_owner_recovery_evidence (\n    evidence_id TEXT PRIMARY KEY,\n    operation_id TEXT NOT NULL CHECK(operation_id='runtime.consumer.reconnect'),\n    execution_owner TEXT NOT NULL CHECK(execution_owner='nats_worker_watchdog'),\n    target_scope TEXT NOT NULL CHECK(target_scope='local_worker_consumer'),\n    owner_instance TEXT NOT NULL,\n    consumer_generation INTEGER NOT NULL CHECK(consumer_generation >= 0),\n    incident_id TEXT,\n    incident_generation INTEGER,\n    started_at TEXT NOT NULL,\n    completed_at TEXT NOT NULL,\n    verification_state TEXT NOT NULL CHECK(verification_state IN ('pending','verified','failed','unavailable')),\n    verified_at TEXT,\n    UNIQUE(owner_instance,consumer_generation)\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "singleton_id=1",
+          "revision>=1",
+          "recovery_mode IN ('monitor','assisted'",
+          "resource_mode IN ('balanced','low_power','maintenance'"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "singleton_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "recovery_mode",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "resource_mode",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql"
+        ],
+        "name": "lite_system_health_preferences",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE lite_system_health_preferences (\n    singleton_id INTEGER PRIMARY KEY CHECK(singleton_id=1),\n    revision INTEGER NOT NULL CHECK(revision>=1),\n    recovery_mode TEXT NOT NULL CHECK(recovery_mode IN ('monitor','assisted')),\n    resource_mode TEXT NOT NULL CHECK(resource_mode IN ('balanced','low_power','maintenance')),\n    updated_at TEXT NOT NULL\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -8256,7 +9113,8 @@
           }
         ],
         "migration_sources": [
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql"
         ],
         "name": "lite_system_health_recovery_requests",
         "projection_owner": "not a prepared projection",
@@ -8557,6 +9415,208 @@
         "semantic_status": "inferred",
         "sensitive_fields": [],
         "sql": "CREATE TABLE lite_system_health_repair_denials (\n  denial_id TEXT PRIMARY KEY,\n  incident_id TEXT NOT NULL,\n  incident_generation INTEGER NOT NULL,\n  idempotency_digest TEXT NOT NULL UNIQUE,\n  operation_id TEXT NOT NULL,\n  risk_class TEXT NOT NULL,\n  denied_at TEXT NOT NULL,\n  actor_class TEXT NOT NULL,\n  reason_code TEXT NOT NULL,\n  safe_summary TEXT NOT NULL\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "length(session_id",
+          "actor_role IN ('Owner','Admin','Operator','Qualification'",
+          "authorization_version >= 1",
+          "enterprise_enabled IN (0,1",
+          "confirmed IN (0,1"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "request_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "session_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "actor_role",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "authorization_version",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "enterprise_enabled",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "confirmed",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "request_id",
+            "id": 0,
+            "on_delete": "CASCADE",
+            "on_update": "NO ACTION",
+            "parent_table": "lite_system_health_recovery_requests",
+            "sequence": 0,
+            "to": "request_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "request_id"
+            ],
+            "name": "sqlite_autoindex_lite_system_health_request_authority_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql"
+        ],
+        "name": "lite_system_health_request_authority",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE lite_system_health_request_authority (\n    request_id TEXT PRIMARY KEY REFERENCES lite_system_health_recovery_requests(request_id) ON DELETE CASCADE,\n    session_id TEXT NOT NULL CHECK(length(session_id) BETWEEN 1 AND 120),\n    actor_role TEXT NOT NULL CHECK(actor_role IN ('Owner','Admin','Operator','Qualification')),\n    authorization_version INTEGER NOT NULL CHECK(authorization_version >= 1),\n    enterprise_enabled INTEGER NOT NULL CHECK(enterprise_enabled IN (0,1)),\n    confirmed INTEGER NOT NULL CHECK(confirmed IN (0,1))\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "owner_generation>=0",
+          "verification_state IN ('pending','verified','unavailable'"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "evidence_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "service_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "operation_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "process_instance_digest",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "owner_generation",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "completed_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "verification_state",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "verified_at",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "completed_at"
+            ],
+            "name": "lite_system_health_service_owner_recent",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "verification_state",
+              "completed_at"
+            ],
+            "name": "lite_system_health_service_owner_pending",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "evidence_id"
+            ],
+            "name": "sqlite_autoindex_lite_system_health_service_owner_evidence_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0051_system_health_service_owner_evidence.sql"
+        ],
+        "name": "lite_system_health_service_owner_evidence",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "evidence_id"
+        ],
+        "sql": "CREATE TABLE lite_system_health_service_owner_evidence (\n    evidence_id TEXT PRIMARY KEY,\n    service_id TEXT NOT NULL,\n    operation_id TEXT NOT NULL,\n    process_instance_digest TEXT NOT NULL,\n    owner_generation INTEGER NOT NULL CHECK(owner_generation>=0),\n    completed_at TEXT NOT NULL,\n    verification_state TEXT NOT NULL CHECK(verification_state IN ('pending','verified','unavailable')),\n    verified_at TEXT\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -15614,7 +16674,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "5f11dd19ab5a2957342023ad3be3905c7bbe02627675ec2d4d66025d621d8470",
+    "aggregate_fingerprint": "6b2ac71eb92f0d5c70ca70081180b94b75c8d86b4142ad70393742ad081b6274",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -15624,7 +16684,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/metadata/documentation-platform.json": "4f70f5af5a679b2c402f663b011bfa1f14050527a3f2cd38d68b9b08b4f9372d",
+      "contracts/metadata/documentation-platform.json": "df01b8d3f5474a3e9f9e6e4de02e0f7d2b30da8fc3190147af4a02e369d50134",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "3b34f0debcf38e177dca50b99dea00a9b2710c4889dcb2b706d688ce0a9fcd9e",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -15673,6 +16733,13 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql": "645b3c4d7ea51ab395c36cba4ef5123f6bcce74eddc5d845207c50a3ef88ee7b",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql": "05ab4630dc17d8eda5dac04ddae1f0ad0a74efe0994cbee35e9ebdc51597bc04",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql": "e3bfdbcfedf3159893491e97b993c5c1b4a0c267bc7ab55dd8cb45d7374ab857",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0048_system_health_owner_recovery_evidence.sql": "615ddf0d828aeb5b45c9e1f68ca40c14ffb4c5f357f88f69193efc7bbb9f2bab",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql": "0600bb107eeddd59396fcbe1b5b0f390baca62f76a5bfa83bf5e9836abba6ba4",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0050_system_health_maintenance_admission.sql": "894555c0c9addbb95b26da133cadbf57507a0a17e9252ca6ccfc760c44dc9c48",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0051_system_health_service_owner_evidence.sql": "dbc9edd93448656afe994ffa1a643c95a43b722f7ba18b9aeb8b2c3623797af1",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql": "b638b291b99780032fa71a1077a77c44bda39f9cbba55caf567785ffa12d75f1",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql": "cdcad7a2e9379023be73e79eeab7ee1497cbf6a41e90ecd0e6291c2fa4de4a5c",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql": "df830f0948f0b6fc689cb7a65e835d1039f35bf0fe42a7cca73309a12005f6c5",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },
     "validation_state": "generated"

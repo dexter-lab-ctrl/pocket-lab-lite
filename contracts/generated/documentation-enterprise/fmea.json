@@ -45,14 +45,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "approved_spec_changed",
+        "authorization_or_readiness_unavailable",
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
-        "confirmation_required",
-        "credential_expired",
-        "credential_identity_mismatch"
+        "confirmation_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -137,14 +137,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "approved_spec_changed",
         "assurance_deadline_exceeded",
         "assurance_orphaned_child_reconciled",
         "assurance_policy_sync_denied",
         "assurance_policy_sync_disabled",
         "assurance_session_binding_mismatch",
-        "backup_binding_invalid",
-        "backup_state_missing",
-        "battery_policy_threshold"
+        "authorization_or_readiness_unavailable",
+        "backup_binding_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -171,14 +171,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "approved_spec_changed",
+        "authorization_or_readiness_unavailable",
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
-        "confirmation_required",
-        "credential_expired",
-        "credential_identity_mismatch"
+        "confirmation_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -351,14 +351,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "approved_spec_changed",
+        "authorization_or_readiness_unavailable",
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
-        "confirmation_required",
-        "credential_expired",
-        "credential_identity_mismatch"
+        "confirmation_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -504,14 +504,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "approved_spec_changed",
+        "authorization_or_readiness_unavailable",
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
-        "confirmation_required",
-        "credential_expired",
-        "credential_identity_mismatch"
+        "confirmation_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -631,14 +631,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "approved_spec_changed",
+        "authorization_or_readiness_unavailable",
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
-        "confirmation_required",
-        "credential_expired",
-        "credential_identity_mismatch"
+        "confirmation_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -773,14 +773,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "approved_spec_changed",
+        "authorization_or_readiness_unavailable",
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
-        "confirmation_required",
-        "credential_expired",
-        "credential_identity_mismatch"
+        "confirmation_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -903,6 +903,9 @@
         "device_role_change_requires_approval",
         "independent_approval_satisfied",
         "owner_approval_policy_inconsistent",
+        "owner_outcome_not_verified",
+        "owner_reconciliation_not_verified",
+        "owner_restart_not_verified",
         "photoprism_indexing_not_proven"
       ],
       "residual_risk": "human review; no arbitrary RPN",
@@ -962,14 +965,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "approved_spec_changed",
+        "authorization_or_readiness_unavailable",
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
         "checkpoint_ineligible",
         "configured_target_budget",
-        "confirmation_required",
-        "credential_expired",
-        "credential_identity_mismatch"
+        "confirmation_required"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",

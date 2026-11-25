@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 25ea30cc1f3f092dea460b5c0da46187eaed24bd4cd0b0c42b523d32a49932f8
+source_fingerprint: 7bb7d041954919da2f24aa5fb51a0e7765a856ae5c39a9d1188381f0c8d0ea87
 schema_revision: 1
 validation_status: generated
 ---
@@ -271,5 +271,9 @@ validation_status: generated
 | `pocket-lab-lite-azure-horizon-system-health-managedark` | system-health | `system-health-attention` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-managedark-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-azure-horizon-system-health-enrolledandremoveddesktop` | system-health | `system-health-p4-membership` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-enrolledandremoveddesktop-{viewport}.png` | fixture-dependent |
 | `pocket-lab-lite-azure-horizon-system-health-enrolledandremovedmobile` | system-health | `system-health-p4-membership` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-enrolledandremovedmobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-system-health-infrastructurepressuredesktop` | system-health | `system-health-infrastructure-pressure` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-infrastructurepressuredesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-system-health-infrastructurepressuremobile` | system-health | `system-health-infrastructure-pressure` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-infrastructurepressuremobile-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-system-health-automaticevidencedesktop` | system-health | `system-health-infrastructure-automatic` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-automaticevidencedesktop-{viewport}.png` | fixture-dependent |
+| `pocket-lab-lite-azure-horizon-system-health-automaticevidencemobile` | system-health | `system-health-infrastructure-automatic` | mobile, desktop | `docs/generated/ui/screenshots/pocket-lab-lite-azure-horizon-system-health-automaticevidencemobile-{viewport}.png` | fixture-dependent |
 
 Screenshot files are produced by the existing WSL2-aware external Chrome resolver. A missing screenshot is not reported as PASS.

@@ -2035,6 +2035,18 @@
         "user_message": "The requested Identity or Rules action could not continue."
       },
       {
+        "code": "approved_spec_changed",
+        "domain": "system",
+        "http_status": 409,
+        "meaning": "The approved infrastructure specification changed before the owner could complete the operation.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The approved configuration changed. Review the current System Health evidence before retrying."
+      },
+      {
         "code": "assurance_deadline_exceeded",
         "domain": "validation",
         "http_status": 409,
@@ -2141,6 +2153,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "Sign in before making this change."
+      },
+      {
+        "code": "authorization_or_readiness_unavailable",
+        "domain": "system",
+        "http_status": 503,
+        "meaning": "The owner operation could not verify its authorization or required readiness at execution time.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The operation could not verify authorization or readiness. Review System Health before retrying."
       },
       {
         "code": "backup_binding_invalid",
@@ -2333,6 +2357,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "This safety target can resume in a later Full check."
+      },
+      {
+        "code": "delivery_unconfirmed",
+        "domain": "runtime",
+        "http_status": 503,
+        "meaning": "The control-plane command was not confirmed as delivered to its existing execution owner.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "warning",
+        "terminal": true,
+        "user_message": "The operation could not be confirmed as delivered. Review its status before retrying."
       },
       {
         "code": "destination_identity_mismatch",
@@ -2861,6 +2897,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "The requested Identity or Rules action could not continue."
+      },
+      {
+        "code": "execution_authority_or_preflight_changed",
+        "domain": "system",
+        "http_status": 409,
+        "meaning": "Execution-time owner authority or the required preflight state changed after admission.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The operation changed before execution. Review the latest System Health evidence before retrying."
       },
       {
         "code": "external_lane_owned_by_qualification_client",
@@ -3487,6 +3535,18 @@
         "user_message": "Reconnect or rediscover the backup location before continuing."
       },
       {
+        "code": "maintenance_conflict_or_authority_changed",
+        "domain": "system",
+        "http_status": 409,
+        "meaning": "A maintenance conflict or owner-authority change prevented safe execution.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "Another maintenance condition or authority change blocked this operation. Review System Health before retrying."
+      },
+      {
         "code": "memory_pressure",
         "domain": "security",
         "http_status": 200,
@@ -3715,6 +3775,30 @@
         "user_message": "The requested Identity or Rules action could not continue."
       },
       {
+        "code": "owner_outcome_not_verified",
+        "domain": "system",
+        "http_status": 503,
+        "meaning": "The authoritative owner did not provide independent evidence that the operation completed.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "error",
+        "terminal": false,
+        "user_message": "The owner outcome could not be verified. Do not retry until the operation is reviewed."
+      },
+      {
+        "code": "owner_reconciliation_not_verified",
+        "domain": "runtime",
+        "http_status": 503,
+        "meaning": "The authoritative owner did not provide independent reconciliation evidence for the requested change.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "error",
+        "terminal": false,
+        "user_message": "Owner reconciliation could not be verified. Review the operation before retrying."
+      },
+      {
         "code": "owner_request",
         "domain": "identity",
         "http_status": 403,
@@ -3725,6 +3809,42 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "The requested Identity or Rules action could not continue."
+      },
+      {
+        "code": "owner_required",
+        "domain": "identity",
+        "http_status": 403,
+        "meaning": "The requested System Health operation requires a current local Owner authority.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "A current Owner session is required for this operation."
+      },
+      {
+        "code": "owner_restart_not_verified",
+        "domain": "runtime",
+        "http_status": 503,
+        "meaning": "The authoritative service owner did not independently verify the requested restart.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "error",
+        "terminal": false,
+        "user_message": "The service restart could not be verified. Review its current state before retrying."
+      },
+      {
+        "code": "owner_still_running",
+        "domain": "runtime",
+        "http_status": 409,
+        "meaning": "The existing execution owner is still running, so a competing recovery was not admitted.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The current owner is still running. Review its status before retrying."
       },
       {
         "code": "ownership_source_unavailable",
@@ -4207,6 +4327,18 @@
         "user_message": "The requested Identity or Rules action could not continue."
       },
       {
+        "code": "policy_revision_changed",
+        "domain": "rules",
+        "http_status": 409,
+        "meaning": "The governing policy revision changed between admission and execution.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The governing policy changed. Review the operation before retrying."
+      },
+      {
         "code": "policy_revision_mismatch",
         "domain": "rules",
         "http_status": 403,
@@ -4399,6 +4531,18 @@
         "user_message": "Runtime Security Assurance could not continue safely."
       },
       {
+        "code": "process_instance_unavailable",
+        "domain": "runtime",
+        "http_status": 503,
+        "meaning": "The expected service process instance was unavailable for safe outcome verification.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "error",
+        "terminal": false,
+        "user_message": "The service process could not be verified. Review its current state before retrying."
+      },
+      {
         "code": "process_start_failed",
         "domain": "validation",
         "http_status": 409,
@@ -4559,6 +4703,18 @@
         "user_message": "Runtime Security Assurance could not continue safely."
       },
       {
+        "code": "request_not_found",
+        "domain": "system",
+        "http_status": 404,
+        "meaning": "The requested System Health operation or maintenance request is not present in durable state.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "warning",
+        "terminal": true,
+        "user_message": "That System Health request is no longer available."
+      },
+      {
         "code": "restore_not_attempted",
         "domain": "validation",
         "http_status": 409,
@@ -4569,6 +4725,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "Runtime Security Assurance could not continue safely."
+      },
+      {
+        "code": "reviewed_plan_changed",
+        "domain": "system",
+        "http_status": 409,
+        "meaning": "The reviewed maintenance plan changed before execution and cannot be reused.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The reviewed maintenance plan changed. Generate and review a new plan before retrying."
       },
       {
         "code": "rollback_pointer_failed",
@@ -7870,5 +8038,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "3d9732251105ff7103a70955afab95e14c2585fc8beb3cad3be4c6ff4b63ad76"
+  "source_fingerprint": "25ee085d060fae39919bedc6cbc079b4e3b103c716c10ffb8bf25a9db99f948d"
 }

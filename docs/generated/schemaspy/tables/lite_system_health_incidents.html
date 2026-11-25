@@ -128,6 +128,11 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="lite_system_health_owner_recovery_evidence.incident_id&#39;s name implies that it&#39;s a child of lite_system_health_incidents.incident_id, but it doesn&#39;t reference that column."><a href='lite_system_health_owner_recove_4c89a591.html'>lite_system_health_owner_recovery_evidence</a><span class='relatedKey'>.incident_id</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="lite_system_health_recovery_requests.incident_id references lite_system_health_incidents.incident_id via "><a href='lite_system_health_recovery_requests.html'>lite_system_health_recovery_requests</a><span class='relatedKey'>.incident_id</span></td>
                                                 <td class="constraint detail"></td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -500,6 +505,7 @@
                                 <h5>Close relationships within degrees of separation</h5>
                                 <ul class="nav nav-tabs pull-left ui-sortable-handle">
                                     <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
+                                    <li class=""><a href="#twodegreesDegreeImg-chart" data-toggle="tab" aria-expanded="true">Two degrees</a></li>
                                     <li class=""><a href="#oneimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">One implied</a></li>
                                     <li class=""><a href="#twoimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">Two implied</a></li>
                                 </ul>
@@ -512,27 +518,39 @@
 </map>
                                         <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/lite_system_health_incidents.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
+                                    <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
+<area shape="rect" id="node1" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="576,235,1001,622">
+<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,146,532,718">
+<area shape="rect" id="node3" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="587,5,990,217">
+<area shape="rect" id="node4" href="lite_system_health_request_authority.html" target="_top" title="lite_system_health_request_authority" alt="" coords="1045,237,1465,331">
+</map>
+                                        <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/lite_system_health_incidents.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
+                                    </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="lite_system_health_diagnoses.html" target="_top" title="lite_system_health_diagnoses" alt="" coords="614,5,964,187">
-<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,432,532,1004">
-<area shape="rect" id="node3" href="lite_system_health_events.html" target="_top" title="lite_system_health_events" alt="" coords="629,205,948,387">
-<area shape="rect" id="node4" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="576,405,1001,793">
-<area shape="rect" id="node5" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="587,811,990,1022">
-<area shape="rect" id="node6" href="lite_system_health_repair_denials.html" target="_top" title="lite_system_health_repair_denials" alt="" coords="596,1040,982,1251">
+<area shape="rect" id="node1" href="lite_system_health_diagnoses.html" target="_top" title="lite_system_health_diagnoses" alt="" coords="646,5,996,187">
+<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="5,605,532,1177">
+<area shape="rect" id="node3" href="lite_system_health_events.html" target="_top" title="lite_system_health_events" alt="" coords="662,205,981,387">
+<area shape="rect" id="node4" href="lite_system_health_owner_recove_4c89a591.html" target="_top" title="lite_system_health_owner_recovery_evidence" alt="" coords="576,405,1066,675">
+<area shape="rect" id="node5" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="609,693,1034,1081">
+<area shape="rect" id="node6" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="620,1099,1023,1310">
+<area shape="rect" id="node7" href="lite_system_health_repair_denials.html" target="_top" title="lite_system_health_repair_denials" alt="" coords="628,1328,1014,1539">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/lite_system_health_incidents.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="lite_system_health_diagnoses.html" target="_top" title="lite_system_health_diagnoses" alt="" coords="945,5,1296,187">
-<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="337,432,864,1004">
-<area shape="rect" id="node3" href="lite_system_health_events.html" target="_top" title="lite_system_health_events" alt="" coords="960,205,1280,387">
-<area shape="rect" id="node4" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="908,864,1333,1251">
-<area shape="rect" id="node5" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="484,1073,717,1167">
-<area shape="rect" id="node6" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="5,1036,293,1130">
-<area shape="rect" id="node7" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="918,405,1322,617">
-<area shape="rect" id="node8" href="lite_system_health_repair_denials.html" target="_top" title="lite_system_health_repair_denials" alt="" coords="927,635,1314,846">
+<area shape="rect" id="node1" href="lite_system_health_diagnoses.html" target="_top" title="lite_system_health_diagnoses" alt="" coords="978,5,1328,187">
+<area shape="rect" id="node2" href="lite_system_health_incidents.html" target="_top" title="lite_system_health_incidents" alt="" coords="337,605,864,1177">
+<area shape="rect" id="node3" href="lite_system_health_events.html" target="_top" title="lite_system_health_events" alt="" coords="993,205,1313,387">
+<area shape="rect" id="node4" href="lite_system_health_owner_recove_4c89a591.html" target="_top" title="lite_system_health_owner_recovery_evidence" alt="" coords="908,405,1398,675">
+<area shape="rect" id="node5" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="940,1152,1366,1539">
+<area shape="rect" id="node6" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="484,1353,717,1447">
+<area shape="rect" id="node7" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="5,1316,293,1410">
+<area shape="rect" id="node8" href="lite_system_health_repair_attempts.html" target="_top" title="lite_system_health_repair_attempts" alt="" coords="951,693,1355,905">
+<area shape="rect" id="node9" href="lite_system_health_repair_denials.html" target="_top" title="lite_system_health_repair_denials" alt="" coords="960,923,1346,1134">
+<area shape="rect" id="node10" href="lite_system_health_request_authority.html" target="_top" title="lite_system_health_request_authority" alt="" coords="1442,1155,1862,1249">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/lite_system_health_incidents.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

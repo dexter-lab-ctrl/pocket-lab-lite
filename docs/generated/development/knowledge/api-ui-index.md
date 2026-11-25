@@ -148,7 +148,9 @@ generator_version: 3
 | `GET /api/lite/system-health/incidents` | system-health | LiteSystemHealth | system_health_incidents_api_lite_system_health_incidents_get | contract-derived |
 | `GET /api/lite/system-health/incidents/{incident_id}` | system-health | LiteSystemHealth | system_health_incident_api_lite_system_health_incidents__incident_id__get | contract-derived |
 | `GET /api/lite/system-health/incidents/{incident_id}/decisions` | system-health | LiteSystemHealth | system_health_decisions_api_lite_system_health_incidents__incident_id__decisions_get | contract-derived |
+| `GET /api/lite/system-health/infrastructure` | system-health | LiteSystemHealth | system_health_infrastructure_api_lite_system_health_infrastructure_get | contract-derived |
 | `GET /api/lite/system-health/intelligence` | system-health | LiteSystemHealth | system_health_intelligence_api_lite_system_health_intelligence_get | contract-derived |
+| `GET /api/lite/system-health/maintenance` | system-health | — | system_health_maintenance_history_api_lite_system_health_maintenance_get | contract-derived |
 | `GET /api/lite/system-health/policies` | system-health | LiteSystemHealth | system_health_policies_api_lite_system_health_policies_get | contract-derived |
 | `GET /api/lite/system-health/repairs` | system-health | — | system_health_repairs_api_lite_system_health_repairs_get | contract-derived |
 | `GET /api/lite/system-health/resources` | system-health | LiteSystemHealth | system_health_resources_api_lite_system_health_resources_get | contract-derived |
@@ -279,14 +281,21 @@ generator_version: 3
 | `POST /api/lite/security/apps/{app_id}/check` | security | LiteSecurity | check_lite_security_app_api_lite_security_apps__app_id__check_post | contract-derived |
 | `POST /api/lite/security/check` | security | LiteSecurity | check_lite_security_api_lite_security_check_post | contract-derived |
 | `POST /api/lite/security/scan` | security | — | scan_lite_security_api_lite_security_scan_post | contract-derived |
+| `POST /api/lite/system-health/diagnostic-export` | system-health | — | system_health_diagnostic_export_api_lite_system_health_diagnostic_export_post | contract-derived |
 | `POST /api/lite/system-health/incidents/{incident_id}/diagnose` | system-health | LiteSystemHealth | system_health_diagnose_api_lite_system_health_incidents__incident_id__diagnose_post | contract-derived |
 | `POST /api/lite/system-health/incidents/{incident_id}/preflight` | system-health | LiteSystemHealth | system_health_preflight_api_lite_system_health_incidents__incident_id__preflight_post | contract-derived |
 | `POST /api/lite/system-health/incidents/{incident_id}/repair` | system-health | LiteSystemHealth | system_health_repair_api_lite_system_health_incidents__incident_id__repair_post | contract-derived |
+| `POST /api/lite/system-health/maintenance` | system-health | — | system_health_maintenance_request_api_lite_system_health_maintenance_post | contract-derived |
+| `POST /api/lite/system-health/maintenance/{command_id}/cancel` | system-health | — | system_health_cancel_maintenance_api_lite_system_health_maintenance__command_id__cancel_post | contract-derived |
+| `POST /api/lite/system-health/maintenance/{command_id}/resolve` | system-health | — | system_health_resolve_maintenance_api_lite_system_health_maintenance__command_id__resolve_post | contract-derived |
+| `POST /api/lite/system-health/recovery-requests/{request_id}/cancel` | system-health | — | system_health_cancel_request_api_lite_system_health_recovery_requests__request_id__cancel_post | contract-derived |
 | `PUT /api/lite/enterprise/identity/members/{human_id}` | enterprise | — | update_enterprise_member_api_lite_enterprise_identity_members__human_id__put | contract-derived |
 | `PUT /api/lite/enterprise/identity/mode` | enterprise | — | update_enterprise_mode_api_lite_enterprise_identity_mode_put | contract-derived |
 | `PUT /api/lite/fleet/devices/{device_id}/display-model` | devices | — | update_lite_device_display_model_api_lite_fleet_devices__device_id__display_model_put | contract-derived |
 | `PUT /api/lite/fleet/devices/{device_id}/roles` | devices | — | change_lite_device_roles_api_lite_fleet_devices__device_id__roles_put | contract-derived |
 | `PUT /api/lite/identity/passkeys/{credential_id}` | identity | LiteIdentity | rename_lite_passkey_api_lite_identity_passkeys__credential_id__put | contract-derived |
+| `PUT /api/lite/system-health/automatic-policy` | system-health | — | system_health_automatic_policy_api_lite_system_health_automatic_policy_put | contract-derived |
+| `PUT /api/lite/system-health/preferences` | system-health | — | system_health_preferences_api_lite_system_health_preferences_put | contract-derived |
 
 ## UI → API
 
@@ -303,4 +312,4 @@ generator_version: 3
 | LiteRules | GET /api/lite/policy, GET /api/lite/policy/decisions/{decision_id}, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
 | LiteRulesEnterprise | GET /api/lite/fleet, POST /api/lite/identity/step-up/options, POST /api/lite/identity/step-up/verify |
 | LiteSecurity | GET /api/lite/security/evidence/{run_id}/summary, GET /api/lite/security/freshness, GET /api/lite/security/history, GET /api/lite/security/profiles/{profile}, GET /api/lite/security/progress, GET /api/lite/security/summary, POST /api/lite/security/apps/{app_id}/check, POST /api/lite/security/check |
-| LiteSystemHealth | GET /api/lite/system-health/configuration-drift, GET /api/lite/system-health/dependencies, GET /api/lite/system-health/history, GET /api/lite/system-health/incidents, GET /api/lite/system-health/incidents/{incident_id}, GET /api/lite/system-health/incidents/{incident_id}/decisions, GET /api/lite/system-health/intelligence, GET /api/lite/system-health/policies, GET /api/lite/system-health/resources, GET /api/lite/system-health/summary, POST /api/lite/system-health/incidents/{incident_id}/diagnose, POST /api/lite/system-health/incidents/{incident_id}/preflight, POST /api/lite/system-health/incidents/{incident_id}/repair |
+| LiteSystemHealth | GET /api/lite/system-health/configuration-drift, GET /api/lite/system-health/dependencies, GET /api/lite/system-health/history, GET /api/lite/system-health/incidents, GET /api/lite/system-health/incidents/{incident_id}, GET /api/lite/system-health/incidents/{incident_id}/decisions, GET /api/lite/system-health/infrastructure, GET /api/lite/system-health/intelligence, GET /api/lite/system-health/policies, GET /api/lite/system-health/resources, GET /api/lite/system-health/summary, POST /api/lite/system-health/incidents/{incident_id}/diagnose, POST /api/lite/system-health/incidents/{incident_id}/preflight, POST /api/lite/system-health/incidents/{incident_id}/repair |

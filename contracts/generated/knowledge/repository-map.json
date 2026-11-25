@@ -194,6 +194,7 @@
         "subject:pocketlab.commands.lite.security.app_scan",
         "subject:pocketlab.commands.lite.security.assurance",
         "subject:pocketlab.commands.lite.security.scan",
+        "subject:pocketlab.commands.lite.system_health.maintenance",
         "subject:pocketlab.commands.node",
         "subject:pocketlab.commands.node.all",
         "subject:pocketlab.commands.node.all.{command.replace",
@@ -511,7 +512,9 @@
         "api:get:/api/lite/system-health/incidents",
         "api:get:/api/lite/system-health/incidents/{incident_id}",
         "api:get:/api/lite/system-health/incidents/{incident_id}/decisions",
+        "api:get:/api/lite/system-health/infrastructure",
         "api:get:/api/lite/system-health/intelligence",
+        "api:get:/api/lite/system-health/maintenance",
         "api:get:/api/lite/system-health/policies",
         "api:get:/api/lite/system-health/repairs",
         "api:get:/api/lite/system-health/resources",
@@ -642,14 +645,21 @@
         "api:post:/api/lite/security/apps/{app_id}/check",
         "api:post:/api/lite/security/check",
         "api:post:/api/lite/security/scan",
+        "api:post:/api/lite/system-health/diagnostic-export",
         "api:post:/api/lite/system-health/incidents/{incident_id}/diagnose",
         "api:post:/api/lite/system-health/incidents/{incident_id}/preflight",
         "api:post:/api/lite/system-health/incidents/{incident_id}/repair",
+        "api:post:/api/lite/system-health/maintenance",
+        "api:post:/api/lite/system-health/maintenance/{command_id}/cancel",
+        "api:post:/api/lite/system-health/maintenance/{command_id}/resolve",
+        "api:post:/api/lite/system-health/recovery-requests/{request_id}/cancel",
         "api:put:/api/lite/enterprise/identity/members/{human_id}",
         "api:put:/api/lite/enterprise/identity/mode",
         "api:put:/api/lite/fleet/devices/{device_id}/display-model",
         "api:put:/api/lite/fleet/devices/{device_id}/roles",
         "api:put:/api/lite/identity/passkeys/{credential_id}",
+        "api:put:/api/lite/system-health/automatic-policy",
+        "api:put:/api/lite/system-health/preferences",
         "domain:api",
         "domain:architecture",
         "domain:audit",
@@ -780,13 +790,24 @@
         "table:lite_home_activity_read_cursors",
         "table:lite_installed_release_identity",
         "table:lite_revision_events",
+        "table:lite_system_health_automation_attempts",
+        "table:lite_system_health_automation_policy",
+        "table:lite_system_health_availability_samples",
+        "table:lite_system_health_control_audit",
         "table:lite_system_health_diagnoses",
         "table:lite_system_health_events",
+        "table:lite_system_health_host_protection",
         "table:lite_system_health_incidents",
+        "table:lite_system_health_maintenance_admissions",
+        "table:lite_system_health_maintenance_resolutions",
         "table:lite_system_health_observations",
+        "table:lite_system_health_owner_recovery_evidence",
+        "table:lite_system_health_preferences",
         "table:lite_system_health_recovery_requests",
         "table:lite_system_health_repair_attempts",
         "table:lite_system_health_repair_denials",
+        "table:lite_system_health_request_authority",
+        "table:lite_system_health_service_owner_evidence",
         "table:owner_approved_operations",
         "table:owner_claims",
         "table:owner_operation_challenges",
@@ -875,6 +896,7 @@
         "reason:approval_step_up_required",
         "reason:approval_transition_invalid",
         "reason:approval_unusable",
+        "reason:approved_spec_changed",
         "reason:assurance_deadline_exceeded",
         "reason:assurance_orphaned_child_reconciled",
         "reason:assurance_policy_sync_denied",
@@ -884,6 +906,7 @@
         "reason:authenticated_app_install_exception_scoped",
         "reason:authenticated_confirmed_device_removal",
         "reason:authentication_required",
+        "reason:authorization_or_readiness_unavailable",
         "reason:backup_binding_invalid",
         "reason:backup_state_missing",
         "reason:battery_policy_threshold",
@@ -900,6 +923,7 @@
         "reason:credential_revocation_pending",
         "reason:csrf_required",
         "reason:deferred_resource_pressure",
+        "reason:delivery_unconfirmed",
         "reason:destination_identity_mismatch",
         "reason:destination_mount_missing",
         "reason:destination_read_only",
@@ -944,6 +968,7 @@
         "reason:exception_not_found",
         "reason:exception_scope_invalid",
         "reason:exception_unusable",
+        "reason:execution_authority_or_preflight_changed",
         "reason:external_lane_owned_by_qualification_client",
         "reason:fault_already_used",
         "reason:fault_confirmation_required",
@@ -996,6 +1021,7 @@
         "reason:legacy_telemetry_value",
         "reason:local_owner_required",
         "reason:location_not_registered",
+        "reason:maintenance_conflict_or_authority_changed",
         "reason:memory_pressure",
         "reason:metadata_only",
         "reason:nats_fault_requires_active_assurance_run",
@@ -1015,7 +1041,12 @@
         "reason:owner_claim_origin_mismatch",
         "reason:owner_claim_passkey",
         "reason:owner_claim_reused",
+        "reason:owner_outcome_not_verified",
+        "reason:owner_reconciliation_not_verified",
         "reason:owner_request",
+        "reason:owner_required",
+        "reason:owner_restart_not_verified",
+        "reason:owner_still_running",
         "reason:ownership_source_unavailable",
         "reason:passkey_already_registered",
         "reason:passkey_last_sign_in_method",
@@ -1056,6 +1087,7 @@
         "reason:policy_recovery_pointer_mismatch",
         "reason:policy_recovery_revision_mismatch",
         "reason:policy_recovery_unproved",
+        "reason:policy_revision_changed",
         "reason:policy_revision_mismatch",
         "reason:policy_revision_unavailable",
         "reason:policy_revision_uncertain",
@@ -1072,6 +1104,7 @@
         "reason:policy_template_unknown",
         "reason:policy_unavailable",
         "reason:preflight_exception",
+        "reason:process_instance_unavailable",
         "reason:process_start_failed",
         "reason:projection_too_old",
         "reason:projection_unavailable",
@@ -1085,7 +1118,9 @@
         "reason:release_projection_unavailable",
         "reason:remote_access_not_ready",
         "reason:report_write_failed",
+        "reason:request_not_found",
         "reason:restore_not_attempted",
+        "reason:reviewed_plan_changed",
         "reason:rollback_pointer_failed",
         "reason:rollback_unproved",
         "reason:run_not_found",
@@ -1244,6 +1279,7 @@
         "reason:approval_step_up_required",
         "reason:approval_transition_invalid",
         "reason:approval_unusable",
+        "reason:approved_spec_changed",
         "reason:assurance_deadline_exceeded",
         "reason:assurance_orphaned_child_reconciled",
         "reason:assurance_policy_sync_denied",
@@ -1253,6 +1289,7 @@
         "reason:authenticated_app_install_exception_scoped",
         "reason:authenticated_confirmed_device_removal",
         "reason:authentication_required",
+        "reason:authorization_or_readiness_unavailable",
         "reason:backup_binding_invalid",
         "reason:backup_state_missing",
         "reason:battery_policy_threshold",
@@ -1269,6 +1306,7 @@
         "reason:credential_revocation_pending",
         "reason:csrf_required",
         "reason:deferred_resource_pressure",
+        "reason:delivery_unconfirmed",
         "reason:destination_identity_mismatch",
         "reason:destination_mount_missing",
         "reason:destination_read_only",
@@ -1313,6 +1351,7 @@
         "reason:exception_not_found",
         "reason:exception_scope_invalid",
         "reason:exception_unusable",
+        "reason:execution_authority_or_preflight_changed",
         "reason:external_lane_owned_by_qualification_client",
         "reason:fault_already_used",
         "reason:fault_confirmation_required",
@@ -1365,6 +1404,7 @@
         "reason:legacy_telemetry_value",
         "reason:local_owner_required",
         "reason:location_not_registered",
+        "reason:maintenance_conflict_or_authority_changed",
         "reason:memory_pressure",
         "reason:metadata_only",
         "reason:nats_fault_requires_active_assurance_run",
@@ -1384,7 +1424,12 @@
         "reason:owner_claim_origin_mismatch",
         "reason:owner_claim_passkey",
         "reason:owner_claim_reused",
+        "reason:owner_outcome_not_verified",
+        "reason:owner_reconciliation_not_verified",
         "reason:owner_request",
+        "reason:owner_required",
+        "reason:owner_restart_not_verified",
+        "reason:owner_still_running",
         "reason:ownership_source_unavailable",
         "reason:passkey_already_registered",
         "reason:passkey_last_sign_in_method",
@@ -1425,6 +1470,7 @@
         "reason:policy_recovery_pointer_mismatch",
         "reason:policy_recovery_revision_mismatch",
         "reason:policy_recovery_unproved",
+        "reason:policy_revision_changed",
         "reason:policy_revision_mismatch",
         "reason:policy_revision_unavailable",
         "reason:policy_revision_uncertain",
@@ -1441,6 +1487,7 @@
         "reason:policy_template_unknown",
         "reason:policy_unavailable",
         "reason:preflight_exception",
+        "reason:process_instance_unavailable",
         "reason:process_start_failed",
         "reason:projection_too_old",
         "reason:projection_unavailable",
@@ -1454,7 +1501,9 @@
         "reason:release_projection_unavailable",
         "reason:remote_access_not_ready",
         "reason:report_write_failed",
+        "reason:request_not_found",
         "reason:restore_not_attempted",
+        "reason:reviewed_plan_changed",
         "reason:rollback_pointer_failed",
         "reason:rollback_unproved",
         "reason:run_not_found",
@@ -2148,6 +2197,54 @@
     },
     {
       "entities": [
+        "table:lite_system_health_owner_recovery_evidence"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0048_system_health_owner_recovery_evidence.sql"
+    },
+    {
+      "entities": [
+        "table:lite_system_health_control_audit",
+        "table:lite_system_health_preferences",
+        "table:lite_system_health_recovery_requests",
+        "table:lite_system_health_request_authority"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql"
+    },
+    {
+      "entities": [
+        "table:lite_system_health_maintenance_admissions"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0050_system_health_maintenance_admission.sql"
+    },
+    {
+      "entities": [
+        "table:lite_system_health_service_owner_evidence"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0051_system_health_service_owner_evidence.sql"
+    },
+    {
+      "entities": [
+        "table:lite_system_health_availability_samples",
+        "table:lite_system_health_maintenance_admissions",
+        "table:lite_system_health_maintenance_resolutions"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql"
+    },
+    {
+      "entities": [
+        "table:lite_system_health_host_protection"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql"
+    },
+    {
+      "entities": [
+        "table:lite_system_health_automation_attempts",
+        "table:lite_system_health_automation_policy"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql"
+    },
+    {
+      "entities": [
         "subject:pocketlab.events.api.started",
         "subject:pocketlab.events.api.stopped"
       ],
@@ -2319,6 +2416,7 @@
         "subject:pocketlab.commands.lite.restore.preview",
         "subject:pocketlab.commands.lite.security.assurance",
         "subject:pocketlab.commands.lite.security.scan",
+        "subject:pocketlab.commands.lite.system_health.maintenance",
         "subject:pocketlab.commands.release.apply",
         "subject:pocketlab.commands.release.check",
         "subject:pocketlab.commands.security.configure_opa",
@@ -2503,6 +2601,12 @@
         "journey:change-password"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py"
+    },
+    {
+      "entities": [
+        "subject:pocketlab.commands.lite.system_health.maintenance"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_maintenance.py"
     },
     {
       "entities": [
@@ -5030,6 +5134,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "81084650377a487b849259cff5fe88015992935c129196e927c40325fb8884a6"
+    "source_fingerprint": "c71cee04d8d6c3e42e64ef602f64aba7577ee3a70cdc7966ec82e3073da571d4"
   }
 }

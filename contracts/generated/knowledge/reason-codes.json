@@ -302,6 +302,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The approved infrastructure specification changed before the owner could complete the operation.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:approved_spec_changed",
+      "name": "approved_spec_changed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The approved configuration changed. Review the current System Health evidence before retrying."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
       "domain": "validation",
       "event_mapping": [],
@@ -479,6 +499,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Sign in before making this change."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The owner operation could not verify its authorization or required readiness at execution time.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:authorization_or_readiness_unavailable",
+      "name": "authorization_or_readiness_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The operation could not verify authorization or readiness. Review System Health before retrying."
     },
     {
       "confidence": "source-derived",
@@ -817,6 +857,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "This safety target can resume in a later Full check."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The control-plane command was not confirmed as delivered to its existing execution owner.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:delivery_unconfirmed",
+      "name": "delivery_unconfirmed",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The operation could not be confirmed as delivered. Review its status before retrying."
     },
     {
       "confidence": "source-derived",
@@ -1787,6 +1847,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Execution-time owner authority or the required preflight state changed after admission.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:execution_authority_or_preflight_changed",
+      "name": "execution_authority_or_preflight_changed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The operation changed before execution. Review the latest System Health evidence before retrying."
     },
     {
       "confidence": "source-derived",
@@ -2842,6 +2922,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "A maintenance conflict or owner-authority change prevented safe execution.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:maintenance_conflict_or_authority_changed",
+      "name": "maintenance_conflict_or_authority_changed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Another maintenance condition or authority change blocked this operation. Review System Health before retrying."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Available memory was below the configured device-specific scan threshold.",
       "domain": "security",
       "event_mapping": [],
@@ -3222,6 +3322,46 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The authoritative owner did not provide independent evidence that the operation completed.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:owner_outcome_not_verified",
+      "name": "owner_outcome_not_verified",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The owner outcome could not be verified. Do not retry until the operation is reviewed."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The authoritative owner did not provide independent reconciliation evidence for the requested change.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:owner_reconciliation_not_verified",
+      "name": "owner_reconciliation_not_verified",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Owner reconciliation could not be verified. Review the operation before retrying."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "identity",
       "event_mapping": [],
@@ -3239,6 +3379,66 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The requested System Health operation requires a current local Owner authority.",
+      "domain": "identity",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:owner_required",
+      "name": "owner_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "A current Owner session is required for this operation."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The authoritative service owner did not independently verify the requested restart.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:owner_restart_not_verified",
+      "name": "owner_restart_not_verified",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The service restart could not be verified. Review its current state before retrying."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The existing execution owner is still running, so a competing recovery was not admitted.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:owner_still_running",
+      "name": "owner_still_running",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The current owner is still running. Review its status before retrying."
     },
     {
       "confidence": "source-derived",
@@ -4050,6 +4250,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The governing policy revision changed between admission and execution.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:policy_revision_changed",
+      "name": "policy_revision_changed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The governing policy changed. Review the operation before retrying."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "rules",
       "event_mapping": [],
@@ -4370,6 +4590,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The expected service process instance was unavailable for safe outcome verification.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:process_instance_unavailable",
+      "name": "process_instance_unavailable",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The service process could not be verified. Review its current state before retrying."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
       "domain": "validation",
       "event_mapping": [],
@@ -4630,6 +4870,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The requested System Health operation or maintenance request is not present in durable state.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 404,
+      "id": "reason:request_not_found",
+      "name": "request_not_found",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "That System Health request is no longer available."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
       "domain": "validation",
       "event_mapping": [],
@@ -4647,6 +4907,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The reviewed maintenance plan changed before execution and cannot be reused.",
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:reviewed_plan_changed",
+      "name": "reviewed_plan_changed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The reviewed maintenance plan changed. Generate and review a new plan before retrying."
     },
     {
       "confidence": "source-derived",
@@ -5855,6 +6135,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "81084650377a487b849259cff5fe88015992935c129196e927c40325fb8884a6"
+    "source_fingerprint": "c71cee04d8d6c3e42e64ef602f64aba7577ee3a70cdc7966ec82e3073da571d4"
   }
 }

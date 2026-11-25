@@ -581,9 +581,17 @@
         "title": "GET /api/lite/system-health/incidents/{incident_id}/decisions",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-incidents-incident-id-decisions"
       },
+      "endpoint:GET:/api/lite/system-health/infrastructure": {
+        "title": "GET /api/lite/system-health/infrastructure",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-infrastructure"
+      },
       "endpoint:GET:/api/lite/system-health/intelligence": {
         "title": "GET /api/lite/system-health/intelligence",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-intelligence"
+      },
+      "endpoint:GET:/api/lite/system-health/maintenance": {
+        "title": "GET /api/lite/system-health/maintenance",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health-maintenance"
       },
       "endpoint:GET:/api/lite/system-health/policies": {
         "title": "GET /api/lite/system-health/policies",
@@ -1105,6 +1113,10 @@
         "title": "POST /api/lite/security/scan",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-security-scan"
       },
+      "endpoint:POST:/api/lite/system-health/diagnostic-export": {
+        "title": "POST /api/lite/system-health/diagnostic-export",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-system-health-diagnostic-export"
+      },
       "endpoint:POST:/api/lite/system-health/incidents/{incident_id}/diagnose": {
         "title": "POST /api/lite/system-health/incidents/{incident_id}/diagnose",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-system-health-incidents-incident-id-diagnose"
@@ -1116,6 +1128,22 @@
       "endpoint:POST:/api/lite/system-health/incidents/{incident_id}/repair": {
         "title": "POST /api/lite/system-health/incidents/{incident_id}/repair",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-system-health-incidents-incident-id-repair"
+      },
+      "endpoint:POST:/api/lite/system-health/maintenance": {
+        "title": "POST /api/lite/system-health/maintenance",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-system-health-maintenance"
+      },
+      "endpoint:POST:/api/lite/system-health/maintenance/{command_id}/cancel": {
+        "title": "POST /api/lite/system-health/maintenance/{command_id}/cancel",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-system-health-maintenance-command-id-cancel"
+      },
+      "endpoint:POST:/api/lite/system-health/maintenance/{command_id}/resolve": {
+        "title": "POST /api/lite/system-health/maintenance/{command_id}/resolve",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-system-health-maintenance-command-id-resolve"
+      },
+      "endpoint:POST:/api/lite/system-health/recovery-requests/{request_id}/cancel": {
+        "title": "POST /api/lite/system-health/recovery-requests/{request_id}/cancel",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-system-health-recovery-requests-request-id-cancel"
       },
       "endpoint:PUT:/api/lite/enterprise/identity/members/{human_id}": {
         "title": "PUT /api/lite/enterprise/identity/members/{human_id}",
@@ -1136,6 +1164,14 @@
       "endpoint:PUT:/api/lite/identity/passkeys/{credential_id}": {
         "title": "PUT /api/lite/identity/passkeys/{credential_id}",
         "url": "../../docs/reference/api/lite-api.md#put-api-lite-identity-passkeys-credential-id"
+      },
+      "endpoint:PUT:/api/lite/system-health/automatic-policy": {
+        "title": "PUT /api/lite/system-health/automatic-policy",
+        "url": "../../docs/reference/api/lite-api.md#put-api-lite-system-health-automatic-policy"
+      },
+      "endpoint:PUT:/api/lite/system-health/preferences": {
+        "title": "PUT /api/lite/system-health/preferences",
+        "url": "../../docs/reference/api/lite-api.md#put-api-lite-system-health-preferences"
       },
       "event:pocketlab.commands": {
         "title": "pocketlab.commands",
@@ -1300,6 +1336,10 @@
       "event:pocketlab.commands.lite.security.scan": {
         "title": "pocketlab.commands.lite.security.scan",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-security-scan"
+      },
+      "event:pocketlab.commands.lite.system_health.maintenance": {
+        "title": "pocketlab.commands.lite.system_health.maintenance",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-system-health-maintenance"
       },
       "event:pocketlab.commands.node": {
         "title": "pocketlab.commands.node",
@@ -2109,6 +2149,10 @@
         "title": "approval_unusable",
         "url": "../../docs/generated/development/reason-codes.md#approval-unusable"
       },
+      "reason:approved_spec_changed": {
+        "title": "approved_spec_changed",
+        "url": "../../docs/generated/development/reason-codes.md#approved-spec-changed"
+      },
       "reason:assurance_deadline_exceeded": {
         "title": "assurance_deadline_exceeded",
         "url": "../../docs/generated/development/reason-codes.md#assurance-deadline-exceeded"
@@ -2144,6 +2188,10 @@
       "reason:authentication_required": {
         "title": "authentication_required",
         "url": "../../docs/generated/development/reason-codes.md#authentication-required"
+      },
+      "reason:authorization_or_readiness_unavailable": {
+        "title": "authorization_or_readiness_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#authorization-or-readiness-unavailable"
       },
       "reason:backup_binding_invalid": {
         "title": "backup_binding_invalid",
@@ -2208,6 +2256,10 @@
       "reason:deferred_resource_pressure": {
         "title": "deferred_resource_pressure",
         "url": "../../docs/generated/development/reason-codes.md#deferred-resource-pressure"
+      },
+      "reason:delivery_unconfirmed": {
+        "title": "delivery_unconfirmed",
+        "url": "../../docs/generated/development/reason-codes.md#delivery-unconfirmed"
       },
       "reason:destination_identity_mismatch": {
         "title": "destination_identity_mismatch",
@@ -2384,6 +2436,10 @@
       "reason:exception_unusable": {
         "title": "exception_unusable",
         "url": "../../docs/generated/development/reason-codes.md#exception-unusable"
+      },
+      "reason:execution_authority_or_preflight_changed": {
+        "title": "execution_authority_or_preflight_changed",
+        "url": "../../docs/generated/development/reason-codes.md#execution-authority-or-preflight-changed"
       },
       "reason:external_lane_owned_by_qualification_client": {
         "title": "external_lane_owned_by_qualification_client",
@@ -2593,6 +2649,10 @@
         "title": "location_not_registered",
         "url": "../../docs/generated/development/reason-codes.md#location-not-registered"
       },
+      "reason:maintenance_conflict_or_authority_changed": {
+        "title": "maintenance_conflict_or_authority_changed",
+        "url": "../../docs/generated/development/reason-codes.md#maintenance-conflict-or-authority-changed"
+      },
       "reason:memory_pressure": {
         "title": "memory_pressure",
         "url": "../../docs/generated/development/reason-codes.md#memory-pressure"
@@ -2669,9 +2729,29 @@
         "title": "owner_claim_reused",
         "url": "../../docs/generated/development/reason-codes.md#owner-claim-reused"
       },
+      "reason:owner_outcome_not_verified": {
+        "title": "owner_outcome_not_verified",
+        "url": "../../docs/generated/development/reason-codes.md#owner-outcome-not-verified"
+      },
+      "reason:owner_reconciliation_not_verified": {
+        "title": "owner_reconciliation_not_verified",
+        "url": "../../docs/generated/development/reason-codes.md#owner-reconciliation-not-verified"
+      },
       "reason:owner_request": {
         "title": "owner_request",
         "url": "../../docs/generated/development/reason-codes.md#owner-request"
+      },
+      "reason:owner_required": {
+        "title": "owner_required",
+        "url": "../../docs/generated/development/reason-codes.md#owner-required"
+      },
+      "reason:owner_restart_not_verified": {
+        "title": "owner_restart_not_verified",
+        "url": "../../docs/generated/development/reason-codes.md#owner-restart-not-verified"
+      },
+      "reason:owner_still_running": {
+        "title": "owner_still_running",
+        "url": "../../docs/generated/development/reason-codes.md#owner-still-running"
       },
       "reason:ownership_source_unavailable": {
         "title": "ownership_source_unavailable",
@@ -2833,6 +2913,10 @@
         "title": "policy_recovery_unproved",
         "url": "../../docs/generated/development/reason-codes.md#policy-recovery-unproved"
       },
+      "reason:policy_revision_changed": {
+        "title": "policy_revision_changed",
+        "url": "../../docs/generated/development/reason-codes.md#policy-revision-changed"
+      },
       "reason:policy_revision_mismatch": {
         "title": "policy_revision_mismatch",
         "url": "../../docs/generated/development/reason-codes.md#policy-revision-mismatch"
@@ -2897,6 +2981,10 @@
         "title": "preflight_exception",
         "url": "../../docs/generated/development/reason-codes.md#preflight-exception"
       },
+      "reason:process_instance_unavailable": {
+        "title": "process_instance_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#process-instance-unavailable"
+      },
       "reason:process_start_failed": {
         "title": "process_start_failed",
         "url": "../../docs/generated/development/reason-codes.md#process-start-failed"
@@ -2949,9 +3037,17 @@
         "title": "report_write_failed",
         "url": "../../docs/generated/development/reason-codes.md#report-write-failed"
       },
+      "reason:request_not_found": {
+        "title": "request_not_found",
+        "url": "../../docs/generated/development/reason-codes.md#request-not-found"
+      },
       "reason:restore_not_attempted": {
         "title": "restore_not_attempted",
         "url": "../../docs/generated/development/reason-codes.md#restore-not-attempted"
+      },
+      "reason:reviewed_plan_changed": {
+        "title": "reviewed_plan_changed",
+        "url": "../../docs/generated/development/reason-codes.md#reviewed-plan-changed"
       },
       "reason:rollback_pointer_failed": {
         "title": "rollback_pointer_failed",
@@ -3437,6 +3533,26 @@
         "schema_url": "../../docs/generated/schemaspy/tables/lite_revision_events.html",
         "title": "lite_revision_events"
       },
+      "table:lite_system_health_automation_attempts": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-automation-attempts",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_automation_attempts.html",
+        "title": "lite_system_health_automation_attempts"
+      },
+      "table:lite_system_health_automation_policy": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-automation-policy",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_automation_policy.html",
+        "title": "lite_system_health_automation_policy"
+      },
+      "table:lite_system_health_availability_samples": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-availability-samples",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_availability_samples.html",
+        "title": "lite_system_health_availability_samples"
+      },
+      "table:lite_system_health_control_audit": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-control-audit",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_control_audit.html",
+        "title": "lite_system_health_control_audit"
+      },
       "table:lite_system_health_diagnoses": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-diagnoses",
         "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_diagnoses.html",
@@ -3447,15 +3563,40 @@
         "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_events.html",
         "title": "lite_system_health_events"
       },
+      "table:lite_system_health_host_protection": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-host-protection",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_host_protection.html",
+        "title": "lite_system_health_host_protection"
+      },
       "table:lite_system_health_incidents": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-incidents",
         "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_incidents.html",
         "title": "lite_system_health_incidents"
       },
+      "table:lite_system_health_maintenance_admissions": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-maintenance-admissions",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_maintenance_admissions.html",
+        "title": "lite_system_health_maintenance_admissions"
+      },
+      "table:lite_system_health_maintenance_resolutions": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-maintenance-resolutions",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_maintenance_resolutions.html",
+        "title": "lite_system_health_maintenance_resolutions"
+      },
       "table:lite_system_health_observations": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-observations",
         "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_observations.html",
         "title": "lite_system_health_observations"
+      },
+      "table:lite_system_health_owner_recovery_evidence": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-owner-recovery-evidence",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_owner_recovery_evidence.html",
+        "title": "lite_system_health_owner_recovery_evidence"
+      },
+      "table:lite_system_health_preferences": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-preferences",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_preferences.html",
+        "title": "lite_system_health_preferences"
       },
       "table:lite_system_health_recovery_requests": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-recovery-requests",
@@ -3471,6 +3612,16 @@
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-repair-denials",
         "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_repair_denials.html",
         "title": "lite_system_health_repair_denials"
+      },
+      "table:lite_system_health_request_authority": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-request-authority",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_request_authority.html",
+        "title": "lite_system_health_request_authority"
+      },
+      "table:lite_system_health_service_owner_evidence": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-service-owner-evidence",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_system_health_service_owner_evidence.html",
+        "title": "lite_system_health_service_owner_evidence"
       },
       "table:owner_approved_operations": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#owner-approved-operations",
@@ -3700,7 +3851,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "7b17315ead48a01827191521867915eadb4afa8ceeaf2a153a81b488a99505ac",
+    "aggregate_fingerprint": "5e14e8d63cb6e197ed3b2bcbdb98957d9e09385528c64927c5cd0c50d4b1df57",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3710,8 +3861,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "efe5e2a6c0b0932184a7070b0d812a7ad8af5fe2ec1e157b8d505668613c80a0",
-      "contracts/metadata/documentation-platform.json": "4f70f5af5a679b2c402f663b011bfa1f14050527a3f2cd38d68b9b08b4f9372d",
+      "contracts/generated/lite-openapi.json": "541b9b956549a22a8300753ef4216ccbedb997decda0710ca60dadc271158cb5",
+      "contracts/metadata/documentation-platform.json": "df01b8d3f5474a3e9f9e6e4de02e0f7d2b30da8fc3190147af4a02e369d50134",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "3b34f0debcf38e177dca50b99dea00a9b2710c4889dcb2b706d688ce0a9fcd9e",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -3760,6 +3911,13 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0045_system_health_enrollment_generation.sql": "645b3c4d7ea51ab395c36cba4ef5123f6bcce74eddc5d845207c50a3ef88ee7b",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0046_system_health_recovery_requests.sql": "05ab4630dc17d8eda5dac04ddae1f0ad0a74efe0994cbee35e9ebdc51597bc04",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql": "e3bfdbcfedf3159893491e97b993c5c1b4a0c267bc7ab55dd8cb45d7374ab857",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0048_system_health_owner_recovery_evidence.sql": "615ddf0d828aeb5b45c9e1f68ca40c14ffb4c5f357f88f69193efc7bbb9f2bab",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0049_system_health_control_authority.sql": "0600bb107eeddd59396fcbe1b5b0f390baca62f76a5bfa83bf5e9836abba6ba4",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0050_system_health_maintenance_admission.sql": "894555c0c9addbb95b26da133cadbf57507a0a17e9252ca6ccfc760c44dc9c48",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0051_system_health_service_owner_evidence.sql": "dbc9edd93448656afe994ffa1a643c95a43b722f7ba18b9aeb8b2c3623797af1",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql": "b638b291b99780032fa71a1077a77c44bda39f9cbba55caf567785ffa12d75f1",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql": "cdcad7a2e9379023be73e79eeab7ee1497cbf6a41e90ecd0e6291c2fa4de4a5c",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql": "df830f0948f0b6fc689cb7a65e835d1039f35bf0fe42a7cca73309a12005f6c5",
       "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
     },
     "validation_state": "generated"
