@@ -76,6 +76,31 @@
         "title": "AssuranceRunRequest",
         "type": "object"
       },
+      "AutomaticPolicyRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "enabled",
+          "confirm"
+        ],
+        "title": "AutomaticPolicyRequest",
+        "type": "object"
+      },
       "BootstrapChallengeRequest": {
         "additionalProperties": false,
         "properties": {
@@ -408,6 +433,26 @@
           }
         },
         "title": "ClientRevokeRequest",
+        "type": "object"
+      },
+      "DiagnosticExportRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "scope": {
+            "pattern": "^(infrastructure|recovery_statistics)$",
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scope",
+          "confirm"
+        ],
+        "title": "DiagnosticExportRequest",
         "type": "object"
       },
       "EnterpriseMembershipRequest": {
@@ -1754,6 +1799,39 @@
         "title": "LiteSecurityScanRequest",
         "type": "object"
       },
+      "MaintenanceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "idempotency_key": {
+            "maxLength": 128,
+            "minLength": 16,
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "operation_id": {
+            "pattern": "^(storage[.]evidence[.](preview|retention)|storage[.](logs|temp)[.](preview|cleanup)|sqlite[.]checkpoint[.]passive|recovery[.]database[.]rehearse|projection[.]reconcile|runtime[.](telemetry|server_agent)[.]recover|runtime[.]configuration[.]restore)$",
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "preview_id": {
+            "default": "",
+            "maxLength": 80,
+            "title": "Preview Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "idempotency_key",
+          "confirm"
+        ],
+        "title": "MaintenanceRequest",
+        "type": "object"
+      },
       "ObserverChallengeRequest": {
         "additionalProperties": false,
         "properties": {
@@ -1970,6 +2048,33 @@
         "description": "The qualification policy-sync request intentionally has no inputs.",
         "properties": {},
         "title": "PolicySyncRequest",
+        "type": "object"
+      },
+      "PreferenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "recovery_mode": {
+            "pattern": "^(monitor|assisted)$",
+            "title": "Recovery Mode",
+            "type": "string"
+          },
+          "resource_mode": {
+            "pattern": "^(balanced|low_power|maintenance)$",
+            "title": "Resource Mode",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "recovery_mode",
+          "resource_mode"
+        ],
+        "title": "PreferenceRequest",
         "type": "object"
       },
       "PrincipalRegistrationRequest": {
@@ -2189,6 +2294,20 @@
           "descriptor"
         ],
         "title": "RequestChallengeRequest",
+        "type": "object"
+      },
+      "ResolveMaintenanceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "title": "Confirm",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "confirm"
+        ],
+        "title": "ResolveMaintenanceRequest",
         "type": "object"
       },
       "RevisionRequest": {
@@ -19301,6 +19420,75 @@
         ]
       }
     },
+    "/api/lite/system-health/automatic-policy": {
+      "put": {
+        "operationId": "system_health_automatic_policy_api_lite_system_health_automatic_policy_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutomaticPolicyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "System Health Automatic Policy",
+        "tags": [
+          "lite-system-health"
+        ]
+      }
+    },
     "/api/lite/system-health/configuration-drift": {
       "get": {
         "operationId": "system_health_configuration_drift_api_lite_system_health_configuration_drift_get",
@@ -19374,6 +19562,75 @@
           }
         },
         "summary": "System Health Dependencies",
+        "tags": [
+          "lite-system-health"
+        ]
+      }
+    },
+    "/api/lite/system-health/diagnostic-export": {
+      "post": {
+        "operationId": "system_health_diagnostic_export_api_lite_system_health_diagnostic_export_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiagnosticExportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "System Health Diagnostic Export",
         "tags": [
           "lite-system-health"
         ]
@@ -19921,6 +20178,45 @@
         ]
       }
     },
+    "/api/lite/system-health/infrastructure": {
+      "get": {
+        "operationId": "system_health_infrastructure_api_lite_system_health_infrastructure_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "System Health Infrastructure",
+        "tags": [
+          "lite-system-health"
+        ]
+      }
+    },
     "/api/lite/system-health/intelligence": {
       "get": {
         "operationId": "system_health_intelligence_api_lite_system_health_intelligence_get",
@@ -19960,6 +20256,262 @@
         ]
       }
     },
+    "/api/lite/system-health/maintenance": {
+      "get": {
+        "operationId": "system_health_maintenance_history_api_lite_system_health_maintenance_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "System Health Maintenance History",
+        "tags": [
+          "lite-system-health"
+        ]
+      },
+      "post": {
+        "operationId": "system_health_maintenance_request_api_lite_system_health_maintenance_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaintenanceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "System Health Maintenance Request",
+        "tags": [
+          "lite-system-health"
+        ]
+      }
+    },
+    "/api/lite/system-health/maintenance/{command_id}/cancel": {
+      "post": {
+        "operationId": "system_health_cancel_maintenance_api_lite_system_health_maintenance__command_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "command_id",
+            "required": true,
+            "schema": {
+              "title": "Command Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "System Health Cancel Maintenance",
+        "tags": [
+          "lite-system-health"
+        ]
+      }
+    },
+    "/api/lite/system-health/maintenance/{command_id}/resolve": {
+      "post": {
+        "operationId": "system_health_resolve_maintenance_api_lite_system_health_maintenance__command_id__resolve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "command_id",
+            "required": true,
+            "schema": {
+              "title": "Command Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveMaintenanceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "System Health Resolve Maintenance",
+        "tags": [
+          "lite-system-health"
+        ]
+      }
+    },
     "/api/lite/system-health/policies": {
       "get": {
         "operationId": "system_health_policies_api_lite_system_health_policies_get",
@@ -19994,6 +20546,145 @@
           }
         },
         "summary": "System Health Policies",
+        "tags": [
+          "lite-system-health"
+        ]
+      }
+    },
+    "/api/lite/system-health/preferences": {
+      "put": {
+        "operationId": "system_health_preferences_api_lite_system_health_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "System Health Preferences",
+        "tags": [
+          "lite-system-health"
+        ]
+      }
+    },
+    "/api/lite/system-health/recovery-requests/{request_id}/cancel": {
+      "post": {
+        "operationId": "system_health_cancel_request_api_lite_system_health_recovery_requests__request_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "title": "Request Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "System Health Cancel Request",
         "tags": [
           "lite-system-health"
         ]
