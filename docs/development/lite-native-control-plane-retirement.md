@@ -1,12 +1,12 @@
 # Pocket Lab Lite Native Control-Plane Retirement Ledger
 
-Status: `VERIFIED` for the final Dev-PC source candidate; exact-head CI, disposable installation/upgrade, and physical-device qualification remain separately labelled below.
+Status: `VERIFIED` for the final Dev-PC source candidate; exact-head CI, disposable candidate runtime, bootstrap, and isolated backup/upgrade rehearsal are recorded below. Physical Android UI qualification remains separately labelled and deferred by scope.
 
 ## Scope and provenance
 
 This ledger records the source-owned retirement of infrastructure that is not part of the current Lite-native execution path. It is intentionally separate from historical implementation reports. Historical records, migrations, audit evidence, backups, release identity, and qualification evidence remain preserved.
 
-The reviewed starting point was local and remote `main` at `eb6d8421cb08d3037267ff9775fd86876cd7fa46`, tagged `lite-2026.11.25.2`. The candidate branch is `refactor/lite-native-control-plane-consolidation`. Final candidate and CI SHAs are recorded in the pull request after validation.
+The reviewed starting point was local and remote `main` at `eb6d8421cb08d3037267ff9775fd86876cd7fa46`, tagged `lite-2026.11.25.2`. The candidate branch is `refactor/lite-native-control-plane-consolidation`. The final candidate and exact-head CI SHA are `4c31ad6fcaf5930357b114b0e6eaa5614e79e912`.
 
 ## P0A authoritative dependency inventory
 
@@ -102,11 +102,17 @@ The change removes secret-rotation and dynamic-secret execution admission, legac
 | Frontend build, unit, Storybook, mocked desktop/mobile, and accessibility qualification | VERIFIED by the protected gate; 638 unit tests, 656 stories/19 renders, 52 mocked tests passed with 10 repository-defined skips, 2 accessibility tests passed |
 | Canonical docs generation/check, Codebase Map, architecture, SchemaSpy, Graphviz, and redaction | VERIFIED by the protected gate; 62 strict documentation tests, 1,546 knowledge entities/4,315 relations, Codebase Map with 5,582 tracked files/25,122 relationships, and the isolated redaction fence passed |
 | Full `task lite:check` | VERIFIED at final Dev-PC candidate using the exact protected toolchain and `VALIDATION_DIR=.pocketlab-dev/validation/lite-check-final-3` |
-| Exact-head GitHub CI | UNVALIDATED until the pushed feature-branch head completes CI |
-| Disposable fresh-install/upgrade qualification | UNVALIDATED at final head |
-| Physical Android candidate qualification | BLOCKED/UNVALIDATED; no Server Phone mutation permitted in this session |
-| Performance/resource measurements | PARTIAL: current PWA build measured `index` JS 847.95 kB / gzip 256.78 kB and CSS 804.08 kB / gzip 109.94 kB; before/after backend, idle, memory, SQLite/WAL, collector, and response-size baselines were not run |
+| Exact-head GitHub CI | VERIFIED: [isolated-devpc-qualification](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45672308750/job/139410560736), [quick-and-docs](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45672308750/job/139410560980), and [ui-performance-qualification](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45672308750/job/139410560455) all passed for `4c31ad6fcaf5930357b114b0e6eaa5614e79e912` |
+| Disposable exact-SHA candidate runtime | VERIFIED: run `c18f791368214ed18cce7a4d` passed the repository-owned DEV-PC lane with isolated FastAPI, worker, NATS/JetStream, OPA, node agent, supervisor, synthetic enrollment/authentication, crash recovery, reconnect, WebDAV transfer/retry, and cleanup; all candidate components were bound to the final SHA |
+| Fresh Lite bootstrap contract | VERIFIED: `scripts/dev/check-lite-bootstrap.sh` passed syntax, Lite stage listing, legacy-stage absence, PRoot skip behavior, native boot-recovery inclusion, and Lite/full dry-run topology. This is a non-mutating bootstrap qualification, not a package install on the active phone |
+| Disposable backup/upgrade/migration rehearsal | VERIFIED: exact-SHA backend artifact prepared and verified (`302` entries; artifact SHA `4b6e9284346a71b7e4a5f186b45457789a21ccc78804e3ced9697c922beb5dc8`); isolated promotion rehearsal passed consistent backup, restore, schema `42 → 54` migrations `43–54`, staged identity, committed lifecycle, and `production_touched=false` / `phone_checkout_touched=false`. A physical Termux package-install and existing-installed-state upgrade were not run |
+| Physical Android candidate qualification | DEFERRED / OPTIONAL by the targeted-closure scope: physical UI is reserved for targeted post-deployment smoke; no Server Phone mutation or physical PASS is claimed |
+| Performance/resource measurements | VERIFIED for required automated thresholds; OPTIONAL comparative baseline not collected. Current PWA build measured `index` JS 847.95 kB / gzip 256.78 kB and CSS 804.08 kB / gzip 109.94 kB; before/after CPU, idle, memory, SQLite/WAL, collector, response-size, and bundle baselines were not run and no savings claim is made |
 
 ## Rollback and limitations
 
-Rollback is a source rollback to the previous reviewed `main` SHA/release, followed by the repository-supported runtime reconciliation path. No destructive production database or device operation is part of this change. The primary remaining compatibility limitation is the bounded OPA legacy-path fallback, which is intentionally retained until safe migration evidence exists. Physical Android, exact-head CI, and live disposable installation evidence must remain clearly labelled until executed.
+Rollback is a source rollback to the previous reviewed `main` SHA/release, followed by the repository-supported runtime reconciliation path. No destructive production database or device operation is part of this change. The primary remaining compatibility limitation is the bounded OPA legacy-path fallback, which is intentionally retained until safe migration evidence exists. The exact-head Dev-PC and isolated upgrade evidence is verified; physical Android UI smoke and a real package-install/installed-state upgrade remain separate evidence lanes and are not represented as completed here.
+
+## Targeted-closure qualification scope
+
+The closure scope keeps source, protected automated thresholds, exact-head CI, native health/retired-execution regressions, the repository-owned disposable candidate lane, and isolated backup/restore/migration evidence mandatory. Per the requested qualification adjustment, physical Android UI qualification is deferred to targeted post-deployment smoke and no active Server Phone mutation, production deployment, or physical PASS is claimed. Comparative historical CPU, memory, SQLite/WAL, collector-count, response-size, and bundle-size baselines are not required for this closure; the current build measurements remain recorded without a savings claim.
