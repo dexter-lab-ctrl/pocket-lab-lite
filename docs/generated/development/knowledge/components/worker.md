@@ -94,6 +94,7 @@ Consumes durable commands and owns backend execution for apps, security, recover
 - publishes: `pocketlab.events.command.deferred`
 - publishes: `pocketlab.events.command.failed`
 - publishes: `pocketlab.events.command.received`
+- publishes: `pocketlab.events.command.retired`
 - publishes: `pocketlab.events.command.retry_scheduled`
 - publishes: `pocketlab.events.command.running`
 - publishes: `pocketlab.events.command.succeeded`

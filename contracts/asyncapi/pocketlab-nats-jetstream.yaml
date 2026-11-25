@@ -78,22 +78,6 @@
         }
       }
     },
-    "pocketlab.commands.vault.rotate": {
-      "address": "pocketlab.commands.vault.rotate",
-      "messages": {
-        "pocketlab_commands_vault_rotate": {
-          "$ref": "#/components/messages/pocketlab_commands_vault_rotate"
-        }
-      }
-    },
-    "pocketlab.commands.vault.dynamic_secret": {
-      "address": "pocketlab.commands.vault.dynamic_secret",
-      "messages": {
-        "pocketlab_commands_vault_dynamic_secret": {
-          "$ref": "#/components/messages/pocketlab_commands_vault_dynamic_secret"
-        }
-      }
-    },
     "pocketlab.commands.runbook.execute": {
       "address": "pocketlab.commands.runbook.execute",
       "messages": {
@@ -182,6 +166,14 @@
         }
       }
     },
+    "pocketlab.events.command.retired": {
+      "address": "pocketlab.events.command.retired",
+      "messages": {
+        "pocketlab_events_command_retired": {
+          "$ref": "#/components/messages/pocketlab_events_command_retired"
+        }
+      }
+    },
     "pocketlab.events.command.retry_scheduled": {
       "address": "pocketlab.events.command.retry_scheduled",
       "messages": {
@@ -251,14 +243,6 @@
       "messages": {
         "pocketlab_events_security_finding": {
           "$ref": "#/components/messages/pocketlab_events_security_finding"
-        }
-      }
-    },
-    "pocketlab.events.vault.secret_rotated": {
-      "address": "pocketlab.events.vault.secret_rotated",
-      "messages": {
-        "pocketlab_events_vault_secret_rotated": {
-          "$ref": "#/components/messages/pocketlab_events_vault_secret_rotated"
         }
       }
     },
@@ -422,14 +406,6 @@
         }
       }
     },
-    "pocketlab.audit.vault.secret_rotated": {
-      "address": "pocketlab.audit.vault.secret_rotated",
-      "messages": {
-        "pocketlab_audit_vault_secret_rotated": {
-          "$ref": "#/components/messages/pocketlab_audit_vault_secret_rotated"
-        }
-      }
-    },
     "pocketlab.audit.runbook.executed": {
       "address": "pocketlab.audit.runbook.executed",
       "messages": {
@@ -529,22 +505,6 @@
           "$ref": "#/components/schemas/CommandEnvelope"
         }
       },
-      "pocketlab_commands_vault_rotate": {
-        "name": "pocketlab_commands_vault_rotate",
-        "title": "Command: pocketlab.commands.vault.rotate",
-        "summary": "Command: pocketlab.commands.vault.rotate",
-        "payload": {
-          "$ref": "#/components/schemas/CommandEnvelope"
-        }
-      },
-      "pocketlab_commands_vault_dynamic_secret": {
-        "name": "pocketlab_commands_vault_dynamic_secret",
-        "title": "Command: pocketlab.commands.vault.dynamic_secret",
-        "summary": "Command: pocketlab.commands.vault.dynamic_secret",
-        "payload": {
-          "$ref": "#/components/schemas/CommandEnvelope"
-        }
-      },
       "pocketlab_commands_runbook_execute": {
         "name": "pocketlab_commands_runbook_execute",
         "title": "Command: pocketlab.commands.runbook.execute",
@@ -633,6 +593,14 @@
           "$ref": "#/components/schemas/EventEnvelope"
         }
       },
+      "pocketlab_events_command_retired": {
+        "name": "pocketlab_events_command_retired",
+        "title": "Event: pocketlab.events.command.retired",
+        "summary": "Event: pocketlab.events.command.retired",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
       "pocketlab_events_command_retry_scheduled": {
         "name": "pocketlab_events_command_retry_scheduled",
         "title": "Event: pocketlab.events.command.retry_scheduled",
@@ -701,14 +669,6 @@
         "name": "pocketlab_events_security_finding",
         "title": "Event: pocketlab.events.security.finding",
         "summary": "Event: pocketlab.events.security.finding",
-        "payload": {
-          "$ref": "#/components/schemas/EventEnvelope"
-        }
-      },
-      "pocketlab_events_vault_secret_rotated": {
-        "name": "pocketlab_events_vault_secret_rotated",
-        "title": "Event: pocketlab.events.vault.secret_rotated",
-        "summary": "Event: pocketlab.events.vault.secret_rotated",
         "payload": {
           "$ref": "#/components/schemas/EventEnvelope"
         }
@@ -869,14 +829,6 @@
         "name": "pocketlab_audit_security_policy_updated",
         "title": "Audit: pocketlab.audit.security.policy_updated",
         "summary": "Audit: pocketlab.audit.security.policy_updated",
-        "payload": {
-          "$ref": "#/components/schemas/EventEnvelope"
-        }
-      },
-      "pocketlab_audit_vault_secret_rotated": {
-        "name": "pocketlab_audit_vault_secret_rotated",
-        "title": "Audit: pocketlab.audit.vault.secret_rotated",
-        "summary": "Audit: pocketlab.audit.vault.secret_rotated",
         "payload": {
           "$ref": "#/components/schemas/EventEnvelope"
         }

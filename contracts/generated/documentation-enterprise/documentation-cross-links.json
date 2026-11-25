@@ -1474,17 +1474,6 @@
       "evidence": [
         "contracts/generated/knowledge/cross-references.json"
       ],
-      "id": "link:journey:apps:7b4c617efd93c287",
-      "relation_type": "verified_by",
-      "source": "page:generated/enterprise/journeys/apps",
-      "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
-      "target_type": "test"
-    },
-    {
-      "depth": 2,
-      "evidence": [
-        "contracts/generated/knowledge/cross-references.json"
-      ],
       "id": "link:journey:apps:84f9135671cabdeb",
       "relation_type": "depends_on",
       "source": "page:generated/enterprise/journeys/apps",
@@ -1972,6 +1961,17 @@
       "source": "page:generated/enterprise/journeys/apps",
       "target": "table:app_action_lifecycle",
       "target_type": "table"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:apps:eadc41a1f576b9e2",
+      "relation_type": "publishes",
+      "source": "page:generated/enterprise/journeys/apps",
+      "target": "subject:pocketlab.events.command.retired",
+      "target_type": "subject"
     },
     {
       "depth": 2,
@@ -3211,6 +3211,17 @@
       "relation_type": "emits-or-observes",
       "source": "page:generated/enterprise/journeys/devices",
       "target": "pocketlab.events.fleet.device_removed",
+      "target_type": "event"
+    },
+    {
+      "evidence": [
+        "contracts/generated/documentation-enterprise/api-ui-trace.json",
+        "contracts/generated/documentation-enterprise/event-encyclopedia.json"
+      ],
+      "id": "link:journey:devices:event:7f0663ddb84c0d0e",
+      "relation_type": "emits-or-observes",
+      "source": "page:generated/enterprise/journeys/devices",
+      "target": "pocketlab.events.command.retired",
       "target_type": "event"
     },
     {
@@ -6978,6 +6989,17 @@
       "relation_type": "verified_by",
       "source": "page:generated/enterprise/journeys/remote-access",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "target_type": "test"
+    },
+    {
+      "depth": 2,
+      "evidence": [
+        "contracts/generated/knowledge/cross-references.json"
+      ],
+      "id": "link:journey:remote-access:7c8d460b5d2e05ef",
+      "relation_type": "verified_by",
+      "source": "page:generated/enterprise/journeys/remote-access",
+      "target": "test:tests/backend/test_lite_native_control_plane_retirement.py",
       "target_type": "test"
     },
     {

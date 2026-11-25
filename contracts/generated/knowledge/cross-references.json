@@ -4645,9 +4645,21 @@
           "type": "owns"
         }
       ],
+      "reason:legacy_gitops_api_retired": [
+        {
+          "source": "domain:release",
+          "type": "owns"
+        }
+      ],
       "reason:legacy_multiple_active_runs": [
         {
           "source": "domain:system",
+          "type": "owns"
+        }
+      ],
+      "reason:legacy_observability_stack_retired": [
+        {
+          "source": "domain:telemetry",
           "type": "owns"
         }
       ],
@@ -6237,18 +6249,6 @@
           "type": "related_to"
         }
       ],
-      "subject:pocketlab.commands.vault.dynamic_secret": [
-        {
-          "source": "domain:vault",
-          "type": "owns"
-        }
-      ],
-      "subject:pocketlab.commands.vault.rotate": [
-        {
-          "source": "domain:vault",
-          "type": "owns"
-        }
-      ],
       "subject:pocketlab.events": [
         {
           "source": "domain:unknown",
@@ -6324,6 +6324,20 @@
         }
       ],
       "subject:pocketlab.events.command.received": [
+        {
+          "source": "domain:command",
+          "type": "owns"
+        },
+        {
+          "source": "component:app-lifecycle-worker",
+          "type": "publishes"
+        },
+        {
+          "source": "component:worker",
+          "type": "publishes"
+        }
+      ],
+      "subject:pocketlab.events.command.retired": [
         {
           "source": "domain:command",
           "type": "owns"
@@ -7504,18 +7518,6 @@
       "subject:pocketlab.events.telemetry.sampled": [
         {
           "source": "domain:telemetry",
-          "type": "owns"
-        }
-      ],
-      "subject:pocketlab.events.vault.lease_created": [
-        {
-          "source": "domain:vault",
-          "type": "owns"
-        }
-      ],
-      "subject:pocketlab.events.vault.secret_rotated": [
-        {
-          "source": "domain:vault",
           "type": "owns"
         }
       ],
@@ -9743,7 +9745,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:legacy_gitops_api_retired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:legacy_multiple_active_runs",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:legacy_observability_stack_retired",
           "type": "verified_by"
         },
         {
@@ -12243,6 +12253,28 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_native_control_plane_retirement.py": [
+        {
+          "source": "component:caddy",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:nats-jetstream",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:nats-listeners",
+          "type": "verified_by"
+        },
+        {
+          "source": "component:pm2",
+          "type": "verified_by"
+        },
+        {
+          "source": "journey:startup",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_native_release.py": [
         {
           "source": "component:atomic-promotion",
@@ -13733,6 +13765,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:legacy_observability_stack_retired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:payload_too_large",
           "type": "verified_by"
         },
@@ -13808,6 +13844,12 @@
       "test:tests/backend/test_runbook_execution.py": [
         {
           "source": "reason:approval_required",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_vault_operations.py": [
+        {
+          "source": "reason:historical_record",
           "type": "verified_by"
         }
       ],
@@ -15419,7 +15461,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:legacy_gitops_api_retired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:legacy_multiple_active_runs",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:legacy_observability_stack_retired",
           "type": "verified_by"
         },
         {
@@ -16697,7 +16747,15 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:legacy_gitops_api_retired",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:legacy_multiple_active_runs",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:legacy_observability_stack_retired",
           "type": "verified_by"
         },
         {
@@ -23583,6 +23641,10 @@
           "type": "publishes"
         },
         {
+          "target": "subject:pocketlab.events.command.retired",
+          "type": "publishes"
+        },
+        {
           "target": "subject:pocketlab.events.command.retry_scheduled",
           "type": "publishes"
         },
@@ -24090,6 +24152,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_native_control_plane_retirement.py",
           "type": "verified_by"
         },
         {
@@ -24949,6 +25015,10 @@
           "type": "related_to"
         },
         {
+          "target": "test:tests/backend/test_lite_native_control_plane_retirement.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
           "type": "verified_by"
         },
@@ -25000,6 +25070,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_native_control_plane_retirement.py",
           "type": "verified_by"
         },
         {
@@ -25456,6 +25530,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_native_control_plane_retirement.py",
           "type": "verified_by"
         },
         {
@@ -26715,6 +26793,10 @@
           "type": "publishes"
         },
         {
+          "target": "subject:pocketlab.events.command.retired",
+          "type": "publishes"
+        },
+        {
           "target": "subject:pocketlab.events.command.retry_scheduled",
           "type": "publishes"
         },
@@ -27174,6 +27256,10 @@
         },
         {
           "target": "subject:pocketlab.events.command.received",
+          "type": "owns"
+        },
+        {
+          "target": "subject:pocketlab.events.command.retired",
           "type": "owns"
         },
         {
@@ -29843,6 +29929,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:legacy_gitops_api_retired",
+          "type": "owns"
+        },
+        {
           "target": "reason:release_projection_unavailable",
           "type": "owns"
         },
@@ -31067,6 +31157,10 @@
       ],
       "domain:telemetry": [
         {
+          "target": "reason:legacy_observability_stack_retired",
+          "type": "owns"
+        },
+        {
           "target": "subject:pocketlab.events.telemetry",
           "type": "owns"
         },
@@ -31377,24 +31471,6 @@
         {
           "target": "test:tests/parity/test_intelligent_runtime_parity.py",
           "type": "verified_by"
-        }
-      ],
-      "domain:vault": [
-        {
-          "target": "subject:pocketlab.commands.vault.dynamic_secret",
-          "type": "owns"
-        },
-        {
-          "target": "subject:pocketlab.commands.vault.rotate",
-          "type": "owns"
-        },
-        {
-          "target": "subject:pocketlab.events.vault.lease_created",
-          "type": "owns"
-        },
-        {
-          "target": "subject:pocketlab.events.vault.secret_rotated",
-          "type": "owns"
         }
       ],
       "domain:websocket": [
@@ -32616,6 +32692,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_native_control_plane_retirement.py",
           "type": "verified_by"
         },
         {
@@ -34633,6 +34713,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_vault_operations.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -35125,9 +35209,41 @@
           "type": "verified_by"
         }
       ],
+      "reason:legacy_gitops_api_retired": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:legacy_multiple_active_runs": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:legacy_observability_stack_retired": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_workload_admission.py",
           "type": "verified_by"
         },
         {
@@ -38409,6 +38525,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e320261c60545eb0180949f076f03001445ac0c1febb46eeeb9fdaf647f43f5f"
+    "source_fingerprint": "54e0e736fc1a97541d826775ffffda546b9c541a1aa4dd29ca255a44d7a1d8d6"
   }
 }

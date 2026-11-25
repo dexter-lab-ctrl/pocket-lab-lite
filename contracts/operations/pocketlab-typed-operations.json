@@ -231,7 +231,7 @@
       },
       "title": "Apply Drift Remediation",
       "ui_entrypoints": [
-        "Drift Center"
+        "System Health"
       ]
     },
     {
@@ -267,7 +267,7 @@
       },
       "title": "Approve Drift Remediation",
       "ui_entrypoints": [
-        "Drift Center"
+        "System Health"
       ]
     },
     {
@@ -303,7 +303,7 @@
       },
       "title": "Ignore Drift Finding",
       "ui_entrypoints": [
-        "Drift Center"
+        "System Health"
       ]
     },
     {
@@ -340,7 +340,7 @@
       },
       "title": "Preview Drift Remediation",
       "ui_entrypoints": [
-        "Drift Center"
+        "System Health"
       ]
     },
     {
@@ -352,7 +352,7 @@
         "pocketlab.events.operation.failed"
       ],
       "nats_subject": "pocketlab.commands.drift.scan",
-      "notes": "Detects state differences and feeds Drift Center.",
+      "notes": "Detects Lite-native configuration and policy differences and feeds System Health.",
       "operation": "drift_scan",
       "params_shape": {
         "scope": "default|fleet|blueprint|security"
@@ -377,7 +377,7 @@
       },
       "title": "Run Drift Scan",
       "ui_entrypoints": [
-        "Drift Center",
+        "System Health",
         "Health & Issues"
       ]
     },
@@ -423,27 +423,28 @@
       "api_entrypoints": [
         "/api/operations/execute"
       ],
-      "backend_owner": "GitOps operation handler",
+      "backend_owner": "release/source adapter",
       "failure_events": [
         "pocketlab.events.operation.failed"
       ],
       "nats_subject": "pocketlab.commands.operation.execute",
-      "notes": "Replaces legacy command-style sync flows with typed operation execution.",
+      "notes": "Uses the supported release/source adapter; it does not start or proxy a legacy GitOps service.",
       "operation": "git_sync",
       "params_shape": {
         "branch": "string",
         "strategy": "safe-sync"
       },
-      "professional_label": "Sync GitOps",
+      "professional_label": "Sync release source",
       "safety": "Must not reintroduce retired sync shell compatibility paths.",
       "simple_label": "Keep my environment updated",
       "source_file": "operations/git_sync.yaml",
       "success_events": [
         "pocketlab.events.operation.succeeded"
       ],
-      "summary": "Synchronize desired state from a Git source.",
+      "summary": "Synchronize supported release/source metadata without legacy GitOps service orchestration.",
       "tags": [
-        "gitops",
+        "release",
+        "source",
         "sync",
         "write"
       ],
@@ -451,9 +452,10 @@
         "ref": "repo-or-branch",
         "type": "git"
       },
-      "title": "GitOps Sync",
+      "title": "Source and Release Sync",
       "ui_entrypoints": [
-        "GitOps Pipeline",
+        "App Catalog",
+        "System Health",
         "Keep My Environment Updated"
       ]
     },
@@ -461,7 +463,7 @@
       "api_entrypoints": [
         "/api/health/check"
       ],
-      "backend_owner": "health engine / Gatus integration",
+      "backend_owner": "prepared native System Health projection / worker sampler",
       "failure_events": [
         "pocketlab.events.operation.failed"
       ],
@@ -478,7 +480,7 @@
       "success_events": [
         "pocketlab.events.health.checked"
       ],
-      "summary": "Run health engine check and emit health status.",
+      "summary": "Refresh the prepared native health projection and emit health status.",
       "tags": [
         "health",
         "noc",
@@ -490,9 +492,9 @@
       },
       "title": "Run Health Check",
       "ui_entrypoints": [
-        "NOC Telemetry",
-        "System Status",
-        "Health Engine"
+        "System Health",
+        "Home",
+        "System Status"
       ]
     },
     {
@@ -607,82 +609,6 @@
       "title": "Restore Backup",
       "ui_entrypoints": [
         "Disaster Recovery"
-      ]
-    },
-    {
-      "api_entrypoints": [
-        "/api/operations/execute"
-      ],
-      "backend_owner": "vault domain command handler",
-      "failure_events": [
-        "pocketlab.events.operation.failed"
-      ],
-      "nats_subject": "pocketlab.commands.vault.rotate",
-      "notes": "Simple Mode exposes this as Change Password.",
-      "operation": "rotate_secret",
-      "params_shape": {
-        "rotation_policy": "default"
-      },
-      "professional_label": "Rotate Secret",
-      "safety": "High sensitivity. Secret values must never appear in logs/events.",
-      "simple_label": "Change Password",
-      "source_file": "operations/rotate_secret.yaml",
-      "success_events": [
-        "pocketlab.events.vault.secret_rotated",
-        "pocketlab.events.operation.succeeded"
-      ],
-      "summary": "Rotate a secret through Identity Vault.",
-      "tags": [
-        "vault",
-        "secret",
-        "write"
-      ],
-      "target_shape": {
-        "ref": "vault/path/redacted",
-        "type": "secret"
-      },
-      "title": "Rotate Secret",
-      "ui_entrypoints": [
-        "Identity Vault",
-        "Passwords & Access"
-      ]
-    },
-    {
-      "api_entrypoints": [
-        "/api/operations/execute"
-      ],
-      "backend_owner": "vault domain command handler",
-      "failure_events": [
-        "pocketlab.events.operation.failed"
-      ],
-      "nats_subject": "pocketlab.commands.vault.dynamic_secret",
-      "notes": "Useful for short-lived credentials.",
-      "operation": "secret_read_dynamic",
-      "params_shape": {
-        "ttl": "string"
-      },
-      "professional_label": "Read dynamic secret",
-      "safety": "Lease values must be redacted and not persisted in UI-visible events.",
-      "simple_label": "Get temporary password",
-      "source_file": "operations/secret_read_dynamic.yaml",
-      "success_events": [
-        "pocketlab.events.vault.lease_created",
-        "pocketlab.events.operation.succeeded"
-      ],
-      "summary": "Request or renew a dynamic secret lease.",
-      "tags": [
-        "vault",
-        "dynamic-secret",
-        "read"
-      ],
-      "target_shape": {
-        "ref": "role-name",
-        "type": "dynamic-secret"
-      },
-      "title": "Read Dynamic Secret",
-      "ui_entrypoints": [
-        "Identity Vault",
-        "Passwords & Access"
       ]
     },
     {

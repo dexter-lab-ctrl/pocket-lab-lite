@@ -1,26 +1,23 @@
-# Phase 4: Frontend Live Event Stream
+# Historical Phase 4: Frontend Live Event Stream
+
+> Historical implementation evidence. The active Lite entry point is
+> `src/App.jsx` → `src/lite/LiteApp.jsx`; the old tab shell and legacy panels
+> listed in this report are no longer reachable. Native event and audit
+> contracts remain supported through the active Lite consumers.
 
 Phase 4 wires the React PWA to the FastAPI/NATS event layer delivered in Phases 1-3.
 
 ## What changed
 
-- Added a reusable frontend event client:
+- Added the reusable frontend event client and event contract used by the
+  current Lite surface:
   - `src/lib/pocketLabEvents.js`
   - `src/hooks/usePocketLabEvents.js`
-  - `src/components/LiveEventPanel.jsx`
-- Updated Simple Mode dashboard to show one live progress feed for installs, updates, backups, device invites, safety checks, and system health.
-- Updated major professional/simple tabs to consume matching event subjects:
-  - App Store / Apps & Services
-  - GitOps / Keep My Environment Updated
-  - Blueprint
-  - Drift Center / Health & Issues
-  - Fleet Scaling / My Devices
-  - Release Workflow / Updates
-  - Security Posture / Safety Center
-  - NOC Telemetry / System Status
-  - Identity & Vault / Passwords & Access
-  - Disaster Recovery / Backups
-- Updated the guided Simple Mode action wizard to queue operations without blocking the UI and send the user to the live progress feed.
+  - active `src/lite` consumers
+- The active Lite screens consume matching event subjects for Apps, Devices,
+  Safety, Recovery, Rules, Identity & Access, Home, and System Health.
+- Active Lite action surfaces queue operations without blocking the UI and send
+  the user to the native progress/evidence surfaces.
 - Updated telemetry, health, drift, fleet, release, and security FastAPI routes to publish lightweight events whenever existing polling endpoints are called.
 
 ## Frontend behavior

@@ -4296,6 +4296,15 @@
       "confidence": "contract-derived",
       "description": "Get Lite System Health",
       "domain": "system",
+      "frontend_clients": [
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
       "id": "api:get:/api/lite/system/health",
       "method": "GET",
       "name": "GET /api/lite/system/health",
@@ -8534,6 +8543,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e320261c60545eb0180949f076f03001445ac0c1febb46eeeb9fdaf647f43f5f"
+    "source_fingerprint": "54e0e736fc1a97541d826775ffffda546b9c541a1aa4dd29ca255a44d7a1d8d6"
   }
 }

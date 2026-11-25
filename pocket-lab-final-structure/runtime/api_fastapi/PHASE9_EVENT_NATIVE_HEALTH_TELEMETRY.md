@@ -1,6 +1,8 @@
-# Phase 9 — Event-native Health Engine and NOC Telemetry
+# Phase 9 — Event-native Health and Native Telemetry (historical implementation note)
 
-Phase 9 turns System Status/NOC from request-only snapshots into a live control-plane stream.
+This note records the event-native sampler work. The current Lite health
+authority is the native prepared `system.health` projection; the compatibility
+health read does not collect, publish, probe, or write during a GET request.
 
 ## Runtime services
 
@@ -40,10 +42,14 @@ export POCKETLAB_TELEMETRY_CHANGE_THRESHOLD=2.0
 - `POST /api/live-status/sample`
 - `POST /api/live-status/restart`
 - `GET /api/telemetry/live/status`
-- `GET /api/telemetry.json` now samples and publishes a telemetry event.
-- `GET /api/health-engine.json` now samples and publishes health events.
-- `GET /api/fleet/health.json` now samples and publishes fleet events.
+- `GET /api/telemetry.json` reads the supported telemetry path.
+- `GET /api/health-engine.json` reads the prepared native `system.health` projection.
+- `GET /api/fleet/health.json` reads the supported fleet projection.
+- `POST /api/health/check` explicitly requests a bounded health collection.
 
 ## Frontend
 
-`useTelemetry()` and `useHealthEngine()` now prefer `/ws/events` and `/api/events/recent` over tight polling. Polling remains a degraded fallback. `NocTelemetryTab`/System Status consumes live events directly and shows FastAPI/NATS streaming state.
+The active Lite screens under `src/lite/` consume FastAPI prepared reads and
+the supported event stream. The former NOC/health-engine hook and tab surface
+are retired; native System Health remains available through the Lite screen
+registry.

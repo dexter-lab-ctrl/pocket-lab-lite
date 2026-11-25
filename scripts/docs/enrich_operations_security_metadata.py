@@ -42,7 +42,7 @@ def operation_tags(data: dict[str, Any]) -> list[str]:
 
 def classify(name: str, tags: list[str]) -> str:
     joined = " ".join([name.lower(), *tags])
-    if any(token in joined for token in ["secret", "vault", "rotate"]):
+    if any(token in joined for token in ["secret", "credential", "rotate"]):
         return "secret"
     if any(token in joined for token in ["security", "opa", "policy"]):
         return "policy"
@@ -78,8 +78,8 @@ def default_security(name: str, tags: list[str]) -> dict[str, Any]:
     if classification in {"secret", "policy"}:
         stride.extend(["Information Disclosure", "Elevation of Privilege"])
         trust_boundaries.append("worker_to_secrets_policy")
-        attack_surfaces.extend(["vault_or_policy_adapter", "audit_event_payload"])
-        mitigations.extend(["opa_policy_decision", "secret_redaction", "vault_or_openbao_leases"])
+        attack_surfaces.extend(["secret_or_policy_adapter", "audit_event_payload"])
+        mitigations.extend(["opa_policy_decision", "secret_redaction", "native_policy_revision"])
         residual_risks.append("New secret or policy fields may require manual redaction review.")
 
     if classification in {"release", "recovery", "fleet", "configuration"}:

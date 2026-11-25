@@ -22,7 +22,7 @@
     "derived",
     "human-review"
   ],
-  "cross_link_count": 913,
+  "cross_link_count": 915,
   "extensions": {
     "security_assurance_correlation": {
       "contract": "contracts/generated/documentation-enterprise/security-assurance-correlation.json",
@@ -438,6 +438,12 @@
           "depth": 2,
           "relation_type": "publishes",
           "source": "component:app-lifecycle-worker",
+          "target": "subject:pocketlab.events.command.retired"
+        },
+        {
+          "depth": 2,
+          "relation_type": "publishes",
+          "source": "component:app-lifecycle-worker",
           "target": "subject:pocketlab.events.command.retry_scheduled"
         },
         {
@@ -559,12 +565,6 @@
           "relation_type": "related_to",
           "source": "component:app-lifecycle-worker",
           "target": "subject:pocketlab.events.operation.succeeded"
-        },
-        {
-          "depth": 2,
-          "relation_type": "verified_by",
-          "source": "component:app-lifecycle-worker",
-          "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py"
         }
       ],
       "expansion": {
@@ -598,7 +598,6 @@
       "tests": [
         "test:tests/backend/test_lite_api.py",
         "test:tests/backend/test_lite_app_runtime_reconciliation.py",
-        "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
         "test:tests/backend/test_lite_ux_maturity_contract.py",
@@ -663,6 +662,7 @@
       "events": [
         "pocketlab.commands.lite.device.restart",
         "pocketlab.commands.node.{normalized_node_id}.agent.restart",
+        "pocketlab.events.command.retired",
         "pocketlab.events.fleet.bootstrap_blocked",
         "pocketlab.events.fleet.device_removed",
         "pocketlab.events.fleet.invite_accepted",
@@ -3189,6 +3189,12 @@
           "depth": 2,
           "relation_type": "verified_by",
           "source": "component:nats-listeners",
+          "target": "test:tests/backend/test_lite_native_control_plane_retirement.py"
+        },
+        {
+          "depth": 2,
+          "relation_type": "verified_by",
+          "source": "component:nats-listeners",
           "target": "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py"
         },
         {
@@ -3465,6 +3471,7 @@
         "test:tests/backend/test_lite_development_documentation_platform.py",
         "test:tests/backend/test_lite_device_system_profile.py",
         "test:tests/backend/test_lite_identity_rules_authorization.py",
+        "test:tests/backend/test_lite_native_control_plane_retirement.py",
         "test:tests/backend/test_lite_opa_bootstrap_reconciliation.py",
         "test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py",
         "test:tests/backend/test_lite_qualification_owner.py",
@@ -4692,7 +4699,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 538,
+  "page_count": 546,
   "page_types": [
     "overview",
     "guide",
@@ -5327,6 +5334,29 @@
       "source_or_generator": "development/lite-home-premium-refinement.md",
       "title": "Premium Home and activity intelligence — implementation handoff",
       "url": "/development/lite-home-premium-refinement/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "development/lite-native-control-plane-retirement.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:development/lite-native-control-plane-retirement",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "development/lite-native-control-plane-retirement.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "development/lite-native-control-plane-retirement.md",
+      "title": "Pocket Lab Lite Native Control-Plane Retirement Ledger",
+      "url": "/development/lite-native-control-plane-retirement/"
     },
     {
       "additional_audiences": [],
@@ -17067,6 +17097,167 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "observability/generated/alerting-slo-reference.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:observability/generated/alerting-slo-reference",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "observability/generated/alerting-slo-reference.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "observability/generated/alerting-slo-reference.md",
+      "title": "Alerting / SLO Reference",
+      "url": "/observability/generated/alerting-slo-reference/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "observability/generated/gatus-health-reference.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:observability/generated/gatus-health-reference",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "observability/generated/gatus-health-reference.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "observability/generated/gatus-health-reference.md",
+      "title": "Gatus Health Reference",
+      "url": "/observability/generated/gatus-health-reference/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "observability/generated/grafana-dashboards-reference.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:observability/generated/grafana-dashboards-reference",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "observability/generated/grafana-dashboards-reference.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "observability/generated/grafana-dashboards-reference.md",
+      "title": "Grafana Dashboards / Provisioning Reference",
+      "url": "/observability/generated/grafana-dashboards-reference/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "observability/generated/loki-log-pipeline-reference.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:observability/generated/loki-log-pipeline-reference",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "observability/generated/loki-log-pipeline-reference.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "observability/generated/loki-log-pipeline-reference.md",
+      "title": "Loki Log Pipeline Reference",
+      "url": "/observability/generated/loki-log-pipeline-reference/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "observability/generated/observability-runtime-map.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:observability/generated/observability-runtime-map",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "observability/generated/observability-runtime-map.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "observability/generated/observability-runtime-map.md",
+      "title": "Observability Runtime Map",
+      "url": "/observability/generated/observability-runtime-map/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "observability/generated/prometheus-scrape-reference.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:observability/generated/prometheus-scrape-reference",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "observability/generated/prometheus-scrape-reference.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "observability/generated/prometheus-scrape-reference.md",
+      "title": "Prometheus Scrape Reference",
+      "url": "/observability/generated/prometheus-scrape-reference/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "observability/generated/telemetry-contract-reference.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:observability/generated/telemetry-contract-reference",
+      "intents": [
+        "reference"
+      ],
+      "page_type": "reference",
+      "path": "observability/generated/telemetry-contract-reference.md",
+      "primary_audience": "developer",
+      "primary_navigation_owner": "reference",
+      "related_pages": [],
+      "source_or_generator": "observability/generated/telemetry-contract-reference.md",
+      "title": "Telemetry Contract Reference",
+      "url": "/observability/generated/telemetry-contract-reference/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "operations/bootstrap-lite.md"
       ],
       "confidence": "source-derived",
@@ -18735,7 +18926,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "26e08f13dccbe71276fbce1177b9036bbe59836c5cdb941da1d02445907b143c",
+  "source_fingerprint": "5daf484169df5c7a789156ea86a349cf0ec529f184fca4cff05fbf7f98018615",
   "top_level": [
     "start-here",
     "use",

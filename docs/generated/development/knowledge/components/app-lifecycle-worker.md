@@ -91,6 +91,7 @@ Owns install, repair, media import, backup, restore preview, update readiness/ap
 - publishes: `pocketlab.events.command.deferred`
 - publishes: `pocketlab.events.command.failed`
 - publishes: `pocketlab.events.command.received`
+- publishes: `pocketlab.events.command.retired`
 - publishes: `pocketlab.events.command.retry_scheduled`
 - publishes: `pocketlab.events.command.running`
 - publishes: `pocketlab.events.command.succeeded`

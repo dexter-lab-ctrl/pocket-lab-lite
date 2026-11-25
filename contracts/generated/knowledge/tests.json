@@ -23,16 +23,6 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
-      "id": "test:src/__tests__/simpleLabels.test.js",
-      "name": "src/__tests__/simpleLabels.test.js",
-      "source_refs": [
-        "src/__tests__/simpleLabels.test.js"
-      ],
-      "type": "test"
-    },
-    {
-      "confidence": "source-derived",
-      "domain": "testing",
       "id": "test:tests/backend/__init__.py",
       "name": "tests/backend/__init__.py",
       "source_refs": [
@@ -817,6 +807,16 @@
       "name": "tests/backend/test_lite_n6b_install_surface.py",
       "source_refs": [
         "tests/backend/test_lite_n6b_install_surface.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_native_control_plane_retirement.py",
+      "name": "tests/backend/test_lite_native_control_plane_retirement.py",
+      "source_refs": [
+        "tests/backend/test_lite_native_control_plane_retirement.py"
       ],
       "type": "test"
     },
@@ -3407,6 +3407,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e320261c60545eb0180949f076f03001445ac0c1febb46eeeb9fdaf647f43f5f"
+    "source_fingerprint": "54e0e736fc1a97541d826775ffffda546b9c541a1aa4dd29ca255a44d7a1d8d6"
   }
 }

@@ -109,6 +109,7 @@ Execution ownership: use the component/API ownership links above; no additional 
 - `test:tests/backend/test_lite_development_documentation_platform.py`
 - `test:tests/backend/test_lite_device_system_profile.py`
 - `test:tests/backend/test_lite_identity_rules_authorization.py`
+- `test:tests/backend/test_lite_native_control_plane_retirement.py`
 - `test:tests/backend/test_lite_opa_bootstrap_reconciliation.py`
 - `test:tests/backend/test_lite_phase3b_security_system_probe_revisions.py`
 - `test:tests/backend/test_lite_qualification_owner.py`

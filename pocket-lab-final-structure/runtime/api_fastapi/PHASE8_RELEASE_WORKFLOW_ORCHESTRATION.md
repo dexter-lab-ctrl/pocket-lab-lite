@@ -1,4 +1,9 @@
-# Phase 8 — Event-orchestrated Release Workflow
+# Historical Phase 8 — Event-orchestrated Release Workflow
+
+> Historical implementation evidence. Current Lite release/source workflows use
+> the native release adapter, prepared System Health, and the active Lite UI.
+> Legacy GitOps service orchestration is retired; event and audit contracts are
+> preserved where still supported.
 
 Phase 8 turns Pocket Lab release check/apply into a staged event-driven workflow.
 
@@ -11,18 +16,18 @@ POST /api/release/self-update/check|apply
   -> worker/domain handler
   -> release_orchestrator.py
   -> pocketlab.events.release.*
-  -> /ws/events and frontend LiveEventPanel
+  -> /ws/events and active Lite event consumers
 ```
 
 ## Release apply stages
 
 1. `metadata_fetch` — checks configured release metadata.
 2. `prepare` — creates a rollback/backup snapshot via `release_prepare`.
-3. `gitops_synced` — synchronizes local GitOps state via `release_sync`.
+3. `source_synced` — synchronizes supported release/source metadata via `release_sync`.
 4. `catalog_refreshed` — refreshes Apps & Services catalog state.
 5. `blueprint_deployed` — applies the release blueprint via `release_deploy`.
 6. `drift_verified` — verifies desired state via `release_verify`.
-7. `health_verified` — checks Health Engine, Fleet health, and telemetry.
+7. `health_verified` — checks prepared native System Health, Fleet health, and telemetry.
 8. `pwa_refresh_ready` — marks frontend refresh readiness.
 
 ## Event subjects
@@ -31,7 +36,7 @@ POST /api/release/self-update/check|apply
 - `pocketlab.events.release.stage.started`
 - `pocketlab.events.release.stage.completed`
 - `pocketlab.events.release.stage.failed`
-- `pocketlab.events.release.gitops_synced`
+- `pocketlab.events.release.source_synced` (historical `gitops_synced` evidence remains readable)
 - `pocketlab.events.release.catalog_refreshed`
 - `pocketlab.events.release.blueprint_deployed`
 - `pocketlab.events.release.drift_verified`

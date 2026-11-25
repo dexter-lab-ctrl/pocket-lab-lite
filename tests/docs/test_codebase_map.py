@@ -23,7 +23,13 @@ def load(path: Path):
 
 def tracked_files() -> set[str]:
     raw = subprocess.check_output(["git", "ls-files", "-z"], cwd=ROOT)
-    return {item.decode() for item in raw.split(b"\0") if item}
+    # Deleted-but-uncommitted paths remain in the index during a retirement
+    # change; the Codebase Map intentionally represents present checkout files.
+    return {
+        item.decode()
+        for item in raw.split(b"\0")
+        if item and (ROOT / item.decode()).exists()
+    }
 
 
 def test_codebase_map_schema_and_git_inventory_are_exact():

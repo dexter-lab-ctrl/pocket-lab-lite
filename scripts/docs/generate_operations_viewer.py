@@ -159,7 +159,7 @@ HTML = r'''<!doctype html>
       <option value="all">All operations</option>
       <option value="write">Write/safety-sensitive</option>
       <option value="release">Release</option>
-      <option value="secret">Vault/secret</option>
+      <option value="secret">Secret handling</option>
       <option value="fleet">Fleet</option>
       <option value="drift">Drift</option>
     </select>
@@ -172,7 +172,7 @@ HTML = r'''<!doctype html>
     <div class="stat"><strong id="opCount">0</strong><span>Operations</span></div>
     <div class="stat"><strong id="writeCount">0</strong><span>Write-sensitive</span></div>
     <div class="stat"><strong id="releaseCount">0</strong><span>Release ops</span></div>
-    <div class="stat"><strong id="secretCount">0</strong><span>Vault/secret ops</span></div>
+    <div class="stat"><strong id="secretCount">0</strong><span>Secret-handling ops</span></div>
     <div class="stat"><strong id="fleetCount">0</strong><span>Fleet ops</span></div>
   </section>
 
@@ -214,7 +214,7 @@ function tags(op) {
   const result = [];
   if (text.includes("write") || text.includes("mutat") || text.includes("destructive") || text.includes("apply")) result.push("write");
   if (op.operation.includes("release")) result.push("release");
-  if (op.operation.includes("secret") || op.operation.includes("vault") || text.includes("password")) result.push("secret");
+  if (op.operation.includes("secret") || text.includes("password") || text.includes("credential")) result.push("secret");
   if (op.operation.includes("fleet")) result.push("fleet");
   if (op.operation.includes("drift")) result.push("drift");
   return result;

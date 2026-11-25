@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "b4cf94bd47034477c289854b88097ea6cbb5236e395c9bfef51e37155d46563c",
+    "aggregate_fingerprint": "87ea948c6525990e6344f2593ed41e4ee41e5b414261b83a981b2b013612b978",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -11,7 +11,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/generated/releases/manifests/lite-2026.08.19.2/pocketlab-lite-release.json": "29b7b33c8b9f9153dd6b5008ee25a3c54876d627e0034961342f87a7fdd6994c",
-      "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
+      "scripts/docs/lite/generate_platform_catalogs.py": "03d45e1757f6eff0622b0bac8d53108a7229b00c2c746bf158a746224499fd08"
     },
     "validation_state": "generated"
   },
