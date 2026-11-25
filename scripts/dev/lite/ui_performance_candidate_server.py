@@ -306,24 +306,6 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
             self._send_error_json(400, "qualification_bridge_invalid")
             return
 
-        # The physical System Health browser lane pauses the isolated NATS
-        # tunnel so the real worker recovery owner observes a disconnected
-        # consumer. Signal the parent qualification process at the browser's
-        # bounded repair boundary; the parent then resumes that same owned
-        # tunnel before this proxied request can complete. This marker is
-        # run-local, contains no request data, and is never served or logged.
-        if self.command == "POST" and urlsplit(self.path).path.endswith("/repair"):
-            signal_path = os.environ.get("POCKETLAB_CANDIDATE_BROWSER_RECOVERY_SIGNAL_FILE", "").strip()
-            if signal_path:
-                marker = Path(signal_path)
-                if marker.is_absolute() and not marker.is_symlink():
-                    try:
-                        marker.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-                        marker.write_text("repair_seen\n", encoding="utf-8")
-                    except OSError:
-                        self._send_error_json(503, "candidate_recovery_coordination_unavailable")
-                        return
-
         headers = {"Accept": self.headers.get("Accept", "application/json")[:256]}
         # Safe-read requests use a non-secret nonce to distinguish a live
         # backend response from a service-worker/HTTP-cache response. The
@@ -349,6 +331,24 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
                 connection = http.client.HTTPConnection("127.0.0.1", port, timeout=20)
             connection.request(self.command, self.path, body=body, headers=headers)
             response = connection.getresponse()
+            # The physical System Health browser lane pauses the isolated NATS
+            # tunnel so the real worker recovery owner observes a disconnected
+            # consumer. Signal the parent only after the candidate API has
+            # durably admitted the repair (202); the parent then resumes that
+            # same owned tunnel before the browser receives its response.
+            # This marker is run-local, contains no request data, and is never
+            # served or logged.
+            if self.command == "POST" and response.status == 202 and urlsplit(self.path).path.endswith("/repair"):
+                signal_path = os.environ.get("POCKETLAB_CANDIDATE_BROWSER_RECOVERY_SIGNAL_FILE", "").strip()
+                if signal_path:
+                    marker = Path(signal_path)
+                    if marker.is_absolute() and not marker.is_symlink():
+                        try:
+                            marker.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                            marker.write_text("repair_seen\n", encoding="utf-8")
+                        except OSError:
+                            self._send_error_json(503, "candidate_recovery_coordination_unavailable")
+                            return
             self.send_response(response.status, response.reason)
             for name, value in response.getheaders():
                 if name.casefold() in HOP_BY_HOP_HEADERS:
