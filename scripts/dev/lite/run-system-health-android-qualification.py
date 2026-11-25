@@ -1044,9 +1044,35 @@ class SystemHealthAndroidQualification:
         if not self.nats_tunnel.stop():
             raise QualificationError("candidate NATS tunnel ownership could not be paused")
         # Let the worker's existing disconnect callback publish the unhealthy
-        # owner state before the independent API admission request is sent.
-        time.sleep(1.0)
-        return True
+        # owner state before an independent API admission request is sent.
+        # A fixed sleep is not sufficient on Termux: the SSH process can close
+        # before the NATS client and its prepared projection observe the loss.
+        # This is a read-only prepared read; it does not collect, mutate, or
+        # execute anything on the candidate API path.
+        if self.client is None or not self.session:
+            raise QualificationError("candidate recovery transport has no authenticated read session")
+        deadline = time.monotonic() + 30.0
+        last_status = "unknown"
+        last_response = 0
+        while time.monotonic() < deadline:
+            response = self.client.request("GET", "/api/lite/system/health", session=self.session)
+            last_response = response.status
+            if response.status == 200:
+                components = response.body.get("components") if isinstance(response.body, dict) else None
+                if isinstance(components, dict):
+                    last_status = str(components.get("nats") or "unknown").strip().lower()
+                    if last_status in {"degraded", "unavailable", "unhealthy"}:
+                        self.results["recovery_transport"] = {
+                            "status": "PASS",
+                            "candidate_nats_tunnel_paused": True,
+                            "candidate_nats_prepared_status": last_status,
+                            "production_transport_touched": False,
+                        }
+                        return True
+            time.sleep(0.5)
+        raise QualificationError(
+            f"candidate NATS disconnect was not observed by prepared health read (status={last_status}, response={last_response})"
+        )
 
     def _resume_candidate_nats_after_recovery_admission(self, paused: bool) -> None:
         if not paused or self.nats_tunnel is None:

@@ -77,6 +77,8 @@ def test_backend_lane_starts_its_recovery_fixture_before_api_contract():
     assert "self.nats_tunnel.stop()" in source
     assert "requested_remote_port = int(self.nats_tunnel.remote_port)" in source
     assert '"POCKETLAB_NATS_RECONNECT_WAIT": "30"' in source
+    assert '"/api/lite/system/health"' in source
+    assert "candidate NATS disconnect was not observed by prepared health read" in source
 
 
 def test_isolated_binding_rejects_production_paths_and_collisions(tmp_path):
