@@ -193,7 +193,9 @@ async function main() {
   const repairResponse = page.waitForResponse((response) => response.request().method() === 'POST'
     && safePath(response.url()) === `/api/lite/system-health/incidents/${incidentId}/repair` && response.status() === 202, { timeout: 30_000 });
   await dialog.getByRole('button', { name: 'Review recovery', exact: true }).click();
-  await Promise.all([preflightResponse, repairResponse]);
+  const confirmRecovery = dialog.getByRole('button', { name: 'Confirm recovery', exact: true });
+  await confirmRecovery.waitFor({ state: 'visible', timeout: 10_000 });
+  await Promise.all([preflightResponse, repairResponse, confirmRecovery.click()]);
   await dialog.getByRole('status').filter({ hasText: 'Verified recovery' }).waitFor({ state: 'visible', timeout: 60_000 });
   await page.screenshot({ path: resolve(outputDir, 'system-health-recovery-verified.png'), fullPage: true });
 
