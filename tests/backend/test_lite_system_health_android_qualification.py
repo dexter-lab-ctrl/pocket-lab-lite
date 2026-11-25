@@ -240,3 +240,5 @@ def test_physical_system_health_qualifier_activates_android_target():
     assert "POCKETLAB_CANDIDATE_BROWSER_RECOVERY_SIGNAL_FILE" in runner_source
     assert "_pause_candidate_nats_for_recovery" in runner_source
     assert "watch_browser_recovery_signal" in runner_source
+    assert "wait_for_browser_recovery_claim" in runner_source
+    assert '"execution_state") or "") == "running"' in runner_source
