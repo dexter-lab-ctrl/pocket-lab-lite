@@ -889,8 +889,10 @@ def test_e4_capacity_is_bounded_and_executor_rejection_cools_down(tmp_path, monk
 
     rejecting = _new_scheduler(tmp_path / "reject", monkeypatch)
     rejecting.start()
-    assert rejecting._io_executor is not None
-    monkeypatch.setattr(rejecting._io_executor, "submit", lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("rejected")))
+    # The exercised job is critical; patch the executor selected by the
+    # scheduling path rather than the unrelated I/O pool.
+    assert rejecting._critical_executor is not None
+    monkeypatch.setattr(rejecting._critical_executor, "submit", lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("rejected")))
     rejecting.mark_dirty("fleet.summary", job=ProjectionJob("fleet.summary", lambda: {"ok": True}, lambda _p: 1, 10, "critical", 1.0))
     assert _wait_for(lambda: rejecting.status("fleet.summary").get("last_error_type") == "ExecutorRejected")
     assert rejecting.status("fleet.summary")["retry_after_seconds"] >= 60
