@@ -234,3 +234,7 @@ def test_physical_system_health_qualifier_activates_android_target():
     assert "confirmRecovery.waitFor" in source
     assert "eligible NATS recovery incident" in SCRIPT.read_text(encoding="utf-8")
     assert "has: page.getByRole('button', { name: 'Review recovery', exact: true })" in UI_SCRIPT.read_text(encoding="utf-8")
+    runner_source = (REPO / "scripts" / "dev" / "lite" / "run-system-health-android-ui-qualification.py").read_text(encoding="utf-8")
+    assert "POCKETLAB_CANDIDATE_BROWSER_RECOVERY_SIGNAL_FILE" in runner_source
+    assert "_pause_candidate_nats_for_recovery" in runner_source
+    assert "watch_browser_recovery_signal" in runner_source
