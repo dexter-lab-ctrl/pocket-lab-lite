@@ -505,6 +505,7 @@ def _build_lite_status_from_inputs(
         if runtime_state in {"converging", "repairing", "policy_drift", "restart_budget_exhausted", "degraded"}
         else "unknown"
     )
+    worker_execution_ready = _worker_execution_ready(bus)
 
     services = [
         _service(
@@ -528,9 +529,9 @@ def _build_lite_status_from_inputs(
         ),
         _service(
             "Worker Execution",
-            "healthy" if live.get("running") else "degraded",
-            "Worker heartbeat sampler is active" if live.get("running") else "Worker heartbeat is not active yet",
-            source="FastAPI live status",
+            "healthy" if worker_execution_ready else "degraded",
+            "Worker command consumer is healthy" if worker_execution_ready else "Worker command consumer is not ready yet",
+            source="NATS durable worker consumer",
         ),
         _service(
             "Runtime",
@@ -619,6 +620,7 @@ def _build_lite_status_from_inputs(
             "nats_connected": bool(bus.get("connected")),
             "jetstream_enabled": bool(bus.get("jetstream_enabled")),
             "live_sampler_running": bool(live.get("running")),
+            "worker_execution_ready": worker_execution_ready,
             "remote_access_ready": bool(remote_access.get("ready")),
         },
         "telemetry": _lite_telemetry(telemetry),
@@ -627,6 +629,24 @@ def _build_lite_status_from_inputs(
         "projection_only": True,
         "sanitized": True,
     }
+
+
+def _worker_execution_ready(bus: dict[str, Any]) -> bool:
+    """Use prepared worker-owned consumer evidence for aggregate status.
+
+    ``build_lite_status_projection`` can run in the API or worker process. The
+    live-status sampler is process-local, so its ``running`` flag is not a
+    reliable worker heartbeat when a worker commits the prepared projection.
+    The durable command consumer is the shared execution-owner evidence.
+    """
+    consumers = bus.get("durable_consumer_health") if isinstance(bus, dict) else {}
+    consumer = consumers.get("pocketlab_command_worker_v1") if isinstance(consumers, dict) else None
+    return bool(
+        isinstance(consumer, dict)
+        and consumer.get("healthy") is True
+        and consumer.get("task_alive") is True
+        and consumer.get("subscription_present") is True
+    )
 
 
 def default_lite_status_state() -> dict[str, Any]:
