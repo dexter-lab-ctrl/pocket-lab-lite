@@ -15184,6 +15184,17 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_status_projection.py",
+      "name": "tests/backend/test_lite_status_projection.py",
+      "source_refs": [
+        "tests/backend/test_lite_status_projection.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_storage_fault_injection.py",
       "name": "tests/backend/test_lite_storage_fault_injection.py",
       "source_refs": [

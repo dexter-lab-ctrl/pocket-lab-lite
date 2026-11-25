@@ -428,7 +428,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "a947f661fa0be5da9878660d1042b1c09e2e3f5d2c8421df3719a28425d4474e",
+    "aggregate_fingerprint": "34d95d48ad5ce21d2a6bd87dd987e4a51ea3641798e36c99876734d5d4cfe157",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -444,7 +444,7 @@
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-binaries.sh": "33db6551ca7e37b1f7b8fa76d8ae5b0717ef82f924bde9f96810a21318eb8856",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh": "a52eb72e02cbcc31f933d8e7310dbcac6e93328dd33627ece80341693e047552",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-proot-ubuntu.sh": "60baae5ced355da335e711167eb356ba930b1c339d5378d71b204d822fc0c245",
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh": "89917daeb164d6f3e061d129ed49f9fee0da8b0b67be1ea1862855de0b260fa4",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh": "47581543cecc3dd0782781aa0a63a070a7d8b10093b2981ec3c0352a16b287b7",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh": "336436a622867ea1b08b2cf7ac1207e0385d769b423706574e619739e01f400c",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-termux-packages.sh": "547e9b09be8cff62dfbdd2187261423557c8c6bae93e8dd8ddaaf01ef621c951",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-boot-recovery.sh": "930581d9e9fe3d4359405574367bc60220c93002a99fc55f46d83f4e279045e9",

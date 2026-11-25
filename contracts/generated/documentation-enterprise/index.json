@@ -8619,12 +8619,12 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/bootstrap-stage-health.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/prepare-opa-policy.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
-          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
-          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -15119,12 +15119,12 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
+          "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/resolve-opa-startup-policy.py",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/start-opa-runtime.sh",
           "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
           "pocket-lab-final-structure/runtime/api_fastapi/db/connection.py",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -49775,9 +49775,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "c381a2ba2442f79041726d45231a785ff259654c9776b53a1e88361d21eec26f",
-        "documentation": "01cc09a6e91fa982b629daf08e15cd4dd609b6c1854b4545303d765324aa4ac2",
+        "documentation": "b82b6674d8304953f5a6db07a612ee6bdfc193fc3145e3d5c32fc80210a07ee5",
         "openapi": "541b9b956549a22a8300753ef4216ccbedb997decda0710ca60dadc271158cb5",
-        "operational_health": "19994614ae8b9369a0e330e2d30f4d790ffcc1ae90865764def60044bee1fc75"
+        "operational_health": "47583fa23610e9610deecb5209189f442e082727bd84b35b871e73d15a6766d9"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -125435,5 +125435,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "029370ae9b744b0772876e70b5dbb7dfdc158c08014f0024e8305b3b33c78faf"
+  "source_fingerprint": "2fa97f8ae01c6d286d2d97a90fc632f4833e1f0f832f36c20ce0fe63912e21c0"
 }
