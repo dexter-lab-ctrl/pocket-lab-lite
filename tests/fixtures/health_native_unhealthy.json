@@ -1,0 +1,17 @@
+{
+  "overall": "unhealthy",
+  "source": "prepared-lite-native",
+  "components": {
+    "api": "healthy",
+    "identity": "healthy",
+    "nats": "healthy",
+    "worker": "healthy",
+    "sqlite": "healthy",
+    "storage": "healthy",
+    "security": "unhealthy"
+  },
+  "services": {
+    "security": {"status": "unhealthy", "summary": "OPA policy evidence is invalid."},
+    "sqlite": {"status": "healthy"}
+  }
+}

@@ -126,8 +126,8 @@ PHOTOPRISM_RUNTIME="$SCRIPT_DIR/lite/install-photoprism-proot.sh"
 OPA_POLICY_PREP="$SCRIPT_DIR/lite/prepare-opa-policy.sh"
 OPA_RUNTIME_START="$SCRIPT_DIR/lite/start-opa-runtime.sh"
 API_SERVER="${API_SERVER:-$FASTAPI_SERVER}"
-PWA_DIR="${PWA_DIR:-$POCKET_LAB_PWA_DIR}"; PWA_CURRENT_LINK="${POCKETLAB_LITE_PWA_CURRENT_LINK:-$PWA_DIR/current}"; CADDYFILE="${CADDYFILE:-$POCKET_LAB_CADDYFILE}"; HARDWARE_DAEMON="${HARDWARE_DAEMON:-$POCKET_LAB_HARDWARE_DAEMON}"; OBS_DIR="${OBS_DIR:-$POCKET_LAB_OBSERVABILITY_DIR}"
-DASH_PORT="${DASH_PORT:-8443}"; API_PORT="${API_PORT:-8080}"; GATUS_PORT="${GATUS_PORT:-8081}"
+PWA_DIR="${PWA_DIR:-$POCKET_LAB_PWA_DIR}"; PWA_CURRENT_LINK="${POCKETLAB_LITE_PWA_CURRENT_LINK:-$PWA_DIR/current}"; CADDYFILE="${CADDYFILE:-$POCKET_LAB_CADDYFILE}"; HARDWARE_DAEMON="${HARDWARE_DAEMON:-$POCKET_LAB_HARDWARE_DAEMON}"
+DASH_PORT="${DASH_PORT:-8443}"; API_PORT="${API_PORT:-8080}"
 if is_lite_profile; then
   export POCKETLAB_CADDYFILE="${POCKETLAB_CADDYFILE:-$CADDYFILE}"
   export POCKETLAB_LITE_RELEASE_HEALTH_BASE_URL="${POCKETLAB_LITE_RELEASE_HEALTH_BASE_URL:-http://127.0.0.1:${DASH_PORT}}"
@@ -273,12 +273,8 @@ import importlib.util, sys
 required = ("fastapi", "uvicorn", "pydantic", "nats")
 sys.exit(0 if all(importlib.util.find_spec(m) for m in required) else 1)
 PYCHECK
-  if is_lite_profile; then
-    mkdir -p "$PWA_DIR" "$PWA_DIR/releases" "$POCKET_LAB_API_DIR" "$(dirname "$CADDYFILE")"
-    migrate_legacy_lite_pwa_root
-  else
-    mkdir -p "$PWA_DIR" "$PWA_DIR/releases" "$OBS_DIR/loki_data" "$OBS_DIR/gatus" "$POCKET_LAB_API_DIR" "$(dirname "$CADDYFILE")"
-  fi
+  mkdir -p "$PWA_DIR" "$PWA_DIR/releases" "$POCKET_LAB_API_DIR" "$(dirname "$CADDYFILE")"
+  if is_lite_profile; then migrate_legacy_lite_pwa_root; fi
   if [[ ! -f "$PWA_CURRENT_LINK/index.html" ]]; then log INFO "UI assets missing; attempting self-recovery"; bash "$SCRIPT_DIR/install-pwa-ui.sh" || die "Failed to install UI assets"; fi
 }
 random_secret(){
@@ -668,10 +664,6 @@ ${qualification_bridge_forward}
   }
   header @pocketlab_runtime_assets Cache-Control "no-cache"
 
-  handle /gitea/* {
-    reverse_proxy 127.0.0.1:3030
-  }
-
   handle /assets/* {
     root * ${PWA_CURRENT_LINK}
     file_server
@@ -819,91 +811,6 @@ while True:
 PYD
   chmod +x "$HARDWARE_DAEMON"
 }
-write_observability_configs(){
-  if is_lite_profile; then
-    log INFO "Lite profile: skipping observability config generation"
-    return 0
-  fi
-  log INFO "Writing observability configs idempotently"
-  cat <<EOF | atomic_write "$OBS_DIR/loki-config.yaml" 0644
-auth_enabled: false
-server:
-  http_listen_port: 3100
-  http_listen_address: 127.0.0.1
-  grpc_listen_address: 127.0.0.1
-common:
-  instance_addr: 127.0.0.1
-  path_prefix: $OBS_DIR/loki_data
-  storage:
-    filesystem:
-      chunks_directory: $OBS_DIR/loki_data/chunks
-      rules_directory: $OBS_DIR/loki_data/rules
-  replication_factor: 1
-  ring:
-    instance_addr: 127.0.0.1
-    kvstore: { store: inmemory }
-schema_config:
-  configs:
-    - from: 2020-10-24
-      store: boltdb-shipper
-      object_store: filesystem
-      schema: v11
-      index: { prefix: index_, period: 24h }
-frontend:
-  instance_interface_names: [lo]
-EOF
-  cat <<EOF | atomic_write "$OBS_DIR/promtail-config.yaml" 0644
-server: { http_listen_port: 9080, grpc_listen_port: 0 }
-positions: { filename: $OBS_DIR/positions.yaml }
-clients:
-  - url: http://127.0.0.1:3100/loki/api/v1/push
-scrape_configs:
-- job_name: system_logs
-  static_configs:
-  - targets: [localhost]
-    labels: { job: pm2_logs, __path__: /data/data/com.termux/files/home/.pm2/logs/*.log }
-EOF
-  cat <<EOF | atomic_write "$OBS_DIR/prometheus.yml" 0644
-global: { scrape_interval: 15s, evaluation_interval: 15s }
-scrape_configs:
-  - job_name: prometheus
-    static_configs: [{ targets: ["127.0.0.1:9090"] }]
-  - job_name: vault
-    metrics_path: /v1/sys/metrics
-    params: { format: [prometheus] }
-    static_configs: [{ targets: ["127.0.0.1:8200"] }]
-EOF
-  cat <<EOF | atomic_write "$OBS_DIR/gatus-config.yaml" 0644
-web: { port: ${GATUS_PORT} }
-ui:
-  title: Pocket Lab Health Engine
-  description: Dependency-aware health dashboard for Pocket Lab.
-endpoints:
-  - { name: pocket-lab-api, group: core, url: http://127.0.0.1:${API_PORT}/health, interval: 30s, conditions: ["[STATUS] == 200", "[BODY].status == ok"] }
-  - { name: pocket-lab-ready, group: core, url: http://127.0.0.1:${API_PORT}/ready, interval: 30s, conditions: ["[STATUS] == 200"] }
-  - { name: gitea, group: platform, url: http://127.0.0.1:3030/api/healthz, interval: 30s, conditions: ["[STATUS] == 200"] }
-  - { name: vault, group: platform, url: http://127.0.0.1:8200/v1/sys/health?standbyok=true, interval: 30s, conditions: ["[STATUS] == any(200, 429)"] }
-  - { name: loki, group: observability, url: http://127.0.0.1:3100/ready, interval: 30s, conditions: ["[STATUS] == 200"] }
-  - { name: prometheus, group: observability, url: http://127.0.0.1:9090/-/ready, interval: 30s, conditions: ["[STATUS] == 200"] }
-  - { name: grafana, group: observability, url: http://127.0.0.1:3050/api/health, interval: 30s, conditions: ["[STATUS] == 200"] }
-EOF
-  cat <<EOF | atomic_write "$OBS_DIR/custom.ini" 0644
-[server]
-http_port = 3050
-http_addr = 0.0.0.0
-[paths]
-data = data
-logs = data/log
-plugins = data/plugins
-provisioning = conf/provisioning
-EOF
-  if proot_ubuntu_ready; then proot-distro login ubuntu -- bash -c "mkdir -p /opt/grafana/data/log /opt/grafana/data/plugins /opt/grafana/conf/provisioning && chmod -R 755 /opt/grafana/data /opt/grafana/conf" || true; fi
-}
-proot_ubuntu_ready() {
-  have proot-distro || return 1
-  proot-distro login ubuntu -- true >/dev/null 2>&1
-}
-
 wait_for_nats_ready(){
   local url="http://127.0.0.1:8222/healthz"
   local i
@@ -1080,14 +987,12 @@ start_pm2_daemons(){
   write_nats_config
   POCKETLAB_PM2_SERVICE_VERSION="$(nats_installed_version)" pm2_runtime_process pocket-nats nats-server -- -c "$POCKETLAB_NATS_CONFIG"
   wait_for_nats_ready
-  if is_lite_profile; then
-    require_cmd opa
-    [[ -f "$OPA_RUNTIME_START" ]] || die "OPA startup runtime script is missing: $OPA_RUNTIME_START"
-    POCKETLAB_STATE_DIR="$POCKETLAB_STATE_DIR" \
-    POCKETLAB_LITE_DB_PATH="$POCKETLAB_LITE_DB_PATH" \
-    POCKETLAB_OPA_ACTIVE_POLICY_DIR="$POCKETLAB_OPA_ACTIVE_POLICY_DIR" \
-      bash "$OPA_RUNTIME_START"
-  fi
+  require_cmd opa
+  [[ -f "$OPA_RUNTIME_START" ]] || die "OPA startup runtime script is missing: $OPA_RUNTIME_START"
+  POCKETLAB_STATE_DIR="$POCKETLAB_STATE_DIR" \
+  POCKETLAB_LITE_DB_PATH="$POCKETLAB_LITE_DB_PATH" \
+  POCKETLAB_OPA_ACTIVE_POLICY_DIR="$POCKETLAB_OPA_ACTIVE_POLICY_DIR" \
+    bash "$OPA_RUNTIME_START"
   if [[ "${POCKETLAB_DISABLE_WORKER:-0}" != "1" ]]; then
     POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_EVENT_FANOUT=0 POCKETLAB_NATS_USER="$POCKETLAB_NATS_WORKER_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_WORKER_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-worker POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$WORKER_SERVER")" pm2_runtime_process pocket-worker "$WORKER_SERVER" --interpreter python3 --update-env
   else
@@ -1104,26 +1009,9 @@ start_pm2_daemons(){
   POCKETLAB_PM2_SERVICE_VERSION="$(caddy_installed_version)" pm2_runtime_process caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
   reload_caddy_if_config_changed
   reconcile_installed_photoprism
-  if is_lite_profile; then
-    POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS="${POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS:-45}" POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS="${POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS:-120}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$CORE_SUPERVISOR_SERVER")" pm2_runtime_process pocketlab-core-supervisor "$CORE_SUPERVISOR_SERVER" --interpreter python3 --update-env
-    POCKETLAB_RUNTIME_RECONCILE_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_SECONDS:-45}" POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS:-120}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$RUNTIME_RECONCILER_SERVER")" pm2_runtime_process pocketlab-runtime-reconciler "$RUNTIME_RECONCILER_SERVER" --interpreter python3 --update-env
-    log INFO "Lite profile: started Pocket Lab Lite core supervisor and desired-state reconciler"
-    log INFO "Lite profile: skipping Gatus, Loki, Promtail, Prometheus, and Grafana PM2 services"
-  else
-    if have gatus; then
-      pm2_runtime_process pocket-gatus bash -- -c "GATUS_CONFIG_PATH=$OBS_DIR/gatus-config.yaml gatus"
-    else
-      log WARN "gatus missing; health UI will use API fallback"
-    fi
-    if proot_ubuntu_ready; then
-      pm2_runtime_process loki-kms bash -- -c "proot-distro login ubuntu -- /usr/local/bin/loki -config.file=$OBS_DIR/loki-config.yaml" || true
-      pm2_runtime_process promtail-agent bash -- -c "proot-distro login ubuntu -- /usr/local/bin/promtail -config.file=$OBS_DIR/promtail-config.yaml" || true
-      pm2_runtime_process prometheus-db bash -- -c "proot-distro login ubuntu -- /usr/local/bin/prometheus --config.file=$OBS_DIR/prometheus.yml --storage.tsdb.path=$OBS_DIR/prom_data --web.listen-address=127.0.0.1:9090" || true
-      pm2_runtime_process grafana-ui bash -- -c "proot-distro login ubuntu -- bash -c 'cd /opt/grafana && ./bin/grafana-server --homepath=/opt/grafana --config=$OBS_DIR/custom.ini'" || true
-    else
-      log WARN "PRoot Ubuntu unavailable; skipping Loki/Promtail/Prometheus/Grafana PM2 processes"
-    fi
-  fi
+  POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS="${POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS:-45}" POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS="${POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS:-120}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$CORE_SUPERVISOR_SERVER")" pm2_runtime_process pocketlab-core-supervisor "$CORE_SUPERVISOR_SERVER" --interpreter python3 --update-env
+  POCKETLAB_RUNTIME_RECONCILE_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_SECONDS:-45}" POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS="${POCKETLAB_RUNTIME_RECONCILE_COOLDOWN_SECONDS:-120}" POCKETLAB_PM2_SERVICE_VERSION="$(pocketlab_source_version "$RUNTIME_RECONCILER_SERVER")" pm2_runtime_process pocketlab-runtime-reconciler "$RUNTIME_RECONCILER_SERVER" --interpreter python3 --update-env
+  log INFO "Started the native Pocket Lab core supervisor and desired-state reconciler"
   pm2_save_if_nonempty >/dev/null || true
   pocketlab_pm2_identity_check || die "PM2 daemon ownership is ambiguous after service convergence reason=${PM2_IDENTITY_REASON:-pm2_ownership_unknown}"
 }
@@ -1228,7 +1116,7 @@ main(){
     return
   fi
   SCRIPT_NAME="start-dashboard.sh"; acquire_start_dashboard_lock "$SCRIPT_NAME"; ensure_root_dirs; require_termux; require_cmd python3 caddy curl pm2 jq nats-server
-  ensure_assets; start_tailscale_if_missing; write_hardware_daemon; write_caddyfile; write_observability_configs; start_pm2_daemons; verify_lite_remote_nats; mark_done dashboard_ready
+  ensure_assets; start_tailscale_if_missing; write_hardware_daemon; write_caddyfile; start_pm2_daemons; verify_lite_remote_nats; mark_done dashboard_ready
   log INFO "Dashboard/control-plane services are ready and safe to rerun"
 }
 main "$@"

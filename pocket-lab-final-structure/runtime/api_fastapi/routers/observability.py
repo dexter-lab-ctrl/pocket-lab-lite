@@ -1,15 +1,30 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 
 from .. import deps
-from ..services.observability_status import get_observability_status_snapshot
 
 router = APIRouter(tags=["observability"])
 
 
-@router.get("/api/observability/status")
-async def observability_status(request: Request) -> dict:
-    """Return a bounded live status snapshot for the local observability stack."""
+@router.get(
+    "/api/observability/status",
+    status_code=410,
+    response_model=None,
+    responses={410: {"description": "Legacy observability route retired."}},
+)
+def observability_status(request: Request) -> dict:
+    """Retain a deterministic compatibility response for the retired route."""
     deps.require_auth(request)
-    return await get_observability_status_snapshot(use_cache=True)
+    raise HTTPException(
+        status_code=410,
+        detail={
+            "status": "retired",
+            "accepted": False,
+            "executed": False,
+            "reason_code": "legacy_observability_stack_retired",
+            "replacement": "/api/lite/system/health and /api/lite/diagnostics/runtime",
+            "historical_record_preserved": True,
+            "sanitized": True,
+        },
+    )

@@ -16,12 +16,12 @@ def test_degraded_fixture_catalog_covers_release_blocker_scenarios():
     """The fault gate must cover the release-blocking degraded-mode classes."""
     assert load_fixture("nats_down.json")["connected"] is False
     assert load_fixture("worker_down.json")["available"] is False
-    assert load_fixture("health_vault_sealed.json")["overall"] == "degraded"
-    assert load_fixture("health_vault_sealed.json")["services"]["vault"]["status"] == "sealed"
+    assert load_fixture("health_native_degraded.json")["overall"] == "degraded"
+    assert load_fixture("health_native_degraded.json")["services"]["nats"]["status"] == "degraded"
     assert load_fixture("telemetry_low_disk.json")["free_space_mb"] < load_fixture("telemetry_normal.json")["free_space_mb"]
     assert load_fixture("release_failed.json")["status"] == "failed"
     assert load_fixture("backup_missing.json")["reason"] == "latest_backup_ref_missing"
-    assert load_fixture("gatus_unhealthy.json")["overall"] == "unhealthy"
+    assert load_fixture("health_native_unhealthy.json")["overall"] == "unhealthy"
     assert any(agent.get("status") == "offline" for agent in load_fixture("fleet_agents.json").get("agents", []))
 
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 scripts="pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts"
-expected=(install-termux-packages install-proot-ubuntu install-binaries init-vault init-mariadb start-gitea seed-gitops-repo install-tailscale install-pwa-ui start-dashboard smoke-test)
+expected=(install-termux-packages install-proot-ubuntu install-binaries install-tailscale install-pwa-ui start-dashboard install-fleet-agent smoke-test install-boot-recovery)
 plan="$($scripts/bootstrap.sh --list || true)"
 printf '%s\n' "$plan"
 for stage in "${expected[@]}"; do

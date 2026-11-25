@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { controlPlaneHealthy, controlPlaneNatsDown, workerDown } from './fixtures/controlPlane.js';
-import { telemetryNormal, healthAllGreen, healthVaultSealed, fleetAgents, driftDetected, releaseWorkflowRunning, recentEvents, observabilityRuntimeHealthy, observabilityRuntimeDegraded } from './fixtures/pocketlab.js';
+import { telemetryNormal, healthNativeHealthy, healthNativeDegraded, fleetAgents, driftDetected, releaseWorkflowRunning, recentEvents } from './fixtures/pocketlab.js';
 import { resolveGeneratedLiteScenario } from '../test/fixtures/generated/lite-fixtures.js';
 
 const rawScenario = () => typeof window !== 'undefined'
@@ -19,8 +19,7 @@ const controlPlane = () => {
   if (scenario() === 'worker-down') return workerDown;
   return controlPlaneHealthy;
 };
-const healthPayload = () => scenario() === 'vault-sealed' ? healthVaultSealed : healthAllGreen;
-const observabilityPayload = () => scenario() === 'nats-down' || scenario() === 'worker-down' || scenario() === 'vault-sealed' ? observabilityRuntimeDegraded : observabilityRuntimeHealthy;
+const healthPayload = () => scenario() === 'nats-down' || scenario() === 'worker-down' ? healthNativeDegraded : healthNativeHealthy;
 
 function mockPhotoBackupDevice(deviceId = 'test-phone-4') {
   const selected = rawScenario();
@@ -1351,7 +1350,7 @@ export const handlers = [
   http.get('/api/workers/status', () => HttpResponse.json({ available: controlPlane().worker, workers: [{ name: 'pocketlab_worker', status: controlPlane().worker ? 'online' : 'offline' }] })),
   http.get('/api/telemetry.json', () => HttpResponse.json(telemetryNormal)),
   http.get('/api/health-engine.json', () => HttpResponse.json(healthPayload())),
-  http.get('/api/observability/status', () => HttpResponse.json(observabilityPayload())),
+  http.get('/api/observability/status', () => HttpResponse.json({ status: 'retired', accepted: false, executed: false, reason_code: 'legacy_observability_stack_retired', replacement: '/api/lite/system/health', sanitized: true }, { status: 410 })),
   http.get('/api/logs/query', ({ request }) => {
     const url = new URL(request.url);
     const now = MOCK_NOW_MS * 1000000;
@@ -2151,7 +2150,7 @@ export const handlers = [
     summary: 'Recovery Ready',
     repository: { type: 'local', engine: 'restic', encrypted: true, ready: true, location: '~/pocket-lab-lite-backups' },
     what_will_be_backed_up: ['Lite runtime state', 'Device records and heartbeats', 'Device invite lifecycle records', 'Rules/protection state', 'App catalog/install metadata', 'Backup manifests and receipts'],
-    what_will_not_be_backed_up: ['raw API tokens', 'raw invite tokens', 'NATS passwords', 'Vault root token', 'Vault unseal keys', 'private SSH keys'],
+    what_will_not_be_backed_up: ['raw API tokens', 'raw invite tokens', 'NATS passwords', 'retired provider root credentials', 'retired provider unseal material', 'private SSH keys'],
     last_backup: { backup_id: 'mock-backup-001', created_at: mockIso(-25 * 60 * 1000), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' },
     last_backup_time: mockIso(-25 * 60 * 1000),
     last_verification_result: 'not_verified',
@@ -2431,7 +2430,7 @@ export const handlers = [
     if (!body.confirm) return HttpResponse.json({ detail: { status: 'confirmation_required', summary: 'Confirm restore before running it.' } }, { status: 409 });
     return HttpResponse.json({ accepted: true, status: 'queued', job_id: 'mock-restore-apply', command_subject: 'pocketlab.commands.lite.restore.apply', summary: 'Restore queued. Pocket Lab will create a pre-restore checkpoint before changing Lite state.' }, { status: 202 });
   }),
-  http.get('/api/catalog.json', () => HttpResponse.json({ items: [{ id: 'gitea', name: 'Gitea', operation: 'deploy_blueprint' }] })),
+  http.get('/api/catalog.json', () => HttpResponse.json({ items: [{ id: 'photoprism', name: 'PhotoPrism', operation: 'deploy_blueprint' }] })),
   http.get('/api/fleet.json', () => HttpResponse.json(fleetAgents)),
   http.get('/api/fleet/agents', () => HttpResponse.json(fleetAgents)),
   http.get('/api/drift/summary', () => HttpResponse.json(driftDetected)),

@@ -6,5 +6,5 @@ def test_health_engine_registered():
 
 
 def test_health_fixture_supports_object_values():
-    payload = load_fixture("health_vault_sealed.json")
-    assert isinstance(payload["services"]["vault"], dict)
+    payload = load_fixture("health_native_degraded.json")
+    assert isinstance(payload["services"]["nats"], dict)

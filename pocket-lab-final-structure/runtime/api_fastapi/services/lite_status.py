@@ -281,20 +281,6 @@ def _overall(services: list[dict[str, Any]]) -> str:
     return "healthy"
 
 
-def _find_health_service(engine: dict[str, Any], *needles: str) -> dict[str, Any] | None:
-    services = engine.get("services") if isinstance(engine, dict) else {}
-    if not isinstance(services, dict):
-        return None
-    lowered = [needle.lower() for needle in needles]
-    for key, value in services.items():
-        haystack = f"{key} {value.get('name') if isinstance(value, dict) else ''}".lower()
-        if all(needle in haystack for needle in lowered) and isinstance(value, dict):
-            return value
-    return None
-
-
-
-
 def _run_remote_access_command(command: list[str], timeout: float = 1.5) -> subprocess.CompletedProcess[str] | None:
     try:
         return subprocess.run(command, check=False, capture_output=True, text=True, timeout=timeout)
@@ -407,25 +393,6 @@ def lite_remote_access_status() -> dict[str, Any]:
     }
 
 
-def _mysql_socket_available() -> bool | None:
-    candidates = [
-        os.environ.get("POCKETLAB_MARIADB_SOCKET"),
-        "/data/data/com.termux/files/usr/var/run/mysqld.sock",
-        "/var/run/mysqld/mysqld.sock",
-        "/tmp/mysql.sock",
-    ]
-    for candidate in [c for c in candidates if c]:
-        try:
-            if os.path.exists(candidate):
-                with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
-                    sock.settimeout(0.15)
-                    sock.connect(candidate)
-                return True
-        except Exception:
-            return False
-    return None
-
-
 def _build_lite_status_from_inputs(
     *,
     checked_at: str,
@@ -438,9 +405,10 @@ def _build_lite_status_from_inputs(
     fleet_nodes: list[dict[str, Any]],
     current_state: dict[str, Any],
 ) -> dict[str, Any]:
-    vault = _find_health_service(engine, "vault")
-    gitea = _find_health_service(engine, "gitea")
-    mariadb_socket = _mysql_socket_available()
+    identity = current_state.get("identity") if isinstance(current_state.get("identity"), dict) else {}
+    if not identity:
+        prepared_identity = engine.get("identity") if isinstance(engine, dict) else {}
+        identity = prepared_identity if isinstance(prepared_identity, dict) else {}
 
     catalog_items_count = lite_catalog_service.catalog_apps_count()
     # Keep the scheduler builder on prepared inputs only.  The canonical Fleet
@@ -546,8 +514,9 @@ def _build_lite_status_from_inputs(
         ),
         _service(
             "Identity & Access",
-            (vault or {}).get("status", "unknown"),
-            (vault or {}).get("summary") or "Vault readiness will appear after bootstrap initializes identity services",
+            identity.get("status", "unknown"),
+            identity.get("summary") or "Native Identity & Access readiness is being refreshed",
+            source=identity.get("source") or "SQLite human identity projection",
         ),
         _service(
             "Device Fleet",
@@ -574,24 +543,6 @@ def _build_lite_status_from_inputs(
             "Backup and restore actions are available through worker-owned typed operations",
         ),
     ]
-
-    if gitea:
-        services.append(
-            _service(
-                "Local Source Store",
-                gitea.get("status", "unknown"),
-                gitea.get("summary") or "Gitea status is available",
-            )
-        )
-
-    if mariadb_socket is not None:
-        services.append(
-            _service(
-                "Database",
-                "healthy" if mariadb_socket else "degraded",
-                "MariaDB socket is reachable" if mariadb_socket else "MariaDB socket was found but is not reachable",
-            )
-        )
 
     tailnet_ip = remote_access.get("tailnet_ip") or remote_access.get("ip")
     device = {
@@ -824,6 +775,12 @@ def build_lite_status_projection() -> dict[str, Any]:
     )
     current_state = {
         "health": snapshots["system.health"],
+        "identity": (
+            snapshots["system.health"].get("identity")
+            if isinstance(snapshots["system.health"], dict)
+            and isinstance(snapshots["system.health"].get("identity"), dict)
+            else {}
+        ),
         "runtime_contract": lite_runtime_contract(),
         "processes": snapshots["system.processes"],
         "agent": snapshots["system.agent"],
@@ -1412,12 +1369,16 @@ def lite_catalog() -> dict[str, Any]:
 
 
 def lite_identity() -> dict[str, Any]:
-    engine = deps.core.build_health_engine_snapshot()
-    vault = _find_health_service(engine, "vault") or {}
+    from . import lite_identity_auth
+
+    projection = lite_identity_auth.identity_projection(None)
     return {
-        "status": _status(vault.get("status", "unknown")),
-        "summary": vault.get("summary") or "Vault readiness will appear after bootstrap initializes identity services",
-        "actions": ["change_password", "rotate_secret"],
+        "status": _status(projection.get("status", "unknown")),
+        "summary": projection.get("summary") or "Native Identity & Access readiness is being refreshed",
+        "setup_required": bool(projection.get("setup_required")),
+        "actions": ["change_password", "passkey", "recovery"],
+        "source": "native_identity_auth",
+        "sanitized": True,
     }
 
 

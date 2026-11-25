@@ -17,10 +17,10 @@ def test_degraded_fixtures_cover_expected_cases():
     assert load_fixture("nats_down.json")["connected"] is False
     assert load_fixture("worker_down.json")["available"] is False
     assert (
-        load_fixture("health_vault_sealed.json")["services"]["vault"]["status"]
-        == "sealed"
+        load_fixture("health_native_degraded.json")["services"]["nats"]["status"]
+        == "degraded"
     )
     assert load_fixture("drift_detected.json")["items"]
     assert load_fixture("release_failed.json")["status"] == "failed"
     assert load_fixture("backup_missing.json")["reason"] == "latest_backup_ref_missing"
-    assert load_fixture("gatus_unhealthy.json")["overall"] == "unhealthy"
+    assert load_fixture("health_native_unhealthy.json")["overall"] == "unhealthy"

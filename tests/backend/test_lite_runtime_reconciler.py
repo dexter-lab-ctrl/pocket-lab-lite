@@ -137,7 +137,8 @@ def test_lite_bootstrap_skips_legacy_runtime_stages():
         / "scripts"
         / "bootstrap.sh"
     ).read_text()
-    assert "init_vault|init_mariadb|start_gitea|seed_gitops_repo" in bootstrap
+    for retired_script in ("init-vault.sh", "init-mariadb.sh", "start-gitea.sh", "seed-gitops-repo.sh"):
+        assert retired_script not in bootstrap
     packages = (
         ROOT
         / "pocket-lab-final-structure"
@@ -145,8 +146,10 @@ def test_lite_bootstrap_skips_legacy_runtime_stages():
         / "scripts"
         / "install-termux-packages.sh"
     ).read_text()
-    assert "packages+=(mariadb gitea)" in packages
-    assert "if ! is_lite_profile; then" in packages
+    assert "mariadb" not in packages
+    assert "gitea" not in packages
+    assert "git" in packages
+    assert "proot-distro" in packages
 
 
 

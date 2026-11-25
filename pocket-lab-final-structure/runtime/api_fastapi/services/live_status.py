@@ -510,9 +510,14 @@ class LiveStatusSampler:
             self._samples["health"] += 1
             return prepared
 
+        # The consolidated sampler owns one bounded native collector.  It reads
+        # Lite projections and local runtime observations; it never fans out to
+        # Gatus or any retired infrastructure service.
         snapshot, _ = await WORKLOAD_ADMISSION.run(
-            "system.health_probe", deps.core.build_health_engine_snapshot
+            "system.health_probe", phase3b.collect_system_health_state
         )
+        if not isinstance(snapshot, dict):
+            snapshot = {"status": "unknown", "services": {}, "sanitized": True}
         snapshot["sample_source"] = source
         snapshot["sampled_at"] = deps.now_utc_iso()
         current_hash = _stable_hash(_health_signature(snapshot))
@@ -529,7 +534,7 @@ class LiveStatusSampler:
         self._last_health_services = current_services
         self._last_changed["health"] = changed
         self._samples["health"] += 1
-        phase3b.project("system.health", phase3b.collect_system_health_state(snapshot))
+        phase3b.project("system.health", snapshot)
         phase3b.mark_dirty("system.status", reason="health_sample")
         payload = {
             "snapshot": snapshot,

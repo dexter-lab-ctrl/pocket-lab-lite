@@ -12,7 +12,7 @@ spec:
   professionalLabel: Approve remediation
   simpleLabel: Approve fix
   uiEntrypoints:
-  - Drift Center
+  - System Health
   apiEntrypoints:
   - /api/operations/execute
   natsSubject: pocketlab.commands.drift.approve

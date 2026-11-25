@@ -4,8 +4,10 @@
     "fastapi": "healthy",
     "nats": "healthy",
     "worker": "healthy",
-    "vault": "healthy",
-    "gitea": "healthy",
-    "gatus": "healthy"
+    "identity": "healthy",
+    "sqlite": "healthy",
+    "storage": "healthy",
+    "security": "healthy",
+    "remote_access": "not_configured"
   }
 }

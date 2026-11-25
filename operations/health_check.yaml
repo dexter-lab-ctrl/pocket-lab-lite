@@ -3,7 +3,7 @@ kind: TypedOperation
 metadata:
   name: health_check
   title: Run Health Check
-  description: Run health engine check and emit health status.
+  description: Refresh the prepared native health projection and emit health status.
   tags:
   - health
   - noc
@@ -12,9 +12,9 @@ spec:
   professionalLabel: Refresh health snapshot
   simpleLabel: Check system health
   uiEntrypoints:
-  - NOC Telemetry
+  - System Health
+  - Home
   - System Status
-  - Health Engine
   apiEntrypoints:
   - /api/health/check
   natsSubject: pocketlab.commands.health.check
@@ -22,7 +22,7 @@ spec:
   - pocketlab.events.health.checked
   failureEvents:
   - pocketlab.events.operation.failed
-  backendOwner: health engine / Gatus integration
+  backendOwner: prepared native System Health projection / worker sampler
   targetShape:
     type: health
     ref: control-plane

@@ -2,17 +2,19 @@ apiVersion: pocketlab.io/v1alpha1
 kind: TypedOperation
 metadata:
   name: git_sync
-  title: GitOps Sync
-  description: Synchronize desired state from a Git source.
+  title: Source and Release Sync
+  description: Synchronize supported release/source metadata without legacy GitOps service orchestration.
   tags:
-  - gitops
+  - release
+  - source
   - sync
   - write
 spec:
-  professionalLabel: Sync GitOps
+  professionalLabel: Sync release source
   simpleLabel: Keep my environment updated
   uiEntrypoints:
-  - GitOps Pipeline
+  - App Catalog
+  - System Health
   - Keep My Environment Updated
   apiEntrypoints:
   - /api/operations/execute
@@ -21,7 +23,7 @@ spec:
   - pocketlab.events.operation.succeeded
   failureEvents:
   - pocketlab.events.operation.failed
-  backendOwner: GitOps operation handler
+  backendOwner: release/source adapter
   targetShape:
     type: git
     ref: repo-or-branch
@@ -29,7 +31,7 @@ spec:
     branch: string
     strategy: safe-sync
   safety: Must not reintroduce retired sync shell compatibility paths.
-  notes: Replaces legacy command-style sync flows with typed operation execution.
+  notes: Uses the supported release/source adapter; it does not start or proxy a legacy GitOps service.
 security:
   data_classification: operational
   stride:

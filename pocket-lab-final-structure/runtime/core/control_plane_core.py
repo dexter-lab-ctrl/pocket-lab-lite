@@ -16,9 +16,6 @@ import os
 import pathlib
 import time
 import threading
-import urllib.error
-import urllib.parse
-import urllib.request
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
@@ -30,7 +27,6 @@ except ImportError:  # pragma: no cover - Windows-only fallback
 
 from operations.service import OperationService
 from operations.registry import normalize_operation_request
-from git.dulwich_repo import DulwichRepository
 from contracts import utc_now_iso, slugify
 from release_auto_update import ReleaseAutoUpdater
 from release_workflow import (
@@ -130,32 +126,6 @@ class Settings:
                     / "telemetry.json"
                 ),
             )
-        )
-    )
-    gatus_base_url: str = field(
-        default_factory=lambda: _env(
-            "POCKETLAB_GATUS_BASE_URL", "http://127.0.0.1:8081"
-        )
-    )
-    gatus_statuses_path: str = field(
-        default_factory=lambda: _env(
-            "POCKETLAB_GATUS_STATUSES_PATH", "/api/v1/endpoints/statuses"
-        )
-    )
-    gitea_base_url: str = field(
-        default_factory=lambda: _env(
-            "POCKETLAB_GITEA_BASE_URL", "http://127.0.0.1:3030"
-        )
-    )
-    gitea_user: str = field(
-        default_factory=lambda: _env("POCKETLAB_GITEA_USER", "pocket_admin")
-    )
-    gitea_repo: str = field(
-        default_factory=lambda: _env("POCKETLAB_GITEA_REPO", "pocket_lab_iac")
-    )
-    gitops_branch_prefix: str = field(
-        default_factory=lambda: _env(
-            "POCKETLAB_GITOPS_BRANCH_PREFIX", "feature/pocket-lab"
         )
     )
     api_token: str = field(default_factory=lambda: _env("POCKETLAB_API_TOKEN", ""))
@@ -287,161 +257,6 @@ def telemetry_snapshot() -> Dict[str, Any]:
     return payload
 
 
-def fetch_gatus_statuses() -> Optional[Dict[str, Any]]:
-    url = f"{SETTINGS.gatus_base_url.rstrip('/')}{SETTINGS.gatus_statuses_path}"
-    try:
-        req = urllib.request.Request(url, headers={"Accept": "application/json"})
-        with urllib.request.urlopen(req, timeout=4) as resp:
-            return json.loads(resp.read().decode("utf-8"))
-    except Exception:
-        return None
-
-
-HEALTH_STATUSES = {
-    "healthy",
-    "warning",
-    "degraded",
-    "unhealthy",
-    "unavailable",
-    "maintenance",
-    "unknown",
-}
-
-
-def normalize_health_status(value: Any) -> str:
-    status = str(value or "unknown").strip().lower()
-    return status if status in HEALTH_STATUSES else "unknown"
-
-
-def normalize_check(item: Dict[str, Any]) -> Dict[str, Any]:
-    if not isinstance(item, dict):
-        return {}
-    status = normalize_health_status(
-        item.get("status") or item.get("health") or item.get("state")
-    )
-    name = str(
-        item.get("name") or item.get("service") or item.get("target") or "service"
-    )
-    return {
-        "name": name,
-        "status": status,
-        "summary": item.get("summary") or item.get("message") or "",
-        "url": item.get("url") or item.get("endpoint") or "",
-        "last_checked_at": item.get("last_checked_at")
-        or item.get("lastCheck")
-        or now_utc_iso(),
-        "response_time_ms": item.get("response_time_ms"),
-        "results_count": item.get("results_count"),
-    }
-
-
-def normalize_service_payload(name: str, value: Any) -> Dict[str, Any]:
-    """Return the stable health service contract consumed by the UI.
-
-    Older snapshots sometimes represented services as plain strings while newer
-    Gatus-backed snapshots carry richer objects.  Keeping a single object shape
-    at the API boundary prevents React from accidentally rendering raw objects
-    and gives future health extensions a safe place to attach metadata.
-    """
-    if isinstance(value, str):
-        return {
-            "name": str(name or "service"),
-            "status": normalize_health_status(value),
-            "summary": "",
-            "url": "",
-            "last_checked_at": now_utc_iso(),
-        }
-    if isinstance(value, dict):
-        normalized = normalize_check({**value, "name": value.get("name") or name})
-        return normalized or {
-            "name": str(name or "service"),
-            "status": "unknown",
-            "summary": "",
-            "url": "",
-            "last_checked_at": now_utc_iso(),
-        }
-    return {
-        "name": str(name or "service"),
-        "status": "unknown",
-        "summary": "",
-        "url": "",
-        "last_checked_at": now_utc_iso(),
-    }
-
-
-def build_health_engine_snapshot() -> Dict[str, Any]:
-    gatus_items = fetch_gatus_statuses()
-    checks = []
-    if isinstance(gatus_items, dict):
-        for item in gatus_items.get("checks") or gatus_items.get("data") or []:
-            checks.append(normalize_check(item))
-    if not checks:
-        checks = [
-            {
-                "name": "gatus",
-                "status": "healthy",
-                "summary": "Fallback snapshot",
-                "url": SETTINGS.gatus_base_url,
-                "last_checked_at": now_utc_iso(),
-            },
-            {
-                "name": "api",
-                "status": "healthy",
-                "summary": "Pocket Lab FastAPI/NATS control plane is serving",
-                "url": f"http://{SETTINGS.host}:{SETTINGS.port}",
-                "last_checked_at": now_utc_iso(),
-            },
-        ]
-
-    checks = [
-        normalize_service_payload(check.get("name", "service"), check)
-        for check in checks
-        if isinstance(check, dict)
-    ]
-    services = {
-        check["name"]: normalize_service_payload(check["name"], check)
-        for check in checks
-    }
-
-    counts = {
-        "healthy": 0,
-        "warning": 0,
-        "degraded": 0,
-        "unhealthy": 0,
-        "unavailable": 0,
-        "maintenance": 0,
-        "unknown": 0,
-    }
-    for item in services.values():
-        item_status = normalize_health_status(item.get("status"))
-        item["status"] = item_status
-        counts[item_status] = counts.get(item_status, 0) + 1
-
-    total = len(services)
-    status = "healthy"
-    if counts["unhealthy"] or counts["degraded"]:
-        status = "degraded"
-    if counts["unhealthy"] > 1:
-        status = "unhealthy"
-
-    snapshot = {
-        "engine": "gatus",
-        "source": "gatus" if gatus_items else "fallback",
-        "status": status,
-        "summary": {**counts, "total": total},
-        "services": services,
-        "checks": list(services.values()),
-        "last_checked_at": now_utc_iso(),
-        "gatus": {
-            "base_url": SETTINGS.gatus_base_url,
-            "statuses_path": SETTINGS.gatus_statuses_path,
-            "reachable": bool(gatus_items),
-        },
-    }
-    write_json_file(SETTINGS.api_dir / "health-engine.json", snapshot)
-    return snapshot
-
-
 def load_drift_state() -> Dict[str, Any]:
     path = SETTINGS.state_dir / "drift.json"
     default = {
@@ -463,13 +278,13 @@ def load_drift_state() -> Dict[str, Any]:
         },
         "jobs": [
             {
-                "job_id": "drift_default_vault",
-                "target": "vault",
+                "job_id": "drift_default_lite_native",
+                "target": "lite_native_control_plane",
                 "scope": "service",
                 "status": "healthy",
                 "severity": "low",
                 "approval_state": "not_required",
-                "summary": "Vault configuration matches the desired state.",
+                "summary": "Lite-native control-plane configuration matches the desired state.",
                 "created_at": now_utc_iso(),
                 "updated_at": now_utc_iso(),
                 "changes_count": 0,
@@ -686,53 +501,6 @@ def build_catalog_view() -> list[Dict[str, Any]]:
     return items
 
 
-def build_pipeline_status() -> list[Dict[str, Any]]:
-    runs = OP_SERVICE.list(limit=10)
-    items = []
-    for run in runs:
-        artifacts = run.get("artifacts") or {}
-        items.append(
-            {
-                "id": run.get("job_id"),
-                "name": run.get("operation"),
-                "status": run.get("status"),
-                "commit_msg": run.get("params", {}).get("message")
-                or run.get("operation"),
-                "commit_sha": artifacts.get("commit_sha")
-                or artifacts.get("repo_commit", {}).get("commit"),
-                "time": run.get("created_at"),
-                "updated_at": run.get("updated_at"),
-            }
-        )
-    if not items:
-        items.append(
-            {
-                "id": "bootstrap",
-                "name": "bootstrap",
-                "status": "success",
-                "commit_msg": "Pocket Lab bootstrap complete",
-                "time": now_utc_iso(),
-                "updated_at": now_utc_iso(),
-            }
-        )
-    return items
-
-
-def build_git_history() -> list[Dict[str, Any]]:
-    repo = DulwichRepository(SETTINGS.iac_dir)
-    status = repo.status()
-    history = [
-        {
-            "branch": status.branch or "main",
-            "last_commit": status.last_commit
-            or {"message": "No commit history available"},
-            "dirty": status.dirty,
-            "exists": status.exists,
-        }
-    ]
-    return history
-
-
 def build_opa_evaluations() -> list[Dict[str, Any]]:
     path = SETTINGS.state_dir / "opa_evaluations.json"
     default = [
@@ -756,7 +524,7 @@ def build_opa_evaluations() -> list[Dict[str, Any]]:
     return read_json_file(path, default)
 
 
-def search_loki(query: str, limit: int = 20) -> Dict[str, Any]:
+def search_operational_evidence(query: str, limit: int = 20) -> Dict[str, Any]:
     runs = OP_SERVICE.list(limit=50)
     entries = []
     query_l = query.lower()
@@ -787,7 +555,7 @@ def search_loki(query: str, limit: int = 20) -> Dict[str, Any]:
     if "security_audit" in query_l or "opa" in query_l:
         entries.append(
             {
-                "stream": {"job": "pm2_logs", "component": "security"},
+                "stream": {"job": "pocketlab_operational_evidence", "component": "security"},
                 "values": [
                     [
                         str(int(dt.datetime.utcnow().timestamp() * 1e9)),

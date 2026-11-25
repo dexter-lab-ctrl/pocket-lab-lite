@@ -211,8 +211,6 @@ restore_code_and_validation_fixes_from_docs_commit() {
   local non_doc_paths=(
     "scripts/dev/status.sh"
     "scripts/dev/up.sh"
-    "src/hooks/useHealthEngine.js"
-    "src/lib/health.js"
     "tests/e2e/visual-regression.spec.ts"
     "tests/e2e/visual-regression.spec.ts-snapshots"
     "vite.config.js"
@@ -346,7 +344,7 @@ detect_bad_staged_files() {
         err "Generated artifact staged unexpectedly: $file"
         bad=1
         ;;
-      scripts/dev/status.sh|scripts/dev/up.sh|src/hooks/useHealthEngine.js|src/lib/health.js|tests/e2e/visual-regression.spec.ts|vite.config.js|.storybook/preview.jsx)
+      scripts/dev/status.sh|scripts/dev/up.sh|tests/e2e/visual-regression.spec.ts|vite.config.js|.storybook/preview.jsx)
         err "Non-doc validation/code fix staged unexpectedly: $file"
         bad=1
         ;;

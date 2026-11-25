@@ -48,7 +48,7 @@ spec:
       family: Security Posture
       description: OPA-style guardrails and policy decisions must be documented and visible in the Security documentation portal.
       evidence:
-        - src/tabs/PolicyGuardrailsTab.jsx
+        - src/lite/LiteRules.jsx
         - docs/security/policy-guardrails-guide.md
         - docs/security/generated/policy-reference.md
     PL-CTRL-005:
@@ -85,13 +85,13 @@ spec:
       package: pocketlab.security
       severity: high
       mode: enforceable
-      summary: Requires secret handling through Vault / OpenBao lookup paths instead of plaintext playbook variables.
+      summary: Requires secret handling through approved provider or native Identity & Access paths instead of plaintext playbook variables.
       simpleSummary: Keeps passwords and tokens out of app setup files.
       appliesTo:
-        operations: [rotate_secret, secret_read_dynamic, deploy_blueprint, security_scan]
-        runbooks: [rotate_secret_with_audit]
+        operations: [deploy_blueprint, security_scan]
+        runbooks: []
       controls: [PL-CTRL-001, PL-CTRL-003, PL-CTRL-004]
-      evidenceEvents: [pocketlab.events.vault.secret_rotated, pocketlab.audit.vault.secret_rotated, pocketlab.events.security.finding]
+      evidenceEvents: [pocketlab.events.security.finding]
       rego: |
         package pocketlab.security
 
@@ -99,8 +99,8 @@ spec:
             some key
             val := input.playbook.vars[key]
             contains(lower(key), "password")
-            not contains(val, "lookup('hashi_vault'")
-            msg := "Hardcoded secrets detected. You must use the Vault AppRole lookup plugin."
+            not contains(val, "lookup('")
+            msg := "Hardcoded secrets detected. Use an approved provider lookup or native Identity & Access flow."
         }
     - id: proot-isolation-enforcement
       title: PRoot Isolation Enforcement
@@ -131,7 +131,7 @@ spec:
       summary: Preserves Personal Mode auto-approval evidence and Enterprise Mode strict human authorization for approval-gated runbooks.
       simpleSummary: Lets safe home-lab actions continue automatically, while Enterprise Mode requires a person to approve important changes.
       appliesTo:
-        operations: [drift_approve, drift_apply, release_apply, restore_backup, rotate_secret]
-        runbooks: [backup_restore_verify, drift_detect_approve_apply, recover_failed_install, release_rollback, rotate_secret_with_audit]
+        operations: [drift_approve, drift_apply, release_apply, restore_backup]
+        runbooks: [backup_restore_verify, drift_detect_approve_apply, recover_failed_install, release_rollback]
       controls: [PL-CTRL-002, PL-CTRL-003]
       evidenceEvents: [pocketlab.events.runbook.auto_approved, pocketlab.audit.runbook.auto_approved, pocketlab.audit.runbook.approved, pocketlab.audit.runbook.rejected]

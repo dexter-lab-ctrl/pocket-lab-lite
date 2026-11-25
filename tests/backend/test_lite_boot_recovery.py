@@ -43,7 +43,7 @@ def test_runtime_reconcile_contract_forbids_install_and_legacy_work():
 
 def test_bootstrap_has_lite_only_boot_recovery_stage():
     bootstrap = (SCRIPTS / "bootstrap.sh").read_text()
-    assert "13|install_lite_boot_recovery|lite/install-boot-recovery.sh" in bootstrap
+    assert "9|install_lite_boot_recovery|lite/install-boot-recovery.sh" in bootstrap
     assert 'install_lite_boot_recovery)' in bootstrap
     assert '[[ "$BOOTSTRAP_PROFILE" != "lite" ]]' in bootstrap
 

@@ -287,16 +287,6 @@ def backup_scope(
             "reason": "The registered PhotoPrism SQLite index is copied through its online logical-backup adapter; media paths are never walked.",
         },
         {
-            "name": "MariaDB logical dump",
-            "enabled": False,
-            "reason": "No registered PhotoPrism metadata database adapter is configured; media is never copied.",
-        },
-        {
-            "name": "Gitea repository/config snapshot",
-            "enabled": False,
-            "reason": "Not implemented in this increment; add after service-specific dump/restore checks.",
-        },
-        {
             "name": "Registered app data paths",
             "enabled": bool(include_app_data),
             "reason": "Only canonical application metadata mappings are eligible; media mappings fail closed and are excluded.",

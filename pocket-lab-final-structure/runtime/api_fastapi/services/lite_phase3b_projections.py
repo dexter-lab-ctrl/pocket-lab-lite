@@ -258,7 +258,7 @@ def _read(
         SQLITE_READS.release(entry, discard=discard)
 
 
-def snapshot(domain: str) -> dict[str, Any] | None:
+def snapshot(domain: str, *, ensure_schema: bool = True) -> dict[str, Any] | None:
     safe_domain = _safe_text(domain, 96).lower()
     if safe_domain not in SYSTEM_CURRENT_STATE_DOMAINS:
         return None
@@ -293,7 +293,10 @@ def snapshot(domain: str) -> dict[str, Any] | None:
         )
         return payload
 
-    return _read(read, ensure_schema=safe_domain in PHASE3B_DOMAINS)
+    return _read(
+        read,
+        ensure_schema=ensure_schema and safe_domain in PHASE3B_DOMAINS,
+    )
 
 
 def projection_revision(domain: str) -> int:
@@ -853,8 +856,13 @@ def collect_nats_remote_state() -> dict[str, Any]:
     secondary_configured = bool(secondary.get("configured"))
     secondary_reachable = bool(secondary.get("reachable"))
     status = "healthy" if connected and jetstream and consumers_healthy else "degraded" if connected else "unavailable"
-    if secondary_configured and not secondary_reachable and status == "healthy":
-        status = "degraded"
+    secondary_status = (
+        "healthy"
+        if secondary_configured and secondary_reachable
+        else "unavailable"
+        if secondary_configured
+        else "not_configured"
+    )
     return {
         "status": status,
         "connected": connected,
@@ -866,6 +874,7 @@ def collect_nats_remote_state() -> dict[str, Any]:
         "secondary_configured": secondary_configured,
         "secondary_reachable": secondary_reachable,
         "secondary_ready": secondary_reachable if secondary_configured else None,
+        "secondary_status": secondary_status,
         "route_selection": _safe_text(
             secondary.get("route_selection")
             or ("primary" if connected else "unavailable"),
@@ -1196,32 +1205,91 @@ def _maintenance_material() -> list[dict[str, Any]]:
         return []
 
 
+def collect_identity_state() -> dict[str, Any]:
+    """Collect native Identity & Access readiness without credential reads."""
+    try:
+        from . import lite_identity_auth
+
+        return lite_identity_auth.identity_readiness()
+    except Exception as exc:
+        return {
+            "status": "unknown",
+            "identity_status": "unknown",
+            "ready": False,
+            "setup_required": False,
+            "summary": "Native Identity & Access readiness could not be observed.",
+            "source": "sqlite.human_identities",
+            "error_type": type(exc).__name__,
+            "sanitized": True,
+        }
+
+
+def _native_health_service(
+    name: str, status: Any, summary: Any, *, source: str = "prepared-lite-native"
+) -> dict[str, Any]:
+    return {
+        "name": _safe_text(name, 80),
+        "status": _safe_text(status or "unknown", 32).lower(),
+        "summary": _safe_text(summary, 192),
+        "source": source,
+        "prepared": True,
+    }
+
+
 def collect_system_health_state(engine: dict[str, Any] | None = None) -> dict[str, Any]:
     started = time.monotonic()
-    engine = engine if isinstance(engine, dict) else deps.core.build_health_engine_snapshot()
+    # ``engine`` remains an optional compatibility argument for callers that
+    # supplied a prior snapshot.  The native collector never calls the legacy
+    # Gatus-backed core engine and filters legacy service names if an old caller
+    # passes them in.
+    engine = engine if isinstance(engine, dict) else {}
     processes = snapshot("system.processes") or collect_process_state()
     agent = snapshot("system.agent") or collect_agent_state()
     supervisor = snapshot("system.supervisor") or collect_supervisor_state()
     remote = snapshot("system.remote_access") or collect_remote_access_state()
     nats = snapshot("system.nats_remote") or collect_nats_remote_state()
+    identity = collect_identity_state()
     telemetry = snapshot("system.telemetry_thresholds") or {}
     storage = snapshot("system.storage_pressure") or {}
     sqlite_health = snapshot("system.sqlite_health") or {}
+    security = snapshot("security.summary") or {}
     maintenance = _maintenance_material()
     maintenance_active = any(
         str(item.get("status") or "").lower() in {"accepted", "running", "active"}
         for item in maintenance
     )
+    durable = nats.get("durable_consumer_health") if isinstance(nats.get("durable_consumer_health"), dict) else {}
+    worker = durable.get("pocketlab_command_worker_v1") if isinstance(durable, dict) else None
+    worker_ready = bool(
+        isinstance(worker, dict)
+        and worker.get("healthy") is True
+        and worker.get("task_alive") is True
+        and worker.get("subscription_present") is True
+    )
+    worker_status = (
+        "healthy"
+        if worker_ready
+        else "starting"
+        if nats.get("connected") and nats.get("jetstream_enabled")
+        else "unavailable"
+    )
     components = {
-        "api": str(engine.get("status") or "unknown").lower(),
+        "api": "healthy",
+        "identity": str(identity.get("status") or "unknown").lower(),
         "processes": str(processes.get("status") or "unknown").lower(),
         "agent": str(agent.get("status") or "unknown").lower(),
         "supervisor": str(supervisor.get("status") or "unknown").lower(),
         "remote_access": str(remote.get("status") or "unknown").lower(),
         "nats": str(nats.get("status") or "unknown").lower(),
+        "worker": worker_status,
+        "security": str(security.get("status") or "unknown").lower(),
         "telemetry": str(telemetry.get("status") or "unknown").lower(),
         "storage": str(storage.get("status") or "unknown").lower(),
         "sqlite": str(sqlite_health.get("status") or "unknown").lower(),
+    }
+    legacy_service_names = {
+        "vault", "gitea", "mariadb", "mariadb_socket", "gatus", "prometheus",
+        "grafana", "loki", "promtail", "gitops", "local source store",
     }
     engine_services = (
         engine.get("services") if isinstance(engine.get("services"), dict) else {}
@@ -1234,31 +1302,104 @@ def collect_system_health_state(engine: dict[str, Any] | None = None) -> dict[st
         }
         for name, item in sorted(engine_services.items())[:32]
         if isinstance(item, dict)
+        and str(name).strip().lower() not in legacy_service_names
     }
+    services.update(
+        {
+            "api": _native_health_service(
+                "Control API", components["api"], "FastAPI is serving the local control plane."
+            ),
+            "identity": _native_health_service(
+                "Identity & Access", identity.get("status"), identity.get("summary")
+            ),
+            "nats": _native_health_service(
+                "NATS / JetStream", components["nats"], nats.get("summary")
+            ),
+            "worker": _native_health_service(
+                "Worker Execution", worker_status,
+                "The durable command consumer is ready."
+                if worker_ready
+                else "The durable command consumer is not ready yet.",
+            ),
+            "processes": _native_health_service(
+                "Core Runtime Processes", components["processes"], processes.get("summary")
+            ),
+            "remote_access": _native_health_service(
+                "Remote Access", components["remote_access"], remote.get("summary"),
+                source="prepared-optional-remote-access",
+            ),
+            "security": _native_health_service(
+                "Security & Policy", components["security"], security.get("summary") or "Security state is prepared."
+            ),
+            "storage": _native_health_service(
+                "Storage", components["storage"], storage.get("summary") or "Storage state is prepared."
+            ),
+            "sqlite": _native_health_service(
+                "SQLite", components["sqlite"], sqlite_health.get("summary") or "SQLite state is prepared."
+            ),
+        }
+    )
     unavailable_states = {"unavailable", "unhealthy", "critical", "read_only", "recovery_required"}
     degraded_states = {
-        "degraded", "unknown", "unsupported", "watch", "elevated",
-        "storage_pressure", "maintenance_active", "attention", "active",
+        "degraded", "unknown", "unsupported", "watch", "elevated", "not_configured",
+        "starting", "stale", "repairing", "recovering", "storage_pressure",
+        "maintenance_active", "attention", "active",
+    }
+    # Remote access and secondary-device reachability are optional capabilities.
+    # They remain visible in the projection but must not make local FastAPI/NATS
+    # operation unready or relabel the local workspace as unavailable.
+    required_components = {
+        name: value for name, value in components.items() if name != "remote_access"
     }
     if maintenance_active:
         overall = "maintenance"
-    elif any(value in unavailable_states for value in components.values()):
+    elif any(value in {"unhealthy", "critical", "read_only", "recovery_required"} for value in required_components.values()):
+        overall = "unhealthy"
+    elif any(value in unavailable_states for value in required_components.values()):
         overall = "unavailable"
-    elif any(value in degraded_states for value in components.values()):
+    elif any(value in {"starting", "repairing", "recovering"} for value in required_components.values()):
+        overall = "starting"
+    elif any(value == "stale" for value in required_components.values()):
+        overall = "stale"
+    elif any(value in degraded_states for value in required_components.values()):
         overall = "degraded"
     else:
         overall = "healthy"
+    status_counts: dict[str, int] = {}
+    for value in services.values():
+        item_status = str(value.get("status") or "unknown").lower()
+        status_counts[item_status] = status_counts.get(item_status, 0) + 1
     return {
+        "engine": "lite-native",
+        "source": "prepared-lite-native",
         "status": overall,
         "summary": (
-            "Pocket Lab is healthy."
+            "Pocket Lab Lite control plane is healthy."
             if overall == "healthy"
-            else "Pocket Lab needs attention."
+            else "Pocket Lab Lite control plane is starting."
+            if overall == "starting"
+            else "Pocket Lab Lite control plane needs attention."
             if overall != "maintenance"
             else "Maintenance is active."
         ),
+        "status_counts": status_counts,
         "components": components,
         "services": services,
+        "identity": identity,
+        "worker": {
+            "status": worker_status,
+            "ready": worker_ready,
+            "durable": "pocketlab_command_worker_v1",
+            "sanitized": True,
+        },
+        "nats": {
+            "status": components["nats"],
+            "primary_ready": bool(nats.get("primary_ready")),
+            "secondary_configured": bool(nats.get("secondary_configured")),
+            "secondary_reachable": bool(nats.get("secondary_reachable")),
+            "secondary_status": nats.get("secondary_status", "not_configured"),
+            "sanitized": True,
+        },
         "maintenance_active": maintenance_active,
         "database_instance": _database_instance(),
         "generation": semantic_revision(
@@ -1290,11 +1431,14 @@ def system_health_source_revision() -> int:
         {
             "database_instance": _database_instance(),
             "components": {
+                "identity": _identity_health_status(),
                 "processes": _health_component_status("system.processes"),
                 "agent": _health_component_status("system.agent"),
                 "supervisor": _health_component_status("system.supervisor"),
                 "remote_access": _health_component_status("system.remote_access"),
                 "nats": _health_component_status("system.nats_remote", _bus_material()),
+                "worker": _worker_health_status(),
+                "security": _health_component_status("security.summary"),
                 "telemetry": _health_component_status("system.telemetry_thresholds"),
                 "storage": _health_component_status("system.storage_pressure"),
                 "sqlite": _health_component_status("system.sqlite_health"),
@@ -1302,6 +1446,22 @@ def system_health_source_revision() -> int:
             "maintenance_active": maintenance_active,
         },
     )
+
+
+def _identity_health_status() -> str:
+    try:
+        return _safe_text(collect_identity_state().get("status") or "unknown", 32).lower()
+    except Exception:
+        return "unknown"
+
+
+def _worker_health_status() -> str:
+    current = snapshot("system.nats_remote") or {}
+    durable = current.get("durable_consumer_health") if isinstance(current.get("durable_consumer_health"), dict) else {}
+    worker = durable.get("pocketlab_command_worker_v1") if isinstance(durable, dict) else None
+    if isinstance(worker, dict) and worker.get("healthy") and worker.get("task_alive") and worker.get("subscription_present"):
+        return "healthy"
+    return "starting" if current.get("connected") else "unavailable"
 
 
 def collect_security_progress_state() -> dict[str, Any]:

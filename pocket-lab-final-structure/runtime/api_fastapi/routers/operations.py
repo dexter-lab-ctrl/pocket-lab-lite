@@ -7,6 +7,7 @@ from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.nats_bus import BUS
 from ..services.action_queue import submit_operation_command, submit_domain_command
+from operations.registry import is_retired_operation, retired_operation_payload
 
 router = APIRouter(tags=["operations"])
 
@@ -53,10 +54,14 @@ async def execute_operation(
     if not op_request.operation:
         raise HTTPException(status_code=400, detail="Missing operation")
 
-    # Phase 6: route domain-shaped operations through explicit command handlers
-    # so tabs receive meaningful fleet/drift/vault events instead of only generic
-    # operation events. Generic GitOps/blueprint/backup operations still use the
-    # canonical operation worker path.
+    if is_retired_operation(op_request.operation):
+        raise HTTPException(
+            status_code=410,
+            detail=retired_operation_payload(operation=op_request.operation),
+        )
+
+    # Route domain-shaped operations through explicit command handlers. Generic
+    # GitHub/release/backup operations still use the canonical operation worker.
     params_value = raw.get("params") or {}
     params = dict(params_value) if isinstance(params_value, dict) else {}
 
@@ -86,22 +91,6 @@ async def execute_operation(
                 "action": "scan",
             },
         )
-    if op_request.operation == "rotate_secret":
-        return await submit_domain_command(
-            "pocketlab.commands.vault.rotate",
-            "vault.rotate.requested",
-            {
-                "target": params.get("target") or target.get("ref") or "secret",
-                "lease_duration": params.get("lease_duration") or params.get("ttl"),
-                "value": params.get("value"),
-            },
-        )
-    if op_request.operation == "secret_read_dynamic":
-        return await submit_domain_command(
-            "pocketlab.commands.vault.dynamic_secret",
-            "vault.dynamic_secret.requested",
-            {"target": params.get("target") or target.get("ref") or "default"},
-        )
     return await submit_operation_command(op_request, raw)
 
 
@@ -114,6 +103,11 @@ def preview_operation(
     deps.require_auth(request, write=True)
     raw = payload.model_dump() if hasattr(payload, "model_dump") else dict(payload)
     op_request = deps.normalize_operation_request(raw)
+    if is_retired_operation(op_request.operation):
+        raise HTTPException(
+            status_code=410,
+            detail=retired_operation_payload(operation=op_request.operation),
+        )
     preview = deps.operation_service().preview(op_request)
     background_tasks.add_task(
         BUS.publish_json,

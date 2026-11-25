@@ -10,7 +10,8 @@ def test_workflow_journal_redaction_contract(tmp_path):
     state = isolated_state_dir(tmp_path)
     event = {
         "workflow_id": "wf-redact",
-        "event": "vault.secret_rotated",
+        "event": "pocketlab.events.command.retired",
+        "operation": "rotate_secret",
         "path": "secret/data/app",
         "version": 1,
     }

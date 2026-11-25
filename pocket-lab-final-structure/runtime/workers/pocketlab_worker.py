@@ -38,6 +38,11 @@ os.environ.setdefault("POCKETLAB_NATS_EVENT_FANOUT", "0")
 from api_fastapi import deps  # type: ignore  # noqa: E402
 from api_fastapi.services.nats_bus import BUS  # type: ignore  # noqa: E402
 from api_fastapi.services.operation_events import install_operation_event_publisher  # type: ignore  # noqa: E402
+from operations.registry import (  # type: ignore  # noqa: E402
+    is_retired_command_subject,
+    is_retired_operation,
+    retired_operation_payload,
+)
 
 WORKER_NAME = os.environ.get("POCKETLAB_WORKER_NAME", f"pocketlab-worker-{os.getpid()}")
 COMMAND_SUBJECT = os.environ.get(
@@ -364,6 +369,18 @@ async def execute_operation_command(command: Dict[str, Any]) -> None:
     operation = str(command.get("operation") or "").strip()
     trace_id = str(command.get("trace_id") or command.get("job_id") or "") or None
 
+    if is_retired_operation(operation):
+        await publish(
+            "pocketlab.events.command.retired",
+            "command.retired",
+            {
+                **retired_operation_payload(operation=operation),
+                "command_id": str(command.get("command_id") or job_id or "")[:120],
+            },
+            trace_id=trace_id,
+        )
+        return
+
     if not job_id:
         # Support externally published operation commands by creating the queued
         # run in the worker before executing it.
@@ -428,6 +445,18 @@ async def execute_operation_command(command: Dict[str, Any]) -> None:
 
 
 async def execute_domain_command(subject: str, command: Dict[str, Any]) -> None:
+    if is_retired_command_subject(subject):
+        operation = "rotate_secret" if subject.endswith(".rotate") else "secret_read_dynamic"
+        await publish(
+            "pocketlab.events.command.retired",
+            "command.retired",
+            {
+                **retired_operation_payload(operation=operation, subject=subject),
+                "command_id": str(command.get("command_id") or command.get("job_id") or "")[:120],
+            },
+            trace_id=str(command.get("trace_id") or command.get("command_id") or "") or None,
+        )
+        return
     from api_fastapi.services.domain_commands import (
         execute_domain_command as run_domain_command,
     )  # type: ignore
@@ -574,6 +603,31 @@ async def command_callback(msg: Any) -> None:
             command_id=command_id,
             attempt=attempt,
         )
+        retired_operation = str(command.get("operation") or "").strip()
+        if is_retired_command_subject(subject) or (
+            subject == "pocketlab.commands.operation.execute"
+            and is_retired_operation(retired_operation)
+        ):
+            operation = retired_operation
+            if not operation and is_retired_command_subject(subject):
+                operation = "rotate_secret" if subject.endswith(".rotate") else "secret_read_dynamic"
+            await publish(
+                "pocketlab.events.command.retired",
+                "command.retired",
+                {
+                    **retired_operation_payload(operation=operation, subject=subject),
+                    "command_id": command_id[:120],
+                },
+                trace_id=command_id or None,
+            )
+            await BUS.ack_message(msg)
+            _worker_log(
+                "worker.command_retired",
+                subject=subject,
+                command_id=command_id,
+                attempt=attempt,
+            )
+            return
         from api_fastapi.services import lite_security_maintenance  # type: ignore
 
         if not lite_security_maintenance.worker_command_allowed(subject):

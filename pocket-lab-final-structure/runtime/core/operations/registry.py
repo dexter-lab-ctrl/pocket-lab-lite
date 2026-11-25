@@ -6,6 +6,52 @@ from typing import Any, Dict
 from contracts import OperationRequest, OperationTarget
 
 
+# Compatibility vocabulary for historical clients and operation records.  These
+# names are intentionally absent from OperationRegistry.operations so they
+# cannot create new queued runs.
+RETIRED_OPERATION_NAMES = frozenset({
+    "rotate_secret",
+    "secret_read_dynamic",
+})
+RETIRED_COMMAND_SUBJECTS = frozenset({
+    "pocketlab.commands.vault.rotate",
+    "pocketlab.commands.vault.dynamic_secret",
+})
+
+
+class RetiredOperationError(ValueError):
+    """Raised before a retired operation can create or execute a run."""
+
+    def __init__(self, operation: str):
+        self.operation = str(operation or "").strip()
+        super().__init__(f"Retired operation: {self.operation}")
+
+
+def is_retired_operation(operation: str) -> bool:
+    return str(operation or "").strip() in RETIRED_OPERATION_NAMES
+
+
+def is_retired_command_subject(subject: str) -> bool:
+    return str(subject or "").strip() in RETIRED_COMMAND_SUBJECTS
+
+
+def retired_operation_payload(*, operation: str = "", subject: str = "") -> dict[str, Any]:
+    """Return bounded, non-executing compatibility evidence."""
+    operation_value = str(operation or "").strip()[:80]
+    subject_value = str(subject or "").strip()[:120]
+    return {
+        "status": "retired",
+        "accepted": False,
+        "executed": False,
+        "operation": operation_value or None,
+        "command_subject": subject_value or None,
+        "reason_code": "legacy_control_plane_retired",
+        "replacement": "Native Identity & Access password and passkey flows",
+        "historical_record_preserved": True,
+        "sanitized": True,
+    }
+
+
 @dataclass
 class OperationSpec:
     name: str
@@ -39,17 +85,11 @@ class OperationRegistry:
             "restore_backup": OperationSpec(
                 "restore_backup", "restore_backup", "Backup restore"
             ),
-            "rotate_secret": OperationSpec(
-                "rotate_secret", "rotate_secret", "Secret rotation"
-            ),
             "fleet_join": OperationSpec(
                 "fleet_join", "fleet_join", "Fleet node onboarding"
             ),
             "policy_deploy": OperationSpec(
                 "policy_deploy", "policy_deploy", "OPA / policy deployment"
-            ),
-            "secret_read_dynamic": OperationSpec(
-                "secret_read_dynamic", "secret_read_dynamic", "Dynamic secret issuance"
             ),
             "backup_verify": OperationSpec(
                 "backup_verify", "backup_verify", "Backup verification"

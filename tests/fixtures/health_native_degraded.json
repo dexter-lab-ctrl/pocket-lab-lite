@@ -1,0 +1,20 @@
+{
+  "overall": "degraded",
+  "source": "prepared-lite-native",
+  "components": {
+    "api": "healthy",
+    "identity": "healthy",
+    "nats": "degraded",
+    "worker": "starting",
+    "sqlite": "healthy",
+    "storage": "healthy",
+    "remote_access": "unavailable"
+  },
+  "services": {
+    "api": {"status": "healthy"},
+    "identity": {"status": "healthy"},
+    "nats": {"status": "degraded"},
+    "worker": {"status": "starting"},
+    "remote_access": {"status": "unavailable", "optional": true}
+  }
+}
