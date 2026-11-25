@@ -4,6 +4,8 @@ import asyncio
 import json
 import os
 from pathlib import Path
+import shlex
+import subprocess
 import zipfile
 
 import pytest
@@ -683,7 +685,61 @@ def test_bootstrap_installer_persists_verified_release_identity():
     source = (Path(__file__).resolve().parents[2] / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh").read_text(encoding="utf-8")
     assert "record_release_install" in source
     assert "Pocket Lab Lite installed release identity was not reconciled" in source
+    assert "export_lite_runtime_paths" in source
     assert source.index('atomic_link "$target" "$CURRENT_LINK"') < source.index('reconcile_existing_release_identity "$tag" "$manifest" "$archive" "$target"')
+
+
+def test_bootstrap_installer_runtime_path_export_selects_the_authoritative_database(tmp_path):
+    root = Path(__file__).resolve().parents[2]
+    common = root / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh"
+    runtime = root / "pocket-lab-final-structure/runtime"
+    env = os.environ.copy()
+    env.update(
+        {
+            "HOME": str(tmp_path / "home"),
+            "PREFIX": str(tmp_path / "prefix"),
+            "POCKET_LAB_BASE_DIR": str(tmp_path / "lite"),
+            "STATE_DIR": str(tmp_path / "bootstrap-state"),
+            "LOG_DIR": str(tmp_path / "bootstrap-logs"),
+            "RUN_DIR": str(tmp_path / "bootstrap-run"),
+            "TMPDIR": str(tmp_path / "tmp"),
+            "PYTHONPATH": str(runtime),
+        }
+    )
+    for name in ("POCKETLAB_BASE_DIR", "POCKETLAB_STATE_DIR", "POCKETLAB_LITE_DB_PATH"):
+        env.pop(name, None)
+    command = (
+        f"source {shlex.quote(str(common))}; "
+        "export_lite_runtime_paths; "
+        f"{shlex.quote(str(root / '.venv/bin/python'))} -c "
+        "'from api_fastapi.db.connection import _resolved_database_path; "
+        "print(_resolved_database_path())'"
+    )
+    default = subprocess.run(
+        ["bash", "-c", command],
+        cwd=root,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert default.returncode == 0, default.stderr
+    assert Path(default.stdout.strip()) == tmp_path / "lite/state/pocketlab-lite.sqlite3"
+
+    custom_state = tmp_path / "custom-state"
+    custom_db = custom_state / "custom.sqlite3"
+    env["POCKETLAB_STATE_DIR"] = str(custom_state)
+    env["POCKETLAB_LITE_DB_PATH"] = str(custom_db)
+    custom = subprocess.run(
+        ["bash", "-c", command],
+        cwd=root,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert custom.returncode == 0, custom.stderr
+    assert Path(custom.stdout.strip()) == custom_db
 
 
 def test_release_prepared_read_falls_back_to_safe_repository_identity():

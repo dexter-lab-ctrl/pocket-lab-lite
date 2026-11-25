@@ -37,6 +37,16 @@ MARKER_DIR="${MARKER_DIR:-$STATE_DIR/markers}"
 TMP_ROOT="${TMP_ROOT:-${TMPDIR:-$PREFIX/tmp}/pocket-lab}"
 export TERMUX_PREFIX="$PREFIX"
 
+# Keep standalone bootstrap callbacks on the same Lite state authority as the
+# long-running runtime.  The installer and runtime are separate processes, so
+# relying on a caller to translate the bootstrap-only POCKET_LAB_BASE_DIR name
+# can otherwise create a second default database.
+export_lite_runtime_paths() {
+  export POCKETLAB_BASE_DIR="${POCKETLAB_BASE_DIR:-$POCKET_LAB_BASE_DIR}"
+  export POCKETLAB_STATE_DIR="${POCKETLAB_STATE_DIR:-$POCKETLAB_BASE_DIR/state}"
+  export POCKETLAB_LITE_DB_PATH="${POCKETLAB_LITE_DB_PATH:-$POCKETLAB_STATE_DIR/pocketlab-lite.sqlite3}"
+}
+
 # The PM2 identity helper is read-only and ships with the runtime supervisors.
 # Resolve it relative to this checked-in helper instead of trusting PATH or a
 # caller-provided repository root.

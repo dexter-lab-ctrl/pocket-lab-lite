@@ -12,6 +12,7 @@ CURRENT_LINK="${POCKETLAB_LITE_PWA_CURRENT_LINK:-$PWA_DIR/current}"
 TMP_DIR="$TMP_ROOT/pwa-release.$$"
 LOCAL_DIST_ZIP="${POCKETLAB_LOCAL_DIST_ZIP:-${POCKET_LAB_LOCAL_DIST_ZIP:-}}"
 RUNTIME_DIR="$(CDPATH='' cd -- "$SCRIPT_DIR/../../runtime" && pwd)"
+export_lite_runtime_paths
 
 download_https() {
   local url="$1" output="$2" max_bytes="$3"
