@@ -77,8 +77,14 @@ async function proveManifest(expectedCommit) {
   if (manifest.source_commit !== expectedCommit || manifest.sanitized !== true || manifest.runtime_transport !== expectedRuntimeTransport) {
     fail('Android candidate manifest did not prove the isolated exact-SHA runtime');
   }
-  if (response.headers()['x-pocket-lab-candidate-sha'] !== expectedCommit) fail('Android manifest response SHA header was incorrect');
-  return { source_commit: manifest.source_commit, runtime_transport: manifest.runtime_transport, sanitized: true };
+  const manifestResponseSha = response.headers()['x-pocket-lab-candidate-sha'] || '';
+  if (manifestResponseSha !== expectedCommit) fail('Android manifest response SHA header was incorrect');
+  return {
+    source_commit: manifest.source_commit,
+    manifest_response_sha: manifestResponseSha,
+    runtime_transport: manifest.runtime_transport,
+    sanitized: true,
+  };
 }
 
 async function main() {
@@ -155,10 +161,12 @@ async function main() {
       });
       const candidateManifest = await proveManifest(expectedCommit);
       const landing = await candidatePage.goto(new URL('/?screen=system-health', base).toString(), { waitUntil: 'domcontentloaded', timeout: 30_000 });
-      if (!landing?.ok() || landing.headers()['x-pocket-lab-candidate-sha'] !== expectedCommit) fail('Android System Health page did not prove the exact candidate SHA');
-      if (await candidatePage.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content') !== expectedCommit) fail('Android System Health metadata did not prove the exact candidate SHA');
+      const renderedPageResponseSha = landing?.headers()['x-pocket-lab-candidate-sha'] || '';
+      const renderedPageMetaSha = await candidatePage.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content') || '';
+      if (!landing?.ok() || renderedPageResponseSha !== expectedCommit) fail('Android System Health page did not prove the exact candidate SHA');
+      if (renderedPageMetaSha !== expectedCommit) fail('Android System Health metadata did not prove the exact candidate SHA');
       await waitForSystemHealth();
-      manifest = candidateManifest;
+      manifest = { ...candidateManifest, rendered_page_response_sha: renderedPageResponseSha, rendered_page_meta_sha: renderedPageMetaSha };
       selectedObservation = pageObservations.get(candidatePage);
       selectedCandidate = true;
       break;
@@ -217,6 +225,16 @@ async function main() {
     status: 'PASS',
     qualification_surface: 'physical_android_chrome_system_health_ui',
     candidate_sha: expectedCommit,
+    candidate_identity: {
+      candidate_manifest_source_commit: manifest.source_commit,
+      candidate_http_response_header_sha: manifest.manifest_response_sha,
+      rendered_page_response_header_sha: manifest.rendered_page_response_sha,
+      rendered_page_meta_sha: manifest.rendered_page_meta_sha,
+      all_markers_match: manifest.source_commit === expectedCommit
+        && manifest.manifest_response_sha === expectedCommit
+        && manifest.rendered_page_response_sha === expectedCommit
+        && manifest.rendered_page_meta_sha === expectedCommit,
+    },
     android_chrome: { browser: String(version.Browser || ''), protocol_version: String(version['Protocol-Version'] || ''), package: String(version['Android-Package'] || ''), websocket_loopback: true },
     candidate_manifest: manifest,
     candidate_api_backend_verified: true,

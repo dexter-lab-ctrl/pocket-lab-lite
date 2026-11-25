@@ -234,6 +234,8 @@ def test_physical_system_health_qualifier_activates_android_target():
     assert "unsupported Fix action" in source
     assert "Confirm recovery" in source
     assert "confirmRecovery.waitFor" in source
+    assert "candidate_identity" in source
+    assert "rendered_page_meta_sha" in source
     assert "eligible NATS recovery incident" in SCRIPT.read_text(encoding="utf-8")
     assert "has: page.getByRole('button', { name: 'Review recovery', exact: true })" in UI_SCRIPT.read_text(encoding="utf-8")
     runner_source = (REPO / "scripts" / "dev" / "lite" / "run-system-health-android-ui-qualification.py").read_text(encoding="utf-8")
