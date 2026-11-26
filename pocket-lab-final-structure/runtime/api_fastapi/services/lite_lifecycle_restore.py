@@ -36,7 +36,20 @@ def fence_staged_restore(staged, checkpoint):
         db.execute("UPDATE lite_release_trust_configuration SET state='suspended',revision=revision+1")
         db.execute("DELETE FROM lite_release_trust_observation")
         db.execute("UPDATE lite_lifecycle_grants SET revoked_at=COALESCE(revoked_at,?)", (stamp,))
-        db.execute("DELETE FROM lite_lifecycle_boundary_scopes")
+        # The complete runtime schema includes ``human_identities``, which is
+        # the parent of the boundary-scope owner foreign key.  Isolated
+        # lifecycle restore fixtures intentionally contain only migrations
+        # 0056-0063, so SQLite cannot resolve that parent while deleting from
+        # the child table even when it is empty.  Keep the production FK
+        # enforcement enabled: skip only an empty child table in a deliberately
+        # partial fixture, and fail closed if scoped authority would otherwise
+        # survive without its identity store.
+        staged_tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        if "lite_lifecycle_boundary_scopes" in staged_tables:
+            if "human_identities" in staged_tables:
+                db.execute("DELETE FROM lite_lifecycle_boundary_scopes")
+            elif db.execute("SELECT 1 FROM lite_lifecycle_boundary_scopes LIMIT 1").fetchone():
+                raise ValueError("restore_identity_store_missing")
         live_epochs = (0, 0, 0)
         if "lite_lifecycle_workspace" in names:
             columns = {r[1] for r in old.execute("PRAGMA table_info(lite_lifecycle_workspace)")}

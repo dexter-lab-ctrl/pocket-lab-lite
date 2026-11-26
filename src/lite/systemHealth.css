@@ -186,6 +186,20 @@ html[data-lite-theme] .lite-system-health-manage :is(.lite-home-settings-section
     grid-column:auto;
   }
 }
+@container home-panel (max-width:520px) {
+  /* Keep the dark semantic theme's action rows readable at the narrow panel
+     width used by mobile sheets. The legacy daylight rules already switch
+     these rows to a stacked layout at this breakpoint. */
+  html[data-lite-theme] .lite-home-panel-layer .lite-system-health-manage-section .lite-action-row {
+    flex-direction:column;
+    align-items:stretch;
+  }
+  html[data-lite-theme] .lite-home-panel-layer .lite-system-health-manage-section .lite-action-row-trailing {
+    width:100%;
+    justify-content:space-between;
+    align-items:center;
+  }
+}
 @media (prefers-reduced-motion:reduce) {
   html[data-lite-theme] .lite-system-health-manage .lite-system-health-disclosure,
   html[data-lite-theme] .lite-system-health-manage .lite-system-health-detail-block {

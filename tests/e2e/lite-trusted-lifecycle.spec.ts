@@ -10,7 +10,7 @@ async function openLifecycle(page: Page, scenario = 'system-health-attention') {
   await page.getByRole('button', { name: /Manage System Health/i }).click();
   const dialog = page.getByRole('dialog', { name: /System Health Manage/i });
   await dialog.getByRole('button', { name: 'Updates & protection', exact: true }).click();
-  return dialog.getByRole('region', { name: 'Updates & protection' });
+  return dialog.locator('section.lite-system-health-manage-section[aria-label="Updates & protection"]');
 }
 test('historical identity and unknown impact cannot imply installation authority', async ({ page }) => {
   const writes: string[] = [];
@@ -35,7 +35,7 @@ test('preview and cancel do not submit a preference', async ({ page }) => {
 });
 for (const theme of ['light', 'dark'] as const) {
   test('lifecycle visual reference ' + theme, async ({ page }) => {
-    const panel = await openLifecycle(page);
+    await openLifecycle(page);
     await page.evaluate(t => {
       const root = document.documentElement;
       root.setAttribute('data-lite-theme', t);
@@ -44,6 +44,11 @@ for (const theme of ['light', 'dark'] as const) {
       root.classList.toggle('theme-pocket-lite-daylight', t === 'light');
       root.style.colorScheme = t;
     }, theme);
-    await expect(panel).toHaveScreenshot('trusted-lifecycle-' + theme + '.png', { animations: 'disabled' });
+    // Capture the established System Manage surface, not the full-height
+    // scroll content. Element screenshots of the nested section include
+    // clipped blank space below the visible sheet and are not a useful visual
+    // contract for desktop/mobile review.
+    const dialog = page.getByRole('dialog', { name: /System Health Manage/i });
+    await expect(dialog).toHaveScreenshot('trusted-lifecycle-' + theme + '.png', { animations: 'disabled' });
   });
 }

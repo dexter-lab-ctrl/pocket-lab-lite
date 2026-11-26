@@ -297,6 +297,23 @@ def test_restore_preserves_live_floor_and_advances_live_epochs(tmp_path, monkeyp
         assert db.execute("SELECT COUNT(*) FROM lite_release_trust_observation").fetchone()[0] == 0
 
 
+def test_restore_fails_closed_when_scoped_authority_has_no_identity_store(tmp_path):
+    from api_fastapi.services.lite_lifecycle_restore import fence_staged_restore
+
+    staged, checkpoint = tmp_path / "staged.sqlite3", tmp_path / "checkpoint.sqlite3"
+    fixture_db(checkpoint).close()
+    db = fixture_db(staged)
+    db.execute(
+        "INSERT INTO lite_lifecycle_boundary_scopes VALUES(?,?,?,?,?,?,?)",
+        ("release-reconciler", 1, 1, "fixture-owner", "{}", "fixture-decision", NOW.isoformat()),
+    )
+    db.commit()
+    db.close()
+
+    with pytest.raises(ValueError, match="restore_identity_store_missing"):
+        fence_staged_restore(staged, checkpoint)
+
+
 def test_registry_is_descriptive_and_does_not_enable_execution():
     from api_fastapi.services.lite_infrastructure_operations import PRODUCTION_QUALIFIED_AUTOMATIC_OPERATIONS
     assert PRODUCTION_QUALIFIED_AUTOMATIC_OPERATIONS == {"projection.reconcile"}
