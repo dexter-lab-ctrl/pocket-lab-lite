@@ -225,10 +225,10 @@ def _trust_directory():
     from .. import deps
     return deps.settings().state_dir.resolve() / "release-trust"
 
-def _local_inventory():
+def _local_inventory_documents():
     from .lite_lifecycle_contract import canonical_bytes
     source = Path(__file__).resolve().parents[4]
-    def source_digest(paths):
+    def source_document(paths):
         paths = sorted(paths)
         if not paths or len(paths) > 512:
             return None
@@ -244,9 +244,14 @@ def _local_inventory():
             if len(raw) != size:
                 return None
             items.append({"path":path.relative_to(source).as_posix(),"sha256":hashlib.sha256(raw).hexdigest()})
-        return hashlib.sha256(canonical_bytes(items)).hexdigest()
-    return (source_digest((source / "security/policies/opa").rglob("*.rego")),
-            source_digest((source / "pocket-lab-final-structure/runtime/api_fastapi/db/schema").glob("*.sql")))
+        return canonical_bytes(items)
+    return (source_document((source / "security/policies/opa").rglob("*.rego")),
+            source_document((source / "pocket-lab-final-structure/runtime/api_fastapi/db/schema").glob("*.sql")))
+
+
+def _local_inventory():
+    return tuple(hashlib.sha256(raw).hexdigest() if raw is not None else None
+                 for raw in _local_inventory_documents())
 
 def inspect_candidate(request):
     """Called exclusively inside the existing bounded release subprocess."""
@@ -310,13 +315,28 @@ def inspect_candidate(request):
             receipt["source_package"] = package_review
             from .lite_release_trust import CapabilityManifest
             from .lite_lifecycle_contract import CAPABILITIES, assess, canonical_bytes, registry_revision
-            policy, migrations = _local_inventory()
+            local_policy, local_migrations = _local_inventory_documents()
+            policy = hashlib.sha256(local_policy).hexdigest() if local_policy is not None else None
+            migrations = hashlib.sha256(local_migrations).hexdigest() if local_migrations is not None else None
             candidate_caps = _parse(CapabilityManifest, manifest)
             assessment = assess(CAPABILITIES, tuple(candidate_caps.capabilities),
                 policy_changed=policy != receipt["policy_sha256"],
                 migration_changed=migrations != receipt["migration_inventory_sha256"],
                 root_changed=bool(rotation))
             current_schema = int(request.get("current_schema") or 0)
+            from .lite_policy_compatibility import compare_source
+            from .lite_capability_review import compare_capabilities
+            receipt["capability_review"] = compare_capabilities(CAPABILITIES, tuple(candidate_caps.capabilities))
+            if package_review["state"] == "verified_for_review":
+                policy_document = _read(candidate, FILES["policy_sha256"], MAX_BYTES)
+                migration_document = _read(candidate, FILES["migration_inventory_sha256"], MAX_BYTES)
+                if (hashlib.sha256(policy_document).hexdigest() != receipt["policy_sha256"]
+                        or hashlib.sha256(migration_document).hexdigest() != receipt["migration_inventory_sha256"]):
+                    raise TrustError("source_inventory_changed")
+                receipt["policy_review"] = compare_source(local_policy, policy_document)
+                receipt["migration_review"] = (source_package.migration_inventory_comparison(
+                    local_migrations, migration_document, current_schema=current_schema)
+                    if local_migrations is not None else {"state": "unknown", "reason_code": "migration_baseline_unconfirmed"})
             schema_match = receipt["schema_min"] <= current_schema <= receipt["schema_max"]
             receipt.update(provenance=disposition, provenance_reason=reason, **rotation, **clock_fields,
                 root_sha256=pin, attestation_root_sha256=config.configured()[1],

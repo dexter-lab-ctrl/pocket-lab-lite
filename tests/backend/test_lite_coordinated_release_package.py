@@ -107,3 +107,10 @@ def test_append_only_is_review_required_and_applied_change_blocked():
     assert compare(new)["state"] == "review_required"
     new[package.MIGRATION_PREFIX + "0001_initial.sql"] = b"SELECT 3;"
     assert compare(new)["state"] == "incompatible"
+
+
+def test_unbound_policy_data_rejected():
+    files = fixture_files()
+    files[package.POLICY_PREFIX + "pocketlab/data.json"] = b"{}"
+    with pytest.raises(TrustError, match="policy_data_inventory_unsupported"):
+        inspect(files)

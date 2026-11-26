@@ -141,6 +141,8 @@ def inspect_source(stream, *, declaration, policy_inventory: bytes, migration_in
                     raise TrustError("source_archive_expansion_limit")
                 is_policy = name.startswith(POLICY_PREFIX) and name.endswith(".rego")
                 is_migration = name.startswith(MIGRATION_PREFIX) and name.endswith(".sql")
+                if name.startswith(POLICY_PREFIX) and not is_policy:
+                    raise TrustError("policy_data_inventory_unsupported")
                 if is_policy or is_migration:
                     if name not in expected:
                         raise TrustError("source_inventory_unexpected_member")

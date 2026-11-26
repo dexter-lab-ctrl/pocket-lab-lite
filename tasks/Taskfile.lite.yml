@@ -837,7 +837,7 @@ tasks:
   lite:lifecycle:t3-t5-package:
     desc: Authenticated coordinated source and migration inventory fixtures (qualification only)
     cmds:
-      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_coordinated_release_package.py tests/backend/test_lite_release_trusted_time.py'
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_coordinated_release_package.py tests/backend/test_lite_release_trusted_time.py tests/backend/test_lite_lifecycle_candidate_review.py'
 
   lite:lifecycle:ui:
     desc: Focused Trusted Lifecycle frontend component qualification
