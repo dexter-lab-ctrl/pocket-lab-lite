@@ -22,6 +22,7 @@ from api_fastapi.services.lite_release_trust import (
     Root, ReleaseMetadata, PAYLOAD_TYPE, _parse, _expiry, pae, verify,
 )
 from api_fastapi.services.lite_lifecycle_contract import canonical_bytes
+from api_fastapi.services import lite_release_package as source_package
 
 
 def sign(directory: Path, assets: Path, root: Root, seeds: list[str]):
@@ -59,6 +60,14 @@ def sign(directory: Path, assets: Path, root: Root, seeds: list[str]):
            expected_tag=metadata.release_tag, expected_commit=metadata.source_commit,
            channel=metadata.channel, observed_digests=observed,
            capability_manifest=(directory / "pocketlab-lite-capabilities.json").read_bytes())
+    declaration = source_package.source_declaration(
+        (assets / "pocketlab-lite-release.json").read_bytes(),
+        source_commit=metadata.source_commit, release_tag=metadata.release_tag)
+    if declaration is not None:
+        with (assets / source_package.SOURCE_ASSET).open("rb") as stream:
+            source_package.inspect_source(stream, declaration=declaration,
+                policy_inventory=(directory / "pocketlab-lite-policy-inventory.json").read_bytes(),
+                migration_inventory=(directory / "pocketlab-lite-migration-inventory.json").read_bytes())
     (directory / "pocketlab-lite-trust.dsse.json").write_bytes(envelope)
 
 

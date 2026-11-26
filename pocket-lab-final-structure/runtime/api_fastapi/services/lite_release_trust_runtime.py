@@ -23,6 +23,7 @@ import uuid
 
 from .lite_release_trust import MAX_BYTES, Root, TrustError, _parse, _expiry, strict_json, verify
 from .lite_release_contract import parse_lite_tag
+from . import lite_release_package as source_package
 
 FILES = {
     "artifact_sha256": "dist.zip",
@@ -153,6 +154,55 @@ def _candidate(root_dir, tag, request):
         yield path, {"bytes_read": total, "files_examined": len(names)}
 
 
+def _inspect_coordinated_source(candidate, root_dir, request, receipt):
+    """Acquire source bytes only after signed metadata has been verified."""
+    manifest = _read(candidate, FILES["release_manifest_sha256"], MAX_BYTES)
+    if hashlib.sha256(manifest).hexdigest() != receipt["release_manifest_sha256"]:
+        raise TrustError("release_manifest_changed")
+    declaration = source_package.source_declaration(
+        manifest, source_commit=receipt["source_commit"], release_tag=receipt["release_tag"])
+    if declaration is None:
+        return {"state": "not_delivered", "execution_eligible": False}
+    if shutil.disk_usage(candidate).free < source_package.MAX_SOURCE_BYTES + 32 * 1024 * 1024:
+        raise TrustError("source_disk_pressure")
+    name = source_package.SOURCE_ASSET
+    deadline = int(request.get("deadline_ns") or (time.monotonic_ns() + 120_000_000_000))
+    if time.monotonic_ns() >= deadline:
+        raise TrustError("trust_deadline_exceeded")
+    target = candidate / name
+    if os.environ.get("POCKETLAB_RELEASE_TRUST_SOURCE", "github") == "local":
+        with _open_controlled(root_dir / "candidate", name, source_package.MAX_SOURCE_BYTES) as (stream, info):
+            with target.open("xb") as out:
+                copied = 0
+                while chunk := stream.read(1024 * 1024):
+                    copied += len(chunk)
+                    if copied > source_package.MAX_SOURCE_BYTES or time.monotonic_ns() >= deadline:
+                        raise TrustError("source_acquisition_limit")
+                    out.write(chunk)
+                if copied != info.st_size:
+                    raise TrustError("candidate_changed")
+    else:
+        from .release_update_process import _download_to_file, ReleaseProcessFailure
+        url = f"https://github.com/dexter-lab-ctrl/pocket-lab-lite/releases/download/{receipt['release_tag']}/{name}"
+        try:
+            _download_to_file(url, target, timeout=max(1, min(20, (deadline - time.monotonic_ns()) / 1e9)),
+                              max_bytes=source_package.MAX_SOURCE_BYTES, trusted_public=True)
+        except ReleaseProcessFailure as exc:
+            raise FileNotFoundError("trusted_source_asset_unavailable") from exc
+    target.chmod(0o400)
+    policy = _read(candidate, FILES["policy_sha256"], MAX_BYTES)
+    migrations = _read(candidate, FILES["migration_inventory_sha256"], MAX_BYTES)
+    if (hashlib.sha256(policy).hexdigest() != receipt["policy_sha256"]
+            or hashlib.sha256(migrations).hexdigest() != receipt["migration_inventory_sha256"]):
+        raise TrustError("source_inventory_changed")
+    with _open_controlled(candidate, name, source_package.MAX_SOURCE_BYTES) as (stream, _):
+        result = source_package.inspect_source(stream, declaration=declaration,
+            policy_inventory=policy, migration_inventory=migrations)
+    if time.monotonic_ns() >= deadline:
+        raise TrustError("trust_deadline_exceeded")
+    return result
+
+
 def cleanup_review(review_id):
     # Called by the same lease owner after its child exits or is terminated.
     if not re.fullmatch(r"[a-f0-9]{32}", review_id):
@@ -244,8 +294,14 @@ def inspect_candidate(request):
                 raise TrustError("release_tag_rollback")
             if receipt["metadata_version"] == floor and receipt["metadata_sha256"] != request.get("highest_digest"):
                 raise TrustError("metadata_version_conflict")
+            package_review = _inspect_coordinated_source(candidate, root_dir, request, receipt)
             from .lite_release_provenance import provenance
             disposition, reason = provenance(candidate, root_dir, commit=receipt["source_commit"], tag=tag)
+            if package_review["state"] == "inventory_verified":
+                package_review["state"] = "verified_for_review" if disposition == "verified" else "provenance_unconfirmed"
+                acquisition_metrics["bytes_read"] += package_review["archive_bytes"]
+                acquisition_metrics["files_examined"] += 1
+            receipt["source_package"] = package_review
             from .lite_release_trust import CapabilityManifest
             from .lite_lifecycle_contract import CAPABILITIES, assess, canonical_bytes, registry_revision
             policy, migrations = _local_inventory()

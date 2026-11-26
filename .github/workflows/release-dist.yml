@@ -255,6 +255,28 @@ jobs:
           ls -lh dist.zip checksums.txt
           test -z "${RELEASE_TAG:-}" || test -s pocketlab-lite-release.json
 
+      # Explicit future publishing opt-in; not an installation or activation flag.
+      - name: Package exact coordinated source
+        if: steps.release_tag.outputs.tag != '' && vars.POCKETLAB_COORDINATED_RELEASE_PUBLISHING == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git archive --format=zip --output=pocketlab-lite-source.zip "$GITHUB_SHA"
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          source = Path("pocketlab-lite-source.zip")
+          if source.stat().st_size > 256 * 1024 * 1024:
+              raise SystemExit("coordinated source exceeds admission budget")
+          with source.open("rb") as handle:
+              digest = hashlib.file_digest(handle, "sha256").hexdigest()
+          manifest = Path("pocketlab-lite-release.json")
+          payload = json.loads(manifest.read_bytes())
+          payload["coordinated_source"] = {"schema_version": 1, "artifact": source.name,
+              "sha256": digest, "source_commit": os.environ["GITHUB_SHA"]}
+          manifest.write_text(json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n")
+          PY
+
       - name: Validate release artifact contract
         run: python3 scripts/dev/lite/release_artifact_check.py --root .
 
@@ -264,14 +286,26 @@ jobs:
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: dist.zip
+      - name: Attest coordinated source in its build job
+        if: steps.release_tag.outputs.tag != '' && vars.POCKETLAB_COORDINATED_RELEASE_PUBLISHING == '1'
+        id: source_provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: pocketlab-lite-source.zip
       - name: Preserve build attestation bundle
         if: steps.release_tag.outputs.tag != ''
         env:
           BUNDLE_PATH: ${{ steps.build_provenance.outputs.bundle-path }}
+          SOURCE_BUNDLE_PATH: ${{ steps.source_provenance.outputs.bundle-path }}
         run: |
           set -euo pipefail
           test -s "$BUNDLE_PATH"
           cp "$BUNDLE_PATH" pocketlab-lite-build-provenance.jsonl
+          if [[ -f pocketlab-lite-source.zip ]]; then
+            test -s "$SOURCE_BUNDLE_PATH"
+            printf '\n' >> pocketlab-lite-build-provenance.jsonl
+            cat "$SOURCE_BUNDLE_PATH" >> pocketlab-lite-build-provenance.jsonl
+          fi
       - name: Upload release assets
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -281,6 +315,7 @@ jobs:
             checksums.txt
             pocketlab-lite-release.json
             pocketlab-lite-build-provenance.jsonl
+            pocketlab-lite-source.zip
           if-no-files-found: warn
           retention-days: 30
 
@@ -335,6 +370,13 @@ jobs:
             --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" \
             --deny-self-hosted-runners --predicate-type https://slsa.dev/provenance/v1 \
             --bundle pocketlab-lite-build-provenance.jsonl
+          if [[ -f pocketlab-lite-source.zip ]]; then
+            gh attestation verify pocketlab-lite-source.zip --repo "$GITHUB_REPOSITORY" \
+              --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release-dist.yml" \
+              --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" \
+              --deny-self-hosted-runners --predicate-type https://slsa.dev/provenance/v1 \
+              --bundle pocketlab-lite-build-provenance.jsonl
+          fi
       # Release-only steps. No pull-request trigger receives signing material.
       - name: Prepare authenticated release metadata
         if: needs.build-dist.outputs.release_tag != ''
@@ -401,6 +443,7 @@ jobs:
             pocketlab-lite-migration-inventory.json
             pocketlab-lite-trust.dsse.json
             pocketlab-lite-provenance.jsonl
+            pocketlab-lite-source.zip
           if-no-files-found: error
           retention-days: 30
 
@@ -465,4 +508,7 @@ jobs:
           for asset in pocketlab-lite-capabilities.json pocketlab-lite-policy-inventory.json pocketlab-lite-migration-inventory.json pocketlab-lite-trust.dsse.json pocketlab-lite-provenance.jsonl; do
             gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | grep -Fx "$asset"
           done
+          if [[ -f pocketlab-lite-source.zip ]]; then
+            gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | grep -Fx 'pocketlab-lite-source.zip'
+          fi
           echo "PASS release identity and required assets verified for $RELEASE_TAG"

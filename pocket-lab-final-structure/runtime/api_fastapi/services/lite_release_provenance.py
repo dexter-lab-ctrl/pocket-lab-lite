@@ -34,7 +34,11 @@ def provenance(directory: Path, root_dir: Path, *, commit: str, tag: str):
         env = {k: os.environ[k] for k in ("PATH", "TMPDIR", "PREFIX", "SYSTEMROOT") if k in os.environ}
         env.update({"HOME": str(home), "GH_CONFIG_DIR": str(home), "XDG_CONFIG_HOME": str(home),
                     "GH_PROMPT_DISABLED": "1", "GH_NO_UPDATE_NOTIFIER": "1", "GH_HOST": "github.com"})
-        for subject in ("dist.zip", "pocketlab-lite-trust.dsse.json"):
+        from .lite_release_package import SOURCE_ASSET
+        subjects = ["dist.zip", "pocketlab-lite-trust.dsse.json"]
+        if (directory / SOURCE_ASSET).is_file():
+            subjects.append(SOURCE_ASSET)
+        for subject in subjects:
             verified = False
             for ref in ("refs/heads/main", "refs/tags/" + tag):
                 result = subprocess.run([gh, "attestation", "verify", str(directory / subject),
