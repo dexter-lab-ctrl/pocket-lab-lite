@@ -58,6 +58,9 @@ DIAGNOSE_PATH_RE = re.compile(r"^/api/lite/system-health/incidents/health-[0-9a-
 RECOVERY_WRITE_PATH_RE = re.compile(
     r"^/api/lite/system-health/incidents/health-[0-9a-f]{24}/(?:preflight|repair)$"
 )
+LIFECYCLE_REVIEW_PATH_RE = re.compile(
+    r"^/api/lite/lifecycle/(?:preferences|boundary)/review$"
+)
 HOP_BY_HOP_HEADERS = frozenset(
     {
         "connection",
@@ -132,9 +135,13 @@ def is_allowed_api_path(path: str) -> bool:
 
 
 def is_allowed_candidate_write(path: str) -> bool:
-    """Allow only bounded System Health writes in isolated candidate UI runs."""
+    """Allow only bounded review/preflight writes in isolated candidate UI runs."""
     pathname = urlsplit(str(path or "")).path
-    return bool(DIAGNOSE_PATH_RE.fullmatch(pathname) or RECOVERY_WRITE_PATH_RE.fullmatch(pathname))
+    return bool(
+        DIAGNOSE_PATH_RE.fullmatch(pathname)
+        or RECOVERY_WRITE_PATH_RE.fullmatch(pathname)
+        or LIFECYCLE_REVIEW_PATH_RE.fullmatch(pathname)
+    )
 
 
 def candidate_api_target() -> tuple[str, int, ssl.SSLContext | None]:
