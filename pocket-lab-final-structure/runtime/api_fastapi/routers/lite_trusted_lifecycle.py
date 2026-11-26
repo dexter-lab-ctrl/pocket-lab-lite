@@ -1,4 +1,6 @@
 """Authenticated same-origin lifecycle review and consent records."""
+import re
+
 from fastapi import APIRouter, HTTPException, Request, Response
 
 from .. import deps
@@ -14,11 +16,11 @@ def _call(request, response, operation, *args, write=False):
     try:
         return operation(context, *args)
     except PermissionError as exc:
-        raise HTTPException(403, detail={"reason_code": str(exc)[:80], "message": "Current Owner authority is required."}) from exc
+        raise HTTPException(403, detail={"reason_code": (str(exc) if re.fullmatch(r"[a-z][a-z0-9_]{0,79}", str(exc)) else "lifecycle_review_required"), "message": "Current Owner authority is required."}) from exc
     except lite_policy_opa.PolicyDecisionError as exc:
         raise HTTPException(exc.status_code, detail={"reason_code": exc.reason_code, "message": exc.message}) from exc
     except ValueError as exc:
-        raise HTTPException(409, detail={"reason_code": str(exc)[:80], "message": "Review the current lifecycle state before continuing."}) from exc
+        raise HTTPException(409, detail={"reason_code": (str(exc) if re.fullmatch(r"[a-z][a-z0-9_]{0,79}", str(exc)) else "lifecycle_review_required"), "message": "Review the current lifecycle state before continuing."}) from exc
 
 
 @router.get("/summary")

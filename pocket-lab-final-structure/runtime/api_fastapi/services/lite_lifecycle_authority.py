@@ -74,6 +74,9 @@ def _trust(conn):
     if not row:
         return None
     review = json.loads(row["review_json"])
+    release = conn.execute("SELECT latest_tag,status FROM release_runtime_projection WHERE owner='release'").fetchone()
+    if not release or release["status"] != "healthy" or release["latest_tag"] != review.get("release_tag"):
+        return None
     if (review.get("metadata_sha256") != row["metadata_sha256"] or review.get("channel") != "stable"
         or review.get("provenance") != "verified" or review.get("authenticity") != "verified"
         or review.get("integrity") != "verified" or not authority._future(review.get("expires"))
@@ -98,6 +101,8 @@ def _audit(conn, owner, event, revision):
     # Long-lived revocation evidence stays in grant rows; bounded recent
     # activity mirrors other Lite operational audit views.
     conn.execute("DELETE FROM lite_lifecycle_audit WHERE event_id NOT IN (SELECT event_id FROM lite_lifecycle_audit ORDER BY event_id DESC LIMIT 2000)")
+    from .lite_control_plane_store import _bump_revision
+    _bump_revision(conn, "audit", _iso(), changed_ids=["trusted-lifecycle"], reason="audit_state_changed")
 
 
 def _invalidate(conn, workspace):
@@ -130,6 +135,8 @@ def preview(context, action, payload):
         if isinstance(payload, GrantRequest):
             if binding["boundary_revision"] != payload.expected_revision or binding["profile_revision"] != payload.expected_profile_revision:
                 raise ValueError("boundary_revision_changed")
+            if _prefs(conn)["profile"] != "recommended" or not _trust(conn):
+                raise ValueError("profile_or_trust_not_ready")
             service = BY_PURPOSE[payload.purpose]
             cap = next(c for c in CAPABILITIES if c.id == service.capability_id)
             scope = {"purpose": service.purpose, "category": service.category, "channel": "stable",
@@ -290,7 +297,15 @@ def evaluate_delegation(conn, *, delegation_id, purpose, internal_owner, propose
 
 def summary(context):
     with read_connection() as conn:
-        _, versions, enterprise = _owner(conn, context)
+        actor, session = context.get("actor") or {}, context.get("session") or {}
+        if actor.get("type") != "human" or not session.get("authenticated"):
+            raise PermissionError("human_required")
+        current = authority._human_authority(conn, str(actor.get("identity_id") or ""), str(session.get("session_id") or ""))
+        if not current:
+            raise PermissionError("human_required")
+        is_owner = current["role"] == "Owner"
+        enterprise = current["enterprise_enabled"]
+        versions = _owner(conn, context)[1] if is_owner else (None, None, None)
         ws = _workspace(conn)
         prefs = _prefs(conn)
         receipt = conn.execute("SELECT receipt_id,release_tag,checked_at,receipt_json FROM lite_release_trust_receipts ORDER BY metadata_version DESC LIMIT 1").fetchone()
@@ -304,12 +319,12 @@ def summary(context):
                                              capability_version=row["capability_version"], channel=row["channel"])}
                   for row in rows]
         audit = [dict(row) for row in conn.execute("SELECT correlation_id,event_type,revision,occurred_at FROM lite_lifecycle_audit ORDER BY event_id DESC LIMIT 20")]
-        identity = conn.execute("SELECT release_tag,verified,source_commit,artifact_sha256 FROM lite_installed_release_identity ORDER BY updated_at_epoch_ms DESC LIMIT 1").fetchone()
+        identity = conn.execute("SELECT release_tag,verified,source_commit,artifact_sha256 FROM lite_installed_release_identity WHERE owner='installed'").fetchone()
         policy = conn.execute("""SELECT r.content_hash,r.template_version,r.revision_id FROM policy_runtime_state s
             JOIN policy_revisions r ON s.active_revision_id=r.revision_id WHERE s.state_id=1""").fetchone()
         fence = conn.execute("SELECT * FROM lite_system_health_activation_fence WHERE singleton_id=1").fetchone()
         floor = conn.execute("SELECT metadata_version,root_version FROM lite_release_trust_floor WHERE singleton_id=1").fetchone()
-        eligible_to_record = bool(_trust(conn)) and not enterprise and prefs["profile"] == "recommended"
+        eligible_to_record = is_owner and bool(_trust(conn)) and not enterprise and prefs["profile"] == "recommended"
         revisions = RevisionIdentities(
             release_source_commit=identity["source_commit"] or None if identity else None,
             frontend_artifact_sha256=identity["artifact_sha256"] or None if identity else None,
@@ -329,6 +344,10 @@ def summary(context):
             raw = json.loads(item["receipt_json"])
             history.append({"receipt_id": item["receipt_id"], **{key: raw.get(key) for key in
                 ("release_tag","checked_at","expires","authenticity","integrity","provenance","compatibility","impact")}})
+    from .release_runtime import read_installed_identity
+    identity = read_installed_identity()
+    revisions = revisions.model_copy(update={"release_source_commit": identity.get("source_commit") or None,
+        "frontend_artifact_sha256": identity.get("artifact_sha256") or None})
     latest = json.loads(trust_observation["review_json"]) if trust_observation else {}
     raw = latest or (json.loads(receipt["receipt_json"]) if receipt else {})
     historical = {key: raw.get(key) for key in ("release_tag","checked_at","expires","root_expires","authenticity","integrity","provenance","compatibility","impact","reason_code")} if raw else None
@@ -336,16 +355,16 @@ def summary(context):
     if state == "historical_evidence" and (not authority._future(raw.get("expires")) or not authority._future(raw.get("root_expires"))):
         state = "metadata_expired"
     return {"schema_version": 1, "registry_revision": registry_revision(),
-            "preferences": prefs, "enterprise_managed": enterprise,
-            "boundary_revision": ws["boundary_revision"], "capabilities": inventory(),
-            "revisions": revisions.model_dump(), "assessment": latest.get("assessment"),
+            "preferences": prefs, "enterprise_managed": enterprise, "owner_authority": is_owner,
+            "boundary_revision": ws["boundary_revision"], "capabilities": inventory() if is_owner else [],
+            "revisions": revisions.model_dump() if is_owner else {}, "assessment": latest.get("assessment"),
             "services": [{"purpose": item.purpose,"category": item.category,"grantable": item.grantable,
                           "version": item.version,"execution_eligible": False} for item in SERVICES],
-            "can_record_consent": eligible_to_record, "grants": grants, "audit": audit,
+            "can_record_consent": eligible_to_record, "grants": grants if is_owner else [], "audit": audit if is_owner else [],
             "release_trust": {"state": state,
                               "reason_code": trust_observation["reason_code"] if trust_observation else "independent_root_required",
-                              "installed_tag": identity["release_tag"] or None if identity else None,
-                              "historical_identity_verified": bool(identity and identity["verified"]),
-                              "receipt": historical, "history": history, "fresh_verification": False},
+                              "installed_tag": identity.get("release_tag") or None,
+                              "historical_identity_verified": bool(identity.get("verified")),
+                              "receipt": historical, "history": history if is_owner else [], "fresh_verification": False},
             "effective_execution": {"software": False, "policy": False, "delegated": False},
             "execution_eligible": False, "sanitized": True}

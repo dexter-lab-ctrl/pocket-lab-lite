@@ -1746,19 +1746,26 @@ async def run_release_check(
             result, metrics = await execute_release_subprocess("check", request)
             interval = stable_release_interval_seconds()
             observation = None
-            from .lite_release_trust_runtime import floor_request
+            from .lite_release_trust_runtime import floor_request, cached_review
             with connection() as conn:
                 floor = floor_request(conn)
                 schema = conn.execute("SELECT COALESCE(MAX(version),0) FROM schema_migrations").fetchone()[0]
             if os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256") or floor["pinned_root_sha256"]:
                 latest = result.get("latest_release") or {}
                 manifest = latest.get("manifest") or {}
-                observation, _ = await execute_release_subprocess("verify_trust", {
+                trust_request = {
                     **floor, "current_schema": schema, "repository": request.get("verified_repository"), "release_tag": result.get("latest_tag"),
                     "source_commit": manifest.get("source_commit"),
                     "artifact_sha256": manifest.get("artifact_sha256"),
                     "channel": "preview" if latest.get("prerelease") else "stable",
-                })
+                }
+                with connection() as conn:
+                    reuse = source == "automatic" and cached_review(conn, trust_request)
+                if not reuse:
+                    try:
+                        observation, _ = await execute_release_subprocess("verify_trust", trust_request)
+                    except ReleaseSubprocessError:
+                        observation = {"state": "metadata_unavailable", "reason_code": "trust_review_unavailable"}
             payload = {
                 **result,
                 "_trust_observation": observation,

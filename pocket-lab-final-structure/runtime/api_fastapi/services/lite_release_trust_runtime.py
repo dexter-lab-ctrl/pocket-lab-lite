@@ -89,7 +89,7 @@ def _candidate(root_dir, tag, request):
         return
     if mode != "github" or request.get("repository") != "dexter-lab-ctrl/pocket-lab-lite":
         raise TrustError("trusted_repository_mismatch")
-    from .release_update_process import _download_to_file
+    from .release_update_process import _download_to_file, ReleaseProcessFailure
     names = {name: MAX_ARTIFACT if name == "dist.zip" else MAX_BYTES for name in FILES.values()}
     names.update({"pocketlab-lite-capabilities.json": MAX_BYTES, "pocketlab-lite-trust.dsse.json": MAX_BYTES,
                   "pocketlab-lite-provenance.jsonl": 2 * 1024 * 1024})
@@ -102,7 +102,10 @@ def _candidate(root_dir, tag, request):
         for name, limit in sorted(names.items(), key=lambda pair: pair[0] == "dist.zip"):
             # Fixed repository, tag and filenames, not metadata-provided URLs.
             url = f"https://github.com/dexter-lab-ctrl/pocket-lab-lite/releases/download/{tag}/{name}"
-            _download_to_file(url, path / name, timeout=20, max_bytes=limit)
+            try:
+                _download_to_file(url, path / name, timeout=20, max_bytes=limit)
+            except ReleaseProcessFailure as exc:
+                raise FileNotFoundError("trusted_asset_unavailable") from exc
         yield path
 
 
@@ -157,7 +160,7 @@ def inspect_candidate(request):
             from .lite_release_provenance import provenance
             disposition, reason = provenance(candidate, root_dir, commit=receipt["source_commit"], tag=tag)
             from .lite_release_trust import CapabilityManifest
-            from .lite_lifecycle_contract import CAPABILITIES, assess, canonical_bytes
+            from .lite_lifecycle_contract import CAPABILITIES, assess, canonical_bytes, registry_revision
             source = Path(__file__).resolve().parents[4]
             def source_digest(paths):
                 items = [{"path": path.relative_to(source).as_posix(),
@@ -174,7 +177,8 @@ def inspect_candidate(request):
             schema_match = receipt["schema_min"] <= current_schema <= receipt["schema_max"]
             receipt.update(provenance=disposition, provenance_reason=reason, **rotation,
                 impact=assessment.impact.value, assessment=assessment.model_dump(mode="json"),
-                schema_range_matches=schema_match,
+                schema_range_matches=schema_match, current_schema=current_schema,
+                registry_revision=registry_revision(),
                 compatibility="unknown" if schema_match else "incompatible")
             return {"state": "historical_evidence" if disposition != "failed" else "verification_failed",
                     "reason_code": reason, "root_sha256": pin, "receipt": receipt if disposition != "failed" else None}
@@ -200,11 +204,38 @@ def floor_request(conn):
             "pinned_root_sha256": pin["root_sha256"] if pin else ""}
 
 
+def cached_review(conn, request):
+    """Automatic checks may reuse historical evidence; manual checks always verify."""
+    from .lite_lifecycle_contract import registry_revision
+    row = conn.execute("SELECT * FROM lite_release_trust_observation WHERE singleton_id=1").fetchone()
+    if not row or row["state"] != "historical_evidence":
+        return False
+    try:
+        r = json.loads(row["review_json"])
+        now = datetime.now(timezone.utc)
+        checked = datetime.fromisoformat(r["checked_at"])
+        if not timedelta(0) <= now - checked < timedelta(hours=24):
+            return False
+        if any(datetime.fromisoformat(r[key].replace("Z", "+00:00")) <= now for key in ("expires", "root_expires")):
+            return False
+        return (r["provenance"] == "verified" and request["repository"] == "dexter-lab-ctrl/pocket-lab-lite"
+                and request["pinned_root_sha256"] == os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256")
+                and r["registry_revision"] == registry_revision()
+                and all(r.get(k) == request.get(k) for k in ("release_tag", "source_commit", "artifact_sha256", "channel", "current_schema")))
+    except (KeyError, TypeError, ValueError):
+        return False
+
+
+def _semantic_review(state, reason, tag, review):
+    return (state, reason, tag, {k: v for k, v in review.items() if k not in {"checked_at", "correlation_id"}})
+
+
 def persist(tx, observation, tag):
     """Must be called under the current existing release lease transaction."""
     state = observation["state"]
     reason = observation["reason_code"]
     stamp = datetime.now(timezone.utc).isoformat()
+    previous = tx.execute("SELECT * FROM lite_release_trust_observation WHERE singleton_id=1").fetchone()
     receipt = observation.get("receipt")
     if receipt is not None:
         old = floor_request(tx)
@@ -243,3 +274,7 @@ def persist(tx, observation, tag):
                review_json=excluded.review_json""",
                (state, reason, stamp, tag, json.dumps(receipt or {}, sort_keys=True, separators=(",", ":"))))
     tx.execute("DELETE FROM lite_release_trust_receipts WHERE metadata_version NOT IN (SELECT metadata_version FROM lite_release_trust_receipts ORDER BY metadata_version DESC LIMIT 100)")
+    if not previous or _semantic_review(previous["state"], previous["reason_code"], previous["release_tag"],
+            json.loads(previous["review_json"])) != _semantic_review(state, reason, tag, receipt or {}):
+        from .lite_control_plane_store import _bump_revision
+        _bump_revision(tx, "audit", stamp, changed_ids=["trusted-lifecycle"], reason="audit_state_changed")

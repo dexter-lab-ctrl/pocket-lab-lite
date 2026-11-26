@@ -103,13 +103,15 @@ def test_scope_expansion_and_unknown_policy():
         inventory(old + old)
 
 
-def test_durable_floor_does_not_replace_receipt_on_replay(candidate, tmp_path):
+def test_durable_floor_does_not_replace_receipt_on_replay(candidate, tmp_path, monkeypatch):
+    from api_fastapi.services import lite_control_plane_store
+    monkeypatch.setattr(lite_control_plane_store, "_bump_revision", lambda *args, **kwargs: None)
     envelope, kwargs = candidate
     receipt = trust.verify(canonical_bytes(envelope), **kwargs)
     schema = Path(__file__).parents[2] / "pocket-lab-final-structure/runtime/api_fastapi/db/schema"
     with sqlite3.connect(tmp_path / "isolated.sqlite3") as conn:
         conn.row_factory = sqlite3.Row
-        for name in ("0056_trusted_lifecycle.sql", "0057_lifecycle_authority.sql", "0058_release_trust_observations.sql", "0059_lifecycle_review_state.sql"):
+        for name in ("0056_trusted_lifecycle.sql", "0057_lifecycle_authority.sql", "0058_release_trust_observations.sql", "0059_lifecycle_review_state.sql", "0060_lifecycle_trusted_time.sql"):
             conn.executescript((schema / name).read_text())
         assert conn.execute("SELECT COUNT(*) FROM lite_lifecycle_preferences").fetchone()[0] == 0
         assert conn.execute("SELECT COUNT(*) FROM lite_lifecycle_grants").fetchone()[0] == 0

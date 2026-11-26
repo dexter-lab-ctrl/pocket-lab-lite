@@ -153,6 +153,9 @@ export function invalidateLiteRevisionDomain(queryClient, domain, changedIds = [
   if (!queryClient || !LITE_REVISION_DOMAINS.has(domain)) return [];
   const work = (domain === 'fleet' ? [] : (DOMAIN_QUERY_PREFIXES[domain] || []))
     .map((queryKey) => invalidatePrefix(queryClient, queryKey));
+  if (domain === 'audit' && (!changedIds.length || changedIds.includes('trusted-lifecycle'))) {
+    work.push(invalidatePrefix(queryClient, ['lite', 'lifecycle']));
+  }
   if (domain === 'apps') {
     changedIds.forEach((appId) => {
       work.push(queryClient.invalidateQueries({ queryKey: liteQueryKeys.appActions(appId), exact: false, refetchType: 'active' }));
