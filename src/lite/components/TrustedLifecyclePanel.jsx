@@ -56,6 +56,47 @@ export function ChangeImpactReview({ assessment }) {
   </div>;
 }
 
+const reviewStates = {
+  verified_for_review: 'Verified for review',
+  not_delivered: 'Source package not delivered',
+  provenance_unconfirmed: 'Provenance not confirmed',
+  source_unchanged: 'Repository policy unchanged',
+  unknown_semantic_impact: 'Policy change requires review',
+  unsupported_inventory: 'Unsupported policy inventory',
+  modules_match: 'Loaded Rego matched at recorded check',
+  module_mismatch: 'Loaded Rego mismatch',
+  revision_mismatch: 'Loaded revision mismatch',
+  unchanged: 'Migration inventory unchanged',
+  review_required: 'Migration qualification required',
+  incompatible: 'Incompatible migration inventory',
+  unknown: 'Not confirmed',
+};
+const impactNames = { U2: 'Scope reduced', U4: 'Additional authority requires review', U5: 'Trust or ownership review', UX: 'Compatibility not confirmed' };
+
+export function CandidateReview({ review }) {
+  if (!review) return null;
+  const capabilities = review.capability_review;
+  const rows = Array.isArray(capabilities?.changes) ? capabilities.changes : [];
+  return <div className="lite-system-health-detail-block">
+    <h4>Candidate evidence</h4>
+    <p>Recorded review evidence only. No installation, Safety Rules activation or additional permissions are authorized here.</p>
+    <LiteActionRow label="Reviewed release" value={review.release_tag || 'Not confirmed'} />
+    <LiteActionRow label="Recorded check" value={review.checked_at || 'Not confirmed'} />
+    <LiteActionRow label="Coordinated source" value={reviewStates[review.source_package?.state] || 'Not confirmed'} />
+    <LiteActionRow label="Policy source" value={reviewStates[review.policy_review?.state] || 'Not confirmed'} />
+    <LiteActionRow label="Loaded policy modules" value={reviewStates[review.policy_runtime_observation?.state] || 'Not confirmed'}
+      summary="Historical module observation only. Loaded data and backend identity are not established." />
+    <LiteActionRow label="Database migrations" value={reviewStates[review.migration_review?.state] || 'Not confirmed'} />
+    <LiteTechnicalDetails summary="Review individual capability changes" haptic>
+      <LiteActionRow label="Recorded changes" value={String(capabilities?.total ?? 'Not confirmed')} />
+      {rows.map(row => <LiteActionRow key={row.id} label={row.id} value={impactNames[row.impact] || 'Review required'}
+        summary={Array.isArray(row.changed_fields) ? row.changed_fields.join(', ') : 'No detailed evidence available'} />)}
+      {capabilities?.truncated && <p>Only the first recorded changes are shown. Further review is required.</p>}
+      {!rows.length && <p>No individual changes recorded here. This does not establish authorization.</p>}
+    </LiteTechnicalDetails>
+  </div>;
+}
+
 export function LifecycleContent({ data, readOnly = false, busy = false, pending, onReview, onConfirm, onCancel, message }) {
   const prefs = data?.preferences;
   const managed = data?.enterprise_managed === true;
@@ -100,6 +141,7 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
       {!canGrant && <p>New standing consent requires a current Owner, the Recommended profile, current trust evidence and confirmed policy state.</p>}
     </div>
     <ChangeImpactReview assessment={data?.assessment} />
+    <CandidateReview review={data?.owner_authority === true ? data.candidate_review : null} />
     <LiteTechnicalDetails className="lite-system-health-detail-block" summary="Verification history" haptic>
       {(data?.release_trust?.history || []).map(item => <LiteActionRow key={item.receipt_id} label={item.release_tag} value={item.checked_at} summary="Historical verification; not current installation authority." />)}
       {!data?.release_trust?.history?.length && <p>No verification history recorded.</p>}
