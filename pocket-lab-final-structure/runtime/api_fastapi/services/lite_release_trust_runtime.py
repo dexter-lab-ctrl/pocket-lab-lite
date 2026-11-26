@@ -120,7 +120,10 @@ def _candidate(root_dir, tag, request):
         raise TrustError("unsafe_trust_directory")
     if shutil.disk_usage(root_dir).free < sum(names.values()) + 32 * 1024 * 1024:
         raise TrustError("trust_disk_pressure")
-    with tempfile.TemporaryDirectory(prefix="candidate-", dir=root_dir) as temp:
+    review_id = str(request.get("review_id") or uuid.uuid4().hex)
+    if not re.fullmatch(r"[a-f0-9]{32}", review_id):
+        raise TrustError("review_identity_invalid")
+    with tempfile.TemporaryDirectory(prefix="candidate-review-" + review_id + "-", dir=root_dir) as temp:
         path = Path(temp)
         total = 0
         deadline_ns = int(request.get("deadline_ns") or (time.monotonic_ns() + 120_000_000_000))
@@ -142,13 +145,27 @@ def _candidate(root_dir, tag, request):
                 # Fixed repository, tag and filenames, not metadata-provided URLs.
                 url = f"https://github.com/dexter-lab-ctrl/pocket-lab-lite/releases/download/{tag}/{name}"
                 try:
-                    _download_to_file(url, path / name, timeout=max(1, min(20, (deadline_ns - time.monotonic_ns()) / 1e9)), max_bytes=limit)
+                    _download_to_file(url, path / name, timeout=max(1, min(20, (deadline_ns - time.monotonic_ns()) / 1e9)), max_bytes=limit, trusted_public=True)
                 except ReleaseProcessFailure as exc:
                     raise FileNotFoundError("trusted_asset_unavailable") from exc
             (path / name).chmod(0o400)
             total += (path / name).stat().st_size
         yield path, {"bytes_read": total, "files_examined": len(names)}
 
+
+def cleanup_review(review_id):
+    # Called by the same lease owner after its child exits or is terminated.
+    if not re.fullmatch(r"[a-f0-9]{32}", review_id):
+        return
+    try:
+        directory = _trust_directory()
+        if directory.is_symlink() or not directory.is_dir() or directory.stat().st_uid != os.getuid() or directory.stat().st_mode & 0o077:
+            return
+        for candidate in directory.glob("candidate-review-" + review_id + "-*"):
+            if not candidate.is_symlink() and candidate.is_dir() and candidate.stat().st_uid == os.getuid():
+                shutil.rmtree(candidate)
+    except OSError:
+        return
 
 def _trust_directory():
     from .. import deps

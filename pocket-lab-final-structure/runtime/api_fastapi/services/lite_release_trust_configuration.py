@@ -39,6 +39,12 @@ def reconcile_configuration(tx):
         return
     valid = all(re.fullmatch(r"[0-9a-f]{64}", value) for value in (root, attestation))
     state = "configured" if valid and os.environ.get("POCKETLAB_RELEASE_TRUST_SUSPENDED") != "1" else "suspended"
+    # Before the first accepted candidate, changing the independently
+    # approved initial root is not an implicit bootstrap reset.
+    if old and old["root_sha256"] and root != old["root_sha256"]:
+        accepted = tx.execute("SELECT root_sha256 FROM lite_release_trust_pin WHERE singleton_id=1").fetchone()
+        if not accepted:
+            valid, state = False, "suspended"
     values = (root if valid else (old["root_sha256"] if old else ""),
               attestation if valid else (old["attestation_root_sha256"] if old else ""), state)
     if old and tuple(old[k] for k in ("root_sha256","attestation_root_sha256","state")) == values:

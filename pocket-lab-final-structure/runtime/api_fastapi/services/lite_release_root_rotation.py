@@ -26,6 +26,10 @@ def verify_rotation(old_bytes, new_bytes, transition, *, old_pin, new_pin, now):
         raise TrustError("root_transition_invalid")
     if not set(old.revoked).issubset(new.revoked):
         raise TrustError("revocation_rollback")
+    release_keys = {k.keyid for root in (old,new) for k in root.keys}
+    rotation_keys = {k.keyid for root in (old,new) for k in root.rotation_keys}
+    if release_keys & rotation_keys:
+        raise TrustError("root_role_separation_invalid")
     envelope = strict_json(transition)
     if not isinstance(envelope, dict) or set(envelope) != {"payloadType", "payload", "signatures"} or envelope["payloadType"] != TYPE.decode():
         raise TrustError("root_transition_invalid")

@@ -1362,15 +1362,32 @@ async def execute_release_subprocess(
         started_at=_utc_now(),
         last_error_type="",
     )
+    def stop_child(force=False):
+        # The trust child may spawn the independent provenance verifier.
+        # Terminate its isolated process group so it cannot outlive the lease.
+        if operation == "verify_trust" and os.name != "nt":
+            import signal
+            try:
+                os.killpg(process.pid, signal.SIGKILL if force else signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+        elif process.returncode is None:
+            if force:
+                process.kill()
+            else:
+                process.terminate()
     try:
         stdout, stderr = await asyncio.wait_for(process.communicate(body), timeout=timeout)
     except asyncio.CancelledError:
-        process.terminate()
+        stop_child()
         try:
             await asyncio.wait_for(process.wait(), timeout=2.0)
         except asyncio.TimeoutError:
-            process.kill()
+            stop_child(force=True)
             await process.wait()
+        finally:
+            if operation == "verify_trust":
+                stop_child(force=True)
         _set_process_state(
             process_alive=False,
             process_pid=0,
@@ -1381,12 +1398,15 @@ async def execute_release_subprocess(
         )
         raise
     except asyncio.TimeoutError as exc:
-        process.terminate()
+        stop_child()
         try:
             await asyncio.wait_for(process.wait(), timeout=2.0)
         except asyncio.TimeoutError:
-            process.kill()
+            stop_child(force=True)
             await process.wait()
+        finally:
+            if operation == "verify_trust":
+                stop_child(force=True)
         metrics = {
             "pid": int(process.pid or 0),
             "exit_code": process.returncode,
@@ -1785,11 +1805,15 @@ async def run_release_check(
                         if not renew_release_lease(lease, lease_seconds=int(remaining) + 15):
                             raise ReleaseStaleResult("release_check_lease_lost")
                         trust_request["deadline_ns"] = int(deadline * 1e9)
+                        trust_request["review_id"] = uuid.uuid4().hex
                         try:
                             observation, trust_metrics = await execute_release_subprocess("verify_trust", trust_request, deadline=deadline)
                         except ReleaseSubprocessError as exc:
                             observation = {"state": "metadata_unavailable", "reason_code": exc.code}
                             trust_metrics = exc.metrics
+                        finally:
+                            from .lite_release_trust_runtime import cleanup_review
+                            cleanup_review(trust_request["review_id"])
                         for field in ("wall_ms", "cpu_ms", "bytes_read", "files_examined"):
                             metrics[field] = (metrics.get(field) or 0) + (trust_metrics.get(field) or 0)
                         metrics["peak_rss_bytes"] = max(metrics.get("peak_rss_bytes") or 0, trust_metrics.get("peak_rss_bytes") or 0)

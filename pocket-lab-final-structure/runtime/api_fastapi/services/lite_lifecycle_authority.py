@@ -198,6 +198,11 @@ def _consume(conn, context, action, payload, authorized):
             or decision.get("observed_policy_revision") != binding["policy_revision"]):
         raise PermissionError("policy_decision_binding_changed")
     session = context["session"]["session_id"]
+    if isinstance(payload, GrantRequest):
+        now = _trusted_now(conn)
+        current_session = conn.execute("SELECT idle_expires_at,absolute_expires_at FROM auth_sessions WHERE session_id=?", (session,)).fetchone()
+        if not current_session or not all(trust_config.future(current_session[key], now) for key in ("idle_expires_at","absolute_expires_at")):
+            raise PermissionError("current_session_time_unconfirmed")
     # One-time exact consent, tied to the current session and active credential.
     row = conn.execute("""SELECT a.assurance_id,a.expires_at FROM auth_session_assurance a
         JOIN webauthn_credentials c ON c.credential_id=a.credential_id
