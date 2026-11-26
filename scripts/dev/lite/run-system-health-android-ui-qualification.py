@@ -265,6 +265,92 @@ def _cleanup_android_candidate() -> None:
     )
 
 
+def _run_system_health_performance(
+    *,
+    run: health.SystemHealthAndroidQualification,
+    args: argparse.Namespace,
+    dist_dir: Path,
+    evidence_dir: Path,
+    relay: StandardUserCdpRelay,
+) -> dict:
+    """Run the unchanged nine-interaction System Health performance contract."""
+    candidate_server: subprocess.Popen[str] | None = None
+    candidate_owned = False
+    try:
+        candidate_server = _candidate_server(run, dist_dir.absolute(), evidence_dir)
+        if _candidate_state_exists():
+            raise health.QualificationError("an existing Android candidate reverse is owned by another session")
+        candidate_owned = True
+        _prepare_android_candidate(args.device_serial)
+        cdp = relay.start()
+        run.results["android_cdp"] = {
+            "status": "PASS", "standard_user": True, "windows_probe": cdp,
+            "device_selection": "explicit_windows_adb_serial_verified", "source_serial_published": False,
+        }
+        bridge = run.client.request("POST", "/api/lite/harness/browser/bridge", session=run.session)
+        bridge_token = str(bridge.body.get("browser_bridge_token") or "") if isinstance(bridge.body, dict) else ""
+        if bridge.status != 200 or len(bridge_token) < 32:
+            raise health.QualificationError("isolated performance browser bridge could not be renewed")
+        run.browser_bridge = bridge_token
+        performance_env = os.environ.copy()
+        for secret_key in (
+            "POCKETLAB_HARNESS_SESSION",
+            "POCKETLAB_HARNESS_PROVISIONING_TOKEN",
+            "POCKETLAB_HARNESS_BOOTSTRAP_APPROVED",
+            "POCKETLAB_HARNESS_API_URL",
+            "POCKETLAB_TEST_AUTH_BYPASS",
+        ):
+            performance_env.pop(secret_key, None)
+        performance_env.update({
+            "LITE_ANDROID_CDP_URL": CDP_LOCAL_URL,
+            "LITE_BASE_URL": CANDIDATE_URL,
+            "LITE_PERF_SOURCE_COMMIT": run.candidate_sha,
+            "LITE_ANDROID_QUALIFICATION_SCOPE": "system-health",
+            "LITE_ANDROID_EXPECTED_INTERACTION_REPORTS": "9",
+            "LITE_ANDROID_BASELINE_REPETITIONS": "3",
+            "POCKETLAB_ANDROID_DEVICE_SERIAL": args.device_serial,
+            "POCKETLAB_HARNESS_BROWSER_BRIDGE": run.browser_bridge,
+            "LITE_QUALIFICATION_BROWSER_BRIDGE": "1",
+        })
+        performance_script = REPO_ROOT / "scripts/dev/lite/run-ui-performance-android-baseline.sh"
+        performance_result = _run(["bash", str(performance_script)], timeout=900, env=performance_env)
+        (evidence_dir / "system-health-performance.log").write_text(
+            _safe_text(performance_result.stdout, 12_000)
+            + "\n"
+            + _safe_text(performance_result.stderr, 12_000)
+            + "\n",
+            encoding="utf-8",
+        )
+        if performance_result.returncode != 0:
+            raise health.QualificationError("physical Android System Health performance qualifier failed")
+        summary_path = REPO_ROOT / ".pocketlab-dev" / "performance" / "android-baseline-summary.json"
+        if not summary_path.is_file():
+            raise health.QualificationError("System Health Android performance summary was not written")
+        performance_summary = json.loads(summary_path.read_text(encoding="utf-8"))
+        if performance_summary.get("report_count") != 9:
+            raise health.QualificationError("System Health Android performance did not produce exactly nine normalized reports")
+        if performance_summary.get("sanitized") is not True:
+            raise health.QualificationError("System Health Android performance summary was not sanitized")
+        result = {
+            "status": "PASS",
+            "scope": "system-health",
+            "repetition_count": 3,
+            "interaction_count": 9,
+            "summary": performance_summary,
+            "absolute_target_passes": performance_summary.get("absolute_target_passes"),
+            "absolute_gate_passes": performance_summary.get("absolute_gate_passes"),
+            "classifications": performance_summary.get("classifications"),
+            "sanitized": True,
+        }
+        run.results["android_system_health_performance"] = result
+        return result
+    finally:
+        _stop_process(candidate_server)
+        relay.stop()
+        if candidate_owned:
+            _cleanup_android_candidate()
+
+
 def _run_lifecycle_ui_qualification(
     *,
     run: health.SystemHealthAndroidQualification,
@@ -402,7 +488,14 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Run the non-mutating Trusted Lifecycle physical System surface without recovery execution.",
     )
+    parser.add_argument(
+        "--performance-only",
+        action="store_true",
+        help="Run only the unchanged nine-interaction System Health performance contract.",
+    )
     args = parser.parse_args(argv)
+    if args.lifecycle_only and args.performance_only:
+        parser.error("--lifecycle-only and --performance-only are mutually exclusive")
     base_result = _run(["git", "rev-parse", "--verify", f"{args.base_sha}^{{commit}}"], timeout=15)
     if base_result.returncode != 0:
         print(json.dumps({"status": "BLOCKED", "reason": "base SHA could not be resolved", "sanitized": True}, sort_keys=True))
@@ -448,6 +541,20 @@ def main(argv: list[str] | None = None) -> int:
         run.results.setdefault("isolated_sqlite", {})["phone_after_migration"] = after
         run._run_projection_driver()
         run._bootstrap()
+        if args.performance_only:
+            run._start_recovery_projection_fixture(bounded_seconds=900)
+            _run_system_health_performance(
+                run=run,
+                args=args,
+                dist_dir=args.dist_dir,
+                evidence_dir=evidence_dir,
+                relay=relay,
+            )
+            repeat = run._remote_probe(expected=run.candidate_schema_version)
+            run.results.setdefault("isolated_sqlite", {})["after_ui_gets"] = repeat
+            run.results["status"] = "PASS"
+            status = "PASS"
+            raise _LifecycleOnlyComplete
         if args.lifecycle_only:
             # The legacy recovery fixture supplies the old System Health
             # surface required by the unchanged performance contract. It is
