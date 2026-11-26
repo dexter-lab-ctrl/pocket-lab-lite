@@ -44,3 +44,15 @@ def test_contract_version_change_not_automatically_accepted():
     cap = CAPABILITIES[0]
     result = compare_capabilities((cap,), (cap.model_copy(update={"version": cap.version + 1}),))
     assert result["changes"][0]["impact"] == "UX"
+
+
+def test_runtime_observation_matches_exact_module_digests_only():
+    import hashlib
+    from api_fastapi.services.lite_policy_runtime_evidence import compare_loaded_modules
+    names = sorted({p.rsplit("/", 1)[-1] for p in REGISTERED_MODULES} | {"revision.rego"})
+    rows = [{"path": name, "sha256": hashlib.sha256(name.encode()).hexdigest()} for name in names]
+    modules = [{"id": str(i), "raw": name} for i, name in enumerate(names)]
+    assert compare_loaded_modules({"files": rows}, modules)
+    assert not compare_loaded_modules({"files": rows}, modules[:-1])
+    modules[0]["raw"] += "changed"
+    assert not compare_loaded_modules({"files": rows}, modules)

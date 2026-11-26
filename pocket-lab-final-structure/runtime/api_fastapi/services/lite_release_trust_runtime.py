@@ -334,6 +334,8 @@ def inspect_candidate(request):
                         or hashlib.sha256(migration_document).hexdigest() != receipt["migration_inventory_sha256"]):
                     raise TrustError("source_inventory_changed")
                 receipt["policy_review"] = compare_source(local_policy, policy_document)
+                from .lite_policy_runtime_evidence import observe
+                receipt["policy_runtime_observation"] = observe()
                 receipt["migration_review"] = (source_package.migration_inventory_comparison(
                     local_migrations, migration_document, current_schema=current_schema)
                     if local_migrations is not None else {"state": "unknown", "reason_code": "migration_baseline_unconfirmed"})

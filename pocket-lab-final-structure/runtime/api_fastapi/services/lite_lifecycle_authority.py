@@ -454,7 +454,7 @@ def summary(context):
             "historical_loaded_policy": dict(observed_policy) if observed_policy and is_owner else None,
             "assessment": latest.get("assessment"),
             "candidate_review": ({key: latest.get(key) for key in
-                ("release_tag", "checked_at", "source_package", "policy_review", "migration_review", "capability_review")}
+                ("release_tag", "checked_at", "source_package", "policy_review", "policy_runtime_observation", "migration_review", "capability_review")}
                 if is_owner and latest.get("provenance") == "verified" else None),
             "services": [{"purpose": item.purpose,"category": item.category,"grantable": item.grantable,
                           "version": item.version,"execution_eligible": False} for item in SERVICES],

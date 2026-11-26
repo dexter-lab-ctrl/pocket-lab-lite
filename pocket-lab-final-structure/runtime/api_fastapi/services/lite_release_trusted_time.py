@@ -139,4 +139,7 @@ def renew(directory, *, excluded_key_ids=()):
     end = config.boot_time_ns()
     now, fields = verify_response(raw, nonce=nonce, public_key=key, pinned_key=pin,
                                   start_ns=start, end_ns=end, boot_id=config.BOOT_ID)
-    return now, {**fields, "clock_source_revision": source_revision()}
+    if source_configuration() != (source, url, pin):
+        raise TrustError("trusted_time_configuration_changed")
+    revision = hashlib.sha256(canonical_bytes({"source": source, "url": url, "pin": pin})).hexdigest()
+    return now, {**fields, "clock_source_revision": revision}
