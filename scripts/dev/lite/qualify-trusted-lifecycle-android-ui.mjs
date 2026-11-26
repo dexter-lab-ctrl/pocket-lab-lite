@@ -136,7 +136,7 @@ async function main() {
 
   const verification = panel.locator('details').filter({ hasText: 'View verification details' }).first();
   await verification.locator('summary').click();
-  await verification.locator('p, .lite-system-health-detail-block').first().waitFor({ state: 'visible', timeout: 5_000 });
+  await verification.locator('.lite-action-row, p, .lite-system-health-detail-block').first().waitFor({ state: 'visible', timeout: 5_000 });
   await verification.locator('summary').click();
   interactions.push('verification_details_open_close');
 
