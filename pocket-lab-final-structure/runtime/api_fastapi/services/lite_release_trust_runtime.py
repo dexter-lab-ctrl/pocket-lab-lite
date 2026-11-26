@@ -82,11 +82,15 @@ def _read(directory: Path, name: str, limit: int, *, hash_only: bool = False):
         return h.hexdigest()
 
 
-def _clock(directory: Path):
+def _clock(directory: Path, *, excluded_key_ids=()):
     # A local administrator attests a recently independently checked UTC time.
     # Linux boot identity + monotonic time limit reuse. Not an authenticated
     # network time protocol; the operator and OS remain explicit trust assumptions.
     try:
+        from . import lite_release_trusted_time
+        source, _, _ = lite_release_trusted_time.source_configuration()
+        if source == "signed_challenge":
+            return lite_release_trusted_time.renew(directory, excluded_key_ids=excluded_key_ids)
         anchor = strict_json(_read(directory, "clock-anchor.json", 4096))
         if set(anchor) != {"boot_id", "boottime_ns", "utc"}:
             return None
@@ -259,7 +263,9 @@ def inspect_candidate(request):
         if hashlib.sha256(root_bytes).hexdigest() != pin:
             raise TrustError("root_pin_mismatch")
         root = _parse(Root, root_bytes)
-        clock = _clock(root_dir)
+        clock = _clock(root_dir, excluded_key_ids={
+            key.keyid for key in (*root.keys, *root.rotation_keys)
+        })
         if clock is None:
             raise TrustError("trusted_time_unavailable")
         now, clock_fields = clock

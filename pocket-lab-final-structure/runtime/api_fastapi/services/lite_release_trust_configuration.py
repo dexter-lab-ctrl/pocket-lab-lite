@@ -74,7 +74,9 @@ def current_configuration(conn, receipt):
 
 def prepared_now(conn, receipt):
     """No wall-clock fallback. Same boot, bounded anchor, durable high-water."""
-    if not current_configuration(conn, receipt) or not BOOT_ID or receipt.get("clock_boot_id") != BOOT_ID:
+    from .lite_release_trusted_time import matches_current_source
+    if (not current_configuration(conn, receipt) or not BOOT_ID
+            or receipt.get("clock_boot_id") != BOOT_ID or not matches_current_source(receipt)):
         return None
     try:
         sample = boot_time_ns()
