@@ -105,7 +105,9 @@ async function main() {
   await dialog.waitFor({ state: 'visible', timeout: 10_000 });
   interactions.push('manage_open');
   await dialog.getByRole('button', { name: 'Updates & protection', exact: true }).click();
-  const panel = dialog.locator('section.lite-system-health-manage-section[aria-label="Updates & protection"]');
+  const selectedWorkspace = dialog.locator('[data-home-settings-selected="updates-protection"]');
+  await selectedWorkspace.waitFor({ state: 'visible', timeout: 10_000 });
+  const panel = selectedWorkspace.locator('section.lite-system-health-manage-section[aria-label="Updates & protection"]');
   await panel.waitFor({ state: 'visible', timeout: 10_000 });
   await panel.getByRole('heading', { name: 'Updates & protection', exact: true }).waitFor({ state: 'visible' });
   interactions.push('updates_protection_entry');
