@@ -87,19 +87,21 @@ def _clock(directory: Path):
     # network time protocol; the operator and OS remain explicit trust assumptions.
     try:
         anchor = strict_json(_read(directory, "clock-anchor.json", 4096))
-        if set(anchor) != {"boot_id", "monotonic_ns", "utc"}:
+        if set(anchor) != {"boot_id", "boottime_ns", "utc"}:
             return None
         boot = Path("/proc/sys/kernel/random/boot_id").read_text().strip()
-        if anchor["boot_id"] != boot or type(anchor["monotonic_ns"]) is not int:
+        if anchor["boot_id"] != boot or type(anchor["boottime_ns"]) is not int:
             return None
-        sample = time.monotonic_ns()
-        elapsed = sample - anchor["monotonic_ns"]
+        sample = config.boot_time_ns()
+        if sample is None:
+            return None
+        elapsed = sample - anchor["boottime_ns"]
         if not 0 <= elapsed <= 600_000_000_000:
             return None
         if not isinstance(anchor["utc"], str) or not anchor["utc"].endswith("Z"):
             return None
         now = datetime.fromisoformat(anchor["utc"][:-1] + "+00:00") + timedelta(microseconds=elapsed // 1000)
-        return now, {"clock_boot_id": boot, "clock_sample_ns": sample,
+        return now, {"clock_boot_id": boot, "clock_sample_ns": sample, "clock_basis": "boottime",
                      "clock_remaining_ns": 600_000_000_000 - elapsed}
     except (OSError, ValueError, TypeError, OverflowError):
         return None
@@ -121,8 +123,9 @@ def _candidate(root_dir, tag, request):
     with tempfile.TemporaryDirectory(prefix="candidate-", dir=root_dir) as temp:
         path = Path(temp)
         total = 0
+        deadline_ns = int(request.get("deadline_ns") or (time.monotonic_ns() + 120_000_000_000))
         for name, limit in sorted(names.items(), key=lambda pair: pair[0] == "dist.zip"):
-            if time.monotonic_ns() >= int(request.get("deadline_ns") or (time.monotonic_ns() + 1)):
+            if time.monotonic_ns() >= deadline_ns:
                 raise TrustError("trust_deadline_exceeded")
             if mode == "local":
                 with _open_controlled(root_dir / "candidate", name, limit) as (stream, info):
@@ -139,7 +142,7 @@ def _candidate(root_dir, tag, request):
                 # Fixed repository, tag and filenames, not metadata-provided URLs.
                 url = f"https://github.com/dexter-lab-ctrl/pocket-lab-lite/releases/download/{tag}/{name}"
                 try:
-                    _download_to_file(url, path / name, timeout=max(1, min(20, (int(request.get("deadline_ns") or (time.monotonic_ns() + 20_000_000_000)) - time.monotonic_ns()) / 1e9)), max_bytes=limit)
+                    _download_to_file(url, path / name, timeout=max(1, min(20, (deadline_ns - time.monotonic_ns()) / 1e9)), max_bytes=limit)
                 except ReleaseProcessFailure as exc:
                     raise FileNotFoundError("trusted_asset_unavailable") from exc
             (path / name).chmod(0o400)
@@ -147,10 +150,36 @@ def _candidate(root_dir, tag, request):
         yield path, {"bytes_read": total, "files_examined": len(names)}
 
 
+def _trust_directory():
+    from .. import deps
+    return deps.settings().state_dir.resolve() / "release-trust"
+
+def _local_inventory():
+    from .lite_lifecycle_contract import canonical_bytes
+    source = Path(__file__).resolve().parents[4]
+    def source_digest(paths):
+        paths = sorted(paths)
+        if not paths or len(paths) > 512:
+            return None
+        items = []
+        total = 0
+        for path in paths:
+            size = path.stat().st_size
+            total += size
+            if size > MAX_BYTES or total > 8 * 1024 * 1024:
+                return None
+            with path.open("rb") as stream:
+                raw = stream.read(MAX_BYTES + 1)
+            if len(raw) != size:
+                return None
+            items.append({"path":path.relative_to(source).as_posix(),"sha256":hashlib.sha256(raw).hexdigest()})
+        return hashlib.sha256(canonical_bytes(items)).hexdigest()
+    return (source_digest((source / "security/policies/opa").rglob("*.rego")),
+            source_digest((source / "pocket-lab-final-structure/runtime/api_fastapi/db/schema").glob("*.sql")))
+
 def inspect_candidate(request):
     """Called exclusively inside the existing bounded release subprocess."""
-    state = Path(os.environ.get("POCKETLAB_STATE_DIR", ".")).expanduser().resolve()
-    root_dir = state / "release-trust"
+    root_dir = _trust_directory()
     pin = os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256", "")
     tag = str(request.get("release_tag") or "")
     if not pin:
@@ -202,13 +231,7 @@ def inspect_candidate(request):
             disposition, reason = provenance(candidate, root_dir, commit=receipt["source_commit"], tag=tag)
             from .lite_release_trust import CapabilityManifest
             from .lite_lifecycle_contract import CAPABILITIES, assess, canonical_bytes, registry_revision
-            source = Path(__file__).resolve().parents[4]
-            def source_digest(paths):
-                items = [{"path": path.relative_to(source).as_posix(),
-                          "sha256": hashlib.sha256(path.read_bytes()).hexdigest()} for path in sorted(paths)]
-                return hashlib.sha256(canonical_bytes(items)).hexdigest() if items else None
-            policy = source_digest((source / "security/policies/opa").rglob("*.rego"))
-            migrations = source_digest((source / "pocket-lab-final-structure/runtime/api_fastapi/db/schema").glob("*.sql"))
+            policy, migrations = _local_inventory()
             candidate_caps = _parse(CapabilityManifest, manifest)
             assessment = assess(CAPABILITIES, tuple(candidate_caps.capabilities),
                 policy_changed=policy != receipt["policy_sha256"],
@@ -219,6 +242,7 @@ def inspect_candidate(request):
             receipt.update(provenance=disposition, provenance_reason=reason, **rotation, **clock_fields,
                 root_sha256=pin, attestation_root_sha256=config.configured()[1],
                 configuration_revision=request.get("configuration_revision"),
+                local_policy_sha256=policy, local_migration_inventory_sha256=migrations,
                 impact=assessment.impact.value, assessment=assessment.model_dump(mode="json"),
                 schema_range_matches=schema_match, current_schema=current_schema,
                 registry_revision=registry_revision(),
@@ -269,11 +293,18 @@ def cached_review(conn, request):
             return False
         if any(datetime.fromisoformat(r[key].replace("Z", "+00:00")) <= now for key in ("expires", "root_expires")):
             return False
+        local_policy, local_migrations = _local_inventory()
+        root_dir = _trust_directory()
+        if (not local_policy or not local_migrations
+                or local_policy != r.get("local_policy_sha256") or local_migrations != r.get("local_migration_inventory_sha256")
+                or _read(root_dir, "root.json", MAX_BYTES, hash_only=True) != r.get("root_sha256")
+                or _read(root_dir, "github-trusted-root.jsonl", 2 * 1024 * 1024, hash_only=True) != r.get("attestation_root_sha256")):
+            return False
         return (r["provenance"] == "verified" and request["repository"] == "dexter-lab-ctrl/pocket-lab-lite"
                 and request["pinned_root_sha256"] == os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256")
                 and r["registry_revision"] == registry_revision()
                 and all(r.get(k) == request.get(k) for k in ("release_tag", "source_commit", "artifact_sha256", "channel", "current_schema")))
-    except (KeyError, TypeError, ValueError):
+    except (KeyError, TypeError, ValueError, OSError):
         return False
 
 

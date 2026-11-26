@@ -104,9 +104,9 @@ def _policy(conn):
     return row["active_revision_id"]
 
 
-def _audit(conn, owner, event, revision):
-    conn.execute("INSERT INTO lite_lifecycle_audit(correlation_id,owner_id,event_type,revision,occurred_at) VALUES(?,?,?,?,?)",
-                 (uuid.uuid4().hex, owner, event, revision, _iso()))
+def _audit(conn, owner, event, revision, *, decision_id=None, grant_id=None, reason_code=""):
+    conn.execute("INSERT INTO lite_lifecycle_audit(correlation_id,owner_id,event_type,revision,occurred_at,decision_id,grant_id,reason_code) VALUES(?,?,?,?,?,?,?,?)",
+                 (uuid.uuid4().hex, owner, event, revision, _iso(), decision_id, grant_id, reason_code))
     # Long-lived revocation evidence stays in grant rows; bounded recent
     # activity mirrors other Lite operational audit views.
     conn.execute("DELETE FROM lite_lifecycle_audit WHERE event_id NOT IN (SELECT event_id FROM lite_lifecycle_audit ORDER BY event_id DESC LIMIT 2000)")
@@ -230,7 +230,7 @@ def save_profile(context, payload: PreferenceRequest):
                 updated_at=excluded.updated_at,owner_id=excluded.owner_id""",
                 (revision, payload.profile, _iso(), owner))
             _invalidate(tx, _workspace(tx))
-            _audit(tx, owner, "preference_saved", revision)
+            _audit(tx, owner, "preference_saved", revision, decision_id=authorized[3]["decision_id"] if authorized else None)
             return _prefs(tx)
 
 
@@ -275,7 +275,8 @@ def issue(context, payload: GrantRequest):
             tx.execute("INSERT INTO lite_lifecycle_service_delegations VALUES(?,?,?,?,?,?)",
                 (uuid.uuid4().hex, grant, payload.purpose, BY_PURPOSE[payload.purpose].version,
                  _workspace(tx)["delegation_revision"], _iso()))
-            _audit(tx, owner, "standing_consent_recorded", rev)
+            _audit(tx, owner, "standing_consent_recorded", rev, decision_id=decision["decision_id"], grant_id=grant)
+            _prune_grants(tx)
             return {"revision": rev, "grant_id": grant, "execution_eligible": False}
 
 
@@ -296,9 +297,31 @@ def revoke(context, payload: RevokeRequest):
                 tx.execute("DELETE FROM lite_lifecycle_boundary_scopes WHERE purpose=?", (row["purpose"],))
             else:
                 rev = _invalidate(tx, ws)
-            _audit(tx, owner, "standing_consent_revoked", rev)
+            _audit(tx, owner, "standing_consent_revoked", rev, grant_id=payload.grant_id)
+            _prune_grants(tx)
             return {"revision": rev, "execution_eligible": False, "inflight_cancelled": False}
 
+
+def _prune_grants(conn):
+    # Preserve active grants; keep a bounded revoked history and corresponding
+    # independent audit records. Delete referencing delegation rows first.
+    old = conn.execute("""SELECT grant_id FROM lite_lifecycle_grants WHERE revoked_at IS NOT NULL
+        ORDER BY boundary_revision DESC LIMIT -1 OFFSET 200""").fetchall()
+    for row in old:
+        conn.execute("DELETE FROM lite_lifecycle_service_delegations WHERE grant_id=?", (row[0],))
+        conn.execute("DELETE FROM lite_lifecycle_grants WHERE grant_id=?", (row[0],))
+
+def record_denial(context, reason_code, decision_id=None):
+    actor, session = context.get("actor") or {}, context.get("session") or {}
+    if actor.get("type") != "human" or not session.get("authenticated"):
+        return
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            human_id = str(actor.get("identity_id") or "")
+            if not authority._human_authority(tx, human_id, str(session.get("session_id") or "")):
+                return
+            _audit(tx, human_id, "lifecycle_review_denied", _workspace(tx)["boundary_revision"],
+                   decision_id=decision_id, reason_code=reason_code)
 
 def evaluate_record(conn, row, *, purpose, capability_id, capability_version, channel, evaluation=None):
     """Future consumers must additionally verify current OPA and runtime gates.
@@ -314,7 +337,8 @@ def evaluate_record(conn, row, *, purpose, capability_id, capability_version, ch
     scope = conn.execute("SELECT * FROM lite_lifecycle_boundary_scopes WHERE purpose=?", (purpose,)).fetchone()
     cap = next((c for c in CAPABILITIES if c.id == capability_id), None)
     versions = automation._owner_versions(conn, row["owner_id"])
-    if (not cap or PURPOSES.get(purpose) != capability_id or row["purpose"] != purpose
+    mode = conn.execute("SELECT enabled FROM enterprise_configuration WHERE configuration_id=1").fetchone()
+    if ((mode and mode["enabled"]) or not cap or PURPOSES.get(purpose) != capability_id or row["purpose"] != purpose
         or row["capability_id"] != capability_id or row["capability_version"] != capability_version
         or cap.version != capability_version or channel != row["channel"]
         or row["workspace_id"] != ws["workspace_id"] or row["authority_epoch"] != ws["authority_epoch"]
@@ -373,7 +397,7 @@ def summary(context):
                    "status": evaluate_record(conn, row, purpose=row["purpose"], capability_id=row["capability_id"],
                                              capability_version=row["capability_version"], channel=row["channel"], evaluation=evaluation)}
                   for row in rows]
-        audit = [dict(row) for row in conn.execute("SELECT correlation_id,event_type,revision,occurred_at FROM lite_lifecycle_audit ORDER BY event_id DESC LIMIT 20")]
+        audit = [dict(row) for row in conn.execute("SELECT correlation_id,event_type,revision,occurred_at,decision_id,grant_id,reason_code FROM lite_lifecycle_audit ORDER BY event_id DESC LIMIT 20")]
         identity = conn.execute("SELECT release_tag,verified,source_commit,artifact_sha256 FROM lite_installed_release_identity WHERE owner='installed'").fetchone()
         policy = conn.execute("""SELECT r.content_hash,r.template_version,r.revision_id FROM policy_runtime_state s
             JOIN policy_revisions r ON s.active_revision_id=r.revision_id WHERE s.state_id=1""").fetchone()
@@ -392,12 +416,18 @@ def summary(context):
             # DB active revision is not an independently observed loaded OPA revision.
             capability_registry_revision=registry_revision(), boundary_revision=ws["boundary_revision"],
             workspace_governance_revision=versions[2], authorization_version=versions[0],
-            delegation_revision=ws["delegation_revision"], trust_root_version=floor["root_version"] if floor else None,
+            delegation_revision=ws["delegation_revision"], authority_epoch=ws["authority_epoch"],
+            trust_configuration_revision=trust_setup["revision"] if trust_setup else None,
+            trust_root_sha256=trust_setup["root_sha256"] or None if trust_setup else None,
+            trust_root_version=floor["root_version"] if floor else None,
             signed_metadata_version=floor["metadata_version"] if floor else None,
             recovery_assisted_source_revision=fence["assisted_source_revision"] or None if fence else None,
             recovery_assisted_runtime_revision=fence["assisted_runtime_revision"] or None if fence else None,
             recovery_automatic_source_revision=fence["automatic_source_revision"] or None if fence else None,
             recovery_automatic_runtime_revision=fence["automatic_runtime_revision"] or None if fence else None)
+        observed_policy = conn.execute("""SELECT observed_opa_revision,updated_at FROM policy_activation_operations
+            WHERE observed_opa_revision=? AND state='active' ORDER BY updated_at DESC LIMIT 1""",
+            (evaluation[4],)).fetchone()
         history = []
         for item in conn.execute("SELECT receipt_id,receipt_json FROM lite_release_trust_receipts ORDER BY metadata_version DESC LIMIT 20"):
             raw = json.loads(item["receipt_json"])
@@ -415,7 +445,9 @@ def summary(context):
     return {"schema_version": 1, "registry_revision": registry_revision(),
             "preferences": prefs, "enterprise_managed": enterprise, "owner_authority": is_owner,
             "boundary_revision": ws["boundary_revision"], "authority_epoch": ws["authority_epoch"], "capabilities": inventory() if is_owner else [],
-            "revisions": revisions.model_dump() if is_owner else {}, "assessment": latest.get("assessment"),
+            "revisions": revisions.model_dump() if is_owner else {},
+            "historical_loaded_policy": dict(observed_policy) if observed_policy and is_owner else None,
+            "assessment": latest.get("assessment"),
             "services": [{"purpose": item.purpose,"category": item.category,"grantable": item.grantable,
                           "version": item.version,"execution_eligible": False} for item in SERVICES],
             "can_record_consent": eligible_to_record, "grants": grants if is_owner else [], "audit": audit if is_owner else [],

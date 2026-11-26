@@ -18,6 +18,13 @@ def _boot():
 
 BOOT_ID = _boot()
 
+def boot_time_ns():
+    # CLOCK_BOOTTIME includes suspend; monotonic alone may stop during sleep.
+    try:
+        return time.clock_gettime_ns(time.CLOCK_BOOTTIME)
+    except (AttributeError, OSError, ValueError):
+        return None
+
 def configured():
     return (os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256", ""),
             os.environ.get("POCKETLAB_RELEASE_ATTESTATION_ROOT_SHA256", ""))
@@ -44,6 +51,7 @@ def reconcile_configuration(tx):
     stamp = datetime.now(timezone.utc).isoformat()
     tx.execute("INSERT INTO lite_release_trust_transitions(state,reason_code,occurred_at,release_tag) VALUES(?,?,?,'')",
                (state, "operator_configuration_changed", stamp))
+    tx.execute("DELETE FROM lite_release_trust_transitions WHERE event_id NOT IN (SELECT event_id FROM lite_release_trust_transitions ORDER BY event_id DESC LIMIT 200)")
     _bump_revision(tx, "audit", stamp, changed_ids=["trusted-lifecycle"], reason="audit_state_changed")
 
 def latched(conn):
@@ -63,7 +71,10 @@ def prepared_now(conn, receipt):
     if not current_configuration(conn, receipt) or not BOOT_ID or receipt.get("clock_boot_id") != BOOT_ID:
         return None
     try:
-        elapsed = time.monotonic_ns() - int(receipt["clock_sample_ns"])
+        sample = boot_time_ns()
+        if sample is None or receipt.get("clock_basis") != "boottime":
+            return None
+        elapsed = sample - int(receipt["clock_sample_ns"])
         if elapsed < 0 or elapsed > int(receipt["clock_remaining_ns"]):
             return None
         now = datetime.fromisoformat(receipt["checked_at"]) + timedelta(microseconds=elapsed // 1000)

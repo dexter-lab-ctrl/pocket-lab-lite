@@ -21,14 +21,17 @@ export function ReleaseTrustSummary({ trust }) {
     <h4><ShieldCheck size={18} aria-hidden="true" /> Release trust</h4>
     <LiteActionRow label="Installed release" value={trust?.installed_tag || 'Not confirmed'}
       summary={trust?.historical_identity_verified ? 'Verified under the existing release identity contract. This is not publisher authentication.' : 'Installed identity is not confirmed.'} />
-    <LiteActionRow label="Publisher trust" value={({historical_evidence: 'Historical evidence', verification_failed: 'Verification failed', metadata_unavailable: 'Trusted metadata unavailable', trust_setup_required: 'Trust setup required', metadata_expired: 'Metadata expired'})[trust?.state] || (receipt ? 'Historical evidence' : 'Trust setup required')}
+    <LiteActionRow label="Publisher trust" value={({historical_evidence: 'Historical evidence', verification_failed: 'Verification failed', metadata_unavailable: 'Trusted metadata unavailable', trust_setup_required: 'Trust setup required', metadata_expired: 'Metadata expired', current_trust_unconfirmed: 'Current trust not confirmed'})[trust?.state] || (receipt ? 'Historical evidence' : 'Trust setup required')}
       summary="A checksum alone does not establish publisher trust. No fresh verification is claimed here." />
-    <LiteTechnicalDetails summary="View verification details">
+    <LiteActionRow label="Current review eligibility" value={trust?.current_review_eligible === true ? 'Recorded evidence usable for review' : 'Review required'}
+      summary="This does not authorize an installation or unattended action." />
+    <LiteTechnicalDetails summary="View verification details" haptic>
       {receipt ? <>
         <LiteActionRow label="Recorded release" value={receipt.release_tag || 'Not confirmed'} />
         <LiteActionRow label="Metadata signature" value={facts[receipt.authenticity] || 'Not confirmed'} />
         <LiteActionRow label="Artifact integrity" value={facts[receipt.integrity] || 'Not confirmed'} />
         <LiteActionRow label="Build provenance" value={facts[receipt.provenance] || 'Not confirmed'} />
+        <LiteActionRow label="Compatibility" value={receipt.compatibility === 'incompatible' ? 'Incompatible' : 'Not confirmed'} />
         <LiteActionRow label="Recorded check" value={receipt.checked_at || 'Not confirmed'} />
         <LiteActionRow label="Metadata expiry" value={receipt.expires || 'Not confirmed'} />
       </> : <p>New signed release evidence is not available. Historical releases remain distinct from authenticated releases.</p>}
@@ -56,7 +59,7 @@ export function ChangeImpactReview({ assessment }) {
 export function LifecycleContent({ data, readOnly = false, busy = false, pending, onReview, onConfirm, onCancel, message }) {
   const prefs = data?.preferences;
   const managed = data?.enterprise_managed === true;
-  const blocked = readOnly || busy || !prefs || data?.owner_authority === false;
+  const blocked = readOnly || busy || !prefs || data?.owner_authority !== true;
   const canGrant = !managed && data?.can_record_consent === true;
   const grants = Array.isArray(data?.grants) ? data.grants : [];
   return <section className="lite-system-health-manage-section" aria-label="Updates & protection">
@@ -81,34 +84,45 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
       <LiteActionRow label="Unattended execution" value="Not enabled by this foundation" />
       <LiteActionRow label="Safety Rules" value="Existing authority unchanged" />
       <LiteActionRow label="Routine maintenance and app updates" value="Existing controls unchanged" />
-      <LiteTechnicalDetails summary="Review capability contracts">
+      <LiteTechnicalDetails summary="Review capability contracts" haptic>
         {(data?.capabilities || []).map(cap => <LiteActionRow key={cap.id} label={cap.id}
           value={'Version ' + cap.version} summary="Descriptive contract only; no new execution rights." />)}
       </LiteTechnicalDetails>
       {grants.map(grant => <LiteActionRow key={grant.grant_id} label={purposes[grant.purpose] || 'Recorded permission'}
-        value={dispositions[grant.status] || 'Review required'} summary={'Stable channel · review only · expires ' + (grant.expires_at || 'not confirmed')} />)}
+        value={dispositions[grant.status] || 'Review required'} summary={'Stable channel · review only · expires ' + (grant.expires_at || 'not confirmed')}
+        action={grant.status !== 'revoked' ? { label: 'Revoke', ariaLabel: 'Revoke ' + (purposes[grant.purpose] || 'recorded permission'), haptic: true,
+          disabled: blocked || Boolean(pending), onClick: () => onReview({kind:'revoke', value:grant.grant_id, label:'Revoke ' + (purposes[grant.purpose] || 'permission')}) } : undefined} />)}
       {canGrant && Object.entries(purposes).map(([value, label]) =>
         <LiteButton key={value} haptic tone="secondary" disabled={blocked || Boolean(pending)}
           onClick={() => onReview({ kind: 'grant', value, label })}>Review {label.toLowerCase()}</LiteButton>)}
       {grants.some(grant => grant.status !== 'revoked') && <LiteButton haptic tone="secondary" disabled={blocked || Boolean(pending)}
-        onClick={() => onReview({ kind: 'revoke', label: 'Revoke standing consent' })}>Revoke standing consent</LiteButton>}
-      {!canGrant && <p>New standing consent requires a current Owner, the Recommended profile and recorded trusted release evidence.</p>}
+        onClick={() => onReview({ kind: 'revoke', label: 'Revoke all standing consent' })}>Revoke all standing consent</LiteButton>}
+      {!canGrant && <p>New standing consent requires a current Owner, the Recommended profile, current trust evidence and confirmed policy state.</p>}
     </div>
     <ChangeImpactReview assessment={data?.assessment} />
-    <details className="lite-system-health-detail-block"><summary>Verification history</summary>
+    <LiteTechnicalDetails className="lite-system-health-detail-block" summary="Verification history" haptic>
       {(data?.release_trust?.history || []).map(item => <LiteActionRow key={item.receipt_id} label={item.release_tag} value={item.checked_at} summary="Historical verification; not current installation authority." />)}
       {!data?.release_trust?.history?.length && <p>No verification history recorded.</p>}
-    </details>
-    <details className="lite-system-health-detail-block"><summary>Recent permission changes</summary>
+      {(data?.release_trust?.transitions || []).map(item => <LiteActionRow key={'transition-' + item.event_id} label="Trust state changed"
+        summary={String(item.reason_code || 'review_required').replaceAll('_',' ')} value={item.occurred_at} />)}
+    </LiteTechnicalDetails>
+    <LiteTechnicalDetails className="lite-system-health-detail-block" summary="Recent permission changes" haptic>
       {(data?.audit || []).map(item => <LiteActionRow key={item.correlation_id} label={item.event_type.replaceAll('_', ' ')} value={item.occurred_at} />)}
       {!data?.audit?.length && <p>No permission changes recorded.</p>}
-    </details>
+    </LiteTechnicalDetails>
     {pending && <div className="lite-system-health-detail-block" role="group" aria-label="Review proposed change">
       <h4>{pending.label}</h4>
-      <p>{pending.kind === 'grant' ? 'Record a limited, revocable review permission for 30 days. This replaces previous standing consent; it cannot start a service or install anything.'
-        : pending.kind === 'revoke' ? 'Prevent new use of recorded consent. This does not claim to cancel existing work.'
+      <p>{pending.kind === 'grant' ? 'Record a limited, revocable review permission for 30 days. Only a previous permission for the same purpose is replaced; other permissions stay independent. It cannot start a service or install anything.'
+        : pending.kind === 'revoke' ? 'Prevent new use of ' + (pending.value ? 'this recorded permission' : 'all recorded permissions') + '. This does not claim to cancel existing work.'
         : 'Save this preference and revoke previous standing consent. Existing release and recovery settings are not changed.'}</p>
-      {pending.review?.scope && <LiteActionRow label="Exact reviewed scope" value={pending.review.scope.purpose} summary={pending.review.scope.channel + " channel · risk " + pending.review.scope.max_risk + " · no execution or secret access"} />}
+      {pending.review?.scope && <>
+        <LiteActionRow label="Exact reviewed scope" value={purposes[pending.review.scope.purpose] || 'Review permission'} summary={pending.review.scope.channel + " channel · risk " + pending.review.scope.max_risk + " · no execution or secret access"} />
+        <LiteTechnicalDetails summary="Review exact limits" haptic>
+          <LiteActionRow label="Targets" value={(pending.review.scope.capability?.targets || []).join(', ') || 'Not confirmed'} />
+          <LiteActionRow label="Data" value={(pending.review.scope.capability?.data || []).join(', ') || 'Not confirmed'} />
+          <LiteActionRow label="Excluded" value={(pending.review.scope.excluded || []).join(', ')} />
+        </LiteTechnicalDetails>
+      </>}
       <LiteButton haptic tone="primary" disabled={blocked} onClick={onConfirm}>{busy ? 'Submitting…' : 'Confirm'}</LiteButton>
       <LiteButton haptic tone="secondary" disabled={busy} onClick={onCancel}>Cancel</LiteButton>
     </div>}
@@ -145,7 +159,7 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
         await exactPasskey(pending.review);
         await liteApi.lifecycleIssueBoundary(body);
       } else if (pending.kind === 'revoke') {
-        await liteApi.lifecycleRevokeBoundary({ expected_revision: pending.boundary, confirm: true });
+        await liteApi.lifecycleRevokeBoundary({ expected_revision: pending.boundary, ...(pending.value ? { grant_id: pending.value } : {}), confirm: true });
       }
       setMessage('Change recorded. Unattended execution remains disabled in this foundation.');
       await query.refresh();

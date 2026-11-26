@@ -95,6 +95,47 @@ def _recovery_reference():
         cooldown_seconds=1800, standing_authorization_supported=False)
 
 
+def _operation_references():
+    """Normalize existing operation metadata without copying its execution gates.
+
+    Unknown data, network and credential requirements are treated conservatively.
+    These descriptive references are never standing-consent candidates.
+    """
+    from .lite_infrastructure_operations import OPERATIONS
+    for op in OPERATIONS:
+        if op.operation_id == "projection.reconcile":
+            continue
+        yield Capability(id="system.operation." + op.operation_id, version=1,
+            domain="system_health", owner=op.execution_owner,
+            action="system_health.maintenance" if op.operation_id.startswith(("storage.","sqlite.","maintenance.")) else "system_health.recovery",
+            targets=("owner_validated_target",), data=("domain_owned_data",),
+            access="write", risk=op.risk_class, mutation=True, network=True,
+            secret_access=True, unattended=False, constraints=("domain_review_required","existing_owner_contract"),
+            standing_authorization_supported=False)
+
+
+def _protected_references():
+    # Existing action IDs are checked against the authoritative OPA registry.
+    # These are admission-owner references, not newly registered dispatchers.
+    from .lite_policy_opa import PROTECTED_ACTIONS
+    groups = (
+        ("apps","lite_app_governance","application", ("catalog.install","app.install","app.security_check",
+          "app.repair","app.backup.create","app.backup.to_storage","app.restore.preview","app.update.check","app.remove","app.credentials.manage")),
+        ("devices","fastapi","device", ("device.invite","device.remove","device.roles.change","device.restart","device.repair")),
+        ("recovery","fastapi","recovery_target", ("backup.create","backup.verify","backup.location.manage","restore.preview","restore.apply")),
+        ("identity","fastapi","human_identity", ("identity.passkey.revoke","owner.operations.approve","owner.operations.client.register")),
+    )
+    for domain, owner, target, actions in groups:
+        for action in actions:
+            if action not in PROTECTED_ACTIONS:
+                continue
+            yield Capability(id="protected." + action, version=1, domain=domain,
+                owner=owner, action=action, targets=(target,), data=("domain_owned_data",),
+                access="write", risk="C", mutation=True, network=True, secret_access=True,
+                unattended=False, constraints=("domain_review_required","existing_owner_contract"),
+                standing_authorization_supported=False)
+
+
 CAPABILITIES = (
     _cap("lifecycle.release.inspect", "release", "release_runtime", "lifecycle.release.inspect", "release_metadata", "public_release_metadata", network=True),
     _cap("lifecycle.release.verify", "release", "release_runtime", "lifecycle.release.verify", "staged_release", "release_evidence", standing=True),
@@ -103,6 +144,11 @@ CAPABILITIES = (
     _cap("lifecycle.delegation.review", "lifecycle", "fastapi", "lifecycle.delegation.review", "local_workspace", "authority_records"),
     _recovery_reference(),
     _cap("lifecycle.policy.review", "rules", "lite_policy_lifecycle", "lifecycle.policy.review", "policy_metadata", "policy_evidence", standing=True),
+    *(_cap("release." + action, "release", "release_runtime", "release." + action,
+           "local_release", "release_artifact", read=False, network=True)
+      for action in ("stage","promote","rollback")),
+    *_operation_references(),
+    *_protected_references(),
 )
 
 
@@ -135,6 +181,7 @@ def _expands(a: Capability, b: Capability) -> bool:
                    ("mutation", "network", "secret_access", "unattended", "standing_authorization_supported"))
             or any(getattr(a, f) and not getattr(b, f) for f in
                    ("confirmation_required", "qualification_required", "verification_required", "revocable", "single_flight"))
+            or (a.optional and not b.optional)
             or not set(a.constraints).issubset(b.constraints) or b.cooldown_seconds < a.cooldown_seconds)
 
 
@@ -160,7 +207,11 @@ def assess(old: tuple[Capability, ...], new: tuple[Capability, ...], *,
         return ChangeAssessment(impact=Impact.U4, reasons=("capability_authority_expanded",), **details)
     if policy_changed or migration_changed:
         return ChangeAssessment(impact=Impact.UX, reasons=("compatibility_proof_required",), **details)
+    if any(after[k].version < before[k].version for k in changed):
+        return ChangeAssessment(impact=Impact.UX, reasons=("contract_version_rollback",), **details)
     if changed:
+        if added:
+            return ChangeAssessment(impact=Impact.UX, reasons=("mixed_change_requires_review",), **details)
         if all(_expands(after[k], before[k]) and after[k].version >= before[k].version for k in changed):
             return ChangeAssessment(impact=Impact.U2, reasons=("structured_authority_reduced",), **details)
         return ChangeAssessment(impact=Impact.UX, reasons=("changed_contract_requires_review",), **details)
@@ -188,6 +239,9 @@ class RevisionIdentities(BaseModel):
     workspace_governance_revision: int | None = None
     authorization_version: int | None = None
     delegation_revision: int
+    authority_epoch: int | None = None
+    trust_configuration_revision: int | None = None
+    trust_root_sha256: str | None = None
     trust_root_version: int | None = None
     signed_metadata_version: int | None = None
     recovery_assisted_source_revision: str | None = None

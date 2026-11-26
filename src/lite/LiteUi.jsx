@@ -1000,9 +1000,9 @@ export function LiteOutcomeNotice({ outcome, className = '' }) {
   );
 }
 
-export function LiteTechnicalDetails({ summary = 'Technical details', children, className = '' }) {
+export function LiteTechnicalDetails({ summary = 'Technical details', children, className = '', haptic = false }) {
   if (!children) return null;
-  return <details className={`lite-technical-details ${className}`.trim()}><summary>{summary}</summary><div>{children}</div></details>;
+  return <details className={`lite-technical-details ${className}`.trim()}><summary onClick={haptic ? () => triggerLiteHaptic('accepted') : undefined} data-lite-haptic={haptic ? 'manual' : undefined}>{summary}</summary><div>{children}</div></details>;
 }
 
 export function LoadingCard({ label = 'Getting the latest Pocket Lab information…' }) {
