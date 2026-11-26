@@ -37,7 +37,17 @@ def fence_staged_restore(staged, checkpoint):
         db.execute("DELETE FROM lite_release_trust_observation")
         db.execute("UPDATE lite_lifecycle_grants SET revoked_at=COALESCE(revoked_at,?)", (stamp,))
         db.execute("DELETE FROM lite_lifecycle_boundary_scopes")
-        db.execute("UPDATE lite_lifecycle_workspace SET authority_epoch=authority_epoch+1,boundary_revision=boundary_revision+1,delegation_revision=delegation_revision+1")
+        live_epochs = (0, 0, 0)
+        if "lite_lifecycle_workspace" in names:
+            columns = {r[1] for r in old.execute("PRAGMA table_info(lite_lifecycle_workspace)")}
+            live_epochs = tuple(old.execute(
+                "SELECT " + ",".join(c if c in columns else "0" for c in
+                                    ("authority_epoch","boundary_revision","delegation_revision")) +
+                " FROM lite_lifecycle_workspace").fetchone() or live_epochs)
+        db.execute("""UPDATE lite_lifecycle_workspace SET
+            authority_epoch=MAX(authority_epoch,?)+1,
+            boundary_revision=MAX(boundary_revision,?)+1,
+            delegation_revision=MAX(delegation_revision,?)+1""", live_epochs)
         db.execute("INSERT INTO lite_release_trust_transitions(state,reason_code,occurred_at,release_tag) VALUES('suspended','database_restore_review_required',?,'')", (stamp,))
         db.commit()
         # Promotion copies the database file, not its WAL sidecars.

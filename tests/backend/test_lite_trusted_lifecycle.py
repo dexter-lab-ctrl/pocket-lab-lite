@@ -108,13 +108,18 @@ def test_durable_floor_does_not_replace_receipt_on_replay(candidate, tmp_path, m
     monkeypatch.setattr(lite_control_plane_store, "_bump_revision", lambda *args, **kwargs: None)
     envelope, kwargs = candidate
     receipt = trust.verify(canonical_bytes(envelope), **kwargs)
+    configure_fixture(monkeypatch)
+    receipt.update(provenance="verified", root_sha256=D, attestation_root_sha256="c"*64,
+                   configuration_revision=1, clock_boot_id="test-boot", clock_basis="boottime",
+                   clock_sample_ns=1000, clock_remaining_ns=600_000_000_000)
     schema = Path(__file__).parents[2] / "pocket-lab-final-structure/runtime/api_fastapi/db/schema"
     with sqlite3.connect(tmp_path / "isolated.sqlite3") as conn:
         conn.row_factory = sqlite3.Row
-        for name in ("0056_trusted_lifecycle.sql", "0057_lifecycle_authority.sql", "0058_release_trust_observations.sql", "0059_lifecycle_review_state.sql", "0060_lifecycle_trusted_time.sql"):
+        for name in ("0056_trusted_lifecycle.sql", "0057_lifecycle_authority.sql", "0058_release_trust_observations.sql", "0059_lifecycle_review_state.sql", "0060_lifecycle_trusted_time.sql", "0061_lifecycle_trust_configuration.sql", "0062_lifecycle_independent_scopes.sql", "0063_lifecycle_audit_links.sql"):
             conn.executescript((schema / name).read_text())
         assert conn.execute("SELECT COUNT(*) FROM lite_lifecycle_preferences").fetchone()[0] == 0
         assert conn.execute("SELECT COUNT(*) FROM lite_lifecycle_grants").fetchone()[0] == 0
+        runtime.config.reconcile_configuration(conn)
         observation = {"state": "historical_evidence", "reason_code": receipt["reason_code"],
                        "root_sha256": D, "receipt": receipt}
         runtime.persist(conn, observation, TAG)
@@ -196,7 +201,7 @@ def test_narrowing_and_revocation_require_owner_and_revision_not_opa(tmp_path, m
     db = sqlite3.connect(tmp_path / "authority.sqlite3", isolation_level=None)
     db.row_factory = sqlite3.Row
     for name in ("0056_trusted_lifecycle.sql", "0057_lifecycle_authority.sql", "0058_release_trust_observations.sql",
-                 "0059_lifecycle_review_state.sql", "0060_lifecycle_trusted_time.sql"):
+                 "0059_lifecycle_review_state.sql", "0060_lifecycle_trusted_time.sql", "0061_lifecycle_trust_configuration.sql", "0062_lifecycle_independent_scopes.sql", "0063_lifecycle_audit_links.sql"):
         db.executescript((schema / name).read_text())
     @contextmanager
     def connection():
@@ -217,3 +222,83 @@ def test_narrowing_and_revocation_require_owner_and_revision_not_opa(tmp_path, m
         lifecycle.revoke({}, lifecycle.RevokeRequest(expected_revision=1, confirm=True))
     assert db.execute("SELECT COUNT(*) FROM lite_lifecycle_audit").fetchone()[0] == 2
     db.close()
+
+
+def configure_fixture(monkeypatch):
+    from api_fastapi.services import lite_release_trust_configuration as config
+    from api_fastapi.services import lite_control_plane_store
+    monkeypatch.setenv("POCKETLAB_RELEASE_ROOT_SHA256", D)
+    monkeypatch.setenv("POCKETLAB_RELEASE_ATTESTATION_ROOT_SHA256", "c"*64)
+    monkeypatch.delenv("POCKETLAB_RELEASE_TRUST_SUSPENDED", raising=False)
+    monkeypatch.setattr(config, "BOOT_ID", "test-boot")
+    monkeypatch.setattr(config, "boot_time_ns", lambda: 1000)
+    monkeypatch.setattr(lite_control_plane_store, "_bump_revision", lambda *args, **kwargs: None)
+    return config
+
+
+def fixture_db(path):
+    db = sqlite3.connect(path)
+    db.row_factory = sqlite3.Row
+    schema = Path(__file__).parents[2] / "pocket-lab-final-structure/runtime/api_fastapi/db/schema"
+    for file in sorted(schema.glob("*.sql")):
+        if 56 <= int(file.name.split("_", 1)[0]) <= 63:
+            db.executescript(file.read_text())
+    return db
+
+
+def test_configuration_latches_before_candidate_and_missing_config_suspends(tmp_path, monkeypatch):
+    config = configure_fixture(monkeypatch)
+    with fixture_db(tmp_path / "latch.sqlite3") as db:
+        config.reconcile_configuration(db)
+        assert config.latched(db)
+        assert runtime.floor_request(db)["highest_version"] == 0
+        monkeypatch.delenv("POCKETLAB_RELEASE_ROOT_SHA256")
+        config.reconcile_configuration(db)
+        assert config.latched(db)
+        assert config.configuration(db)["state"] == "suspended"
+        assert config.configuration(db)["root_sha256"] == D
+
+
+def test_prepared_time_no_wall_clock_fallback(tmp_path, monkeypatch):
+    config = configure_fixture(monkeypatch)
+    with fixture_db(tmp_path / "clock.sqlite3") as db:
+        config.reconcile_configuration(db)
+        receipt = dict(configuration_revision=1, root_sha256=D, attestation_root_sha256="c"*64,
+                       clock_basis="boottime", clock_boot_id="test-boot", clock_sample_ns=1000,
+                       clock_remaining_ns=600_000_000_000, checked_at=NOW.isoformat())
+        assert config.prepared_now(db, receipt) == NOW
+        for sample in (999, 600_000_001_001, None):
+            monkeypatch.setattr(config, "boot_time_ns", lambda: sample)
+            assert config.prepared_now(db, receipt) is None
+        monkeypatch.setattr(config, "boot_time_ns", lambda: 1000)
+        monkeypatch.setattr(config, "BOOT_ID", "another-boot")
+        assert config.prepared_now(db, receipt) is None
+
+
+def test_restore_preserves_live_floor_and_advances_live_epochs(tmp_path, monkeypatch):
+    from api_fastapi.services.lite_lifecycle_restore import fence_staged_restore
+    config = configure_fixture(monkeypatch)
+    staged, checkpoint = tmp_path / "staged.sqlite3", tmp_path / "checkpoint.sqlite3"
+    db = fixture_db(checkpoint)
+    config.reconcile_configuration(db)
+    db.execute("INSERT INTO lite_release_trust_floor VALUES(1,12,2,?,?)", (D,TAG))
+    db.execute("UPDATE lite_lifecycle_workspace SET authority_epoch=12,boundary_revision=13,delegation_revision=14")
+    db.commit()
+    db.close()
+    db = fixture_db(staged)
+    # The staged DB references the identity store via foreign keys, but no
+    # synthetic human or grant is needed for this floor/epoch regression.
+    db.close()
+    fence_staged_restore(staged, checkpoint)
+    with sqlite3.connect(staged) as db:
+        assert db.execute("SELECT metadata_version,root_version FROM lite_release_trust_floor").fetchone() == (12,2)
+        assert db.execute("SELECT state FROM lite_release_trust_configuration").fetchone() == ("suspended",)
+        assert db.execute("SELECT authority_epoch,boundary_revision,delegation_revision FROM lite_lifecycle_workspace").fetchone() == (13,14,15)
+        assert db.execute("SELECT COUNT(*) FROM lite_release_trust_observation").fetchone()[0] == 0
+
+
+def test_registry_is_descriptive_and_does_not_enable_execution():
+    from api_fastapi.services.lite_infrastructure_operations import PRODUCTION_QUALIFIED_AUTOMATIC_OPERATIONS
+    assert PRODUCTION_QUALIFIED_AUTOMATIC_OPERATIONS == {"projection.reconcile"}
+    assert len({c.id for c in CAPABILITIES}) == len(CAPABILITIES)
+    assert DecisionDimensions().execution == "not_enabled"

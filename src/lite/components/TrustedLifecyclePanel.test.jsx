@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LifecycleContent, ReleaseTrustSummary, ChangeImpactReview } from './TrustedLifecyclePanel.jsx';
 
 afterEach(cleanup);
-const data = { preferences: { revision: 0, profile: 'notify' }, release_trust: { historical_identity_verified: true, installed_tag: 'lite-2026.11.26.2' }, capabilities: [], grants: [] };
+const data = { owner_authority: true, preferences: { revision: 0, profile: 'notify' }, release_trust: { historical_identity_verified: true, installed_tag: 'lite-2026.11.26.2' }, capabilities: [], grants: [] };
 describe('Trusted Lifecycle presentation', () => {
   it('distinguishes historic release identity from publisher trust', () => {
     render(<ReleaseTrustSummary trust={data.release_trust} />);

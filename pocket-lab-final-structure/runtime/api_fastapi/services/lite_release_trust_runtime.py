@@ -343,7 +343,10 @@ def persist(tx, observation, tag):
         rotated = (receipt.get("previous_root_sha256") == old["pinned_root_sha256"]
                    and receipt.get("root_transition_sha256") and receipt["root_version"] == old["highest_root"] + 1
                    and version > old["highest_version"])
-        if (not config.current_configuration(tx, receipt)
+        if (receipt.get("provenance") != "verified"
+                or receipt.get("authenticity") != "verified"
+                or receipt.get("integrity") != "verified"
+                or not config.current_configuration(tx, receipt)
                 or config.prepared_now(tx, receipt) is None
                 or (old["highest_trusted_time"] and datetime.fromisoformat(receipt["checked_at"]) < datetime.fromisoformat(old["highest_trusted_time"]))
                 or (old["pinned_root_sha256"] not in ("", root_pin) and not rotated)
