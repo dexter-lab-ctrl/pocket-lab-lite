@@ -1,9 +1,11 @@
 # Trusted Lifecycle foundations (T0–T2)
 
-Status: source implementation, unqualified. Baseline
-`8fa96db378364891e645ed3e22f76218b3412da3` (PR #661).
-No test, build, scan, CI remediation, release or device activation was performed
-in this implementation session. No production trust roots or signing keys were provisioned.
+Status: source remediation and focused qualification complete at code-bearing
+candidate `eea0d2fa5d81affc120a14459673b1b74db60f88`. Baseline
+`8fa96db378364891e645ed3e22f76218b3412da3` (PR #661). The result retains
+explicit baseline-supported physical performance residuals. No production
+trust roots, signing keys, release publication, merge, or unattended lifecycle
+activation was performed.
 
 ## T0 — authority and change contracts
 
@@ -119,21 +121,24 @@ Database rollback must preserve intervening user data. None is activated here.
 
 ## Authored qualification assets
 
-- `task lite:lifecycle:backend`: synthetic signature, scope, anti-rollback,
-  root rotation and isolated revocation fixtures.
-- `task lite:lifecycle:ui`: focused Vitest component cases.
-- `task lite:lifecycle:mocked`: desktop/mobile Playwright and axe cases,
-  including visual specifications. No new approved screenshot baselines.
+- `task lite:lifecycle:backend`: 49 focused backend and candidate-server tests
+  passed, including synthetic signatures, scope, anti-rollback, root rotation,
+  isolated restore, candidate identity and sanitized fixture behavior.
+- `task lite:lifecycle:ui`: 8 focused Vitest component cases passed.
+- `task lite:lifecycle:mocked`: 8 desktop/mobile Playwright tests passed,
+  including accessibility assertions and four reviewed System snapshots.
 - Storybook examples cover historical/expired/failed trust, unknown/expanded
   scope, managed restriction, recorded consent and read-only states.
 
-Before any production readiness decision, qualify exact-head forward migrations,
-policy and passkey integration, concurrency and revocation, release job with
-test-only keys, root transition and replay, provenance verifier/tool availability
-on Ubuntu/WSL2 and Android ARM64, existing release and recovery regression,
-offline/resource behavior and accessible responsive UI. Use existing task
-and evidence tools; no server phone or live publisher modification is needed
-for source implementation. Qualification coverage is focused, not exhaustive.
+The selected release/native/process-isolation/migration/restore/policy bundle
+passed 56 tests. The exact candidate build passed with 2,272 modules and the
+virtualenv API check passed. The isolated Android runtime migration lane
+passed schema, repeat, quick-check, foreign-key, concurrency and rollback
+evidence without mutating the production phone database. Coverage remains
+focused, not exhaustive: protected GitHub signing/publication, live human
+WebAuthn, complete external provenance tooling, and independent current
+loaded-policy/backend binary observations remain production or future
+qualification prerequisites.
 
 ## Source-hardening increment SC0–SC6
 
@@ -164,5 +169,9 @@ an immutable off-device audit ledger.
 
 Additional authored tasks: `task lite:lifecycle:qualification` (focused
 aggregate) and `task lite:lifecycle:regression` (selected existing suites).
-Neither was executed. CI, exact platform and end-to-end qualification
-remain necessary before release.
+Their constituent focused checks passed on the exact code-bearing candidate.
+The exact-candidate physical System lane passed 13 safe interactions through
+standard-user localhost CDP; the broad seven-screen matrix was intentionally
+not executed. The Server Phone was restored to main and its normal runtime,
+SQLite and harness-safe state were rechecked. Exact-head CI and PR metadata
+remain finalization evidence; no release is authorized by this document.

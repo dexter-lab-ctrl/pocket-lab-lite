@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: d11d3e8c67333d43c1c4e80e2920b92cb548016caec509130306e4c0354230b3
+source_fingerprint: 6b1c8175cc46390c903c10c5c86c012cf4d84065adf51a852c952c2ad4741a1d
 schema_revision: 1
 validation_status: generated
 ---
@@ -152,6 +152,11 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:harness:session:start`
 - `lite:harness:status`
 - `lite:harness:verify-off`
+- `lite:lifecycle:backend`
+- `lite:lifecycle:mocked`
+- `lite:lifecycle:qualification`
+- `lite:lifecycle:regression`
+- `lite:lifecycle:ui`
 - `lite:parity:api`
 - `lite:parity:backend`
 - `lite:parity:check`
@@ -417,6 +422,9 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:ui:screenshots` → `lite:playwright:preflight`
 - `lite:evidence:runtime:promote` → `lite:docs:health:generate`
 - `lite:evidence:runtime:promote` → `lite:evidence:runtime:preflight`
+- `lite:lifecycle:qualification` → `lite:lifecycle:backend`
+- `lite:lifecycle:qualification` → `lite:lifecycle:mocked`
+- `lite:lifecycle:qualification` → `lite:lifecycle:ui`
 - `lite:parity:check` → `lite:a11y:check`
 - `lite:parity:check` → `lite:docs:parity:check`
 - `lite:parity:check` → `lite:evidence:parity:check`

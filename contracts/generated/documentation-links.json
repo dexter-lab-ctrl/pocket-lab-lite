@@ -353,6 +353,10 @@
         "title": "GET /api/lite/identity/owner-claim/status",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-identity-owner-claim-status"
       },
+      "endpoint:GET:/api/lite/lifecycle/summary": {
+        "title": "GET /api/lite/lifecycle/summary",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-lifecycle-summary"
+      },
       "endpoint:GET:/api/lite/media-backup": {
         "title": "GET /api/lite/media-backup",
         "url": "../../docs/reference/api/lite-api.md#get-api-lite-media-backup"
@@ -941,6 +945,22 @@
         "title": "POST /api/lite/identity/step-up/verify",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-step-up-verify"
       },
+      "endpoint:POST:/api/lite/lifecycle/boundary": {
+        "title": "POST /api/lite/lifecycle/boundary",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-boundary"
+      },
+      "endpoint:POST:/api/lite/lifecycle/boundary/review": {
+        "title": "POST /api/lite/lifecycle/boundary/review",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-boundary-review"
+      },
+      "endpoint:POST:/api/lite/lifecycle/boundary/revoke": {
+        "title": "POST /api/lite/lifecycle/boundary/revoke",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-boundary-revoke"
+      },
+      "endpoint:POST:/api/lite/lifecycle/preferences/review": {
+        "title": "POST /api/lite/lifecycle/preferences/review",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-preferences-review"
+      },
       "endpoint:POST:/api/lite/owner-operations/client-pairings": {
         "title": "POST /api/lite/owner-operations/client-pairings",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-owner-operations-client-pairings"
@@ -1148,6 +1168,10 @@
       "endpoint:PUT:/api/lite/identity/passkeys/{credential_id}": {
         "title": "PUT /api/lite/identity/passkeys/{credential_id}",
         "url": "../../docs/reference/api/lite-api.md#put-api-lite-identity-passkeys-credential-id"
+      },
+      "endpoint:PUT:/api/lite/lifecycle/preferences": {
+        "title": "PUT /api/lite/lifecycle/preferences",
+        "url": "../../docs/reference/api/lite-api.md#put-api-lite-lifecycle-preferences"
       },
       "endpoint:PUT:/api/lite/system-health/automatic-policy": {
         "title": "PUT /api/lite/system-health/automatic-policy",
@@ -2181,6 +2205,10 @@
         "title": "bootstrap_transport_rejected",
         "url": "../../docs/generated/development/reason-codes.md#bootstrap-transport-rejected"
       },
+      "reason:candidate_invalid": {
+        "title": "candidate_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#candidate-invalid"
+      },
       "reason:checkpoint_ineligible": {
         "title": "checkpoint_ineligible",
         "url": "../../docs/generated/development/reason-codes.md#checkpoint-ineligible"
@@ -2569,6 +2597,14 @@
         "title": "independent_approval_satisfied",
         "url": "../../docs/generated/development/reason-codes.md#independent-approval-satisfied"
       },
+      "reason:independent_provenance_and_qualification_required": {
+        "title": "independent_provenance_and_qualification_required",
+        "url": "../../docs/generated/development/reason-codes.md#independent-provenance-and-qualification-required"
+      },
+      "reason:independent_root_required": {
+        "title": "independent_root_required",
+        "url": "../../docs/generated/development/reason-codes.md#independent-root-required"
+      },
       "reason:insufficient_storage": {
         "title": "insufficient_storage",
         "url": "../../docs/generated/development/reason-codes.md#insufficient-storage"
@@ -2620,6 +2656,10 @@
       "reason:legacy_telemetry_value": {
         "title": "legacy_telemetry_value",
         "url": "../../docs/generated/development/reason-codes.md#legacy-telemetry-value"
+      },
+      "reason:local_candidate_or_root_missing": {
+        "title": "local_candidate_or_root_missing",
+        "url": "../../docs/generated/development/reason-codes.md#local-candidate-or-root-missing"
       },
       "reason:local_owner_required": {
         "title": "local_owner_required",
@@ -3037,6 +3077,10 @@
         "title": "rollback_unproved",
         "url": "../../docs/generated/development/reason-codes.md#rollback-unproved"
       },
+      "reason:root_pin_invalid": {
+        "title": "root_pin_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#root-pin-invalid"
+      },
       "reason:run_not_found": {
         "title": "run_not_found",
         "url": "../../docs/generated/development/reason-codes.md#run-not-found"
@@ -3136,6 +3180,10 @@
       "reason:thermal_policy_threshold": {
         "title": "thermal_policy_threshold",
         "url": "../../docs/generated/development/reason-codes.md#thermal-policy-threshold"
+      },
+      "reason:trust_contract_invalid": {
+        "title": "trust_contract_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#trust-contract-invalid"
       },
       "reason:trusted_local_admin": {
         "title": "trusted_local_admin",
@@ -3508,6 +3556,71 @@
         "schema_url": "../../docs/generated/schemaspy/tables/lite_installed_release_identity.html",
         "title": "lite_installed_release_identity"
       },
+      "table:lite_lifecycle_audit": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-lifecycle-audit",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_lifecycle_audit.html",
+        "title": "lite_lifecycle_audit"
+      },
+      "table:lite_lifecycle_boundary_scopes": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-lifecycle-boundary-scopes",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_lifecycle_boundary_scopes.html",
+        "title": "lite_lifecycle_boundary_scopes"
+      },
+      "table:lite_lifecycle_grants": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-lifecycle-grants",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_lifecycle_grants.html",
+        "title": "lite_lifecycle_grants"
+      },
+      "table:lite_lifecycle_preferences": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-lifecycle-preferences",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_lifecycle_preferences.html",
+        "title": "lite_lifecycle_preferences"
+      },
+      "table:lite_lifecycle_service_delegations": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-lifecycle-service-delegations",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_lifecycle_service_delegations.html",
+        "title": "lite_lifecycle_service_delegations"
+      },
+      "table:lite_lifecycle_workspace": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-lifecycle-workspace",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_lifecycle_workspace.html",
+        "title": "lite_lifecycle_workspace"
+      },
+      "table:lite_release_trust_configuration": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-release-trust-configuration",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_release_trust_configuration.html",
+        "title": "lite_release_trust_configuration"
+      },
+      "table:lite_release_trust_floor": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-release-trust-floor",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_release_trust_floor.html",
+        "title": "lite_release_trust_floor"
+      },
+      "table:lite_release_trust_observation": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-release-trust-observation",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_release_trust_observation.html",
+        "title": "lite_release_trust_observation"
+      },
+      "table:lite_release_trust_pin": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-release-trust-pin",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_release_trust_pin.html",
+        "title": "lite_release_trust_pin"
+      },
+      "table:lite_release_trust_receipts": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-release-trust-receipts",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_release_trust_receipts.html",
+        "title": "lite_release_trust_receipts"
+      },
+      "table:lite_release_trust_transitions": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-release-trust-transitions",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_release_trust_transitions.html",
+        "title": "lite_release_trust_transitions"
+      },
+      "table:lite_release_trusted_time": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-release-trusted-time",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_release_trusted_time.html",
+        "title": "lite_release_trusted_time"
+      },
       "table:lite_revision_events": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-revision-events",
         "schema_url": "../../docs/generated/schemaspy/tables/lite_revision_events.html",
@@ -3836,7 +3949,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "3d27601c3cb9e54c9fa7fa38097e18cda0de5356b802ef57e5c96bc9df0e1791",
+    "aggregate_fingerprint": "fbd51fd9651fdacba61c8042b3ecee999a95bad8e4f89edf86e3b9f033d01176",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3846,8 +3959,8 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "541b9b956549a22a8300753ef4216ccbedb997decda0710ca60dadc271158cb5",
-      "contracts/metadata/documentation-platform.json": "e3ca5a37ded7b6f7eacc4ee2e7ea04a2a67b5efe783067ca8a8a61a726db2d88",
+      "contracts/generated/lite-openapi.json": "836ffc0f09712aede0ff821c8f18e47c6da3a03acd3e1bf2f2d05061045266e2",
+      "contracts/metadata/documentation-platform.json": "b8d66469fc3ab5b0b2b2ed610617a35c091810bc2d564d81075cce898682ddda",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "3b34f0debcf38e177dca50b99dea00a9b2710c4889dcb2b706d688ce0a9fcd9e",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -3904,6 +4017,14 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql": "cdcad7a2e9379023be73e79eeab7ee1497cbf6a41e90ecd0e6291c2fa4de4a5c",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql": "df830f0948f0b6fc689cb7a65e835d1039f35bf0fe42a7cca73309a12005f6c5",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql": "23b6206035eb9310e019b4eef28c9e23d1044a985a6d236745f06d0fa63edbae",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql": "fccf47ef929485a33012a7312d685ab58512d0c130e8413dd7fc62d3d0bf6ffb",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql": "bd7b47a5ea0012a8dd5c87b721682dcfe2ece2834dd3699a76bc591657f26f21",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0058_release_trust_observations.sql": "6da670834d2cd37edb3783c9277eedf8a0bc8f6d9d610130da05c25084168b29",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql": "5175886d105ddb3ecfe1a59b07a1bfe1754efedbba8c2a2951e28b5df7933107",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0060_lifecycle_trusted_time.sql": "c22254301d1dd20d359edac0537f3c761b6acfc77082e7e4b40227cfa247f8c3",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0061_lifecycle_trust_configuration.sql": "457addf945f97299e0e411b67bf3ec62aa6a48de3ec5d2ae463617b94d80416b",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql": "d60304c98266721039a6123f25dd2c050cb4acb2baa18a8b94fa86118661368a",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0063_lifecycle_audit_links.sql": "6b303946ec4bcdfdc33fea53b0d7d6b7a064cb4d09e936a852e8e236bbdfc61b",
       "scripts/docs/lite/generate_platform_catalogs.py": "03d45e1757f6eff0622b0bac8d53108a7229b00c2c746bf158a746224499fd08"
     },
     "validation_state": "generated"

@@ -12,11 +12,21 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
   "human_enrollment_claims":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "human_enrollment_claims":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "human_identities":"auth_version":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_boundary_scopes":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "lite_lifecycle_grants":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_grants":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_grants":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_grants":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_grants":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "lite_lifecycle_grants":"elipses":w -> "lite_lifecycle_boundary_scopes":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_grants":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_grants":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "owner_approved_operations":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "owner_approved_operations":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "owner_approved_operations":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "owner_approved_operations":"elipses":w -> "owner_operation_clients":"client_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "owner_operation_challenges":"elipses":w -> "owner_operation_clients":"client_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "owner_operation_challenges":"elipses":w -> "lite_lifecycle_boundary_scopes":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "owner_operation_client_pairing_events":"pairing_id":w -> "owner_operation_client_pairings":"pairing_id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "owner_operation_client_pairings":"client_id":w -> "owner_operation_clients":"client_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "owner_operation_client_pairings":"reviewed_by_human_id":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -35,6 +45,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
   "policy_temporary_exceptions":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "recovery_code_batches":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "webauthn_challenges":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "webauthn_challenges":"elipses":w -> "lite_lifecycle_boundary_scopes":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "webauthn_challenges":"elipses":w -> "auth_sessions":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "webauthn_credentials":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "webauthn_users":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=teeodot];
@@ -98,11 +109,33 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="116" HEIGHT="16"><B>human_identities</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">22 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">24 &gt;</TD></TR>
     </TABLE>>
     URL="human_identities.html"
     target="_top"
     tooltip="human_identities"
+  ];
+  "lite_lifecycle_boundary_scopes" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="206" HEIGHT="16"><B>lite_lifecycle_boundary_scopes</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">10 &gt;</TD></TR>
+    </TABLE>>
+    URL="lite_lifecycle_boundary_scopes.html"
+    target="_top"
+    tooltip="lite_lifecycle_boundary_scopes"
+  ];
+  "lite_lifecycle_grants" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="134" HEIGHT="16"><B>lite_lifecycle_grants</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 10</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+    </TABLE>>
+    URL="lite_lifecycle_grants.html"
+    target="_top"
+    tooltip="lite_lifecycle_grants"
   ];
   "owner_approved_operations" [
    label=<
@@ -120,7 +153,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="192" HEIGHT="16"><B>owner_operation_challenges</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="owner_operation_challenges.html"
     target="_top"
@@ -247,7 +280,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="130" HEIGHT="16"><B>schema_migrations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">21 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">33 &gt;</TD></TR>
     </TABLE>>
     URL="schema_migrations.html"
     target="_top"
@@ -258,7 +291,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="145" HEIGHT="16"><B>webauthn_challenges</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="webauthn_challenges.html"
     target="_top"

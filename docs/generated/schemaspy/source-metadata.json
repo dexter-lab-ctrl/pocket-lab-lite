@@ -2,7 +2,7 @@
   "database": "temporary data-free SQLite generated from repository migrations",
   "generated_at": "uncommitted",
   "generator": "scripts/docs/sqlite/generate_schemaspy.py",
-  "migration_count": 55,
+  "migration_count": 63,
   "migration_fingerprints": {
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -58,7 +58,15 @@
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql": "b638b291b99780032fa71a1077a77c44bda39f9cbba55caf567785ffa12d75f1",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql": "cdcad7a2e9379023be73e79eeab7ee1497cbf6a41e90ecd0e6291c2fa4de4a5c",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql": "df830f0948f0b6fc689cb7a65e835d1039f35bf0fe42a7cca73309a12005f6c5",
-    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql": "23b6206035eb9310e019b4eef28c9e23d1044a985a6d236745f06d0fa63edbae"
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql": "23b6206035eb9310e019b4eef28c9e23d1044a985a6d236745f06d0fa63edbae",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql": "fccf47ef929485a33012a7312d685ab58512d0c130e8413dd7fc62d3d0bf6ffb",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql": "bd7b47a5ea0012a8dd5c87b721682dcfe2ece2834dd3699a76bc591657f26f21",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0058_release_trust_observations.sql": "6da670834d2cd37edb3783c9277eedf8a0bc8f6d9d610130da05c25084168b29",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql": "5175886d105ddb3ecfe1a59b07a1bfe1754efedbba8c2a2951e28b5df7933107",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0060_lifecycle_trusted_time.sql": "c22254301d1dd20d359edac0537f3c761b6acfc77082e7e4b40227cfa247f8c3",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0061_lifecycle_trust_configuration.sql": "457addf945f97299e0e411b67bf3ec62aa6a48de3ec5d2ae463617b94d80416b",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql": "d60304c98266721039a6123f25dd2c050cb4acb2baa18a8b94fa86118661368a",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0063_lifecycle_audit_links.sql": "6b303946ec4bcdfdc33fea53b0d7d6b7a064cb4d09e936a852e8e236bbdfc61b"
   },
   "migrations": [
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql",
@@ -115,7 +123,15 @@
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql",
-    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql"
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0058_release_trust_observations.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0060_lifecycle_trusted_time.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0061_lifecycle_trust_configuration.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0063_lifecycle_audit_links.sql"
   ],
   "row_count_enforced": 0,
   "schema_revision": 1,

@@ -95,6 +95,7 @@ generator_version: 3
 | `GET /api/lite/home/activity-history` | home | LiteHome | get_lite_home_activity_history_api_lite_home_activity_history_get | contract-derived |
 | `GET /api/lite/identity` | identity | — | get_lite_identity_api_lite_identity_get | contract-derived |
 | `GET /api/lite/identity/owner-claim/status` | identity | LiteIdentity | owner_claim_status_api_lite_identity_owner_claim_status_get | contract-derived |
+| `GET /api/lite/lifecycle/summary` | lifecycle | — | summary_api_lite_lifecycle_summary_get | contract-derived |
 | `GET /api/lite/media-backup` | media-backup | — | lite_photo_backup_fleet_status_api_lite_media_backup_get | contract-derived |
 | `GET /api/lite/owner-operations/client-pairings/{pairing_id}` | owner-operations | — | observe_client_pairing_api_lite_owner_operations_client_pairings__pairing_id__get | contract-derived |
 | `GET /api/lite/owner-operations/pending` | owner-operations | — | owner_operation_pending_api_lite_owner_operations_pending_get | contract-derived |
@@ -242,6 +243,10 @@ generator_version: 3
 | `POST /api/lite/identity/setup` | identity | LiteIdentity | setup_lite_identity_api_lite_identity_setup_post | contract-derived |
 | `POST /api/lite/identity/step-up/options` | identity | LiteIdentity, LiteIdentityEnterprise, LiteRules, LiteRulesEnterprise | passkey_step_up_options_api_lite_identity_step_up_options_post | contract-derived |
 | `POST /api/lite/identity/step-up/verify` | identity | LiteIdentity, LiteIdentityEnterprise, LiteRules, LiteRulesEnterprise | passkey_step_up_verify_api_lite_identity_step_up_verify_post | contract-derived |
+| `POST /api/lite/lifecycle/boundary` | lifecycle | — | issue_boundary_api_lite_lifecycle_boundary_post | contract-derived |
+| `POST /api/lite/lifecycle/boundary/review` | lifecycle | — | review_boundary_api_lite_lifecycle_boundary_review_post | contract-derived |
+| `POST /api/lite/lifecycle/boundary/revoke` | lifecycle | — | revoke_boundary_api_lite_lifecycle_boundary_revoke_post | contract-derived |
+| `POST /api/lite/lifecycle/preferences/review` | lifecycle | — | review_preferences_api_lite_lifecycle_preferences_review_post | contract-derived |
 | `POST /api/lite/owner-operations/client-pairings` | owner-operations | — | request_client_pairing_api_lite_owner_operations_client_pairings_post | contract-derived |
 | `POST /api/lite/owner-operations/client-pairings/cancel-challenge` | owner-operations | — | issue_client_pairing_cancel_challenge_api_lite_owner_operations_client_pairings_cancel_challenge_post | contract-derived |
 | `POST /api/lite/owner-operations/client-pairings/challenge` | owner-operations | — | issue_client_pairing_challenge_api_lite_owner_operations_client_pairings_challenge_post | contract-derived |
@@ -294,6 +299,7 @@ generator_version: 3
 | `PUT /api/lite/fleet/devices/{device_id}/display-model` | devices | — | update_lite_device_display_model_api_lite_fleet_devices__device_id__display_model_put | contract-derived |
 | `PUT /api/lite/fleet/devices/{device_id}/roles` | devices | — | change_lite_device_roles_api_lite_fleet_devices__device_id__roles_put | contract-derived |
 | `PUT /api/lite/identity/passkeys/{credential_id}` | identity | LiteIdentity | rename_lite_passkey_api_lite_identity_passkeys__credential_id__put | contract-derived |
+| `PUT /api/lite/lifecycle/preferences` | lifecycle | — | preferences_api_lite_lifecycle_preferences_put | contract-derived |
 | `PUT /api/lite/system-health/automatic-policy` | system-health | — | system_health_automatic_policy_api_lite_system_health_automatic_policy_put | contract-derived |
 | `PUT /api/lite/system-health/preferences` | system-health | — | system_health_preferences_api_lite_system_health_preferences_put | contract-derived |
 

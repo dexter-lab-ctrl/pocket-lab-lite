@@ -1,4 +1,10 @@
-# Trusted release publishing (T1, source only)
+# Trusted release publishing (T1, source plus focused qualification)
+
+The source and focused synthetic trust qualification for PR #662 are complete
+at code-bearing candidate `eea0d2fa5d81affc120a14459673b1b74db60f88`.
+Qualification did not publish a GitHub release or provision production signing
+material. Protected publisher configuration, external attestation service
+compatibility and real draft recovery remain explicit operational prerequisites.
 The existing release-dist workflow now requires signed metadata and artifact
 attestation for tagged/manual releases. Main source builds retain their normal
 artifact flow. There is no fallback for missing signing configuration.
@@ -41,8 +47,21 @@ uploads missing assets only, and publishes after all expected assets match.
 A newer already published signed tag blocks a downgrade. Published assets
 are never replaced using clobber. Interrupted publication recovery requires
 the exact original archived signed assets, not a newly rebuilt envelope; a
-conflicting draft must be independently reviewed. No recovery or publication
-was executed in this session.
+conflicting draft must be independently reviewed. Source review and the
+selected native release/process-isolation regression bundle passed, but no
+recovery or publication was executed in this session.
+
+## Focused qualification disposition
+
+The lifecycle backend and candidate-server suites passed 49 tests covering
+signature separation, duplicate/untrusted/revoked keys, manifest and artifact
+tampering, root rotation, durable floor replay, configuration latching,
+trusted-time fallback rejection, restore fencing, exact candidate identity and
+sanitized review-only UI fixtures. The selected release/process-isolation,
+migration, restore and policy regression bundle passed 56 tests. These results
+qualify the source contracts and deterministic isolated behavior; they do not
+qualify a protected GitHub environment, real publisher credentials, external
+attestation service compatibility, or an actual immutable release.
 
 ## Local trusted-time contract
 

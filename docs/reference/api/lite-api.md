@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: f471c8c1e4ab05b7c2e708def76c5f15e4d2e9ff2cd67616dda7b8b694e8cda0
+source_fingerprint: 5b6edecfe77ee0528a859c75a8a5be55ec12056a95e01a5f45f79ece99b7b7fc
 schema_revision: 1
 validation_status: generated
 ---
@@ -3476,6 +3476,136 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
+<a id="post-api-lite-lifecycle-boundary"></a>
+## POST `/api/lite/lifecycle/boundary`
+
+- Operation ID: `issue_boundary_api_lite_lifecycle_boundary_post`
+- Summary: Issue Boundary
+- Deprecated: no
+- Tags: `lite-trusted-lifecycle`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `GrantRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-lifecycle-boundary-review"></a>
+## POST `/api/lite/lifecycle/boundary/review`
+
+- Operation ID: `review_boundary_api_lite_lifecycle_boundary_review_post`
+- Summary: Review Boundary
+- Deprecated: no
+- Tags: `lite-trusted-lifecycle`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `GrantRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-lifecycle-boundary-revoke"></a>
+## POST `/api/lite/lifecycle/boundary/revoke`
+
+- Operation ID: `revoke_boundary_api_lite_lifecycle_boundary_revoke_post`
+- Summary: Revoke Boundary
+- Deprecated: no
+- Tags: `lite-trusted-lifecycle`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `RevokeRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="put-api-lite-lifecycle-preferences"></a>
+## PUT `/api/lite/lifecycle/preferences`
+
+- Operation ID: `preferences_api_lite_lifecycle_preferences_put`
+- Summary: Preferences
+- Deprecated: no
+- Tags: `lite-trusted-lifecycle`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `pocket-lab-final-structure__runtime__api_fastapi__services__lite_lifecycle_authority__PreferenceRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="post-api-lite-lifecycle-preferences-review"></a>
+## POST `/api/lite/lifecycle/preferences/review`
+
+- Operation ID: `review_preferences_api_lite_lifecycle_preferences_review_post`
+- Summary: Review Preferences
+- Deprecated: no
+- Tags: `lite-trusted-lifecycle`
+
+### Request body
+
+| Content type | Schema | Required |
+| --- | --- | --- |
+| application/json | `pocket-lab-final-structure__runtime__api_fastapi__services__lite_lifecycle_authority__PreferenceRequest` | yes |
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
+<a id="get-api-lite-lifecycle-summary"></a>
+## GET `/api/lite/lifecycle/summary`
+
+- Operation ID: `summary_api_lite_lifecycle_summary_get`
+- Summary: Summary
+- Deprecated: no
+- Tags: `lite-trusted-lifecycle`
+
+### Responses
+
+| Status | Description | Schema |
+| --- | --- | --- |
+| 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
+
 <a id="get-api-lite-media-backup"></a>
 ## GET `/api/lite/media-backup`
 
@@ -5723,7 +5853,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 
 | Content type | Schema | Required |
 | --- | --- | --- |
-| application/json | `PreferenceRequest` | yes |
+| application/json | `pocket-lab-final-structure__runtime__api_fastapi__routers__lite_system_health__PreferenceRequest` | yes |
 
 ### Responses
 

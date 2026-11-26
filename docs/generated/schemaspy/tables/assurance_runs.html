@@ -263,7 +263,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="purpose">purpose</span></td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="purpose">purpose</span></td>
                                     <td>TEXT</td>
                                     <td>2000000000</td>
                                     <td title=''></td>
@@ -275,6 +275,11 @@
                                     </td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="assurance_runs.purpose&#39;s name implies that it&#39;s a child of lite_lifecycle_boundary_scopes.purpose, but it doesn&#39;t reference that column."><a href='lite_lifecycle_boundary_scopes.html'>lite_lifecycle_boundary_scopes</a><span class='relatedKey'>.purpose</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td></td>
@@ -787,29 +792,39 @@
                                     </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="assurance_execution_checkpoints.html" target="_top" title="assurance_execution_checkpoints" alt="" coords="779,5,1167,246">
-<area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="313,464,735,1446">
-<area shape="rect" id="node4" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,613,269,883">
-<area shape="rect" id="node3" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="842,264,1104,593">
-<area shape="rect" id="node5" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="838,611,1107,822">
-<area shape="rect" id="node6" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="829,840,1117,1051">
+<area shape="rect" id="node1" href="assurance_execution_checkpoints.html" target="_top" title="assurance_execution_checkpoints" alt="" coords="874,5,1261,246">
+<area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="408,464,830,1446">
+<area shape="rect" id="node4" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="53,499,316,769">
+<area shape="rect" id="node5" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="5,787,364,969">
+<area shape="rect" id="node3" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="936,264,1199,593">
+<area shape="rect" id="node6" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="933,611,1202,822">
+<area shape="rect" id="node7" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="924,840,1211,1051">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/assurance_runs.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="assurance_execution_checkpoints.html" target="_top" title="assurance_execution_checkpoints" alt="" coords="779,5,1167,246">
-<area shape="rect" id="node2" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="313,464,735,1446">
-<area shape="rect" id="node4" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="5,1644,269,1914">
-<area shape="rect" id="node3" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="842,264,1104,593">
-<area shape="rect" id="node5" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="838,611,1107,822">
-<area shape="rect" id="node6" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="829,840,1117,1051">
-<area shape="rect" id="node7" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="385,1464,663,1558">
-<area shape="rect" id="node8" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="394,1576,654,1670">
-<area shape="rect" id="node9" href="harness_recovery_receipts.html" target="_top" title="harness_recovery_receipts" alt="" coords="812,1684,1134,1778">
-<area shape="rect" id="node10" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="404,1723,644,1817">
-<area shape="rect" id="node11" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="803,1869,1143,1963">
-<area shape="rect" id="node12" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="411,1869,637,1963">
+<area shape="rect" id="node1" href="app_credential_metadata.html" target="_top" title="app_credential_metadata" alt="" coords="795,1608,1106,1702">
+<area shape="rect" id="node2" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="337,1676,695,1858">
+<area shape="rect" id="node14" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="5,1863,293,1957">
+<area shape="rect" id="node15" href="human_identities.html" target="_top" title="human_identities" alt="" coords="30,1708,268,1802">
+<area shape="rect" id="node3" href="assurance_execution_checkpoints.html" target="_top" title="assurance_execution_checkpoints" alt="" coords="1205,155,1593,396">
+<area shape="rect" id="node4" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="739,236,1161,1219">
+<area shape="rect" id="node6" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="384,1194,648,1464">
+<area shape="rect" id="node5" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="1268,414,1530,742">
+<area shape="rect" id="node7" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="1265,760,1534,972">
+<area shape="rect" id="node8" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="1255,990,1543,1201">
+<area shape="rect" id="node9" href="auth_session_assurance.html" target="_top" title="auth_session_assurance" alt="" coords="800,1755,1100,1849">
+<area shape="rect" id="node10" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="811,1272,1090,1366">
+<area shape="rect" id="node11" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="820,1384,1080,1478">
+<area shape="rect" id="node12" href="harness_recovery_receipts.html" target="_top" title="harness_recovery_receipts" alt="" coords="1238,1358,1560,1452">
+<area shape="rect" id="node13" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="830,1496,1070,1590">
+<area shape="rect" id="node16" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="819,2091,1082,2185">
+<area shape="rect" id="node17" href="lite_lifecycle_service_delegations.html" target="_top" title="lite_lifecycle_service_delegations" alt="" coords="1209,1886,1590,1980">
+<area shape="rect" id="node18" href="owner_operation_challenges.html" target="_top" title="owner_operation_challenges" alt="" coords="780,1867,1120,1961">
+<area shape="rect" id="node19" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="1229,43,1569,137">
+<area shape="rect" id="node20" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="837,64,1064,158">
+<area shape="rect" id="node21" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="812,1979,1089,2073">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/assurance_runs.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

@@ -1,66 +1,72 @@
 # Trusted Lifecycle — SC0–SC6 source closure ledger
 
-**Disposition:** source authored, not qualified. Starting candidate
-`0587872810b63ebc76e26452e9bcbb2de1bb492d`; main baseline
-`8fa96db378364891e645ed3e22f76218b3412da3` (PR #661).
-Branch `feat/trusted-lifecycle-governance`, PR #662. The PR head is the
-authoritative final candidate. No validation command, scan, release, merge,
-runtime mutation, production key or environment provisioning was performed.
+**Disposition:** source remediation and focused qualification complete at the
+code-bearing candidate `eea0d2fa5d81affc120a14459673b1b74db60f88`.
+`main` baseline is `8fa96db378364891e645ed3e22f76218b3412da3`; branch
+`feat/trusted-lifecycle-governance`, PR #662. The final documentation commit
+may advance the PR head without changing this code-bearing identity. The
+result is **qualified with explicit baseline-supported performance residuals**:
+focused source, isolated runtime, mocked UI, exact-candidate physical System
+qualification, restoration and documentation generation were executed. No
+production release, merge, production key, or protected signing environment
+was used.
 
 ## SC0 — requirement reconciliation
 
 IDs map to the original T0–T2 brief sections 7–25; UI and qualification
-rows map to sections 26–36 and 45–54. All implemented rows are **unvalidated**.
-Partial rows identify remaining coverage explicitly, not as passed gates.
+rows map to sections 26–36 and 45–54. `PASS` below means the named focused
+source or qualification evidence passed; it does not imply production release
+signing, T3–T7 activation, or an unbounded security audit. Partial rows keep
+independent runtime, publisher and live human-WebAuthn limits explicit.
 
 | ID | Requirement / source | Disposition and qualification |
 |---|---|---|
-| TL-T0-001 | §7 dependencies and trust boundaries; foundations doc | Partial: domain references present; full dependency inventory and independent artifact observations remain to qualify. |
-| TL-T0-002 | §8 decision architecture; lite_lifecycle_contract | Authored independent dimensions; no execution; qualify unknown/mixed inputs. |
-| TL-T0-003 | §9 registry; lifecycle contract and existing operation/protected action registries | Authored descriptive references, not executable adapter enrollment; validate complete owner mapping. |
-| TL-T0-004 | §10 impact; assess | Authored U0–U5/UX; prove no widening on unknown input. |
-| TL-T0-005 | §11 layered authorization; lifecycle authority/delegation, existing OPA | Authored platform/Owner/policy/runtime constraints; full governed activation deferred. |
-| TL-T0-006 | §12 identities; summary and contracts | Partial: prepared revision facts, explicit unknown for independent current loaded OPA/backend binary identity. |
-| TL-T1-001 | §13 trust architecture; release_runtime and release_trust_runtime | Authored existing worker/lease, configured latch, private review; qualify failure isolation. |
-| TL-T1-002 | §14 metadata/root; trust, root_rotation, configuration | Authored threshold and dual-root transition, durable latch; compromised old threshold recovery out of band. |
-| TL-T1-003 | §15 manifest; prepare_trusted_release_candidate and contracts | Authored deterministic inventories and signed scope; qualify canonical bytes and completeness. |
-| TL-T1-004 | §16 workflow; release-dist.yml, publish_trusted_release | Authored build attestation, protected signing, deterministic version, immutable draft publication. No external release was made. |
-| TL-T1-005 | §17 verification; release trust runtime/provenance | Authored strict acquisition/digests/attestation, deadline, resource admission and private files; actual gh compatibility unvalidated. |
-| TL-T1-006 | §18 rollback/expiry/offline; floor, CLOCK_BOOTTIME and cache | Authored durable floor, short same-boot anchor, historical-only offline evidence, restore fence; full TUF and independently rollback-resistant store not supplied. |
-| TL-T2-001 | §19 profiles; authority, migrations | Authored Notify default, Security and Recommended preferences, managed read-only; no unattended execution. |
-| TL-T2-002 | §20 boundary; authority epoch and scopes | Authored independent local purpose ceilings; general enterprise boundary deferred. |
-| TL-T2-003 | §21 standing authorization; grant and scope records | Authored two independent stable review-only purposes, 30-day expiry and per-purpose supersession. |
-| TL-T2-004 | §22 service authority; lifecycle delegation | Authored purpose contracts, no service credentials/dispatch. Qualify no human impersonation. |
-| TL-T2-005 | §23 Owner/step-up/revoke; authority and router | Authored exact review digest, current policy/assurance fences, narrow revocation; full live passkey/OPA race coverage remains. |
-| TL-T2-006 | §24 API and prepared state; summary, liteApi, revision sync | Authored SQLite prepared reads and revision invalidation; qualify auth, offline, lifecycle event races. |
-| TL-T2-007 | §25 persistence/evidence; migrations 0056–0063, staged restore | Authored forward migrations, bounded audit and decision linkage; qualify full database upgrade/restore/concurrency. |
-| TL-UI-001 | §§26–36 System Manage Updates & protection | Authored shared components, individual/all revoke, exact scope, historical/current trust, haptic disclosures; visual parity and accessibility remain unvalidated. |
-| TL-Q-001 | §§45–51 tests/tasks | Authored focused backend/component/Storybook/mocked Playwright and aggregate task sources; full matrix, live platform and CI evidence incomplete. |
-| TL-DOC-001 | §§52–54 documentation/ledger | Source docs and this ledger; detailed cross-PR token/geometry provenance not independently reconstructed. |
+| TL-T0-001 | §7 dependencies and trust boundaries; foundations doc | **PASS (source):** edge-first ownership and trust boundaries reviewed; independent loaded-policy/backend-binary identity remains explicitly unknown in prepared reads. |
+| TL-T0-002 | §8 decision architecture; lite_lifecycle_contract | **PASS:** `test_verified_signature_is_not_execution_or_provenance`, fail-closed cases, and candidate fixture checks preserve independent authenticity, provenance and execution dimensions. |
+| TL-T0-003 | §9 registry; lifecycle contract and existing operation/protected action registries | **PASS:** descriptive registry test confirms references do not enroll executable adapters or dispatch. |
+| TL-T0-004 | §10 impact; assess | **PASS:** scope expansion, unknown policy and restrictive impact cases are covered; unknown input does not widen authority. |
+| TL-T0-005 | §11 layered authorization; lifecycle authority/delegation, existing OPA | **PASS:** delegation cannot override policy/runtime; PR #661 recovery activation fences remain intact and no activation path was added. |
+| TL-T0-006 | §12 identities; summary and contracts | **PARTIAL / explicit unknown:** candidate manifest/header/meta identity is exact; independent current loaded OPA and backend-binary identity remains unavailable by contract. |
+| TL-T1-001 | §13 trust architecture; release_runtime and release_trust_runtime | **PASS (focused):** lifecycle trust fixtures and release/process-isolation regression suites passed; no execution or extraction side effect was enabled. |
+| TL-T1-002 | §14 metadata/root; trust, root_rotation, configuration | **PASS:** threshold, duplicate/untrusted/revoked key, root-rotation, durable-latch and missing-configuration cases passed in the lifecycle backend suite. |
+| TL-T1-003 | §15 manifest; prepare_trusted_release_candidate and contracts | **PASS (focused):** canonical candidate identity, digest/manifest mismatch and sanitized exact-SHA candidate manifest cases passed. |
+| TL-T1-004 | §16 workflow; release-dist.yml, publish_trusted_release | **PARTIAL:** workflow/source contracts were reviewed and no release was published; protected GitHub signing environment and real publication recovery were not exercised. |
+| TL-T1-005 | §17 verification; release trust runtime/provenance | **PASS (synthetic focused):** artifact tamper, provenance separation, policy/registry mismatch, bounded candidate and private-fixture cases passed; external `gh`/attestation compatibility remains a production prerequisite. |
+| TL-T1-006 | §18 rollback/expiry/offline; floor, CLOCK_BOOTTIME and cache | **PASS (focused):** durable floor replay, root/metadata expiry, no wall-clock fallback, trusted-time latch and restore-floor fencing passed; full TUF role hierarchy is not supplied. |
+| TL-T2-001 | §19 profiles; authority, migrations | **PASS:** Notify, Security and Recommended preferences are review-only; managed/read-only and no-unattended-execution behavior passed in backend/UI fixtures. |
+| TL-T2-002 | §20 boundary; authority epoch and scopes | **PASS (local boundary):** optional ceiling, restrictive impact, scope and revision fences passed; general enterprise boundary remains future scope. |
+| TL-T2-003 | §21 standing authorization; grant and scope records | **PASS (review-only contract):** purpose-specific scope, supersession and revocation behavior is covered; live human WebAuthn confirmation was not used in Android qualification. |
+| TL-T2-004 | §22 service authority; lifecycle delegation | **PASS:** delegation cannot impersonate a human or broaden its purpose; no reusable service credential or dispatch path was introduced. |
+| TL-T2-005 | §23 Owner/step-up/revoke; authority and router | **PASS (focused):** Owner/revision/OPA narrowing and revocation fences passed; live protected passkey/OPA race coverage remains outside the synthetic browser fixture. |
+| TL-T2-006 | §24 API and prepared state; summary, liteApi, revision sync | **PASS (focused):** prepared API/identity checks, exact candidate proxy safety, sanitized fixture summary, revision-safe UI behavior and no unsafe lifecycle writes passed. |
+| TL-T2-007 | §25 persistence/evidence; migrations 0056–0063, staged restore | **PASS:** 56 regression tests, isolated schema migration/quick-check/FK/concurrency/rollback evidence, and restore epoch/floor/grant invalidation passed without touching the production phone database. |
+| TL-UI-001 | §§26–36 System Manage Updates & protection | **PASS (focused):** 8 Vitest, 8 mocked desktop/mobile Playwright tests, four reviewed light/dark desktop/mobile snapshots, and 13 exact-candidate physical System interactions passed. |
+| TL-Q-001 | §§45–51 tests/tasks | **PASS (focused, bounded):** backend 49, UI 8, mocked Playwright 8, regression 56, candidate-server 28; full seven-screen physical matrix was intentionally not run. |
+| TL-DOC-001 | §§52–54 documentation/ledger | **PASS:** canonical docs/contracts were regenerated after qualification; this ledger records exact candidate, evidence classes and remaining prerequisites. |
 
 ## SC1–SC6 implementation map
 
 | Increment | Source owners | Remaining qualification |
 |---|---|---|
-| SC1 | release trust runtime/configuration/provenance/rotation and migrations | Symlink and replacement races, clock/reboot, revocation, gh versions, operator bootstrap |
-| SC2 | release runtime/update process, release-dist workflow and producer/publisher scripts | Lease expiry, subprocess cleanup, public redirects, publication conflicts, archived asset recovery, resource budgets |
-| SC3 | lifecycle authority/delegation/restore, database recovery, migrations | Current Owner and loaded policy races, independent grants, revocation, controlled restore |
-| SC4 | contract registry, router, prepared summary and System Manage shared UI | Complete independent identity observations, query invalidation, responsive/theme/haptic parity |
-| SC5 | existing lifecycle backend/component/mocked E2E files, Storybook, Taskfile | No tests run; expand uncovered adversarial and end-to-end cases during qualification |
-| SC6 | this document, foundations, publishing documentation, PR #662 | Exact-head qualification evidence and final review |
+| SC1 | release trust runtime/configuration/provenance/rotation and migrations | **Closed for focused scope:** synthetic trust, latch, floor, time and rotation cases passed; full TUF/off-device rollback store and protected publisher remain out of scope. |
+| SC2 | release runtime/update process, release-dist workflow and producer/publisher scripts | **Partially closed:** source/resource/lease/process-isolation regressions passed; no real signing environment, release publication or external attestation was triggered. |
+| SC3 | lifecycle authority/delegation/restore, database recovery, migrations | **Closed for focused scope:** authority/restore/SQLite evidence passed; live human WebAuthn and independently loaded OPA identity remain explicit limits. |
+| SC4 | contract registry, router, prepared summary and System Manage shared UI | **Closed for focused scope:** exact proxy identity, prepared fixture, responsive/theme UI and physical System lane passed. |
+| SC5 | existing lifecycle backend/component/mocked E2E files, Storybook, Taskfile | **Closed for executed scope:** backend/UI/mocked/regression tasks and 13 physical interactions passed; Storybook and broad seven-screen physical matrix were not required for this PR. |
+| SC6 | this document, foundations, publishing documentation, PR #662 | **Closed:** evidence and generated documentation are reconciled; exact-head CI and PR status remain finalization checks. |
 
 ## Reuse and provenance matrix
 
 | Existing reference | Source reuse | Status |
 |---|---|---|
-| PR #606 shared components | src/lite/LiteUi.jsx: LiteActionRow, LiteButton, StateSurface, LiteTechnicalDetails | Source reuse; exact historical provenance not revalidated |
-| PR #622 semantic tokens | existing shared component styles, no independent palette | Visual light/dark parity not measured |
-| PR #623 shell geometry | existing LiteSystemHealth Manage destination and section/detail classes | Desktop/mobile geometry not measured |
-| PR #636 spacing | existing Manage layout and shared row primitives | Apps spacing comparison pending |
-| PR #640 feedback | existing LiteButton haptic and optional shared disclosure haptic | Device behavior pending |
-| PR #661 recovery fences | existing recovery activation owner and production allowlist | No activation promotion introduced; regression pending |
-| Existing release path | release_runtime, release_update_process, dist.zip and checksum contract | Existing regression suite authored previously; not run |
-| Existing governance | current Owner/session, passkey assurance, OPA, prepared SQLite and revision events | Integrated in source; runtime parity pending |
+| PR #606 shared components | src/lite/LiteUi.jsx: LiteActionRow, LiteButton, StateSurface, LiteTechnicalDetails | Reused and covered by focused UI/visual checks |
+| PR #622 semantic tokens | existing shared component styles, no independent palette | Desktop/mobile light/dark mocked snapshots reviewed |
+| PR #623 shell geometry | existing LiteSystemHealth Manage destination and section/detail classes | Mocked desktop/mobile and physical narrow viewport exercised |
+| PR #636 spacing | existing Manage layout and shared row primitives | No unrelated Apps baseline changed; System snapshots reviewed |
+| PR #640 feedback | existing LiteButton haptic and optional shared disclosure haptic | Source-preserved; physical lane used safe disclosures only |
+| PR #661 recovery fences | existing recovery activation owner and production allowlist | No activation promotion introduced; isolated/runtime regression passed |
+| Existing release path | release_runtime, release_update_process, dist.zip and checksum contract | Native-release/process-isolation regression bundle passed |
+| Existing governance | current Owner/session, passkey assurance, OPA, prepared SQLite and revision events | Focused authority/SQLite checks passed; live human WebAuthn and independent loaded-policy observation remain explicit limits |
 
 ## Threats and operating decisions
 
@@ -77,21 +83,28 @@ compromise of an old rotation threshold are not solved by SQLite alone.
 No new installation, policy activation, app dispatch or unattended execution
 is enabled. T3–T7 remain future, separately qualified increments.
 
-## Qualification entry
+## Qualification result
 
-Resolve the actual PR head before qualification. Review source and run
-focused isolated tasks before broader gates:
+The exact feature candidate was qualified through the repository-owned
+isolated backend/runtime path and the standard-user Windows Android Chrome CDP
+path. The lifecycle backend and candidate-server suites passed 49 tests, the
+component suite passed 8 Vitest tests, mocked desktop/mobile Playwright passed
+8 tests, and the selected release/restore/migration/policy regression bundle
+passed 56 tests. The candidate build passed with 2,272 modules. The API check
+passed with the repository virtualenv. The physical System lane passed 13
+safe interactions with exact manifest/response-header/page-meta identity and
+no unsafe lifecycle writes.
 
-- task lite:lifecycle:backend
-- task lite:lifecycle:ui
-- task lite:lifecycle:mocked
-- task lite:lifecycle:qualification
-- task lite:lifecycle:regression
+The source-equivalent three-run System performance comparison retained the
+existing thresholds and classifications: all nine interactions missed the
+absolute target and hard gate on both feature and main samples, all were
+`MIXED`, and no `APP_INCREMENTAL_COST` was established. The two isolated p95
+delta observations did not establish a stable actionable PR-attributable
+contribution. This is a baseline-supported residual, not an unconditional
+performance pass. The broad seven-screen physical matrix was not executed.
 
-Cover real passkey and OPA authorization, prepared reads, full migration
-and restore with synthetic state, publisher test-only keys, provenance
-tool availability, network and clock failure, bounded resource behavior,
-responsive and accessibility parity, and existing PR #661 recovery
-behavior. Do not provision production trust pins or secrets, publish a
-release, or activate trusted promotion during synthetic qualification.
-No qualification result is claimed here.
+The Server Phone was restored to main `8fa96db378364891e645ed3e22f76218b3412da3`.
+Production SQLite quick-check and foreign-key checks passed, ten normal PM2
+services were online, qualification processes were absent, and harness/test
+auth/destructive flags were disabled. No production signing key, release,
+merge, unattended install, policy activation or T3–T7 capability was used.

@@ -128,6 +128,7 @@
         "domain:events",
         "domain:harness",
         "domain:health",
+        "domain:lifecycle",
         "domain:lite",
         "domain:live_status",
         "domain:manual",
@@ -140,6 +141,7 @@
         "domain:prepared_state",
         "domain:projections",
         "domain:release-management",
+        "domain:release-trust",
         "domain:remote-access",
         "domain:runbook",
         "domain:runtime",
@@ -455,6 +457,7 @@
         "api:get:/api/lite/home/activity-history",
         "api:get:/api/lite/identity",
         "api:get:/api/lite/identity/owner-claim/status",
+        "api:get:/api/lite/lifecycle/summary",
         "api:get:/api/lite/media-backup",
         "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
         "api:get:/api/lite/owner-operations/pending",
@@ -602,6 +605,10 @@
         "api:post:/api/lite/identity/setup",
         "api:post:/api/lite/identity/step-up/options",
         "api:post:/api/lite/identity/step-up/verify",
+        "api:post:/api/lite/lifecycle/boundary",
+        "api:post:/api/lite/lifecycle/boundary/review",
+        "api:post:/api/lite/lifecycle/boundary/revoke",
+        "api:post:/api/lite/lifecycle/preferences/review",
         "api:post:/api/lite/owner-operations/client-pairings",
         "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
         "api:post:/api/lite/owner-operations/client-pairings/challenge",
@@ -654,6 +661,7 @@
         "api:put:/api/lite/fleet/devices/{device_id}/display-model",
         "api:put:/api/lite/fleet/devices/{device_id}/roles",
         "api:put:/api/lite/identity/passkeys/{credential_id}",
+        "api:put:/api/lite/lifecycle/preferences",
         "api:put:/api/lite/system-health/automatic-policy",
         "api:put:/api/lite/system-health/preferences",
         "domain:api",
@@ -671,6 +679,7 @@
         "domain:events",
         "domain:harness",
         "domain:health",
+        "domain:lifecycle",
         "domain:lite",
         "domain:live_status",
         "domain:manual",
@@ -683,6 +692,7 @@
         "domain:prepared_state",
         "domain:projections",
         "domain:release-management",
+        "domain:release-trust",
         "domain:remote-access",
         "domain:runbook",
         "domain:runtime",
@@ -716,6 +726,7 @@
         "domain:events",
         "domain:harness",
         "domain:health",
+        "domain:lifecycle",
         "domain:lite",
         "domain:live_status",
         "domain:manual",
@@ -728,6 +739,7 @@
         "domain:prepared_state",
         "domain:projections",
         "domain:release-management",
+        "domain:release-trust",
         "domain:remote-access",
         "domain:runbook",
         "domain:runtime",
@@ -783,6 +795,19 @@
         "table:identity_audit_events",
         "table:lite_home_activity_read_cursors",
         "table:lite_installed_release_identity",
+        "table:lite_lifecycle_audit",
+        "table:lite_lifecycle_boundary_scopes",
+        "table:lite_lifecycle_grants",
+        "table:lite_lifecycle_preferences",
+        "table:lite_lifecycle_service_delegations",
+        "table:lite_lifecycle_workspace",
+        "table:lite_release_trust_configuration",
+        "table:lite_release_trust_floor",
+        "table:lite_release_trust_observation",
+        "table:lite_release_trust_pin",
+        "table:lite_release_trust_receipts",
+        "table:lite_release_trust_transitions",
+        "table:lite_release_trusted_time",
         "table:lite_revision_events",
         "table:lite_system_health_activation_fence",
         "table:lite_system_health_automation_attempts",
@@ -906,6 +931,7 @@
         "reason:backup_state_missing",
         "reason:battery_policy_threshold",
         "reason:bootstrap_transport_rejected",
+        "reason:candidate_invalid",
         "reason:checkpoint_ineligible",
         "reason:claim_verified",
         "reason:cold_start_validation",
@@ -1003,6 +1029,8 @@
         "reason:identity_username_invalid",
         "reason:incident_generation_changed",
         "reason:independent_approval_satisfied",
+        "reason:independent_provenance_and_qualification_required",
+        "reason:independent_root_required",
         "reason:insufficient_storage",
         "reason:interrupted",
         "reason:invalid_backup_id",
@@ -1016,6 +1044,7 @@
         "reason:legacy_observability_stack_retired",
         "reason:legacy_secret_rotation_retired",
         "reason:legacy_telemetry_value",
+        "reason:local_candidate_or_root_missing",
         "reason:local_owner_required",
         "reason:location_not_registered",
         "reason:maintenance_conflict_or_authority_changed",
@@ -1120,6 +1149,7 @@
         "reason:reviewed_plan_changed",
         "reason:rollback_pointer_failed",
         "reason:rollback_unproved",
+        "reason:root_pin_invalid",
         "reason:run_not_found",
         "reason:runtime_contract_unavailable",
         "reason:scanner_intelligence_hard_expired",
@@ -1145,6 +1175,7 @@
         "reason:telemetry_stale",
         "reason:test_bypass_explicit",
         "reason:thermal_policy_threshold",
+        "reason:trust_contract_invalid",
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
         "reason:unsafe_live_media_import",
@@ -1291,6 +1322,7 @@
         "reason:backup_state_missing",
         "reason:battery_policy_threshold",
         "reason:bootstrap_transport_rejected",
+        "reason:candidate_invalid",
         "reason:checkpoint_ineligible",
         "reason:claim_verified",
         "reason:cold_start_validation",
@@ -1388,6 +1420,8 @@
         "reason:identity_username_invalid",
         "reason:incident_generation_changed",
         "reason:independent_approval_satisfied",
+        "reason:independent_provenance_and_qualification_required",
+        "reason:independent_root_required",
         "reason:insufficient_storage",
         "reason:interrupted",
         "reason:invalid_backup_id",
@@ -1401,6 +1435,7 @@
         "reason:legacy_observability_stack_retired",
         "reason:legacy_secret_rotation_retired",
         "reason:legacy_telemetry_value",
+        "reason:local_candidate_or_root_missing",
         "reason:local_owner_required",
         "reason:location_not_registered",
         "reason:maintenance_conflict_or_authority_changed",
@@ -1505,6 +1540,7 @@
         "reason:reviewed_plan_changed",
         "reason:rollback_pointer_failed",
         "reason:rollback_unproved",
+        "reason:root_pin_invalid",
         "reason:run_not_found",
         "reason:runtime_contract_unavailable",
         "reason:scanner_intelligence_hard_expired",
@@ -1530,6 +1566,7 @@
         "reason:telemetry_stale",
         "reason:test_bypass_explicit",
         "reason:thermal_policy_threshold",
+        "reason:trust_contract_invalid",
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
         "reason:unsafe_live_media_import",
@@ -2247,6 +2284,67 @@
         "table:lite_system_health_activation_fence"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql"
+    },
+    {
+      "entities": [
+        "table:lite_lifecycle_audit",
+        "table:lite_lifecycle_preferences",
+        "table:lite_release_trust_floor",
+        "table:lite_release_trust_receipts"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql"
+    },
+    {
+      "entities": [
+        "table:human_identities",
+        "table:lite_lifecycle_grants",
+        "table:lite_lifecycle_workspace"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql"
+    },
+    {
+      "entities": [
+        "table:lite_release_trust_observation",
+        "table:lite_release_trust_pin"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0058_release_trust_observations.sql"
+    },
+    {
+      "entities": [
+        "table:lite_lifecycle_grants",
+        "table:lite_lifecycle_service_delegations",
+        "table:lite_lifecycle_workspace",
+        "table:lite_release_trust_observation"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql"
+    },
+    {
+      "entities": [
+        "table:lite_release_trusted_time"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0060_lifecycle_trusted_time.sql"
+    },
+    {
+      "entities": [
+        "table:lite_release_trust_configuration",
+        "table:lite_release_trust_transitions"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0061_lifecycle_trust_configuration.sql"
+    },
+    {
+      "entities": [
+        "table:human_identities",
+        "table:lite_lifecycle_boundary_scopes",
+        "table:lite_lifecycle_grants",
+        "table:lite_lifecycle_workspace"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+    },
+    {
+      "entities": [
+        "table:lite_lifecycle_audit"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0063_lifecycle_audit_links.sql"
     },
     {
       "entities": [
@@ -4121,6 +4219,12 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_trusted_lifecycle.py"
+      ],
+      "source": "tests/backend/test_lite_trusted_lifecycle.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_ui_candidate_server.py"
       ],
       "source": "tests/backend/test_lite_ui_candidate_server.py"
@@ -5009,6 +5113,12 @@
     },
     {
       "entities": [
+        "test:tests/e2e/lite-trusted-lifecycle.spec.ts"
+      ],
+      "source": "tests/e2e/lite-trusted-lifecycle.spec.ts"
+    },
+    {
+      "entities": [
         "test:tests/e2e/lite-ux-maturity.spec.ts"
       ],
       "source": "tests/e2e/lite-ux-maturity.spec.ts"
@@ -5140,6 +5250,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5a99f823b944ae3642b2f914852c337292611ac685c249568797580d6c5109e3"
+    "source_fingerprint": "1f30b69222bc5131517d56b80bd58de986f7f8fec42139920f80daaf5e708fef"
   }
 }

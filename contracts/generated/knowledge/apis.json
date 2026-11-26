@@ -2337,6 +2337,43 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Summary",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleSummary",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/lifecycle/summary",
+      "method": "GET",
+      "name": "GET /api/lite/lifecycle/summary",
+      "operation_id": "summary_api_lite_lifecycle_summary_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/summary",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Lite Photo Backup Fleet Status",
       "domain": "media-backup",
       "frontend_clients": [
@@ -4208,13 +4245,6 @@
           "resolved": true,
           "source_module": "src/lite/LiteSystemHealth.jsx",
           "usage": "query"
-        },
-        {
-          "mocked": true,
-          "owner": "MSW handler",
-          "resolved": true,
-          "source_module": "src/mocks/handlers.js",
-          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/system-health/summary",
@@ -6737,6 +6767,13 @@
           "usage": "mutation"
         },
         {
+          "mocked": false,
+          "owner": "liteApi.passkeyStepUpOptions",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        },
+        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -6797,6 +6834,13 @@
           "usage": "mutation"
         },
         {
+          "mocked": false,
+          "owner": "liteApi.verifyPasskeyStepUp",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        },
+        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -6820,6 +6864,141 @@
       ],
       "tags": [
         "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Issue Boundary",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleIssueBoundary",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/boundary",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/boundary",
+      "operation_id": "issue_boundary_api_lite_lifecycle_boundary_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/boundary",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Boundary",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleReviewBoundary",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/boundary/review",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/boundary/review",
+      "operation_id": "review_boundary_api_lite_lifecycle_boundary_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/boundary/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Boundary",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleRevokeBoundary",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/boundary/revoke",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/boundary/revoke",
+      "operation_id": "revoke_boundary_api_lite_lifecycle_boundary_revoke_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/boundary/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Preferences",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleReviewPreference",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/preferences/review",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/preferences/review",
+      "operation_id": "review_preferences_api_lite_lifecycle_preferences_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/preferences/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
       ],
       "type": "api"
     },
@@ -8474,6 +8653,38 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Preferences",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecyclePreference",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:put:/api/lite/lifecycle/preferences",
+      "method": "PUT",
+      "name": "PUT /api/lite/lifecycle/preferences",
+      "operation_id": "preferences_api_lite_lifecycle_preferences_put",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/preferences",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "System Health Automatic Policy",
       "domain": "system-health",
       "frontend_clients": [
@@ -8543,6 +8754,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5a99f823b944ae3642b2f914852c337292611ac685c249568797580d6c5109e3"
+    "source_fingerprint": "1f30b69222bc5131517d56b80bd58de986f7f8fec42139920f80daaf5e708fef"
   }
 }

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 8ca05a7d63b642ac5d0a3ec2508572568f31ccbb3d6267ad0ff78e9b40fcc8a0
+source_fingerprint: 151fabafe8702aa4a65aa505c9ca7a93b2bb8033f7e8b301e276c2c68276baba
 schema_revision: 1
 validation_status: generated
 ---
@@ -88,6 +88,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `LITE_STAGE_HEALTH` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh |
 | `LITE_STORYBOOK_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, scripts/docs/lite/generate_docs.py |
 | `LITE_SYSTEM_HEALTH_ANDROID_OUTPUT_DIR` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-system-health-android-ui-qualification.py |
+| `LITE_TRUSTED_LIFECYCLE_ANDROID_OUTPUT_DIR` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-system-health-android-ui-qualification.py |
 | `NATS_CONTAINER` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/check-wsl-docker-desktop.sh |
 | `NATS_HEALTH_URL` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/check-wsl-docker-desktop.sh |
 | `NATS_LOOPBACK_RE` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-system-health-android-qualification.py |
@@ -167,6 +168,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_CANDIDATE_API_SCHEME` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-system-health-android-ui-qualification.py, scripts/dev/lite/ui_performance_candidate_server.py |
 | `POCKETLAB_CANDIDATE_BROWSER_RECOVERY_SIGNAL_FILE` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-system-health-android-ui-qualification.py, scripts/dev/lite/ui_performance_candidate_server.py |
 | `POCKETLAB_CANDIDATE_RUNTIME_TRANSPORT` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/ui_performance_candidate_server.py |
+| `POCKETLAB_CANDIDATE_TRUSTED_LIFECYCLE_UI_FIXTURE` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/run-system-health-android-ui-qualification.py, scripts/dev/lite/ui_performance_candidate_server.py |
 | `POCKETLAB_COMMANDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py, scripts/dev/lite/run-isolated-runtime-qualification.py, scripts/docs/generate_asyncapi_contract.py, scripts/docs/generate_event_docs.py |
 | `POCKETLAB_COMMAND_ACK_WAIT_SECONDS` | configuration | 60 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py, pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py |
 | `POCKETLAB_COMMAND_EVENT_MAX_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |
@@ -785,8 +787,10 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_RELEASE_ARCHIVE_MAX_ENTRIES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
 | `POCKETLAB_RELEASE_ARCHIVE_MAX_EXPANDED_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
 | `POCKETLAB_RELEASE_ARCHIVE_MAX_RATIO` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
+| `POCKETLAB_RELEASE_ATTESTATION_ROOT_SHA256` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_provenance.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_configuration.py |
 | `POCKETLAB_RELEASE_AVAILABLE_INTERVAL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/workers/pocketlab_worker.py |
 | `POCKETLAB_RELEASE_CHECK_MAX_RSS_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
+| `POCKETLAB_RELEASE_CHECK_TOTAL_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py |
 | `POCKETLAB_RELEASE_CHILD_CPU_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
 | `POCKETLAB_RELEASE_CHILD_MAX_ADDRESS_SPACE_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
 | `POCKETLAB_RELEASE_CHILD_MAX_FILES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
@@ -807,12 +811,17 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_RELEASE_MIN_FREE_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
 | `POCKETLAB_RELEASE_NETWORK_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py |
 | `POCKETLAB_RELEASE_PREPARED_MAX_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py |
+| `POCKETLAB_RELEASE_PUBLIC_ROOT` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/publish_trusted_release.py, scripts/dev/lite/sign_trusted_release_candidate.py |
 | `POCKETLAB_RELEASE_RETAIN_COUNT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
 | `POCKETLAB_RELEASE_RETAIN_STAGING_COUNT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py |
+| `POCKETLAB_RELEASE_ROOT_SHA256` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_configuration.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_runtime.py |
+| `POCKETLAB_RELEASE_SIGNING_SEEDS` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/sign_trusted_release_candidate.py |
 | `POCKETLAB_RELEASE_STABLE_INTERVAL_SECONDS` | configuration | 43200 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/deps.py, pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py, pocket-lab-final-structure/runtime/workers/pocketlab_worker.py, scripts/dev/check-lite-release-validation-server-phone.sh |
 | `POCKETLAB_RELEASE_STAGING_DIR` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py |
 | `POCKETLAB_RELEASE_SUBPROCESS_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py |
 | `POCKETLAB_RELEASE_TAG` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py |
+| `POCKETLAB_RELEASE_TRUST_SOURCE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_runtime.py |
+| `POCKETLAB_RELEASE_TRUST_SUSPENDED` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_configuration.py |
 | `POCKETLAB_RELEASE_VALIDATION_DIRECT_URL` | configuration | http://127.0.0.1:8080 | yes | component-dependent | scripts/dev/check-lite-release-validation-server-phone.sh |
 | `POCKETLAB_RELEASE_VALIDATION_POLL_ATTEMPTS` | configuration | 90 | yes | component-dependent | scripts/dev/check-lite-release-validation-server-phone.sh |
 | `POCKETLAB_RELEASE_VALIDATION_POLL_INTERVAL_SECONDS` | configuration | 2 | yes | component-dependent | scripts/dev/check-lite-release-validation-server-phone.sh |

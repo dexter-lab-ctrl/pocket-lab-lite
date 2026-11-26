@@ -606,6 +606,28 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The candidate did not satisfy the bounded trusted lifecycle contract, so it cannot advance review or recovery state.",
+      "domain": "release-trust",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:candidate_invalid",
+      "name": "candidate_invalid",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Candidate verification failed"
+      ],
+      "user_interpretation": "Pocket Lab could not verify this candidate safely."
+    },
+    {
+      "confidence": "source-derived",
       "description": "An exact target cache entry was rejected because its checkpoint provenance was missing, incomplete, or incompatible.",
       "domain": "security",
       "event_mapping": [],
@@ -2652,6 +2674,50 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Authenticity or artifact integrity was not sufficient to establish independent provenance and qualification for execution.",
+      "domain": "release-trust",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:independent_provenance_and_qualification_required",
+      "name": "independent_provenance_and_qualification_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Independent qualification required"
+      ],
+      "user_interpretation": "Independent provenance and qualification are required before this candidate can continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "An independently configured trust root is required before trusted review can begin.",
+      "domain": "release-trust",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:independent_root_required",
+      "name": "independent_root_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Trust configuration required"
+      ],
+      "user_interpretation": "An independently configured trust root is required before review can continue."
+    },
+    {
+      "confidence": "source-derived",
       "description": "There is not enough safe storage for the operation.",
       "domain": "system",
       "event_mapping": [],
@@ -2913,6 +2979,28 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Pocket Lab is using a compatible device telemetry value."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The explicitly selected local candidate or trusted root is unavailable, so the review path does not fall back to an ambient source.",
+      "domain": "release-trust",
+      "event_mapping": [],
+      "http_status": 404,
+      "id": "reason:local_candidate_or_root_missing",
+      "name": "local_candidate_or_root_missing",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Candidate unavailable"
+      ],
+      "user_interpretation": "The selected trusted candidate is unavailable."
     },
     {
       "confidence": "source-derived",
@@ -5010,6 +5098,28 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The configured trust root does not satisfy the independent root contract, so verification fails closed.",
+      "domain": "release-trust",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:root_pin_invalid",
+      "name": "root_pin_invalid",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Trust root invalid"
+      ],
+      "user_interpretation": "The configured trust root is invalid."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
       "domain": "validation",
       "event_mapping": [],
@@ -5521,6 +5631,28 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The remaining safety targets were deferred by the configured thermal policy."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The trusted release configuration or metadata contract is malformed or inconsistent, so the review path fails closed.",
+      "domain": "release-trust",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:trust_contract_invalid",
+      "name": "trust_contract_invalid",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Trust contract invalid"
+      ],
+      "user_interpretation": "The trusted release contract is invalid."
     },
     {
       "confidence": "source-derived",
@@ -6175,6 +6307,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5a99f823b944ae3642b2f914852c337292611ac685c249568797580d6c5109e3"
+    "source_fingerprint": "1f30b69222bc5131517d56b80bd58de986f7f8fec42139920f80daaf5e708fef"
   }
 }

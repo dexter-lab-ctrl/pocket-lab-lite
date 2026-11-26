@@ -659,6 +659,201 @@ Source-derived release persistence object; detailed ownership is conservatively 
 | Indexes | idx_lite_installed_release_identity_mode, sqlite_autoindex_lite_installed_release_identity_1 |
 | Confidence | inferred |
 
+## `lite_lifecycle_audit`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_lifecycle_audit_decision, sqlite_autoindex_lite_lifecycle_audit_1 |
+| Confidence | inferred |
+
+## `lite_lifecycle_boundary_scopes`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | sqlite_autoindex_lite_lifecycle_boundary_scopes_1 |
+| Confidence | inferred |
+
+## `lite_lifecycle_grants`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_lifecycle_grants_purpose, idx_lite_lifecycle_grants_current, sqlite_autoindex_lite_lifecycle_grants_2, sqlite_autoindex_lite_lifecycle_grants_1 |
+| Confidence | inferred |
+
+## `lite_lifecycle_preferences`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | — |
+| Confidence | inferred |
+
+## `lite_lifecycle_service_delegations`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | idx_lifecycle_delegation_purpose, sqlite_autoindex_lite_lifecycle_service_delegations_2, sqlite_autoindex_lite_lifecycle_service_delegations_1 |
+| Confidence | inferred |
+
+## `lite_lifecycle_workspace`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | sqlite_autoindex_lite_lifecycle_workspace_1 |
+| Confidence | inferred |
+
+## `lite_release_trust_configuration`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | — |
+| Confidence | inferred |
+
+## `lite_release_trust_floor`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | — |
+| Confidence | inferred |
+
+## `lite_release_trust_observation`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | — |
+| Confidence | inferred |
+
+## `lite_release_trust_pin`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | — |
+| Confidence | inferred |
+
+## `lite_release_trust_receipts`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | sqlite_autoindex_lite_release_trust_receipts_2, sqlite_autoindex_lite_release_trust_receipts_1 |
+| Confidence | inferred |
+
+## `lite_release_trust_transitions`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | — |
+| Confidence | inferred |
+
+## `lite_release_trusted_time`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | — |
+| Confidence | inferred |
+
 ## `lite_revision_events`
 
 Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
