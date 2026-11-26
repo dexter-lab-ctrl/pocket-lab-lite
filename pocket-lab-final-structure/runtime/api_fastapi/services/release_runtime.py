@@ -1742,6 +1742,12 @@ async def run_release_check(
             )
         metrics: dict[str, Any] = {}
         try:
+            from .lite_release_trust_configuration import reconcile_configuration, latched
+            if not renew_release_lease(lease):
+                raise ReleaseStaleResult("release_check_lease_lost")
+            with connection() as conn:
+                with begin_immediate(conn) as tx:
+                    reconcile_configuration(tx)
             request = build_check_request()
             result, metrics = await execute_release_subprocess("check", request)
             interval = stable_release_interval_seconds()
@@ -1750,7 +1756,8 @@ async def run_release_check(
             with connection() as conn:
                 floor = floor_request(conn)
                 schema = conn.execute("SELECT COALESCE(MAX(version),0) FROM schema_migrations").fetchone()[0]
-            if os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256") or floor["pinned_root_sha256"]:
+                trust_enabled = latched(conn) or bool(floor["pinned_root_sha256"])
+            if trust_enabled:
                 latest = result.get("latest_release") or {}
                 manifest = latest.get("manifest") or {}
                 trust_request = {
@@ -1826,9 +1833,13 @@ async def check_for_apply(lease: ReleaseLease) -> tuple[dict[str, Any], dict[str
     # An explicitly provisioned trust deployment cannot fall back to the legacy
     # installer until a qualified trusted promotion contract exists (T4).
     from .lite_release_trust_runtime import floor_request
+    from .lite_release_trust_configuration import reconcile_configuration, latched
     with connection() as conn:
-        pinned = floor_request(conn)["pinned_root_sha256"]
-    if os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256") or pinned:
+        with begin_immediate(conn) as tx:
+            reconcile_configuration(tx)
+            pinned = floor_request(tx)["pinned_root_sha256"]
+            trust_enabled = latched(tx)
+    if trust_enabled or pinned:
         raise ReleaseRuntimeError("trusted_promotion_not_qualified")
     result, metrics = await execute_release_subprocess("check", request)
     result.update(

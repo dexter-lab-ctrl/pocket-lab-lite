@@ -16,6 +16,8 @@ import re
 import stat
 import time
 import tempfile
+import shutil
+from . import lite_release_trust_configuration as config
 from contextlib import contextmanager
 import uuid
 
@@ -31,17 +33,37 @@ FILES = {
 MAX_ARTIFACT = 256 * 1024 * 1024
 
 
+@contextmanager
+def _open_controlled(directory: Path, name: str, limit: int):
+    if Path(name).name != name or name in ("", ".", ".."):
+        raise TrustError("unsafe_trust_filename")
+    # Open each directory without following symlinks. Ancestors may have
+    # different owners; the controlled directory itself must be private.
+    absolute = directory.absolute()
+    fd = os.open("/", os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        for part in absolute.parts[1:]:
+            next_fd = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+            os.close(fd)
+            fd = next_fd
+        info = os.fstat(fd)
+        if info.st_uid != os.getuid() or info.st_mode & 0o077:
+            raise TrustError("unsafe_trust_directory_permissions")
+        child = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=fd)
+        with os.fdopen(child, "rb") as stream:
+            before = os.fstat(stream.fileno())
+            if (not stat.S_ISREG(before.st_mode) or before.st_uid != os.getuid()
+                    or before.st_nlink != 1 or before.st_mode & 0o022 or before.st_size > limit):
+                raise TrustError("trust_file_size_or_type_invalid")
+            yield stream, before
+            after = os.fstat(stream.fileno())
+            if (before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (after.st_size, after.st_mtime_ns, after.st_ctime_ns):
+                raise TrustError("candidate_changed")
+    finally:
+        os.close(fd)
+
 def _read(directory: Path, name: str, limit: int, *, hash_only: bool = False):
-    # Fixed filenames only. Refuse symlink traversal in the controlled directory.
-    if directory.is_symlink() or directory.parent.is_symlink():
-        raise TrustError("unsafe_trust_directory")
-    path = directory / name
-    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
-    fd = os.open(path, flags)
-    with os.fdopen(fd, "rb") as stream:
-        info = os.fstat(stream.fileno())
-        if not stat.S_ISREG(info.st_mode) or info.st_size > limit:
-            raise TrustError("trust_file_size_or_type_invalid")
+    with _open_controlled(directory, name, limit) as (stream, info):
         if not hash_only:
             raw = stream.read(limit + 1)
             if len(raw) > limit:
@@ -70,13 +92,15 @@ def _clock(directory: Path):
         boot = Path("/proc/sys/kernel/random/boot_id").read_text().strip()
         if anchor["boot_id"] != boot or type(anchor["monotonic_ns"]) is not int:
             return None
-        elapsed = time.monotonic_ns() - anchor["monotonic_ns"]
+        sample = time.monotonic_ns()
+        elapsed = sample - anchor["monotonic_ns"]
         if not 0 <= elapsed <= 600_000_000_000:
             return None
         if not isinstance(anchor["utc"], str) or not anchor["utc"].endswith("Z"):
             return None
         now = datetime.fromisoformat(anchor["utc"][:-1] + "+00:00") + timedelta(microseconds=elapsed // 1000)
-        return now
+        return now, {"clock_boot_id": boot, "clock_sample_ns": sample,
+                     "clock_remaining_ns": 600_000_000_000 - elapsed}
     except (OSError, ValueError, TypeError, OverflowError):
         return None
 
@@ -84,10 +108,7 @@ def _clock(directory: Path):
 @contextmanager
 def _candidate(root_dir, tag, request):
     mode = os.environ.get("POCKETLAB_RELEASE_TRUST_SOURCE", "github")
-    if mode == "local":
-        yield root_dir / "candidate"
-        return
-    if mode != "github" or request.get("repository") != "dexter-lab-ctrl/pocket-lab-lite":
+    if mode not in ("local", "github") or request.get("repository") != "dexter-lab-ctrl/pocket-lab-lite":
         raise TrustError("trusted_repository_mismatch")
     from .release_update_process import _download_to_file, ReleaseProcessFailure
     names = {name: MAX_ARTIFACT if name == "dist.zip" else MAX_BYTES for name in FILES.values()}
@@ -99,14 +120,29 @@ def _candidate(root_dir, tag, request):
         raise TrustError("trust_disk_pressure")
     with tempfile.TemporaryDirectory(prefix="candidate-", dir=root_dir) as temp:
         path = Path(temp)
+        total = 0
         for name, limit in sorted(names.items(), key=lambda pair: pair[0] == "dist.zip"):
-            # Fixed repository, tag and filenames, not metadata-provided URLs.
-            url = f"https://github.com/dexter-lab-ctrl/pocket-lab-lite/releases/download/{tag}/{name}"
-            try:
-                _download_to_file(url, path / name, timeout=20, max_bytes=limit)
-            except ReleaseProcessFailure as exc:
-                raise FileNotFoundError("trusted_asset_unavailable") from exc
-        yield path
+            if mode == "local":
+                with _open_controlled(root_dir / "candidate", name, limit) as (stream, info):
+                    with (path / name).open("xb") as out:
+                        copied = 0
+                        while chunk := stream.read(1024 * 1024):
+                            copied += len(chunk)
+                            if copied > limit:
+                                raise TrustError("trust_file_size_or_type_invalid")
+                            out.write(chunk)
+                        if copied != info.st_size:
+                            raise TrustError("candidate_changed")
+            else:
+                # Fixed repository, tag and filenames, not metadata-provided URLs.
+                url = f"https://github.com/dexter-lab-ctrl/pocket-lab-lite/releases/download/{tag}/{name}"
+                try:
+                    _download_to_file(url, path / name, timeout=20, max_bytes=limit)
+                except ReleaseProcessFailure as exc:
+                    raise FileNotFoundError("trusted_asset_unavailable") from exc
+            (path / name).chmod(0o400)
+            total += (path / name).stat().st_size
+        yield path, {"bytes_read": total, "files_examined": len(names)}
 
 
 def inspect_candidate(request):
@@ -125,9 +161,12 @@ def inspect_candidate(request):
         if hashlib.sha256(root_bytes).hexdigest() != pin:
             raise TrustError("root_pin_mismatch")
         root = _parse(Root, root_bytes)
-        now = _clock(root_dir)
-        if now is None:
+        clock = _clock(root_dir)
+        if clock is None:
             raise TrustError("trusted_time_unavailable")
+        now, clock_fields = clock
+        if request.get("configuration_state") != "configured" or request.get("configured_root_sha256") != pin:
+            raise TrustError("trust_configuration_suspended")
         _expiry(root.expires, now)
         if request.get("highest_trusted_time"):
             previous = datetime.fromisoformat(request["highest_trusted_time"])
@@ -139,7 +178,7 @@ def inspect_candidate(request):
             rotation = verify_rotation(_read(root_dir, "previous-root.json", MAX_BYTES), root_bytes,
                 _read(root_dir, "root-transition.dsse.json", MAX_BYTES),
                 old_pin=request["pinned_root_sha256"], new_pin=pin, now=now)
-        with _candidate(root_dir, tag, request) as candidate:
+        with _candidate(root_dir, tag, request) as (candidate, acquisition_metrics):
             observed = {key: _read(candidate, name, MAX_ARTIFACT if name == "dist.zip" else MAX_BYTES, hash_only=True)
                         for key, name in FILES.items()}
             manifest = _read(candidate, "pocketlab-lite-capabilities.json", MAX_BYTES)
@@ -175,13 +214,16 @@ def inspect_candidate(request):
                 root_changed=bool(rotation))
             current_schema = int(request.get("current_schema") or 0)
             schema_match = receipt["schema_min"] <= current_schema <= receipt["schema_max"]
-            receipt.update(provenance=disposition, provenance_reason=reason, **rotation,
+            receipt.update(provenance=disposition, provenance_reason=reason, **rotation, **clock_fields,
+                root_sha256=pin, attestation_root_sha256=config.configured()[1],
+                configuration_revision=request.get("configuration_revision"),
                 impact=assessment.impact.value, assessment=assessment.model_dump(mode="json"),
                 schema_range_matches=schema_match, current_schema=current_schema,
                 registry_revision=registry_revision(),
                 compatibility="unknown" if schema_match else "incompatible")
             return {"state": "historical_evidence" if disposition != "failed" else "verification_failed",
-                    "reason_code": reason, "root_sha256": pin, "receipt": receipt if disposition != "failed" else None}
+                    "reason_code": reason, "root_sha256": pin, "receipt": receipt if disposition == "verified" else None,
+                    "acquisition_metrics": acquisition_metrics}
     except FileNotFoundError:
         return {"state": "metadata_unavailable", "reason_code": "local_candidate_or_root_missing"}
     except TrustError as exc:
@@ -196,7 +238,11 @@ def floor_request(conn):
     floor = conn.execute("SELECT * FROM lite_release_trust_floor WHERE singleton_id=1").fetchone()
     pin = conn.execute("SELECT root_sha256 FROM lite_release_trust_pin WHERE singleton_id=1").fetchone()
     clock = conn.execute("SELECT trusted_at FROM lite_release_trusted_time WHERE singleton_id=1").fetchone()
-    return {"highest_trusted_time": clock["trusted_at"] if clock else "",
+    setup = config.configuration(conn)
+    return {"configuration_revision": setup["revision"] if setup else 0,
+            "configuration_state": setup["state"] if setup else "unconfigured",
+            "configured_root_sha256": setup["root_sha256"] if setup else "",
+            "highest_trusted_time": clock["trusted_at"] if clock else "",
             "highest_version": floor["metadata_version"] if floor else 0,
             "highest_root": floor["root_version"] if floor else 0,
             "highest_tag": floor["release_tag"] if floor else "",
@@ -212,7 +258,9 @@ def cached_review(conn, request):
         return False
     try:
         r = json.loads(row["review_json"])
-        now = datetime.now(timezone.utc)
+        now = config.prepared_now(conn, r)
+        if now is None:
+            return False
         checked = datetime.fromisoformat(r["checked_at"])
         if not timedelta(0) <= now - checked < timedelta(hours=24):
             return False
@@ -244,7 +292,9 @@ def persist(tx, observation, tag):
         rotated = (receipt.get("previous_root_sha256") == old["pinned_root_sha256"]
                    and receipt.get("root_transition_sha256") and receipt["root_version"] == old["highest_root"] + 1
                    and version > old["highest_version"])
-        if ((old["highest_trusted_time"] and datetime.fromisoformat(receipt["checked_at"]) < datetime.fromisoformat(old["highest_trusted_time"]))
+        if (not config.current_configuration(tx, receipt)
+                or config.prepared_now(tx, receipt) is None
+                or (old["highest_trusted_time"] and datetime.fromisoformat(receipt["checked_at"]) < datetime.fromisoformat(old["highest_trusted_time"]))
                 or (old["pinned_root_sha256"] not in ("", root_pin) and not rotated)
                 or version < old["highest_version"]
                 or receipt["root_version"] < old["highest_root"]
@@ -276,5 +326,8 @@ def persist(tx, observation, tag):
     tx.execute("DELETE FROM lite_release_trust_receipts WHERE metadata_version NOT IN (SELECT metadata_version FROM lite_release_trust_receipts ORDER BY metadata_version DESC LIMIT 100)")
     if not previous or _semantic_review(previous["state"], previous["reason_code"], previous["release_tag"],
             json.loads(previous["review_json"])) != _semantic_review(state, reason, tag, receipt or {}):
+        tx.execute("INSERT INTO lite_release_trust_transitions(state,reason_code,occurred_at,release_tag) VALUES(?,?,?,?)",
+                   (state, reason, stamp, tag))
+        tx.execute("DELETE FROM lite_release_trust_transitions WHERE event_id NOT IN (SELECT event_id FROM lite_release_trust_transitions ORDER BY event_id DESC LIMIT 200)")
         from .lite_control_plane_store import _bump_revision
         _bump_revision(tx, "audit", stamp, changed_ids=["trusted-lifecycle"], reason="audit_state_changed")

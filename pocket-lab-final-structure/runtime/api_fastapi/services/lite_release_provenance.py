@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import tempfile
 
 from .lite_release_contract import DEFAULT_REPOSITORY
 
@@ -18,12 +19,21 @@ def provenance(directory: Path, root_dir: Path, *, commit: str, tag: str):
     try:
         if root.stat().st_size > 2 * 1024 * 1024 or bundle.stat().st_size > 2 * 1024 * 1024:
             return "failed", "provenance_size_invalid"
-        if hashlib.sha256(root.read_bytes()).hexdigest() != pin:
+        from .lite_release_trust_runtime import _read
+        root_bytes = _read(root_dir, root.name, 2 * 1024 * 1024)
+        if hashlib.sha256(root_bytes).hexdigest() != pin:
             return "failed", "provenance_root_pin_mismatch"
         # No credentials or debug settings inherited. Local root and bundle
         # allow offline verification without contacting a release URL.
-        env = {k: os.environ[k] for k in ("PATH", "HOME", "TMPDIR", "PREFIX", "SYSTEMROOT") if k in os.environ}
-        env.update({"GH_PROMPT_DISABLED": "1", "GH_NO_UPDATE_NOTIFIER": "1", "GH_HOST": "github.com"})
+        root = directory / "verified-attestation-root.jsonl"
+        with root.open("xb") as out:
+            out.write(root_bytes)
+        root.chmod(0o400)
+        home = directory / "gh-home"
+        home.mkdir(mode=0o700)
+        env = {k: os.environ[k] for k in ("PATH", "TMPDIR", "PREFIX", "SYSTEMROOT") if k in os.environ}
+        env.update({"HOME": str(home), "GH_CONFIG_DIR": str(home), "XDG_CONFIG_HOME": str(home),
+                    "GH_PROMPT_DISABLED": "1", "GH_NO_UPDATE_NOTIFIER": "1", "GH_HOST": "github.com"})
         for subject in ("dist.zip", "pocketlab-lite-trust.dsse.json"):
             verified = False
             for ref in ("refs/heads/main", "refs/tags/" + tag):
@@ -42,5 +52,5 @@ def provenance(directory: Path, root_dir: Path, *, commit: str, tag: str):
         return "verified", "provenance_verified"
     except FileNotFoundError:
         return "unknown", "provenance_bundle_or_root_unavailable"
-    except (OSError, subprocess.TimeoutExpired):
+    except (OSError, ValueError, subprocess.TimeoutExpired):
         return "unknown", "provenance_verification_unavailable"
