@@ -1150,9 +1150,10 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
         self.results["projection_driver"] = {"status": "PASS", "output_lines": line_count, "duplicate_suppression": True}
         return payload
 
-    def _start_recovery_projection_fixture(self) -> None:
+    def _start_recovery_projection_fixture(self, *, bounded_seconds: int = 120) -> None:
         """Keep one bounded degraded NATS target current during recovery admission."""
         assert self.remote is not None
+        bounded_seconds = max(120, min(int(bounded_seconds), 900))
         if self.recovery_fixture is not None and self.recovery_fixture.alive():
             raise QualificationError("a recovery projection fixture is already running")
         remote_path = f"{self.remote_root}/probe/system-health-recovery-fixture.py"
@@ -1161,7 +1162,7 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
         )
         self.recovery_fixture = self.controller.AndroidRemoteProcess(
             remote=self.remote, run_id=self.run_id, root=self.remote_root, name="system-health-recovery-fixture", env_path=self.env_path,
-            argv=[self.remote.python, remote_path, self.runtime_root, f"{self.remote_root}/state/{SCHEMA_DB_NAME}", str(time.time() + 120)],
+            argv=[self.remote.python, remote_path, self.runtime_root, f"{self.remote_root}/state/{SCHEMA_DB_NAME}", str(time.time() + bounded_seconds)],
             cwd=self.runtime_root, log_path=f"{self.remote_root}/logs/recovery-fixture.log",
         )
         self.recovery_fixture.launch()
@@ -1186,7 +1187,7 @@ print(json.dumps({"results": results, "status": "PASS" if results and results[0]
             raise QualificationError("recovery projection fixture did not publish an active NATS incident")
         runs = self.results.setdefault("recovery_projection_fixture", [])
         if isinstance(runs, list):
-            runs.append({"status": "PASS", "bounded_seconds": 120, "target": "nats/jetstream", "fault_injection": "candidate_sqlite_projection_only"})
+            runs.append({"status": "PASS", "bounded_seconds": bounded_seconds, "target": "nats/jetstream", "fault_injection": "candidate_sqlite_projection_only"})
 
     def _stop_recovery_projection_fixture(self) -> None:
         if self.recovery_fixture is not None:

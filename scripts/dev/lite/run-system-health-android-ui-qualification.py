@@ -453,7 +453,7 @@ def main(argv: list[str] | None = None) -> int:
             # surface required by the unchanged performance contract. It is
             # intentionally not used for lifecycle authorization or mutation.
             if args.performance:
-                run._start_recovery_projection_fixture()
+                run._start_recovery_projection_fixture(bounded_seconds=900)
             _run_lifecycle_ui_qualification(
                 run=run,
                 args=args,
