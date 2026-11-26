@@ -109,7 +109,7 @@ def test_durable_floor_does_not_replace_receipt_on_replay(candidate, tmp_path):
     schema = Path(__file__).parents[2] / "pocket-lab-final-structure/runtime/api_fastapi/db/schema"
     with sqlite3.connect(tmp_path / "isolated.sqlite3") as conn:
         conn.row_factory = sqlite3.Row
-        for name in ("0056_trusted_lifecycle.sql", "0057_lifecycle_authority.sql", "0058_release_trust_observations.sql"):
+        for name in ("0056_trusted_lifecycle.sql", "0057_lifecycle_authority.sql", "0058_release_trust_observations.sql", "0059_lifecycle_review_state.sql"):
             conn.executescript((schema / name).read_text())
         assert conn.execute("SELECT COUNT(*) FROM lite_lifecycle_preferences").fetchone()[0] == 0
         assert conn.execute("SELECT COUNT(*) FROM lite_lifecycle_grants").fetchone()[0] == 0
@@ -122,3 +122,28 @@ def test_durable_floor_does_not_replace_receipt_on_replay(candidate, tmp_path):
         runtime.persist(conn, {**observation, "receipt": {**receipt, "metadata_sha256": "c"*64}}, TAG)
         assert conn.execute("SELECT state FROM lite_release_trust_observation").fetchone()[0] == "verification_failed"
         assert runtime.floor_request(conn)["highest_digest"] == receipt["metadata_sha256"]
+
+
+def test_local_optional_ceiling_and_restrictive_impact():
+    old = CAPABILITIES[:1]
+    opt = CAPABILITIES[1].model_copy(update={"optional": True})
+    flags = dict(policy_changed=False, migration_changed=False, root_changed=False)
+    assert assess(old, old + (opt,), **flags).impact == Impact.U4
+    assert assess(old, old + (opt,), approved_optional=(opt,), **flags).impact == Impact.U3
+    assert assess(old, (), **flags).impact == Impact.U2
+    assert assess(old, old, presentation_only_proved=True, **flags).impact == Impact.U0
+
+
+def test_delegation_cannot_override_policy_or_runtime():
+    from api_fastapi.services.lite_lifecycle_delegation import scope_review
+    cap = next(c for c in CAPABILITIES if c.id == "lifecycle.release.verify")
+    args = dict(purpose="release-reconciler", internal_owner="release_runtime", ceiling=cap,
+                proposed=cap, channel="stable", category="software",
+                current_record="within_recorded_boundary", opa_allowed=True, runtime_ready=True)
+    assert scope_review(**args).disposition == "within"
+    assert not scope_review(**args).execution_eligible
+    for change in ({"opa_allowed": False}, {"runtime_ready": False}, {"current_record": "revoked"},
+                   {"purpose": "migration-executor"}, {"channel": "preview"}, {"internal_owner": "human"},
+                   {"proposed": cap.model_copy(update={"secret_access": True})},
+                   {"proposed": cap.model_copy(update={"version": 2})}):
+        assert scope_review(**{**args, **change}).disposition != "within"

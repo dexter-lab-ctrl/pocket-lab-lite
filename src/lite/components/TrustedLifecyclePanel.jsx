@@ -21,7 +21,7 @@ export function ReleaseTrustSummary({ trust }) {
     <h4><ShieldCheck size={18} aria-hidden="true" /> Release trust</h4>
     <LiteActionRow label="Installed release" value={trust?.installed_tag || 'Not confirmed'}
       summary={trust?.historical_identity_verified ? 'Verified under the existing release identity contract. This is not publisher authentication.' : 'Installed identity is not confirmed.'} />
-    <LiteActionRow label="Publisher trust" value={({historical_evidence: 'Historical evidence', verification_failed: 'Verification failed', metadata_unavailable: 'Trusted metadata unavailable', trust_setup_required: 'Trust setup required'})[trust?.state] || 'Not confirmed'}
+    <LiteActionRow label="Publisher trust" value={({historical_evidence: 'Historical evidence', verification_failed: 'Verification failed', metadata_unavailable: 'Trusted metadata unavailable', trust_setup_required: 'Trust setup required', metadata_expired: 'Metadata expired'})[trust?.state] || (receipt ? 'Historical evidence' : 'Trust setup required')}
       summary="A checksum alone does not establish publisher trust. No fresh verification is claimed here." />
     <details>
       <summary>View verification details</summary>
@@ -58,7 +58,7 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
   const prefs = data?.preferences;
   const managed = data?.enterprise_managed === true;
   const blocked = readOnly || busy || !prefs;
-  const canGrant = !managed && prefs?.profile === 'recommended' && data?.release_trust?.state === 'historical_evidence' && data?.release_trust?.receipt != null;
+  const canGrant = !managed && data?.can_record_consent === true;
   const grants = Array.isArray(data?.grants) ? data.grants : [];
   return <section className="lite-system-health-manage-section" aria-label="Updates & protection">
     <div className="lite-system-health-manage-intro"><h3>Updates &amp; protection</h3>
@@ -86,7 +86,7 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
           value={'Version ' + cap.version} summary="Descriptive contract only; no new execution rights." />)}
       </details>
       {grants.map(grant => <LiteActionRow key={grant.grant_id} label={purposes[grant.purpose] || 'Recorded permission'}
-        value={dispositions[grant.status] || 'Review required'} summary="No executable service identity is issued." />)}
+        value={dispositions[grant.status] || 'Review required'} summary={'Stable channel · review only · expires ' + (grant.expires_at || 'not confirmed')} />)}
       {canGrant && Object.entries(purposes).map(([value, label]) =>
         <LiteButton key={value} haptic tone="secondary" disabled={blocked || Boolean(pending)}
           onClick={() => onReview({ kind: 'grant', value, label })}>Review {label.toLowerCase()}</LiteButton>)}
@@ -95,6 +95,14 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
       {!canGrant && <p>New standing consent requires a current Owner, the Recommended profile and recorded trusted release evidence.</p>}
     </div>
     <ChangeImpactReview assessment={data?.assessment} />
+    <details className="lite-system-health-detail-block"><summary>Verification history</summary>
+      {(data?.release_trust?.history || []).map(item => <LiteActionRow key={item.receipt_id} label={item.release_tag} value={item.checked_at} summary="Historical verification; not current installation authority." />)}
+      {!data?.release_trust?.history?.length && <p>No verification history recorded.</p>}
+    </details>
+    <details className="lite-system-health-detail-block"><summary>Recent permission changes</summary>
+      {(data?.audit || []).map(item => <LiteActionRow key={item.correlation_id} label={item.event_type.replaceAll('_', ' ')} value={item.occurred_at} />)}
+      {!data?.audit?.length && <p>No permission changes recorded.</p>}
+    </details>
     {pending && <div className="lite-system-health-detail-block" role="group" aria-label="Review proposed change">
       <h4>{pending.label}</h4>
       <p>{pending.kind === 'grant' ? 'Record a limited, revocable review permission for 30 days. This replaces previous standing consent; it cannot start a service or install anything.'
