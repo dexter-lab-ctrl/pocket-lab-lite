@@ -48,6 +48,8 @@ PROTECTED_ACTIONS = frozenset(
         "system_health.recovery",
         "system_health.maintenance",
         "system_health.automatic",
+        "lifecycle.preferences.manage",
+        "lifecycle.authority.manage",
     }
 )
 

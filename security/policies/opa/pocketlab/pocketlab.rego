@@ -908,3 +908,48 @@ decision := {
     input.target.state.adapter_enabled == true
     input.target.state.owner_policy_current == true
 }
+
+# Lifecycle consent is intentionally limited to recording preferences or a
+# non-executing boundary. No service, qualification actor or approval exception
+# may use this rule to activate policy, install releases or perform maintenance.
+lifecycle_consent_target if {
+    input.action.id in {"lifecycle.preferences.manage", "lifecycle.authority.manage"}
+    input.target.type == "lifecycle_consent"
+    input.target.id == "local_workspace"
+    input.target.revision == input.target.state.change_digest
+    input.target.state.contract_version == 1
+    input.target.state.execution_enabled == false
+    input.request.confirmation_present == true
+    input.actor.type == "human"
+    input.actor.role == "Owner"
+    input.actor.owner_authority == true
+    input.session.authenticated == true
+    not synthetic_actor
+    # Managed authority issuance requires a separately qualified Enterprise
+    # approval design. A preference alone remains non-authorizing.
+    input.actor.enterprise_enabled == false
+}
+
+lifecycle_exact_assurance if {
+    some item in input.session.assurance
+    item.purpose == concat("", ["lifecycle:", input.target.revision])
+    time.parse_rfc3339_ns(item.expires_at) > time.now_ns()
+}
+
+decision := {
+    "allow": true,
+    "constraints": ["owner_authority", "exact_passkey_consent", "no_execution"],
+    "reason_code": "lifecycle_consent_record_only",
+} if {
+    lifecycle_consent_target
+    lifecycle_exact_assurance
+}
+
+decision := {
+    "allow": false,
+    "constraints": ["exact_passkey_consent"],
+    "reason_code": "passkey_step_up_required",
+} if {
+    lifecycle_consent_target
+    not lifecycle_exact_assurance
+}
