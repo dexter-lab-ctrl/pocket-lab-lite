@@ -16,9 +16,11 @@ from pathlib import Path
 import re
 import stat
 import time
+import tempfile
+from contextlib import contextmanager
 import uuid
 
-from .lite_release_trust import MAX_BYTES, Root, TrustError, _parse, strict_json, verify
+from .lite_release_trust import MAX_BYTES, Root, TrustError, _parse, _expiry, strict_json, verify
 from .lite_release_contract import parse_lite_tag
 
 FILES = {
@@ -80,6 +82,31 @@ def _clock(directory: Path):
         return None
 
 
+@contextmanager
+def _candidate(root_dir, tag, request):
+    mode = os.environ.get("POCKETLAB_RELEASE_TRUST_SOURCE", "github")
+    if mode == "local":
+        yield root_dir / "candidate"
+        return
+    if mode != "github" or request.get("repository") != "dexter-lab-ctrl/pocket-lab-lite":
+        raise TrustError("trusted_repository_mismatch")
+    from .release_update_process import _download_to_file
+    names = {name: MAX_ARTIFACT if name == "dist.zip" else MAX_BYTES for name in FILES.values()}
+    names.update({"pocketlab-lite-capabilities.json": MAX_BYTES, "pocketlab-lite-trust.dsse.json": MAX_BYTES,
+                  "pocketlab-lite-provenance.jsonl": 2 * 1024 * 1024})
+    if root_dir.is_symlink() or not root_dir.is_dir():
+        raise TrustError("unsafe_trust_directory")
+    if __import__("shutil").disk_usage(root_dir).free < MAX_ARTIFACT + 32 * 1024 * 1024:
+        raise TrustError("trust_disk_pressure")
+    with tempfile.TemporaryDirectory(prefix="candidate-", dir=root_dir) as temp:
+        path = Path(temp)
+        for name, limit in sorted(names.items(), key=lambda pair: pair[0] == "dist.zip"):
+            # Fixed repository, tag and filenames, not metadata-provided URLs.
+            url = f"https://github.com/dexter-lab-ctrl/pocket-lab-lite/releases/download/{tag}/{name}"
+            _download_to_file(url, path / name, timeout=20, max_bytes=limit)
+        yield path
+
+
 def inspect_candidate(request):
     """Called exclusively inside the existing bounded release subprocess."""
     state = Path(os.environ.get("POCKETLAB_STATE_DIR", ".")).expanduser().resolve()
@@ -96,32 +123,45 @@ def inspect_candidate(request):
         if hashlib.sha256(root_bytes).hexdigest() != pin:
             raise TrustError("root_pin_mismatch")
         root = _parse(Root, root_bytes)
+        now = _clock(root_dir)
+        if now is None:
+            raise TrustError("trusted_time_unavailable")
+        _expiry(root.expires, now)
+        rotation = {}
         if request.get("pinned_root_sha256") not in (None, "", pin):
-            raise TrustError("root_rotation_requires_review")
-        candidate = root_dir / "candidate"
-        observed = {key: _read(candidate, name, MAX_ARTIFACT if name == "dist.zip" else MAX_BYTES, hash_only=True)
-                    for key, name in FILES.items()}
-        manifest = _read(candidate, "pocketlab-lite-capabilities.json", MAX_BYTES)
-        envelope = _read(candidate, "pocketlab-lite-trust.dsse.json", MAX_BYTES)
-        floor = int(request.get("highest_version") or 0)
-        receipt = verify(envelope, pinned_root=root, trusted_now=_clock(root_dir),
-                         highest_version=max(0, floor - 1),
-                         highest_root=int(request.get("highest_root") or 0),
-                         expected_tag=tag, expected_commit=str(request.get("source_commit") or ""),
-                         channel=str(request.get("channel") or ""), observed_digests=observed,
-                         capability_manifest=manifest)
-        if observed["artifact_sha256"] != request.get("artifact_sha256"):
-            raise TrustError("discovered_artifact_mismatch")
-        if request.get("highest_tag") and parse_lite_tag(tag) < parse_lite_tag(request["highest_tag"]):
-            raise TrustError("release_tag_rollback")
-        if receipt["metadata_version"] == floor and receipt["metadata_sha256"] != request.get("highest_digest"):
-            raise TrustError("metadata_version_conflict")
-        return {"state": "historical_evidence", "reason_code": receipt["reason_code"],
-                "root_sha256": pin, "receipt": receipt}
+            from .lite_release_root_rotation import verify_rotation
+            rotation = verify_rotation(_read(root_dir, "previous-root.json", MAX_BYTES), root_bytes,
+                _read(root_dir, "root-transition.dsse.json", MAX_BYTES),
+                old_pin=request["pinned_root_sha256"], new_pin=pin, now=now)
+        with _candidate(root_dir, tag, request) as candidate:
+            observed = {key: _read(candidate, name, MAX_ARTIFACT if name == "dist.zip" else MAX_BYTES, hash_only=True)
+                        for key, name in FILES.items()}
+            manifest = _read(candidate, "pocketlab-lite-capabilities.json", MAX_BYTES)
+            envelope = _read(candidate, "pocketlab-lite-trust.dsse.json", MAX_BYTES)
+            floor = int(request.get("highest_version") or 0)
+            receipt = verify(envelope, pinned_root=root, trusted_now=now,
+                             highest_version=max(0, floor - 1),
+                             highest_root=int(request.get("highest_root") or 0),
+                             expected_tag=tag, expected_commit=str(request.get("source_commit") or ""),
+                             channel=str(request.get("channel") or ""), observed_digests=observed,
+                             capability_manifest=manifest)
+            if observed["artifact_sha256"] != request.get("artifact_sha256"):
+                raise TrustError("discovered_artifact_mismatch")
+            if request.get("highest_tag") and parse_lite_tag(tag) < parse_lite_tag(request["highest_tag"]):
+                raise TrustError("release_tag_rollback")
+            if receipt["metadata_version"] == floor and receipt["metadata_sha256"] != request.get("highest_digest"):
+                raise TrustError("metadata_version_conflict")
+            from .lite_release_provenance import provenance
+            disposition, reason = provenance(candidate, root_dir, commit=receipt["source_commit"], tag=tag)
+            receipt.update(provenance=disposition, provenance_reason=reason, **rotation)
+            return {"state": "historical_evidence" if disposition != "failed" else "verification_failed",
+                    "reason_code": reason, "root_sha256": pin, "receipt": receipt if disposition != "failed" else None}
     except FileNotFoundError:
         return {"state": "metadata_unavailable", "reason_code": "local_candidate_or_root_missing"}
     except TrustError as exc:
         return {"state": "verification_failed", "reason_code": str(exc)}
+    except (TypeError, KeyError, AttributeError):
+        return {"state": "verification_failed", "reason_code": "trust_contract_invalid"}
     except (OSError, ValueError, TypeError):
         return {"state": "verification_failed", "reason_code": "candidate_invalid"}
 
@@ -146,14 +186,18 @@ def persist(tx, observation, tag):
         old = floor_request(tx)
         version = receipt["metadata_version"]
         root_pin = observation["root_sha256"]
-        if (old["pinned_root_sha256"] not in ("", root_pin)
+        rotated = (receipt.get("previous_root_sha256") == old["pinned_root_sha256"]
+                   and receipt.get("root_transition_sha256") and receipt["root_version"] == old["highest_root"] + 1
+                   and version > old["highest_version"])
+        if ((old["pinned_root_sha256"] not in ("", root_pin) and not rotated)
                 or version < old["highest_version"]
                 or receipt["root_version"] < old["highest_root"]
                 or (version == old["highest_version"] and receipt["metadata_sha256"] != old["highest_digest"])
                 or (old["highest_tag"] and parse_lite_tag(tag) < parse_lite_tag(old["highest_tag"]))):
             state, reason = "verification_failed", "durable_trust_floor_conflict"
         elif version > old["highest_version"]:
-            tx.execute("INSERT OR IGNORE INTO lite_release_trust_pin VALUES (1,?,?)",
+            tx.execute("""INSERT INTO lite_release_trust_pin VALUES (1,?,?)
+                       ON CONFLICT(singleton_id) DO UPDATE SET root_sha256=excluded.root_sha256,root_version=excluded.root_version""",
                        (root_pin, receipt["root_version"]))
             tx.execute("""INSERT INTO lite_release_trust_floor VALUES (1,?,?,?,?)
                        ON CONFLICT(singleton_id) DO UPDATE SET metadata_version=excluded.metadata_version,
