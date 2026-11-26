@@ -45,6 +45,22 @@ def test_candidate_manifest_can_identify_a_devpc_isolated_runtime(monkeypatch):
     assert manifest["runtime_transport"] == "devpc_loopback_isolated_candidate"
 
 
+def test_trusted_lifecycle_fixture_is_explicit_and_sanitized(monkeypatch):
+    candidate = _module()
+    assert candidate.trusted_lifecycle_ui_fixture_enabled() is False
+    monkeypatch.setenv(candidate.TRUSTED_LIFECYCLE_FIXTURE_ENV, "1")
+    manifest = candidate.candidate_manifest("a" * 40)
+    payload = candidate.trusted_lifecycle_ui_fixture_payload()
+    review = candidate.trusted_lifecycle_ui_fixture_review()
+    assert manifest["trusted_lifecycle_ui_fixture"] is True
+    assert payload["qualification_fixture"] is True
+    assert payload["execution_eligible"] is False
+    assert payload["sanitized"] is True
+    assert review["confirmation_required"] is True
+    assert review["execution_eligible"] is False
+    assert not any("token" in key or "secret" in key or "password" in key for key in payload)
+
+
 @pytest.mark.parametrize(
     "path,allowed",
     [

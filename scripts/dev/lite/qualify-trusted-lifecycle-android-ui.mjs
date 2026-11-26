@@ -42,10 +42,16 @@ async function proveManifest(expectedCommit) {
   if (!response?.ok()) fail('Android candidate manifest was not reachable');
   const manifest = JSON.parse(await page.locator('body').innerText());
   const responseSha = response.headers()['x-pocket-lab-candidate-sha'] || '';
-  if (manifest.source_commit !== expectedCommit || responseSha !== expectedCommit || manifest.sanitized !== true) {
+  if (manifest.source_commit !== expectedCommit || responseSha !== expectedCommit || manifest.sanitized !== true || manifest.trusted_lifecycle_ui_fixture !== true) {
     fail('Android lifecycle manifest did not prove the exact candidate SHA');
   }
-  return { source_commit: manifest.source_commit, manifest_response_sha: responseSha, runtime_transport: manifest.runtime_transport, sanitized: true };
+  return {
+    source_commit: manifest.source_commit,
+    manifest_response_sha: responseSha,
+    runtime_transport: manifest.runtime_transport,
+    trusted_lifecycle_ui_fixture: true,
+    sanitized: true,
+  };
 }
 
 async function setTheme(theme) {
@@ -205,7 +211,9 @@ async function main() {
     lifecycle_requests: lifecycleRequests.map((item) => ({ method: item.method, path: item.path })),
     unsafe_writes: [],
     screenshots: ['trusted-lifecycle-light.png', 'trusted-lifecycle-dark.png'],
-    backend_mode: 'isolated_candidate_api',
+    backend_mode: 'isolated_candidate_ui_fixture',
+    live_backend_summary: false,
+    human_owner_boundary_preserved: true,
     destructive_actions: false,
     sanitized: true,
   };

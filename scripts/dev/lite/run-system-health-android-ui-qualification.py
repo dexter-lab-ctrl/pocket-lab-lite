@@ -188,7 +188,13 @@ class StandardUserCdpRelay:
                 process.wait(timeout=3)
 
 
-def _candidate_server(run: health.SystemHealthAndroidQualification, dist_dir: Path, output_dir: Path) -> subprocess.Popen[str]:
+def _candidate_server(
+    run: health.SystemHealthAndroidQualification,
+    dist_dir: Path,
+    output_dir: Path,
+    *,
+    trusted_lifecycle_ui_fixture: bool = False,
+) -> subprocess.Popen[str]:
     env = os.environ.copy()
     browser_recovery_signal = output_dir / "browser-recovery-repair-seen"
     browser_recovery_signal.unlink(missing_ok=True)
@@ -199,6 +205,8 @@ def _candidate_server(run: health.SystemHealthAndroidQualification, dist_dir: Pa
         "LITE_PERF_SOURCE_COMMIT": run.candidate_sha,
         "POCKETLAB_CANDIDATE_BROWSER_RECOVERY_SIGNAL_FILE": str(browser_recovery_signal),
     })
+    if trusted_lifecycle_ui_fixture:
+        env["POCKETLAB_CANDIDATE_TRUSTED_LIFECYCLE_UI_FIXTURE"] = "1"
     log = (output_dir / "candidate-server.log").open("w", encoding="utf-8")
     process = subprocess.Popen(
         [sys.executable, str(CANDIDATE_SERVER), "--candidate-api", "--dist-dir", str(dist_dir), "--source-commit", run.candidate_sha],
@@ -270,7 +278,12 @@ def _run_lifecycle_ui_qualification(
     candidate_server: subprocess.Popen[str] | None = None
     candidate_owned = False
     try:
-        candidate_server = _candidate_server(run, dist_dir.absolute(), evidence_dir)
+        candidate_server = _candidate_server(
+            run,
+            dist_dir.absolute(),
+            evidence_dir,
+            trusted_lifecycle_ui_fixture=True,
+        )
         if _candidate_state_exists():
             raise health.QualificationError("an existing Android candidate reverse is owned by another session")
         candidate_owned = True
