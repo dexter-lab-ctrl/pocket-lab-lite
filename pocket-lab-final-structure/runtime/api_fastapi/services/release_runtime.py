@@ -987,6 +987,9 @@ def commit_release_result(
                 or int(row["lease_expires_epoch_ms"] or 0) < now_ms
             )
             if not stale:
+                if payload.get("_trust_observation") is not None:
+                    from .lite_release_trust_runtime import persist
+                    persist(tx, payload["_trust_observation"], str(payload.get("latest_tag") or ""))
                 changed = str(row["canonical_hash"] or "") != digest
                 phase = str(canonical.get("phase") or "current")
                 current_tag = str(canonical.get("current_tag") or "unknown")
@@ -1318,10 +1321,12 @@ def _subprocess_env() -> dict[str, str]:
 async def execute_release_subprocess(
     operation: str,
     request_payload: Mapping[str, Any],
+    *,
+    deadline: float | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     _require_worker()
     operation = _safe_text(operation, 32)
-    if operation not in {"check", "stage", "promote", "validate", "rollback", "recover", "cleanup"}:
+    if operation not in {"check", "stage", "promote", "validate", "rollback", "recover", "cleanup", "verify_trust"}:
         raise ReleaseRuntimeError("unsupported_release_subprocess_operation")
     body = json.dumps(
         {"operation": operation, **_sanitize(dict(request_payload))},
@@ -1335,6 +1340,10 @@ async def execute_release_subprocess(
         "POCKETLAB_RELEASE_SUBPROCESS_TIMEOUT_SECONDS", 120.0, 2.0, 1800.0
     )
     started = time.monotonic()
+    if deadline is not None:
+        timeout = min(timeout, deadline - started)
+        if timeout <= 0:
+            raise ReleaseSubprocessError("release_subprocess_timeout")
     process = await asyncio.create_subprocess_exec(
         sys.executable,
         "-m",
@@ -1353,15 +1362,32 @@ async def execute_release_subprocess(
         started_at=_utc_now(),
         last_error_type="",
     )
+    def stop_child(force=False):
+        # The trust child may spawn the independent provenance verifier.
+        # Terminate its isolated process group so it cannot outlive the lease.
+        if operation == "verify_trust" and os.name != "nt":
+            import signal
+            try:
+                os.killpg(process.pid, signal.SIGKILL if force else signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+        elif process.returncode is None:
+            if force:
+                process.kill()
+            else:
+                process.terminate()
     try:
         stdout, stderr = await asyncio.wait_for(process.communicate(body), timeout=timeout)
     except asyncio.CancelledError:
-        process.terminate()
+        stop_child()
         try:
             await asyncio.wait_for(process.wait(), timeout=2.0)
         except asyncio.TimeoutError:
-            process.kill()
+            stop_child(force=True)
             await process.wait()
+        finally:
+            if operation == "verify_trust":
+                stop_child(force=True)
         _set_process_state(
             process_alive=False,
             process_pid=0,
@@ -1372,12 +1398,15 @@ async def execute_release_subprocess(
         )
         raise
     except asyncio.TimeoutError as exc:
-        process.terminate()
+        stop_child()
         try:
             await asyncio.wait_for(process.wait(), timeout=2.0)
         except asyncio.TimeoutError:
-            process.kill()
+            stop_child(force=True)
             await process.wait()
+        finally:
+            if operation == "verify_trust":
+                stop_child(force=True)
         metrics = {
             "pid": int(process.pid or 0),
             "exit_code": process.returncode,
@@ -1739,11 +1768,58 @@ async def run_release_check(
             )
         metrics: dict[str, Any] = {}
         try:
+            from .lite_release_trust_configuration import reconcile_configuration, latched
+            budget = _bounded_float("POCKETLAB_RELEASE_CHECK_TOTAL_TIMEOUT_SECONDS", 240.0, 10.0, 900.0)
+            deadline = time.monotonic() + budget
+            if not renew_release_lease(lease, lease_seconds=int(budget) + 15):
+                raise ReleaseStaleResult("release_check_lease_lost")
+            with connection() as conn:
+                with begin_immediate(conn) as tx:
+                    reconcile_configuration(tx)
             request = build_check_request()
-            result, metrics = await execute_release_subprocess("check", request)
+            result, metrics = await execute_release_subprocess("check", request, deadline=deadline)
             interval = stable_release_interval_seconds()
+            observation = None
+            from .lite_release_trust_runtime import floor_request, cached_review
+            with connection() as conn:
+                floor = floor_request(conn)
+                schema = conn.execute("SELECT COALESCE(MAX(version),0) FROM schema_migrations").fetchone()[0]
+                trust_enabled = latched(conn) or bool(floor["pinned_root_sha256"])
+            if trust_enabled:
+                latest = result.get("latest_release") or {}
+                manifest = latest.get("manifest") or {}
+                trust_request = {
+                    **floor, "current_schema": schema, "repository": request.get("verified_repository"), "release_tag": result.get("latest_tag"),
+                    "source_commit": manifest.get("source_commit"),
+                    "artifact_sha256": manifest.get("artifact_sha256"),
+                    "channel": "preview" if latest.get("prerelease") else "stable",
+                }
+                with connection() as conn:
+                    reuse = source == "automatic" and cached_review(conn, trust_request)
+                if not reuse:
+                    remaining = deadline - time.monotonic()
+                    pressure = release_admission_reason()
+                    if pressure or remaining <= 2:
+                        observation = {"state": "metadata_unavailable", "reason_code": pressure or "trust_deadline_exceeded"}
+                    else:
+                        if not renew_release_lease(lease, lease_seconds=int(remaining) + 15):
+                            raise ReleaseStaleResult("release_check_lease_lost")
+                        trust_request["deadline_ns"] = int(deadline * 1e9)
+                        trust_request["review_id"] = uuid.uuid4().hex
+                        try:
+                            observation, trust_metrics = await execute_release_subprocess("verify_trust", trust_request, deadline=deadline)
+                        except ReleaseSubprocessError as exc:
+                            observation = {"state": "metadata_unavailable", "reason_code": exc.code}
+                            trust_metrics = exc.metrics
+                        finally:
+                            from .lite_release_trust_runtime import cleanup_review
+                            cleanup_review(trust_request["review_id"])
+                        for field in ("wall_ms", "cpu_ms", "bytes_read", "files_examined"):
+                            metrics[field] = (metrics.get(field) or 0) + (trust_metrics.get(field) or 0)
+                        metrics["peak_rss_bytes"] = max(metrics.get("peak_rss_bytes") or 0, trust_metrics.get("peak_rss_bytes") or 0)
             payload = {
                 **result,
+                "_trust_observation": observation,
                 "configured_repository": request.get("configured_repository"),
                 "verified_repository": request.get("verified_repository"),
                 "repository_match": bool(request.get("repository_match")),
@@ -1798,6 +1874,17 @@ async def check_for_apply(lease: ReleaseLease) -> tuple[dict[str, Any], dict[str
     request = build_check_request()
     if not request.get("repository_match"):
         raise ReleaseRuntimeError("release_product_unverified")
+    # An explicitly provisioned trust deployment cannot fall back to the legacy
+    # installer until a qualified trusted promotion contract exists (T4).
+    from .lite_release_trust_runtime import floor_request
+    from .lite_release_trust_configuration import reconcile_configuration, latched
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            reconcile_configuration(tx)
+            pinned = floor_request(tx)["pinned_root_sha256"]
+            trust_enabled = latched(tx)
+    if trust_enabled or pinned:
+        raise ReleaseRuntimeError("trusted_promotion_not_qualified")
     result, metrics = await execute_release_subprocess("check", request)
     result.update(
         {

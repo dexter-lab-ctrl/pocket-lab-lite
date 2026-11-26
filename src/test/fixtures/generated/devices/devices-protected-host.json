@@ -14,7 +14,7 @@
     "scenario": "devices-protected-host",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "97bb0b376a45ad6f45c60c2fb14f537c0786a54e149d8f46e22f74cf458746af",
+    "source_fingerprint": "768c1aa1f0f4d75262645c70cb85dd42e465df4a5dc488699d5601f5a112ab6c",
     "validation_status": "generated"
   }
 }

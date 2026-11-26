@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: c8e55acd35f00e5a50b1aaa6858298c7f7732ebf8dbe81bdecc70d1552aef52e
+source_fingerprint: 72cf48f6b1a4de8924a9e85317c5f1758db038fa2c27c25220f5624b223a0c6a
 schema_revision: 1
 validation_status: generated
 ---
@@ -52,6 +52,7 @@ validation_status: generated
 | `backup_state_missing` | apps | The durable Photo Backup job bound to an Owner-approved workflow could not be recovered after a restart or delivery failure. | no | yes | 409 | high | pocket-lab-final-structure/runtime/api_fastapi/services/lite_owner_operations.py |
 | `battery_policy_threshold` | security | A reliable battery reading was at or below the explicitly configured device threshold while discharging. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `bootstrap_transport_rejected` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
+| `candidate_invalid` | release-trust | The candidate did not satisfy the bounded trusted lifecycle contract, so it cannot advance review or recovery state. | no | yes | 409 | error | pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_runtime.py |
 | `checkpoint_ineligible` | security | An exact target cache entry was rejected because its checkpoint provenance was missing, incomplete, or incompatible. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
 | `claim_verified` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `cold_start_validation` | validation | Cold-start validation is in progress. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
@@ -149,6 +150,8 @@ validation_status: generated
 | `identity_username_invalid` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `incident_generation_changed` | projections | A System Health action was submitted against an older incident generation and was blocked by generation fencing. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py |
 | `independent_approval_satisfied` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
+| `independent_provenance_and_qualification_required` | release-trust | Authenticity or artifact integrity was not sufficient to establish independent provenance and qualification for execution. | yes | no | 409 | error | pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust.py |
+| `independent_root_required` | release-trust | An independently configured trust root is required before trusted review can begin. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_runtime.py |
 | `insufficient_storage` | system | There is not enough safe storage for the operation. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `interrupted` | system | The operation was interrupted. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `invalid_backup_id` | apps | A server-owned Photo Backup recovery request supplied a backup identity outside the fixed durable ID format. | no | yes | 422 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photo_backup.py |
@@ -162,6 +165,7 @@ validation_status: generated
 | `legacy_observability_stack_retired` | telemetry | The legacy observability service-management and Loki compatibility endpoints are retired and do not start or query legacy services. | no | yes | 410 | info | pocket-lab-final-structure/runtime/api_fastapi/routers/observability.py |
 | `legacy_secret_rotation_retired` | identity | The legacy generic secret-rotation endpoint is retired and is not a human password operation. | no | yes | 410 | info | structured reason/failure fields in Lite backend or contracts metadata |
 | `legacy_telemetry_value` | devices | A sanitized compatibility telemetry field was normalized into the canonical Device Facts resource contract while older agent payloads are still supported. | no | no | 200 | info | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_facts.py |
+| `local_candidate_or_root_missing` | release-trust | The explicitly selected local candidate or trusted root is unavailable, so the review path does not fall back to an ambient source. | yes | no | 404 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_runtime.py |
 | `local_owner_required` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `location_not_registered` | recovery | A restore point refers to a backup location that is not currently registered on the protected Server Phone. | yes | no | 409 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `maintenance_conflict_or_authority_changed` | system | A maintenance conflict or owner-authority change prevented safe execution. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_maintenance.py |
@@ -266,6 +270,7 @@ validation_status: generated
 | `reviewed_plan_changed` | system | The reviewed maintenance plan changed before execution and cannot be reused. | yes | no | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_maintenance.py |
 | `rollback_pointer_failed` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `rollback_unproved` | rules | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
+| `root_pin_invalid` | release-trust | The configured trust root does not satisfy the independent root contract, so verification fails closed. | no | yes | 409 | error | pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_runtime.py |
 | `run_not_found` | validation | Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason. | yes | no | 409 | warning | contracts/metadata/documentation-platform.json security_assurance_reason_codes |
 | `runtime_contract_unavailable` | runtime | The sanitized PM2 Runtime Contract is not yet available for the Lite status projection. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py |
 | `scanner_intelligence_hard_expired` | security | Managed Trivy intelligence exceeded its bounded freshness policy and a bounded refresh did not restore a valid revision. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py |
@@ -291,6 +296,7 @@ validation_status: generated
 | `telemetry_stale` | security | The resource telemetry sample exceeded the bounded maximum age for a resource decision. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
 | `test_bypass_explicit` | rules | An explicitly test-gated policy bypass was used in the isolated test environment; it is not available in production. | no | yes | 200 | info | structured reason/failure fields in Lite backend or contracts metadata |
 | `thermal_policy_threshold` | security | Reliable device temperature telemetry reached the explicitly configured device threshold. | yes | no | 200 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_optimization.py |
+| `trust_contract_invalid` | release-trust | The trusted release configuration or metadata contract is malformed or inconsistent, so the review path fails closed. | no | yes | 409 | error | pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_runtime.py |
 | `trusted_local_admin` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |
 | `unregistered_domain` | projections | The requested domain is not registered. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
 | `unsafe_live_media_import` | apps | Live phone media import is intentionally blocked; use the managed Photo Backup workflow instead. | no | yes | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py |

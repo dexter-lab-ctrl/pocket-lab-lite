@@ -50,9 +50,9 @@
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
+        "candidate_invalid",
         "checkpoint_ineligible",
-        "configured_target_budget",
-        "confirmation_required"
+        "configured_target_budget"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -176,9 +176,9 @@
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
+        "candidate_invalid",
         "checkpoint_ineligible",
-        "configured_target_budget",
-        "confirmation_required"
+        "configured_target_budget"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -356,9 +356,9 @@
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
+        "candidate_invalid",
         "checkpoint_ineligible",
-        "configured_target_budget",
-        "confirmation_required"
+        "configured_target_budget"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -509,9 +509,9 @@
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
+        "candidate_invalid",
         "checkpoint_ineligible",
-        "configured_target_budget",
-        "confirmation_required"
+        "configured_target_budget"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -636,9 +636,9 @@
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
+        "candidate_invalid",
         "checkpoint_ineligible",
-        "configured_target_budget",
-        "confirmation_required"
+        "configured_target_budget"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -778,9 +778,9 @@
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
+        "candidate_invalid",
         "checkpoint_ineligible",
-        "configured_target_budget",
-        "confirmation_required"
+        "configured_target_budget"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -869,11 +869,11 @@
         "assurance_policy_sync_denied",
         "assurance_policy_sync_disabled",
         "battery_policy_threshold",
+        "candidate_invalid",
         "device_capability_not_authorized",
         "device_role_assignment_unauthorized",
         "device_role_change_requires_approval",
-        "generic_policy_toggle_retired",
-        "human_session_required"
+        "generic_policy_toggle_retired"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -902,11 +902,12 @@
       "reason_codes": [
         "device_role_change_requires_approval",
         "independent_approval_satisfied",
+        "independent_provenance_and_qualification_required",
+        "independent_root_required",
         "owner_approval_policy_inconsistent",
         "owner_outcome_not_verified",
         "owner_reconciliation_not_verified",
-        "owner_restart_not_verified",
-        "photoprism_indexing_not_proven"
+        "owner_restart_not_verified"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -970,9 +971,9 @@
         "backup_binding_invalid",
         "backup_state_missing",
         "battery_policy_threshold",
+        "candidate_invalid",
         "checkpoint_ineligible",
-        "configured_target_budget",
-        "confirmation_required"
+        "configured_target_budget"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",

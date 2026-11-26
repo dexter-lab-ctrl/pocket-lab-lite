@@ -525,6 +525,42 @@
         "title": "GovernanceSettingsRequest",
         "type": "object"
       },
+      "GrantRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "const": true,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "expected_profile_revision": {
+            "minimum": 1.0,
+            "title": "Expected Profile Revision",
+            "type": "integer"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "purpose": {
+            "enum": [
+              "release-reconciler",
+              "policy-reconciler"
+            ],
+            "title": "Purpose",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "expected_profile_revision",
+          "purpose",
+          "confirm"
+        ],
+        "title": "GrantRequest",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -2050,33 +2086,6 @@
         "title": "PolicySyncRequest",
         "type": "object"
       },
-      "PreferenceRequest": {
-        "additionalProperties": false,
-        "properties": {
-          "expected_revision": {
-            "minimum": 0.0,
-            "title": "Expected Revision",
-            "type": "integer"
-          },
-          "recovery_mode": {
-            "pattern": "^(monitor|assisted)$",
-            "title": "Recovery Mode",
-            "type": "string"
-          },
-          "resource_mode": {
-            "pattern": "^(balanced|low_power|maintenance)$",
-            "title": "Resource Mode",
-            "type": "string"
-          }
-        },
-        "required": [
-          "expected_revision",
-          "recovery_mode",
-          "resource_mode"
-        ],
-        "title": "PreferenceRequest",
-        "type": "object"
-      },
       "PrincipalRegistrationRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2335,6 +2344,39 @@
           "change_summary"
         ],
         "title": "RevisionRequest",
+        "type": "object"
+      },
+      "RevokeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "const": true,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "grant_id": {
+            "anyOf": [
+              {
+                "pattern": "^[a-f0-9]{32}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grant Id"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "confirm"
+        ],
+        "title": "RevokeRequest",
         "type": "object"
       },
       "RunbookApprovalRequest": {
@@ -2783,6 +2825,64 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "pocket-lab-final-structure__runtime__api_fastapi__routers__lite_system_health__PreferenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "recovery_mode": {
+            "pattern": "^(monitor|assisted)$",
+            "title": "Recovery Mode",
+            "type": "string"
+          },
+          "resource_mode": {
+            "pattern": "^(balanced|low_power|maintenance)$",
+            "title": "Resource Mode",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "recovery_mode",
+          "resource_mode"
+        ],
+        "title": "PreferenceRequest",
+        "type": "object"
+      },
+      "pocket-lab-final-structure__runtime__api_fastapi__services__lite_lifecycle_authority__PreferenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "const": true,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "profile": {
+            "enum": [
+              "notify",
+              "security",
+              "recommended"
+            ],
+            "title": "Profile",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "profile",
+          "confirm"
+        ],
+        "title": "PreferenceRequest",
         "type": "object"
       }
     }
@@ -13717,6 +13817,390 @@
         ]
       }
     },
+    "/api/lite/lifecycle/boundary": {
+      "post": {
+        "operationId": "issue_boundary_api_lite_lifecycle_boundary_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrantRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Issue Boundary",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/boundary/review": {
+      "post": {
+        "operationId": "review_boundary_api_lite_lifecycle_boundary_review_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrantRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Review Boundary",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/boundary/revoke": {
+      "post": {
+        "operationId": "revoke_boundary_api_lite_lifecycle_boundary_revoke_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevokeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revoke Boundary",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/preferences": {
+      "put": {
+        "operationId": "preferences_api_lite_lifecycle_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/pocket-lab-final-structure__runtime__api_fastapi__services__lite_lifecycle_authority__PreferenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Preferences",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/preferences/review": {
+      "post": {
+        "operationId": "review_preferences_api_lite_lifecycle_preferences_review_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/pocket-lab-final-structure__runtime__api_fastapi__services__lite_lifecycle_authority__PreferenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Review Preferences",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/summary": {
+      "get": {
+        "operationId": "summary_api_lite_lifecycle_summary_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Summary",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
     "/api/lite/media-backup": {
       "get": {
         "operationId": "lite_photo_backup_fleet_status_api_lite_media_backup_get",
@@ -20558,7 +21042,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PreferenceRequest"
+                "$ref": "#/components/schemas/pocket-lab-final-structure__runtime__api_fastapi__routers__lite_system_health__PreferenceRequest"
               }
             }
           },

@@ -45,6 +45,7 @@ CANDIDATE_PORT = 18765
 CANDIDATE_MANIFEST_PATH = "/__pocketlab_qualification__/candidate.json"
 CANDIDATE_HEALTH_PATH = "/__pocketlab_qualification__/health"
 CANDIDATE_CONTROL_PATH = "/__pocketlab_qualification__/baseline-control.html"
+LIFECYCLE_SUMMARY_PATH = "/api/lite/lifecycle/summary"
 BRIDGE_HEADER = "X-Pocket-Lab-Qualification-Bridge"
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 RUNTIME_TRANSPORT_RE = re.compile(r"^[a-z][a-z0-9_-]{2,79}$")
@@ -58,6 +59,10 @@ DIAGNOSE_PATH_RE = re.compile(r"^/api/lite/system-health/incidents/health-[0-9a-
 RECOVERY_WRITE_PATH_RE = re.compile(
     r"^/api/lite/system-health/incidents/health-[0-9a-f]{24}/(?:preflight|repair)$"
 )
+LIFECYCLE_REVIEW_PATH_RE = re.compile(
+    r"^/api/lite/lifecycle/(?:preferences|boundary)/review$"
+)
+TRUSTED_LIFECYCLE_FIXTURE_ENV = "POCKETLAB_CANDIDATE_TRUSTED_LIFECYCLE_UI_FIXTURE"
 HOP_BY_HOP_HEADERS = frozenset(
     {
         "connection",
@@ -103,6 +108,7 @@ def candidate_manifest(source_commit: str) -> dict[str, Any]:
         "performance_schema_version": "1.0.0",
         "qualification_surface": "devpc_candidate_loopback",
         "runtime_transport": runtime_transport,
+        "trusted_lifecycle_ui_fixture": trusted_lifecycle_ui_fixture_enabled(),
         "browser_secret_persisted": False,
         "sanitized": True,
     }
@@ -132,9 +138,13 @@ def is_allowed_api_path(path: str) -> bool:
 
 
 def is_allowed_candidate_write(path: str) -> bool:
-    """Allow only bounded System Health writes in isolated candidate UI runs."""
+    """Allow only bounded review/preflight writes in isolated candidate UI runs."""
     pathname = urlsplit(str(path or "")).path
-    return bool(DIAGNOSE_PATH_RE.fullmatch(pathname) or RECOVERY_WRITE_PATH_RE.fullmatch(pathname))
+    return bool(
+        DIAGNOSE_PATH_RE.fullmatch(pathname)
+        or RECOVERY_WRITE_PATH_RE.fullmatch(pathname)
+        or LIFECYCLE_REVIEW_PATH_RE.fullmatch(pathname)
+    )
 
 
 def candidate_api_target() -> tuple[str, int, ssl.SSLContext | None]:
@@ -164,6 +174,11 @@ def candidate_api_mode_enabled() -> bool:
     return bool(os.environ.get("POCKETLAB_CANDIDATE_API_LOCAL_PORT", "").strip())
 
 
+def trusted_lifecycle_ui_fixture_enabled() -> bool:
+    """Enable only the explicit physical UI fixture, never by default."""
+    return os.environ.get(TRUSTED_LIFECYCLE_FIXTURE_ENV, "").strip() == "1"
+
+
 def safe_dist_file(dist_root: Path, request_path: str) -> Path | None:
     parsed = urlsplit(str(request_path or "/"))
     relative = parsed.path.lstrip("/") or "index.html"
@@ -182,6 +197,76 @@ def safe_dist_file(dist_root: Path, request_path: str) -> Path | None:
 
 def _json_bytes(payload: dict[str, Any]) -> bytes:
     return (json.dumps(payload, ensure_ascii=True, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+
+
+def trusted_lifecycle_ui_fixture_payload() -> dict[str, Any]:
+    """Return sanitized review-only state for protected physical UI presentation."""
+    return {
+        "schema_version": 1,
+        "registry_revision": "qualification-fixture-registry",
+        "preferences": {"revision": 7, "profile": "notify", "updated_at": "2026-01-01T00:00:00Z"},
+        "enterprise_managed": False,
+        "owner_authority": True,
+        "boundary_revision": 11,
+        "authority_epoch": 4,
+        "capabilities": [
+            {"id": "lifecycle.release.verify", "version": 1},
+            {"id": "lifecycle.policy.review", "version": 1},
+        ],
+        "revisions": {"fixture": "trusted-lifecycle-ui"},
+        "assessment": {"impact": "UX", "reasons": ["fixture state"], "added": [], "removed": [], "changed": [], "execution_eligible": False},
+        "services": [],
+        "can_record_consent": True,
+        "grants": [{
+            "grant_id": "a" * 32,
+            "purpose": "release-reconciler",
+            "capability_id": "lifecycle.release.verify",
+            "capability_version": 1,
+            "expires_at": "2099-01-01T00:00:00Z",
+            "delegation_id": "fixture-delegation",
+            "channel": "stable",
+            "scope": {"targets": ["staged_release"], "data": ["release_evidence"]},
+            "category": "release",
+            "status": "within_recorded_boundary",
+        }],
+        "audit": [],
+        "release_trust": {
+            "state": "historical_evidence",
+            "reason_code": "fixture_historical_evidence",
+            "installed_tag": "qualification-fixture",
+            "historical_identity_verified": True,
+            "receipt": {
+                "release_tag": "qualification-fixture",
+                "checked_at": "2026-01-01T00:00:00Z",
+                "expires": "2099-01-01T00:00:00Z",
+                "authenticity": "verified",
+                "integrity": "verified",
+                "provenance": "verified",
+                "compatibility": "verified",
+                "impact": "UX",
+            },
+            "history": [],
+            "transitions": [],
+            "configuration_state": "configured",
+            "current_review_eligible": True,
+            "fresh_verification": False,
+        },
+        "effective_execution": {"software": False, "policy": False, "delegated": False},
+        "execution_eligible": False,
+        "sanitized": True,
+        "qualification_fixture": True,
+    }
+
+
+def trusted_lifecycle_ui_fixture_review() -> dict[str, Any]:
+    return {
+        "purpose": "lifecycle:qualification-fixture-review",
+        "execution_eligible": False,
+        "confirmation_required": True,
+        "scope": None,
+        "sanitized": True,
+        "qualification_fixture": True,
+    }
 
 
 def baseline_control_html(source_commit: str) -> bytes:
@@ -272,6 +357,9 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
         except OSError:
             self._send_error_json(400, "candidate_request_body_unavailable")
             return
+        if trusted_lifecycle_ui_fixture_enabled() and LIFECYCLE_REVIEW_PATH_RE.fullmatch(urlsplit(self.path).path):
+            self._send_bytes(200, _json_bytes(trusted_lifecycle_ui_fixture_review()), content_type="application/json")
+            return
         self._proxy_api(body=body)
 
     do_PUT = do_POST
@@ -288,6 +376,9 @@ class CandidateRequestHandler(BaseHTTPRequestHandler):
             return
         if path == CANDIDATE_CONTROL_PATH:
             self._send_bytes(200, baseline_control_html(self.source_commit), content_type="text/html; charset=utf-8")
+            return
+        if trusted_lifecycle_ui_fixture_enabled() and path == LIFECYCLE_SUMMARY_PATH:
+            self._send_bytes(200, _json_bytes(trusted_lifecycle_ui_fixture_payload()), content_type="application/json")
             return
         if path == "/api/lite/harness" or path.startswith("/api/lite/harness/"):
             self._send_error_json(404, "browser_harness_route_not_available")

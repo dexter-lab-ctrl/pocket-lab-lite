@@ -828,3 +828,29 @@ tasks:
     desc: Fault tailscaled only with declared out-of-band SSH; requires two explicit safety gates
     cmds:
       - bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --remote-access-fault
+
+  lite:lifecycle:backend:
+    desc: Focused non-production trusted lifecycle contract and cryptographic fixtures
+    cmds:
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_trusted_lifecycle.py'
+
+  lite:lifecycle:ui:
+    desc: Focused Trusted Lifecycle frontend component qualification
+    cmds:
+      - npm exec vitest run src/lite/components/TrustedLifecyclePanel.test.jsx
+
+  lite:lifecycle:mocked:
+    desc: Trusted Lifecycle mocked desktop/mobile and accessibility qualification (visual baselines require review)
+    cmds:
+      - VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npm exec playwright test tests/e2e/lite-trusted-lifecycle.spec.ts -- --project=mocked-desktop --project=mocked-mobile
+
+  lite:lifecycle:qualification:
+    desc: Run authored lifecycle backend, component and mocked browser checks (qualification session only)
+    cmds:
+      - task: lite:lifecycle:backend
+      - task: lite:lifecycle:ui
+      - task: lite:lifecycle:mocked
+  lite:lifecycle:regression:
+    desc: Run existing release, SQLite, restore and policy regressions in an isolated developer environment
+    cmds:
+      - '{{.PYTHON}} -m pytest -q tests/backend/test_lite_native_release.py tests/backend/test_release_process_isolation.py tests/backend/test_lite_sqlite_migrations.py tests/backend/test_lite_database_restore_reconciliation.py tests/backend/test_lite_policy_opa_readiness.py'

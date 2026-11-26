@@ -5319,6 +5319,216 @@
       "audience": "developer",
       "captures_runtime": false,
       "commands": [
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_trusted_lifecycle.py"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:lifecycle:backend",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "tests/backend/test_lite_trusted_lifecycle.py"
+      ],
+      "name": "lite:lifecycle:backend",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Focused non-production trusted lifecycle contract and cryptographic fixtures",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npm exec playwright test tests/e2e/lite-trusted-lifecycle.spec.ts -- --project=mocked-desktop --project=mocked-mobile"
+      ],
+      "dependencies": [],
+      "environment": [
+        "LITE_E2E_MODE"
+      ],
+      "example_invocation": "task lite:lifecycle:mocked",
+      "expected_runtime_class": "heavy-dev",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "tests/e2e/lite-trusted-lifecycle.spec.ts"
+      ],
+      "name": "lite:lifecycle:mocked",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Trusted Lifecycle mocked desktop/mobile and accessibility qualification (visual baselines require review)",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": true,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": true,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "task lite:lifecycle:backend",
+        "task lite:lifecycle:ui",
+        "task lite:lifecycle:mocked"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:lifecycle:qualification",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [],
+      "name": "lite:lifecycle:qualification",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run authored lifecycle backend, component and mocked browser checks (qualification session only)",
+      "related_tasks": [
+        "lite:lifecycle:backend",
+        "lite:lifecycle:mocked",
+        "lite:lifecycle:ui"
+      ],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "{{.PYTHON}} -m pytest -q tests/backend/test_lite_native_release.py tests/backend/test_release_process_isolation.py tests/backend/test_lite_sqlite_migrations.py tests/backend/test_lite_database_restore_reconciliation.py tests/backend/test_lite_policy_opa_readiness.py"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:lifecycle:regression",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "tests/backend/test_lite_database_restore_reconciliation.py",
+        "tests/backend/test_lite_native_release.py",
+        "tests/backend/test_lite_policy_opa_readiness.py",
+        "tests/backend/test_lite_sqlite_migrations.py",
+        "tests/backend/test_release_process_isolation.py"
+      ],
+      "name": "lite:lifecycle:regression",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Run existing release, SQLite, restore and policy regressions in an isolated developer environment",
+      "related_tasks": [],
+      "repository_mutation": true,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": true,
+      "safe_local": false,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": true,
+        "runtime_mutation": true
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Release loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "npm exec vitest run src/lite/components/TrustedLifecyclePanel.test.jsx"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:lifecycle:ui",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "src/lite/components/TrustedLifecyclePanel.test.jsx"
+      ],
+      "name": "lite:lifecycle:ui",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Focused Trusted Lifecycle frontend component qualification",
+      "related_tasks": [],
+      "repository_mutation": false,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": false,
+        "runtime_mutation": false
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Development loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
         "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest tests/backend/test_lite_photo_backup_agent.py"
       ],
       "dependencies": [],

@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: d11d3e8c67333d43c1c4e80e2920b92cb548016caec509130306e4c0354230b3
+source_fingerprint: 6b1c8175cc46390c903c10c5c86c012cf4d84065adf51a852c952c2ad4741a1d
 schema_revision: 1
 validation_status: generated
 ---
@@ -92,6 +92,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `LITE_SERVICES`
 - `LITE_STORYBOOK_URL`
 - `LITE_SYSTEM_HEALTH_ANDROID_OUTPUT_DIR`
+- `LITE_TRUSTED_LIFECYCLE_ANDROID_OUTPUT_DIR`
 - `NATS_CONTAINER`
 - `NATS_HARDENING_REPORT`
 - `NATS_HEALTH_URL`
@@ -148,6 +149,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_CANDIDATE_API_SCHEME`
 - `POCKETLAB_CANDIDATE_BROWSER_RECOVERY_SIGNAL_FILE`
 - `POCKETLAB_CANDIDATE_RUNTIME_TRANSPORT`
+- `POCKETLAB_CANDIDATE_TRUSTED_LIFECYCLE_UI_FIXTURE`
 - `POCKETLAB_COMMANDS`
 - `POCKETLAB_CONTROL_ORIGIN`
 - `POCKETLAB_DEVICE_NAME`
@@ -271,8 +273,6 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_LONG_GATE_IDLE_WAL_BUDGET_MB`
 - `POCKETLAB_LONG_GATE_IDLE_WARMUP_SECONDS`
 - `POCKETLAB_LONG_GATE_PARITY_SETTLE_SECONDS`
-- `POCKETLAB_LONG_GATE_PROGRESS_ETAG_EVERY`
-- `POCKETLAB_LONG_GATE_PROGRESS_MAX_AGE_MS`
 
 ## Process roles
 

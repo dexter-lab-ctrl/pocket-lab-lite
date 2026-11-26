@@ -2535,6 +2535,43 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Summary",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleSummary",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "query"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:get:/api/lite/lifecycle/summary",
+      "method": "GET",
+      "name": "GET /api/lite/lifecycle/summary",
+      "operation_id": "summary_api_lite_lifecycle_summary_get",
+      "response_statuses": [
+        "200",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/summary",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Lite Photo Backup Fleet Status",
       "domain": "media-backup",
       "frontend_clients": [
@@ -4406,13 +4443,6 @@
           "resolved": true,
           "source_module": "src/lite/LiteSystemHealth.jsx",
           "usage": "query"
-        },
-        {
-          "mocked": true,
-          "owner": "MSW handler",
-          "resolved": true,
-          "source_module": "src/mocks/handlers.js",
-          "usage": "mock"
         }
       ],
       "id": "api:get:/api/lite/system-health/summary",
@@ -6935,6 +6965,13 @@
           "usage": "mutation"
         },
         {
+          "mocked": false,
+          "owner": "liteApi.passkeyStepUpOptions",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        },
+        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -6995,6 +7032,13 @@
           "usage": "mutation"
         },
         {
+          "mocked": false,
+          "owner": "liteApi.verifyPasskeyStepUp",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        },
+        {
           "mocked": true,
           "owner": "MSW handler",
           "resolved": true,
@@ -7018,6 +7062,141 @@
       ],
       "tags": [
         "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Issue Boundary",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleIssueBoundary",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/boundary",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/boundary",
+      "operation_id": "issue_boundary_api_lite_lifecycle_boundary_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/boundary",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Boundary",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleReviewBoundary",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/boundary/review",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/boundary/review",
+      "operation_id": "review_boundary_api_lite_lifecycle_boundary_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/boundary/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Boundary",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleRevokeBoundary",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/boundary/revoke",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/boundary/revoke",
+      "operation_id": "revoke_boundary_api_lite_lifecycle_boundary_revoke_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/boundary/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Preferences",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleReviewPreference",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        },
+        {
+          "mocked": true,
+          "owner": "MSW handler",
+          "resolved": true,
+          "source_module": "src/mocks/handlers.js",
+          "usage": "mock"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/preferences/review",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/preferences/review",
+      "operation_id": "review_preferences_api_lite_lifecycle_preferences_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/preferences/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
       ],
       "type": "api"
     },
@@ -8667,6 +8846,38 @@
       ],
       "tags": [
         "lite-identity-p1"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Preferences",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecyclePreference",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:put:/api/lite/lifecycle/preferences",
+      "method": "PUT",
+      "name": "PUT /api/lite/lifecycle/preferences",
+      "operation_id": "preferences_api_lite_lifecycle_preferences_put",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/preferences",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
       ],
       "type": "api"
     },
@@ -13510,6 +13721,31 @@
     {
       "confidence": "source-derived",
       "description": "Source-derived supporting domain discovered from generated contracts.",
+      "domain": "lifecycle",
+      "id": "domain:lifecycle",
+      "name": "Lifecycle",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "contracts/generated/lite-openapi.json",
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "unvalidated",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "unvalidated",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "type": "domain"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Source-derived supporting domain discovered from generated contracts.",
       "domain": "lite",
       "id": "domain:lite",
       "name": "Lite",
@@ -13844,6 +14080,31 @@
       "domain": "release-management",
       "id": "domain:release-management",
       "name": "Release Management",
+      "source_refs": [
+        "contracts/generated/lite-asyncapi.json",
+        "contracts/generated/lite-openapi.json",
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "status_dimensions": {
+        "capability_status": "unvalidated",
+        "confidence": "source-derived",
+        "degraded_reason": null,
+        "evidence_status": "source-derived",
+        "freshness": "source-current",
+        "implementation_status": "unvalidated",
+        "operational_health": "unvalidated",
+        "readiness": "unvalidated",
+        "runtime_parity": "unvalidated",
+        "runtime_status": "unvalidated"
+      },
+      "type": "domain"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Source-derived supporting domain discovered from generated contracts.",
+      "domain": "release-trust",
+      "id": "domain:release-trust",
+      "name": "Release Trust",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
         "contracts/generated/lite-openapi.json",
@@ -15838,6 +16099,28 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The candidate did not satisfy the bounded trusted lifecycle contract, so it cannot advance review or recovery state.",
+      "domain": "release-trust",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:candidate_invalid",
+      "name": "candidate_invalid",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Candidate verification failed"
+      ],
+      "user_interpretation": "Pocket Lab could not verify this candidate safely."
     },
     {
       "confidence": "source-derived",
@@ -17887,6 +18170,50 @@
     },
     {
       "confidence": "source-derived",
+      "description": "Authenticity or artifact integrity was not sufficient to establish independent provenance and qualification for execution.",
+      "domain": "release-trust",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:independent_provenance_and_qualification_required",
+      "name": "independent_provenance_and_qualification_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Independent qualification required"
+      ],
+      "user_interpretation": "Independent provenance and qualification are required before this candidate can continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "An independently configured trust root is required before trusted review can begin.",
+      "domain": "release-trust",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:independent_root_required",
+      "name": "independent_root_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Trust configuration required"
+      ],
+      "user_interpretation": "An independently configured trust root is required before review can continue."
+    },
+    {
+      "confidence": "source-derived",
       "description": "There is not enough safe storage for the operation.",
       "domain": "system",
       "event_mapping": [],
@@ -18148,6 +18475,28 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Pocket Lab is using a compatible device telemetry value."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The explicitly selected local candidate or trusted root is unavailable, so the review path does not fall back to an ambient source.",
+      "domain": "release-trust",
+      "event_mapping": [],
+      "http_status": 404,
+      "id": "reason:local_candidate_or_root_missing",
+      "name": "local_candidate_or_root_missing",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Candidate unavailable"
+      ],
+      "user_interpretation": "The selected trusted candidate is unavailable."
     },
     {
       "confidence": "source-derived",
@@ -20245,6 +20594,28 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The configured trust root does not satisfy the independent root contract, so verification fails closed.",
+      "domain": "release-trust",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:root_pin_invalid",
+      "name": "root_pin_invalid",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Trust root invalid"
+      ],
+      "user_interpretation": "The configured trust root is invalid."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured Runtime Security Assurance outcome; inspect the bounded run or preflight result for the sanitized reason.",
       "domain": "validation",
       "event_mapping": [],
@@ -20756,6 +21127,28 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The remaining safety targets were deferred by the configured thermal policy."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The trusted release configuration or metadata contract is malformed or inconsistent, so the review path fails closed.",
+      "domain": "release-trust",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:trust_contract_invalid",
+      "name": "trust_contract_invalid",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [
+        "Trust contract invalid"
+      ],
+      "user_interpretation": "The trusted release contract is invalid."
     },
     {
       "confidence": "source-derived",
@@ -23899,7 +24292,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/main.py:123"
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:124"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -23920,7 +24313,7 @@
       "retry": "incomplete",
       "source_refs": [
         "contracts/generated/lite-asyncapi.json",
-        "pocket-lab-final-structure/runtime/api_fastapi/main.py:195"
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:196"
       ],
       "stream": "incomplete",
       "subscribers": [],
@@ -28461,7 +28854,9 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -28483,7 +28878,9 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -28564,6 +28961,323 @@
       ],
       "type": "table",
       "writer": "release runtime and identity services"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_lifecycle_audit",
+      "indexes": [
+        "idx_lifecycle_audit_decision",
+        "sqlite_autoindex_lite_lifecycle_audit_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0063_lifecycle_audit_links.sql"
+      ],
+      "name": "lite_lifecycle_audit",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0063_lifecycle_audit_links.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_lifecycle_boundary_scopes",
+      "indexes": [
+        "sqlite_autoindex_lite_lifecycle_boundary_scopes_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+      ],
+      "name": "lite_lifecycle_boundary_scopes",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_lifecycle_grants",
+      "indexes": [
+        "idx_lifecycle_grants_purpose",
+        "idx_lite_lifecycle_grants_current",
+        "sqlite_autoindex_lite_lifecycle_grants_2",
+        "sqlite_autoindex_lite_lifecycle_grants_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+      ],
+      "name": "lite_lifecycle_grants",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_lifecycle_preferences",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql"
+      ],
+      "name": "lite_lifecycle_preferences",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_lifecycle_service_delegations",
+      "indexes": [
+        "idx_lifecycle_delegation_purpose",
+        "sqlite_autoindex_lite_lifecycle_service_delegations_2",
+        "sqlite_autoindex_lite_lifecycle_service_delegations_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql"
+      ],
+      "name": "lite_lifecycle_service_delegations",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_lifecycle_workspace",
+      "indexes": [
+        "sqlite_autoindex_lite_lifecycle_workspace_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+      ],
+      "name": "lite_lifecycle_workspace",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_release_trust_configuration",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0061_lifecycle_trust_configuration.sql"
+      ],
+      "name": "lite_release_trust_configuration",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0061_lifecycle_trust_configuration.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_release_trust_floor",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql"
+      ],
+      "name": "lite_release_trust_floor",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_release_trust_observation",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0058_release_trust_observations.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql"
+      ],
+      "name": "lite_release_trust_observation",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0058_release_trust_observations.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_release_trust_pin",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0058_release_trust_observations.sql"
+      ],
+      "name": "lite_release_trust_pin",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0058_release_trust_observations.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_release_trust_receipts",
+      "indexes": [
+        "sqlite_autoindex_lite_release_trust_receipts_2",
+        "sqlite_autoindex_lite_release_trust_receipts_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql"
+      ],
+      "name": "lite_release_trust_receipts",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_release_trust_transitions",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0061_lifecycle_trust_configuration.sql"
+      ],
+      "name": "lite_release_trust_transitions",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0061_lifecycle_trust_configuration.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_release_trusted_time",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0060_lifecycle_trusted_time.sql"
+      ],
+      "name": "lite_release_trusted_time",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0060_lifecycle_trusted_time.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
     },
     {
       "classification": "internal operational metadata",
@@ -32114,6 +32828,16 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_trusted_lifecycle.py",
+      "name": "tests/backend/test_lite_trusted_lifecycle.py",
+      "source_refs": [
+        "tests/backend/test_lite_trusted_lifecycle.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_ui_candidate_server.py",
       "name": "tests/backend/test_lite_ui_candidate_server.py",
       "source_refs": [
@@ -33588,6 +34312,16 @@
       "name": "tests/e2e/lite-test-helpers.ts",
       "source_refs": [
         "tests/e2e/lite-test-helpers.ts"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/e2e/lite-trusted-lifecycle.spec.ts",
+      "name": "tests/e2e/lite-trusted-lifecycle.spec.ts",
+      "source_refs": [
+        "tests/e2e/lite-trusted-lifecycle.spec.ts"
       ],
       "type": "test"
     },
@@ -35888,6 +36622,19 @@
         "table:human_identities",
         "table:identity_audit_events",
         "table:lite_home_activity_read_cursors",
+        "table:lite_lifecycle_audit",
+        "table:lite_lifecycle_boundary_scopes",
+        "table:lite_lifecycle_grants",
+        "table:lite_lifecycle_preferences",
+        "table:lite_lifecycle_service_delegations",
+        "table:lite_lifecycle_workspace",
+        "table:lite_release_trust_configuration",
+        "table:lite_release_trust_floor",
+        "table:lite_release_trust_observation",
+        "table:lite_release_trust_pin",
+        "table:lite_release_trust_receipts",
+        "table:lite_release_trust_transitions",
+        "table:lite_release_trusted_time",
         "table:lite_revision_events",
         "table:lite_system_health_activation_fence",
         "table:lite_system_health_automation_attempts",
@@ -36292,6 +37039,15 @@
         "reason:webauthn_user_verification_required",
         "ui:liteidentity"
       ],
+      "lifecycle": [
+        "api:get:/api/lite/lifecycle/summary",
+        "api:post:/api/lite/lifecycle/boundary",
+        "api:post:/api/lite/lifecycle/boundary/review",
+        "api:post:/api/lite/lifecycle/boundary/revoke",
+        "api:post:/api/lite/lifecycle/preferences/review",
+        "api:put:/api/lite/lifecycle/preferences",
+        "domain:lifecycle"
+      ],
       "lite": [
         "domain:lite",
         "subject:pocketlab.commands.lite.app.backup.create",
@@ -36605,6 +37361,15 @@
       "release-management": [
         "domain:release-management",
         "runbook:release_rollback"
+      ],
+      "release-trust": [
+        "domain:release-trust",
+        "reason:candidate_invalid",
+        "reason:independent_provenance_and_qualification_required",
+        "reason:independent_root_required",
+        "reason:local_candidate_or_root_missing",
+        "reason:root_pin_invalid",
+        "reason:trust_contract_invalid"
       ],
       "remote-access": [
         "api:get:/api/lite/remote-access/readiness",
@@ -37045,6 +37810,7 @@
         "test:tests/backend/test_lite_system_health_semantic_revision.py",
         "test:tests/backend/test_lite_termux_native_execution.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_trusted_lifecycle.py",
         "test:tests/backend/test_lite_ui_candidate_server.py",
         "test:tests/backend/test_lite_ui_performance_runner.py",
         "test:tests/backend/test_lite_ux_maturity_contract.py",
@@ -37193,6 +37959,7 @@
         "test:tests/e2e/lite-system-health-visual.spec.ts",
         "test:tests/e2e/lite-system-health.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
+        "test:tests/e2e/lite-trusted-lifecycle.spec.ts",
         "test:tests/e2e/lite-ux-maturity.spec.ts",
         "test:tests/e2e/lite-visual-devices.spec.ts",
         "test:tests/e2e/lite-visual-overlays.spec.ts",
@@ -37441,6 +38208,7 @@
         "api:get:/api/lite/home/activity-history",
         "api:get:/api/lite/identity",
         "api:get:/api/lite/identity/owner-claim/status",
+        "api:get:/api/lite/lifecycle/summary",
         "api:get:/api/lite/media-backup",
         "api:get:/api/lite/owner-operations/client-pairings/{pairing_id}",
         "api:get:/api/lite/owner-operations/pending",
@@ -37588,6 +38356,10 @@
         "api:post:/api/lite/identity/setup",
         "api:post:/api/lite/identity/step-up/options",
         "api:post:/api/lite/identity/step-up/verify",
+        "api:post:/api/lite/lifecycle/boundary",
+        "api:post:/api/lite/lifecycle/boundary/review",
+        "api:post:/api/lite/lifecycle/boundary/revoke",
+        "api:post:/api/lite/lifecycle/preferences/review",
         "api:post:/api/lite/owner-operations/client-pairings",
         "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
         "api:post:/api/lite/owner-operations/client-pairings/challenge",
@@ -37640,6 +38412,7 @@
         "api:put:/api/lite/fleet/devices/{device_id}/display-model",
         "api:put:/api/lite/fleet/devices/{device_id}/roles",
         "api:put:/api/lite/identity/passkeys/{credential_id}",
+        "api:put:/api/lite/lifecycle/preferences",
         "api:put:/api/lite/system-health/automatic-policy",
         "api:put:/api/lite/system-health/preferences"
       ],
@@ -37731,6 +38504,7 @@
         "domain:health",
         "domain:home",
         "domain:identity",
+        "domain:lifecycle",
         "domain:lite",
         "domain:live_status",
         "domain:manual",
@@ -37746,6 +38520,7 @@
         "domain:recovery",
         "domain:release",
         "domain:release-management",
+        "domain:release-trust",
         "domain:remote-access",
         "domain:rules",
         "domain:runbook",
@@ -37857,6 +38632,7 @@
         "reason:backup_state_missing",
         "reason:battery_policy_threshold",
         "reason:bootstrap_transport_rejected",
+        "reason:candidate_invalid",
         "reason:checkpoint_ineligible",
         "reason:claim_verified",
         "reason:cold_start_validation",
@@ -37954,6 +38730,8 @@
         "reason:identity_username_invalid",
         "reason:incident_generation_changed",
         "reason:independent_approval_satisfied",
+        "reason:independent_provenance_and_qualification_required",
+        "reason:independent_root_required",
         "reason:insufficient_storage",
         "reason:interrupted",
         "reason:invalid_backup_id",
@@ -37967,6 +38745,7 @@
         "reason:legacy_observability_stack_retired",
         "reason:legacy_secret_rotation_retired",
         "reason:legacy_telemetry_value",
+        "reason:local_candidate_or_root_missing",
         "reason:local_owner_required",
         "reason:location_not_registered",
         "reason:maintenance_conflict_or_authority_changed",
@@ -38071,6 +38850,7 @@
         "reason:reviewed_plan_changed",
         "reason:rollback_pointer_failed",
         "reason:rollback_unproved",
+        "reason:root_pin_invalid",
         "reason:run_not_found",
         "reason:runtime_contract_unavailable",
         "reason:scanner_intelligence_hard_expired",
@@ -38096,6 +38876,7 @@
         "reason:telemetry_stale",
         "reason:test_bypass_explicit",
         "reason:thermal_policy_threshold",
+        "reason:trust_contract_invalid",
         "reason:trusted_local_admin",
         "reason:unregistered_domain",
         "reason:unsafe_live_media_import",
@@ -38428,6 +39209,19 @@
         "table:identity_audit_events",
         "table:lite_home_activity_read_cursors",
         "table:lite_installed_release_identity",
+        "table:lite_lifecycle_audit",
+        "table:lite_lifecycle_boundary_scopes",
+        "table:lite_lifecycle_grants",
+        "table:lite_lifecycle_preferences",
+        "table:lite_lifecycle_service_delegations",
+        "table:lite_lifecycle_workspace",
+        "table:lite_release_trust_configuration",
+        "table:lite_release_trust_floor",
+        "table:lite_release_trust_observation",
+        "table:lite_release_trust_pin",
+        "table:lite_release_trust_receipts",
+        "table:lite_release_trust_transitions",
+        "table:lite_release_trusted_time",
         "table:lite_revision_events",
         "table:lite_system_health_activation_fence",
         "table:lite_system_health_automation_attempts",
@@ -38666,6 +39460,7 @@
         "test:tests/backend/test_lite_system_health_semantic_revision.py",
         "test:tests/backend/test_lite_termux_native_execution.py",
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_trusted_lifecycle.py",
         "test:tests/backend/test_lite_ui_candidate_server.py",
         "test:tests/backend/test_lite_ui_performance_runner.py",
         "test:tests/backend/test_lite_ux_maturity_contract.py",
@@ -38814,6 +39609,7 @@
         "test:tests/e2e/lite-system-health-visual.spec.ts",
         "test:tests/e2e/lite-system-health.spec.ts",
         "test:tests/e2e/lite-test-helpers.ts",
+        "test:tests/e2e/lite-trusted-lifecycle.spec.ts",
         "test:tests/e2e/lite-ux-maturity.spec.ts",
         "test:tests/e2e/lite-visual-devices.spec.ts",
         "test:tests/e2e/lite-visual-overlays.spec.ts",
@@ -39623,6 +40419,12 @@
         },
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:get:/api/lite/lifecycle/summary": [
+        {
+          "source": "domain:lifecycle",
           "type": "owns"
         }
       ],
@@ -40944,6 +41746,30 @@
           "type": "uses"
         }
       ],
+      "api:post:/api/lite/lifecycle/boundary": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/boundary/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/boundary/revoke": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/preferences/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/owner-operations/client-pairings": [
         {
           "source": "domain:owner-operations",
@@ -41409,6 +42235,12 @@
         },
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:put:/api/lite/lifecycle/preferences": [
+        {
+          "source": "domain:lifecycle",
           "type": "owns"
         }
       ],
@@ -42958,6 +43790,12 @@
           "type": "owns"
         }
       ],
+      "reason:candidate_invalid": [
+        {
+          "source": "domain:release-trust",
+          "type": "owns"
+        }
+      ],
       "reason:checkpoint_ineligible": [
         {
           "source": "domain:security",
@@ -43540,6 +44378,18 @@
           "type": "owns"
         }
       ],
+      "reason:independent_provenance_and_qualification_required": [
+        {
+          "source": "domain:release-trust",
+          "type": "owns"
+        }
+      ],
+      "reason:independent_root_required": [
+        {
+          "source": "domain:release-trust",
+          "type": "owns"
+        }
+      ],
       "reason:insufficient_storage": [
         {
           "source": "domain:system",
@@ -43615,6 +44465,12 @@
       "reason:legacy_telemetry_value": [
         {
           "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:local_candidate_or_root_missing": [
+        {
+          "source": "domain:release-trust",
           "type": "owns"
         }
       ],
@@ -44242,6 +45098,12 @@
           "type": "owns"
         }
       ],
+      "reason:root_pin_invalid": [
+        {
+          "source": "domain:release-trust",
+          "type": "owns"
+        }
+      ],
       "reason:run_not_found": [
         {
           "source": "domain:validation",
@@ -44389,6 +45251,12 @@
       "reason:thermal_policy_threshold": [
         {
           "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "reason:trust_contract_invalid": [
+        {
+          "source": "domain:release-trust",
           "type": "owns"
         }
       ],
@@ -47162,6 +48030,84 @@
           "type": "reads"
         }
       ],
+      "table:lite_lifecycle_audit": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_boundary_scopes": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_grants": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_preferences": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_service_delegations": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_workspace": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trust_configuration": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trust_floor": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trust_observation": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trust_pin": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trust_receipts": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trust_transitions": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trusted_time": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_revision_events": [
         {
           "source": "domain:control_plane",
@@ -48274,6 +49220,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:candidate_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:checkpoint_ineligible",
           "type": "verified_by"
         },
@@ -48662,6 +49612,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:independent_provenance_and_qualification_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:independent_root_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -48711,6 +49669,10 @@
         },
         {
           "source": "reason:legacy_telemetry_value",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:local_candidate_or_root_missing",
           "type": "verified_by"
         },
         {
@@ -49130,6 +50092,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:root_pin_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:run_not_found",
           "type": "verified_by"
         },
@@ -49227,6 +50193,10 @@
         },
         {
           "source": "reason:thermal_policy_threshold",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trust_contract_invalid",
           "type": "verified_by"
         },
         {
@@ -49745,6 +50715,10 @@
         },
         {
           "source": "api:get:/api/lite/identity/owner-claim/status",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/lifecycle/summary",
           "type": "verified_by"
         },
         {
@@ -50336,6 +51310,22 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/lifecycle/boundary",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/boundary/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/boundary/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/preferences/review",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/owner-operations/client-pairings",
           "type": "verified_by"
         },
@@ -50541,6 +51531,10 @@
         },
         {
           "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:put:/api/lite/lifecycle/preferences",
           "type": "verified_by"
         },
         {
@@ -51539,6 +52533,10 @@
       "test:tests/backend/test_lite_policy_lifecycle_p2_2.py": [
         {
           "source": "component:opa-policy-engine",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:candidate_invalid",
           "type": "verified_by"
         },
         {
@@ -52600,9 +53598,19 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_trusted_lifecycle.py": [
+        {
+          "source": "component:github-repository",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_ui_candidate_server.py": [
         {
           "source": "component:browser",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:confirmation_required",
           "type": "verified_by"
         }
       ],
@@ -53990,6 +54998,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:candidate_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:checkpoint_ineligible",
           "type": "verified_by"
         },
@@ -54378,6 +55390,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:independent_provenance_and_qualification_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:independent_root_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -54427,6 +55447,10 @@
         },
         {
           "source": "reason:legacy_telemetry_value",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:local_candidate_or_root_missing",
           "type": "verified_by"
         },
         {
@@ -54846,6 +55870,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:root_pin_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:run_not_found",
           "type": "verified_by"
         },
@@ -54943,6 +55971,10 @@
         },
         {
           "source": "reason:thermal_policy_threshold",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trust_contract_invalid",
           "type": "verified_by"
         },
         {
@@ -55276,6 +56308,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:candidate_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:checkpoint_ineligible",
           "type": "verified_by"
         },
@@ -55664,6 +56700,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:independent_provenance_and_qualification_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:independent_root_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -55713,6 +56757,10 @@
         },
         {
           "source": "reason:legacy_telemetry_value",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:local_candidate_or_root_missing",
           "type": "verified_by"
         },
         {
@@ -56132,6 +57180,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:root_pin_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:run_not_found",
           "type": "verified_by"
         },
@@ -56229,6 +57281,10 @@
         },
         {
           "source": "reason:thermal_policy_threshold",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trust_contract_invalid",
           "type": "verified_by"
         },
         {
@@ -56878,6 +57934,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-trusted-lifecycle.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-ux-maturity.spec.ts": [
         {
           "source": "domain:identity",
@@ -57235,6 +58297,10 @@
         },
         {
           "source": "api:get:/api/lite/identity/owner-claim/status",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/lifecycle/summary",
           "type": "verified_by"
         },
         {
@@ -57826,6 +58892,22 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/lifecycle/boundary",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/boundary/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/boundary/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/preferences/review",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/owner-operations/client-pairings",
           "type": "verified_by"
         },
@@ -58031,6 +59113,10 @@
         },
         {
           "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:put:/api/lite/lifecycle/preferences",
           "type": "verified_by"
         },
         {
@@ -59702,6 +60788,16 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/lifecycle/summary": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/media-backup": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -61332,6 +62428,46 @@
           "type": "verified_by"
         }
       ],
+      "api:post:/api/lite/lifecycle/boundary": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/boundary/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/boundary/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/preferences/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:post:/api/lite/owner-operations/client-pairings": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -61843,6 +62979,16 @@
         }
       ],
       "api:put:/api/lite/identity/passkeys/{credential_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:put:/api/lite/lifecycle/preferences": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -63487,6 +64633,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_trusted_lifecycle.py",
           "type": "verified_by"
         },
         {
@@ -66312,6 +67462,58 @@
           "type": "owns"
         },
         {
+          "target": "table:lite_lifecycle_audit",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_boundary_scopes",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_grants",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_preferences",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_service_delegations",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_workspace",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trust_configuration",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trust_floor",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trust_observation",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trust_pin",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trust_receipts",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trust_transitions",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trusted_time",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_revision_events",
           "type": "owns"
         },
@@ -67950,6 +69152,32 @@
           "type": "verified_by"
         }
       ],
+      "domain:lifecycle": [
+        {
+          "target": "api:get:/api/lite/lifecycle/summary",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/boundary",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/boundary/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/boundary/revoke",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/preferences/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:put:/api/lite/lifecycle/preferences",
+          "type": "owns"
+        }
+      ],
       "domain:lite": [
         {
           "target": "subject:pocketlab.commands.lite.app.backup.create",
@@ -68960,6 +70188,32 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        }
+      ],
+      "domain:release-trust": [
+        {
+          "target": "reason:candidate_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:independent_provenance_and_qualification_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:independent_root_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:local_candidate_or_root_missing",
+          "type": "owns"
+        },
+        {
+          "target": "reason:root_pin_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:trust_contract_invalid",
+          "type": "owns"
         }
       ],
       "domain:remote-access": [
@@ -72184,6 +73438,24 @@
           "type": "verified_by"
         }
       ],
+      "reason:candidate_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_policy_lifecycle_p2_2.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:checkpoint_ineligible": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -72269,6 +73541,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_ui_candidate_server.py",
           "type": "verified_by"
         },
         {
@@ -72947,6 +74223,10 @@
         },
         {
           "target": "test:tests/e2e/lite-system-health-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-trusted-lifecycle.spec.ts",
           "type": "verified_by"
         },
         {
@@ -73978,6 +75258,34 @@
           "type": "verified_by"
         }
       ],
+      "reason:independent_provenance_and_qualification_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:independent_root_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:insufficient_storage": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -74227,6 +75535,20 @@
         }
       ],
       "reason:legacy_telemetry_value": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:local_candidate_or_root_missing": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -75984,6 +77306,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:root_pin_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:run_not_found": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -76433,6 +77769,20 @@
         }
       ],
       "reason:thermal_policy_threshold": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:trust_contract_invalid": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -78166,6 +79516,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:0483a00177a98d94",
+      "source": "reason:local_candidate_or_root_missing",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_qualification_owner.py"
       ],
       "id": "rel:049aabec521fe6a0",
@@ -78326,6 +79685,15 @@
       "id": "rel:0574be97c04d4535",
       "source": "domain:apps",
       "target": "api:get:/api/lite/apps/{app_id}/backup",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:0576871813715557",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_workspace",
       "type": "owns"
     },
     {
@@ -81539,6 +82907,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:19a85d736f0d15b3",
+      "source": "api:post:/api/lite/lifecycle/boundary/review",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:19b203579d98c966",
@@ -81644,6 +83021,15 @@
       "id": "rel:1a21db2d6a38f7e7",
       "source": "domain:enterprise",
       "target": "api:post:/api/lite/enterprise/rules/activations/{operation_id}/resolve",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:1a3a5f0ed367386d",
+      "source": "domain:lifecycle",
+      "target": "api:get:/api/lite/lifecycle/summary",
       "type": "owns"
     },
     {
@@ -82487,6 +83873,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:1f3c7645e77e398b",
+      "source": "domain:release-trust",
+      "target": "reason:root_pin_invalid",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_f12_f14_stability_contract.py"
       ],
       "id": "rel:1f49886efe75a35e",
@@ -82857,6 +84252,15 @@
       "source": "reason:webauthn_rp_id_invalid",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:223f6c46f16f6e44",
+      "source": "domain:control_plane",
+      "target": "table:lite_release_trust_receipts",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -84008,6 +85412,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:28d3c77ed9a96732",
+      "source": "reason:local_candidate_or_root_missing",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:28dd1ef3bc4d3630",
@@ -84094,6 +85507,15 @@
       "id": "rel:295b22cb2869f396",
       "source": "reason:policy_simulation_invalid",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_policy_lifecycle_p2_2.py"
+      ],
+      "id": "rel:296c80ede73c7ebe",
+      "source": "reason:candidate_invalid",
+      "target": "test:tests/backend/test_lite_policy_lifecycle_p2_2.py",
       "type": "verified_by"
     },
     {
@@ -84213,6 +85635,15 @@
       "source": "domain:control_plane",
       "target": "table:synthetic_principals",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:2a1fbab5fc5c6b9a",
+      "source": "reason:independent_provenance_and_qualification_required",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -86029,6 +87460,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:371c06c9f5db0673",
+      "source": "domain:control_plane",
+      "target": "table:lite_release_trust_pin",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:3721ff872cb3a3d9",
@@ -86306,6 +87746,15 @@
       "source": "reason:policy_source_revision_conflict",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:383fa04b8b60c2c3",
+      "source": "domain:release-trust",
+      "target": "reason:candidate_invalid",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -87185,6 +88634,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:3cef0b68c0491dc0",
+      "source": "api:post:/api/lite/lifecycle/boundary",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_s6_frontend_contract.py"
       ],
       "id": "rel:3d02ce5e89b3feba",
@@ -87253,6 +88711,15 @@
       "id": "rel:3d2b71e099f3b45d",
       "source": "domain:security",
       "target": "test:tests/docs/test_security_assurance_report_readability.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:3d3b8ad03fc04fcf",
+      "source": "reason:independent_root_required",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -87469,6 +88936,15 @@
       "id": "rel:3efcaeb37c4d16d3",
       "source": "domain:control_plane",
       "target": "table:harness_challenges",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:3efe1a270b0048b5",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/preferences/review",
       "type": "owns"
     },
     {
@@ -91289,6 +92765,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:56f8efbfdc0cbebd",
+      "source": "api:post:/api/lite/lifecycle/boundary/revoke",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:570c1d60abf89112",
@@ -91484,6 +92969,15 @@
       "source": "api:delete:/api/lite/harness/session/{session_id}",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:585cd5d25b780bb8",
+      "source": "domain:release-trust",
+      "target": "reason:independent_root_required",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -92111,6 +93605,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:5c3d1e8bbe77a7ea",
+      "source": "domain:lifecycle",
+      "target": "api:put:/api/lite/lifecycle/preferences",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/e2e/lite-access-native-visual.spec.ts"
       ],
       "id": "rel:5c4357631d8027a3",
@@ -92322,6 +93825,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:5d64f9347ed50750",
+      "source": "reason:root_pin_invalid",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:5d7cbfe4662bbf7f",
@@ -92372,6 +93884,15 @@
       "id": "rel:5dbb693d29961e5c",
       "source": "reason:owner_approval_policy_inconsistent",
       "target": "test:tests/backend/test_lite_policy_approvals_p3_1.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:5dcc9444fd6021d8",
+      "source": "reason:independent_provenance_and_qualification_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -92844,6 +94365,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:614d9c9ea9f14e20",
+      "source": "reason:root_pin_invalid",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:6155462a4c7aa6b8",
@@ -93092,6 +94622,15 @@
       "id": "rel:6371a0a921c0b8b9",
       "source": "reason:disabled",
       "target": "test:tests/e2e/lite-readme-capture.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/e2e/lite-trusted-lifecycle.spec.ts"
+      ],
+      "id": "rel:637f6f7ca41df5f1",
+      "source": "reason:disabled",
+      "target": "test:tests/e2e/lite-trusted-lifecycle.spec.ts",
       "type": "verified_by"
     },
     {
@@ -93965,6 +95504,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:68e9090e4074a038",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_service_delegations",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_devices_d2_d3.py"
       ],
       "id": "rel:690f911164c78355",
@@ -93984,6 +95532,15 @@
       "source": "journey:change-password",
       "target": "api:post:/api/lite/identity/recovery/regenerate",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:693b61872bf201d7",
+      "source": "reason:independent_provenance_and_qualification_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -95142,6 +96699,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:70284e1ae2804890",
+      "source": "api:post:/api/lite/lifecycle/preferences/review",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:1132"
       ],
       "id": "rel:7029047d31809239",
@@ -95417,6 +96983,15 @@
       "id": "rel:712e224f9aef7078",
       "source": "journey:restore-execution",
       "target": "test:tests/backend/test_lite_database_restore_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:71375c49dc2f3375",
+      "source": "reason:trust_contract_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -95922,6 +97497,15 @@
       "source": "component:photoprism",
       "target": "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:748b37d11926de4e",
+      "source": "domain:control_plane",
+      "target": "table:lite_release_trust_transitions",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -96677,6 +98261,15 @@
       "id": "rel:7a305e65b5a1d3cc",
       "source": "component:nats-listeners",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:7a3ab53c1ebc10c0",
+      "source": "reason:trust_contract_invalid",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -98293,6 +99886,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:85d411c6035727d1",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/boundary/review",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:85d639cb9f4dab43",
@@ -99011,6 +100613,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:8a6d38a22ffa1eca",
+      "source": "domain:control_plane",
+      "target": "table:lite_release_trust_configuration",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:8a7e36f66249b6f3",
@@ -99170,6 +100781,15 @@
       "source": "domain:validation",
       "target": "reason:outage_observation_failed",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:8b32ab0d22a73088",
+      "source": "api:post:/api/lite/lifecycle/boundary/review",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -99741,6 +101361,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:8f3bf264b8e64cc3",
+      "source": "api:get:/api/lite/lifecycle/summary",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:8f3fe6efd20a6cf9",
@@ -99819,6 +101448,15 @@
       "source": "component:projection-subprocesses",
       "target": "table:projection_refresh_state",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:8fad6de1779793b1",
+      "source": "domain:release-trust",
+      "target": "reason:local_candidate_or_root_missing",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -100116,6 +101754,15 @@
       "source": "reason:opa_status_unknown",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:9183b4ecf07652aa",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/boundary",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -101659,6 +103306,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:9d3f86dfec4ce80a",
+      "source": "api:post:/api/lite/lifecycle/boundary/revoke",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/e2e/lite-accessibility-states.spec.ts"
       ],
       "id": "rel:9d559aa89a8ace74",
@@ -102600,6 +104256,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:a315bfc6d0e09e3c",
+      "source": "reason:root_pin_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_threat_model_layout.py"
       ],
       "id": "rel:a316053952428b22",
@@ -103037,6 +104702,15 @@
       "id": "rel:a5eadc5e43b8ad1d",
       "source": "reason:enterprise_people_role_required",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_ui_candidate_server.py"
+      ],
+      "id": "rel:a5ec19854fc87255",
+      "source": "reason:confirmation_required",
+      "target": "test:tests/backend/test_lite_ui_candidate_server.py",
       "type": "verified_by"
     },
     {
@@ -103523,6 +105197,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:a8d9c56d7dcbf196",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_audit",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:a8db7157d716db69",
@@ -103894,6 +105577,15 @@
       "source": "component:tailscaled",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:ab36b05d9facc760",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_preferences",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -104388,6 +106080,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:ae80055c5a19a73b",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/boundary/revoke",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:ae84724bf97dee74",
@@ -104749,6 +106450,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:b0fb1ca2b0738651",
+      "source": "reason:candidate_invalid",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:b10053ff0ba1085e",
@@ -104854,6 +106564,15 @@
       "source": "reason:policy_source_contract_invalid",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:b1d1cee7f034f101",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_grants",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -105875,6 +107594,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:b93c4730e0b342ce",
+      "source": "domain:release-trust",
+      "target": "reason:trust_contract_invalid",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:b96395d6de776b65",
@@ -106025,6 +107753,15 @@
       "source": "ui:litesecurity",
       "target": "api:post:/api/lite/security/apps/{app_id}/check",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:ba1a5866613d3a00",
+      "source": "api:put:/api/lite/lifecycle/preferences",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -107815,6 +109552,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:c6fa6beffe9d1b7f",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_boundary_scopes",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:c6fed8e8d1f9484e",
@@ -109575,6 +111321,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:d182242fc7e1cacb",
+      "source": "domain:control_plane",
+      "target": "table:lite_release_trust_floor",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py",
         "src/lite/LiteDevices.jsx"
       ],
@@ -109644,6 +111399,15 @@
       "id": "rel:d20a6f1e1972c957",
       "source": "reason:policy_source_validation_unavailable",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:d21dfc5ef89b3d5c",
+      "source": "reason:trust_contract_invalid",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -110905,11 +112669,29 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:d9cbb3989c88e93d",
+      "source": "api:get:/api/lite/lifecycle/summary",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_presentation_polish.py"
       ],
       "id": "rel:d9ce39e41a6c3d81",
       "source": "component:tailscale",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:d9cf21e2306f4724",
+      "source": "api:put:/api/lite/lifecycle/preferences",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -111392,6 +113174,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:dd17f5d3c52e64ab",
+      "source": "api:post:/api/lite/lifecycle/boundary",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_api.py"
       ],
       "id": "rel:dd3e440eb4a5028f",
@@ -111414,6 +113205,15 @@
       ],
       "id": "rel:dd81ead12e85ca39",
       "source": "component:last-known-good",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:dd824a2bcb64ae5f",
+      "source": "reason:local_candidate_or_root_missing",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
@@ -111805,6 +113605,15 @@
       "source": "api:get:/api/lite/apps/{app_id}/backup",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:e04a9c48151f05f5",
+      "source": "domain:release-trust",
+      "target": "reason:independent_provenance_and_qualification_required",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -112890,6 +114699,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:e72e3316f8608010",
+      "source": "reason:independent_root_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_sqlite_s3_s5.py"
       ],
       "id": "rel:e73413818dc3d808",
@@ -113781,6 +115599,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:ecf8459c2588ed70",
+      "source": "api:post:/api/lite/lifecycle/preferences/review",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:ed06799938f49fb9",
@@ -114152,6 +115979,24 @@
       "source": "component:caddy",
       "target": "troubleshooting:photoprism-unavailable",
       "type": "recovers_with"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:ef5d073c81fcca8f",
+      "source": "domain:control_plane",
+      "target": "table:lite_release_trust_observation",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:ef5def0331bc96ca",
+      "source": "reason:candidate_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -115038,6 +116883,15 @@
       "source": "component:frontend-state",
       "target": "test:tests/backend/test_lite_revision_sync_n4_n5.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:f50340d821ece5a7",
+      "source": "domain:control_plane",
+      "target": "table:lite_release_trusted_time",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -116056,6 +117910,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:fbecf32928b9b2f3",
+      "source": "reason:candidate_invalid",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:fbed52002849dacc",
@@ -116299,6 +118162,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_trusted_lifecycle.py"
+      ],
+      "id": "rel:fd71d24950f0d9a4",
+      "source": "component:github-repository",
+      "target": "test:tests/backend/test_lite_trusted_lifecycle.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
       "id": "rel:fd7eab48d7484bf8",
@@ -116497,6 +118369,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:ff073ece750062aa",
+      "source": "reason:independent_root_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_identity_rules_ui_projection.py"
       ],
       "id": "rel:ff23e9592dbc542f",
@@ -116596,33 +118477,33 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "5a99f823b944ae3642b2f914852c337292611ac685c249568797580d6c5109e3",
+  "source_fingerprint": "1f30b69222bc5131517d56b80bd58de986f7f8fec42139920f80daaf5e708fef",
   "statistics": {
-    "entity_count": 1547,
+    "entity_count": 1576,
     "entity_type_counts": {
       "adr": 6,
-      "api": 280,
+      "api": 286,
       "capability": 5,
       "component": 58,
-      "domain": 50,
+      "domain": 52,
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 301,
+      "reason-code": 307,
       "release": 3,
       "requirement": 10,
       "runbook": 4,
       "runtime-topology": 9,
       "subject": 219,
-      "table": 108,
-      "test": 340,
+      "table": 121,
+      "test": 342,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 12,
       "vocabulary": 39
     },
-    "relation_count": 4316,
-    "source_count": 376
+    "relation_count": 4375,
+    "source_count": 378
   }
 }

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 9246634c5e447c177b011d09ee8d8dc9d7bf3fa0ec8e85b5625df07c6c269199
+source_fingerprint: 27516504736e91b76f516c2698213cb1c44ab850db2dfbb6f96d9d43598627b9
 schema_revision: 1
 validation_status: generated
 ---
@@ -67,10 +67,23 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `harness_sessions` | table | 17 | 1 | 4 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0034_harness_synthetic_principals.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0038_qualification_target_bound_recovery.sql |
 | `human_credentials` | table | 10 | 1 | 2 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
 | `human_enrollment_claims` | table | 16 | 2 | 5 | control_plane | source-defined control-plane service | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql |
-| `human_identities` | table | 8 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql |
+| `human_identities` | table | 8 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0025_identity_passkeys_rules_p1.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0026_enterprise_identity_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0028_policy_approvals_exceptions_p3.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0030_identity_rules_enterprise_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0031_policy_approval_requester_invariants.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0037_fleet_multi_role_authorization.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0039_app_resource_governance.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0041_owner_approved_operations.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql |
 | `identity_audit_events` | table | 8 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0024_identity_rules_authorization.sql |
 | `lite_home_activity_read_cursors` | table | 3 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql |
 | `lite_installed_release_identity` | table | 18 | 0 | 2 | release | release runtime and identity services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql |
+| `lite_lifecycle_audit` | table | 9 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0063_lifecycle_audit_links.sql |
+| `lite_lifecycle_boundary_scopes` | table | 7 | 1 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql |
+| `lite_lifecycle_grants` | table | 23 | 2 | 4 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql |
+| `lite_lifecycle_preferences` | table | 5 | 0 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql |
+| `lite_lifecycle_service_delegations` | table | 6 | 1 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql |
+| `lite_lifecycle_workspace` | table | 5 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql |
+| `lite_release_trust_configuration` | table | 5 | 0 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0061_lifecycle_trust_configuration.sql |
+| `lite_release_trust_floor` | table | 5 | 0 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql |
+| `lite_release_trust_observation` | table | 6 | 0 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0058_release_trust_observations.sql, pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql |
+| `lite_release_trust_pin` | table | 3 | 0 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0058_release_trust_observations.sql |
+| `lite_release_trust_receipts` | table | 6 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql |
+| `lite_release_trust_transitions` | table | 5 | 0 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0061_lifecycle_trust_configuration.sql |
+| `lite_release_trusted_time` | table | 2 | 0 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0060_lifecycle_trusted_time.sql |
 | `lite_revision_events` | table | 10 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql |
 | `lite_system_health_activation_fence` | table | 8 | 0 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql |
 | `lite_system_health_automation_attempts` | table | 7 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql |
@@ -1116,6 +1129,197 @@ Source-derived release persistence object; detailed ownership is conservatively 
 | `created_at` | TEXT | no | — | 0 |
 | `updated_at` | TEXT | no | — | 0 |
 | `updated_at_epoch_ms` | INTEGER | no | — | 0 |
+
+<a id="lite-lifecycle-audit"></a>
+## `lite_lifecycle_audit`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `event_id` | INTEGER | yes | — | 1 |
+| `correlation_id` | TEXT | no | — | 0 |
+| `owner_id` | TEXT | no | — | 0 |
+| `event_type` | TEXT | no | — | 0 |
+| `revision` | INTEGER | no | — | 0 |
+| `occurred_at` | TEXT | no | — | 0 |
+| `decision_id` | TEXT | yes | — | 0 |
+| `grant_id` | TEXT | yes | — | 0 |
+| `reason_code` | TEXT | no | '' | 0 |
+
+<a id="lite-lifecycle-boundary-scopes"></a>
+## `lite_lifecycle_boundary_scopes`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `purpose` | TEXT | yes | — | 1 |
+| `authority_epoch` | INTEGER | no | — | 0 |
+| `scope_revision` | INTEGER | no | — | 0 |
+| `owner_id` | TEXT | no | — | 0 |
+| `scope_json` | TEXT | no | — | 0 |
+| `decision_id` | TEXT | no | — | 0 |
+| `approved_at` | TEXT | no | — | 0 |
+
+<a id="lite-lifecycle-grants"></a>
+## `lite_lifecycle_grants`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `grant_id` | TEXT | yes | — | 1 |
+| `workspace_id` | TEXT | no | — | 0 |
+| `boundary_revision` | INTEGER | no | — | 0 |
+| `owner_id` | TEXT | no | — | 0 |
+| `owner_auth_version` | INTEGER | no | — | 0 |
+| `membership_version` | INTEGER | no | — | 0 |
+| `configuration_version` | INTEGER | no | — | 0 |
+| `profile_revision` | INTEGER | no | — | 0 |
+| `registry_revision` | TEXT | no | — | 0 |
+| `trust_version` | INTEGER | no | — | 0 |
+| `root_version` | INTEGER | no | — | 0 |
+| `policy_revision` | TEXT | no | — | 0 |
+| `capability_id` | TEXT | no | — | 0 |
+| `capability_version` | INTEGER | no | — | 0 |
+| `purpose` | TEXT | no | — | 0 |
+| `channel` | TEXT | no | — | 0 |
+| `scope_json` | TEXT | no | — | 0 |
+| `decision_id` | TEXT | no | — | 0 |
+| `issued_at` | TEXT | no | — | 0 |
+| `expires_at` | TEXT | no | — | 0 |
+| `revoked_at` | TEXT | yes | — | 0 |
+| `authority_epoch` | INTEGER | no | 0 | 0 |
+| `trust_configuration_revision` | INTEGER | no | 0 | 0 |
+
+<a id="lite-lifecycle-preferences"></a>
+## `lite_lifecycle_preferences`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `singleton_id` | INTEGER | yes | — | 1 |
+| `revision` | INTEGER | no | — | 0 |
+| `profile` | TEXT | no | — | 0 |
+| `updated_at` | TEXT | no | — | 0 |
+| `owner_id` | TEXT | no | — | 0 |
+
+<a id="lite-lifecycle-service-delegations"></a>
+## `lite_lifecycle_service_delegations`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `delegation_id` | TEXT | yes | — | 1 |
+| `grant_id` | TEXT | no | — | 0 |
+| `purpose` | TEXT | no | — | 0 |
+| `contract_version` | INTEGER | no | — | 0 |
+| `delegation_revision` | INTEGER | no | — | 0 |
+| `created_at` | TEXT | no | — | 0 |
+
+<a id="lite-lifecycle-workspace"></a>
+## `lite_lifecycle_workspace`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `singleton_id` | INTEGER | yes | — | 1 |
+| `workspace_id` | TEXT | no | — | 0 |
+| `boundary_revision` | INTEGER | no | 0 | 0 |
+| `delegation_revision` | INTEGER | no | 0 | 0 |
+| `authority_epoch` | INTEGER | no | 1 | 0 |
+
+<a id="lite-release-trust-configuration"></a>
+## `lite_release_trust_configuration`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `singleton_id` | INTEGER | yes | — | 1 |
+| `root_sha256` | TEXT | no | — | 0 |
+| `attestation_root_sha256` | TEXT | no | — | 0 |
+| `state` | TEXT | no | — | 0 |
+| `revision` | INTEGER | no | — | 0 |
+
+<a id="lite-release-trust-floor"></a>
+## `lite_release_trust_floor`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `singleton_id` | INTEGER | yes | — | 1 |
+| `metadata_version` | INTEGER | no | — | 0 |
+| `root_version` | INTEGER | no | — | 0 |
+| `metadata_sha256` | TEXT | no | — | 0 |
+| `release_tag` | TEXT | no | — | 0 |
+
+<a id="lite-release-trust-observation"></a>
+## `lite_release_trust_observation`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `singleton_id` | INTEGER | yes | — | 1 |
+| `state` | TEXT | no | — | 0 |
+| `reason_code` | TEXT | no | — | 0 |
+| `checked_at` | TEXT | no | — | 0 |
+| `release_tag` | TEXT | no | — | 0 |
+| `review_json` | TEXT | no | '{}' | 0 |
+
+<a id="lite-release-trust-pin"></a>
+## `lite_release_trust_pin`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `singleton_id` | INTEGER | yes | — | 1 |
+| `root_sha256` | TEXT | no | — | 0 |
+| `root_version` | INTEGER | no | — | 0 |
+
+<a id="lite-release-trust-receipts"></a>
+## `lite_release_trust_receipts`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `receipt_id` | TEXT | yes | — | 1 |
+| `metadata_version` | INTEGER | no | — | 0 |
+| `root_version` | INTEGER | no | — | 0 |
+| `release_tag` | TEXT | no | — | 0 |
+| `checked_at` | TEXT | no | — | 0 |
+| `receipt_json` | TEXT | no | — | 0 |
+
+<a id="lite-release-trust-transitions"></a>
+## `lite_release_trust_transitions`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `event_id` | INTEGER | yes | — | 1 |
+| `state` | TEXT | no | — | 0 |
+| `reason_code` | TEXT | no | — | 0 |
+| `occurred_at` | TEXT | no | — | 0 |
+| `release_tag` | TEXT | no | — | 0 |
+
+<a id="lite-release-trusted-time"></a>
+## `lite_release_trusted_time`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `singleton_id` | INTEGER | yes | — | 1 |
+| `trusted_at` | TEXT | no | — | 0 |
 
 <a id="lite-revision-events"></a>
 ## `lite_revision_events`

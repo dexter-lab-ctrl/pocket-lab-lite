@@ -45,6 +45,22 @@ def test_candidate_manifest_can_identify_a_devpc_isolated_runtime(monkeypatch):
     assert manifest["runtime_transport"] == "devpc_loopback_isolated_candidate"
 
 
+def test_trusted_lifecycle_fixture_is_explicit_and_sanitized(monkeypatch):
+    candidate = _module()
+    assert candidate.trusted_lifecycle_ui_fixture_enabled() is False
+    monkeypatch.setenv(candidate.TRUSTED_LIFECYCLE_FIXTURE_ENV, "1")
+    manifest = candidate.candidate_manifest("a" * 40)
+    payload = candidate.trusted_lifecycle_ui_fixture_payload()
+    review = candidate.trusted_lifecycle_ui_fixture_review()
+    assert manifest["trusted_lifecycle_ui_fixture"] is True
+    assert payload["qualification_fixture"] is True
+    assert payload["execution_eligible"] is False
+    assert payload["sanitized"] is True
+    assert review["confirmation_required"] is True
+    assert review["execution_eligible"] is False
+    assert not any("token" in key or "secret" in key or "password" in key for key in payload)
+
+
 @pytest.mark.parametrize(
     "path,allowed",
     [
@@ -67,10 +83,15 @@ def test_candidate_proxy_is_lite_api_only(path, allowed):
         ("/api/lite/system-health/incidents/health-0123456789abcdef01234567/diagnose", True),
         ("/api/lite/system-health/incidents/health-0123456789abcdef01234567/repair", True),
         ("/api/lite/system-health/incidents/health-0123456789abcdef01234567/preflight", True),
+        ("/api/lite/lifecycle/preferences/review", True),
+        ("/api/lite/lifecycle/boundary/review", True),
+        ("/api/lite/lifecycle/preferences", False),
+        ("/api/lite/lifecycle/boundary", False),
+        ("/api/lite/lifecycle/boundary/revoke", False),
         ("/api/lite/harness/browser/bridge", False),
     ],
 )
-def test_candidate_mode_allows_only_qualified_system_health_writes(path, allowed):
+def test_candidate_mode_allows_only_qualified_review_writes(path, allowed):
     candidate = _module()
     assert candidate.is_allowed_candidate_write(path) is allowed
 

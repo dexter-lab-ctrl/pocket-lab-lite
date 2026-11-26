@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>lite_lifecycle_boundary_scopes - <temporary-schema.sqlite3>.main</title>
+        <!-- Tell the browser to be responsive to screen width -->
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
+        <!-- Bootstrap 3.3.5 -->
+        <link rel="stylesheet" href="../bower/admin-lte/bootstrap/css/bootstrap.min.css">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="../bower/font-awesome/css/font-awesome.min.css">
+        <!-- Ionicons -->
+        <link rel="stylesheet" href="../bower/ionicons/css/ionicons.min.css">
+        <!-- DataTables -->
+        <link rel="stylesheet" href="../bower/datatables.net-bs/css/dataTables.bootstrap.min.css">
+        <link rel="stylesheet" href="../bower/datatables.net-buttons-bs/css/buttons.bootstrap.min.css">
+        <!-- Code Mirror -->
+        <link rel="stylesheet" href="../bower/codemirror/codemirror.css">
+        <!-- Fonts -->
+        <link href='../fonts/indieflower/indie-flower.css' rel='stylesheet' type='text/css'>
+        <link href='../fonts/source-sans-pro/source-sans-pro.css' rel='stylesheet' type='text/css'>
+
+        <!-- Theme style -->
+        <link rel="stylesheet" href="../bower/admin-lte/dist/css/AdminLTE.min.css">
+        <!-- Salvattore -->
+        <link rel="stylesheet" href="../bower/salvattore/salvattore.css">
+        <!-- AdminLTE Skins. Choose a skin from the css/skins
+           folder instead of downloading all of them to reduce the load. -->
+        <link rel="stylesheet" href="../bower/admin-lte/dist/css/skins/_all-skins.min.css">
+        <!-- SchemaSpy -->
+        <link rel="stylesheet" href="../schemaSpy.css">
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="../bower/html5shiv/html5shiv.min.js"></script>
+        <script src="../bower/respond/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <!-- ADD THE CLASS layout-top-nav TO REMOVE THE SIDEBAR. -->
+    <body class="hold-transition skin-blue layout-top-nav">
+        <div class="wrapper">
+            <header class="main-header">
+                <nav class="navbar navbar-static-top">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <a href="../index.html" class="navbar-brand"><b><temporary-schema.sqlite3></b></a><span class="navbar-brand" style="padding-left: 0">.main</span>
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse pull-left" id="navbar-collapse">
+                            <ul class="nav navbar-nav">
+                                <li><a href="../index.html">Tables <span class="sr-only">(current)</span></a></li>
+                                <li><a href="../columns.html" title="All of the columns in the schema">Columns</a></li>
+                                <li><a href="../constraints.html" title="Useful for diagnosing error messages that just give constraint name or number">Constraints</a></li>
+                                <li><a href="../relationships.html" title="Diagram of table relationships">Relationships</a></li>
+                                <li><a href="../orphans.html" title="View of tables with neither parents nor children">Orphan&nbsp;Tables</a></li>
+                                <li><a href="../anomalies.html" title="Things that might not be quite right">Anomalies</a></li>
+                                <li><a href="../routines.html" title="Procedures and functions">Routines</a></li>
+                            </ul>
+                        </div>
+                        <!-- /.navbar-collapse -->
+                        <!-- Navbar Right Menu -->
+                    </div>
+                    <!-- /.container-fluid -->
+                </nav>
+            </header>
+            <!-- Main content -->
+            <!-- Full Width Column -->
+            <div class="content-wrapper">
+                <!-- Content Header (Page header) -->
+                <section class="content-header">
+                    <h1>lite_lifecycle_boundary_scopes</h1><br />
+                </section>
+                <!-- Main content -->
+                <section class="content">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
+                            <h3 id="Columns" class="box-title">Columns</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <table
+                                    id="standard_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
+                                <thead align='left'>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Type</th>
+                                    <th>Size</th>
+                                    <th title='Are nulls allowed?'>Nulls</th>
+                                    <th title='Is column automatically updated?'>Auto</th>
+                                    <th title='Default value'>Default</th>
+                                    <th title='Columns in tables that reference this column'>Children</th>
+                                    <th title='Columns in tables that are referenced by this column'>Parents</th>
+                                    <th title='Comments' class="toggle"><span>Comments</span></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="purpose">purpose</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="app_credential_metadata.purpose&#39;s name implies that it&#39;s a child of lite_lifecycle_boundary_scopes.purpose, but it doesn&#39;t reference that column."><a href='app_credential_metadata.html'>app_credential_metadata</a><span class='relatedKey'>.purpose</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="assurance_runs.purpose&#39;s name implies that it&#39;s a child of lite_lifecycle_boundary_scopes.purpose, but it doesn&#39;t reference that column."><a href='assurance_runs.html'>assurance_runs</a><span class='relatedKey'>.purpose</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="auth_session_assurance.purpose&#39;s name implies that it&#39;s a child of lite_lifecycle_boundary_scopes.purpose, but it doesn&#39;t reference that column."><a href='auth_session_assurance.html'>auth_session_assurance</a><span class='relatedKey'>.purpose</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="harness_audit_events.purpose&#39;s name implies that it&#39;s a child of lite_lifecycle_boundary_scopes.purpose, but it doesn&#39;t reference that column."><a href='harness_audit_events.html'>harness_audit_events</a><span class='relatedKey'>.purpose</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="harness_challenges.purpose&#39;s name implies that it&#39;s a child of lite_lifecycle_boundary_scopes.purpose, but it doesn&#39;t reference that column."><a href='harness_challenges.html'>harness_challenges</a><span class='relatedKey'>.purpose</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="harness_sessions.purpose&#39;s name implies that it&#39;s a child of lite_lifecycle_boundary_scopes.purpose, but it doesn&#39;t reference that column."><a href='harness_sessions.html'>harness_sessions</a><span class='relatedKey'>.purpose</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="lite_lifecycle_grants.purpose&#39;s name implies that it&#39;s a child of lite_lifecycle_boundary_scopes.purpose, but it doesn&#39;t reference that column."><a href='lite_lifecycle_grants.html'>lite_lifecycle_grants</a><span class='relatedKey'>.purpose</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="lite_lifecycle_service_delegations.purpose&#39;s name implies that it&#39;s a child of lite_lifecycle_boundary_scopes.purpose, but it doesn&#39;t reference that column."><a href='lite_lifecycle_service_delegations.html'>lite_lifecycle_service_delegations</a><span class='relatedKey'>.purpose</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="owner_operation_challenges.purpose&#39;s name implies that it&#39;s a child of lite_lifecycle_boundary_scopes.purpose, but it doesn&#39;t reference that column."><a href='owner_operation_challenges.html'>owner_operation_challenges</a><span class='relatedKey'>.purpose</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="webauthn_challenges.purpose&#39;s name implies that it&#39;s a child of lite_lifecycle_boundary_scopes.purpose, but it doesn&#39;t reference that column."><a href='webauthn_challenges.html'>webauthn_challenges</a><span class='relatedKey'>.purpose</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="authority_epoch">authority_epoch</span></td>
+                                    <td>INTEGER</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="scope_revision">scope_revision</span></td>
+                                    <td>INTEGER</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="owner_id">owner_id</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="lite_lifecycle_boundary_scopes.owner_id references human_identities.human_id via "><a href='human_identities.html'>human_identities</a><span class='relatedKey'>.human_id</span></td>
+                                                <td class="constraint detail"></td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="scope_json">scope_json</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="decision_id">decision_id</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="lite_lifecycle_boundary_scopes.decision_id&#39;s name implies that it&#39;s a child of policy_decision_details.decision_id, but it doesn&#39;t reference that column."><a href='policy_decision_details.html'>policy_decision_details</a><span class='relatedKey'>.decision_id</span></td>
+                                                <td class="constraint detail">Implied Constraint</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="approved_at">approved_at</span></td>
+                                    <td>TEXT</td>
+                                    <td>2000000000</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-sitemap"></i>
+                            <h3 id="Indexes" class="box-title">Indexes</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <table
+                                    id="indexes_table"
+                                    class="table table-bordered table-striped dataTable"
+                                    role="grid"
+                                    data-paging="true"
+                                    data-page-length="10"
+                                    data-length-change="false">
+                                <thead>
+                                <tr>
+                                    <th>Constraint Name</th>
+                                    <th>Type</th>
+                                    <th>Sort</th>
+                                    <th>Column(s)</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> lite_lifecycle_boundary_scopes_s_pk</td>
+                                    <td>Primary key</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>purpose</td>
+                                </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> sqlite_autoindex_lite_lifecycle_boundary_scopes_1</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>purpose</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div><!-- /.box-body -->
+                    </div>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-code-fork"></i>
+                            <h3 id="Relationships" class="box-title">Relationships</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="nav-tabs-custom"><!-- Tabs within a box -->
+                                <h5>Close relationships within degrees of separation</h5>
+                                <ul class="nav nav-tabs pull-left ui-sortable-handle">
+                                    <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
+                                    <li class=""><a href="#twodegreesDegreeImg-chart" data-toggle="tab" aria-expanded="true">Two degrees</a></li>
+                                    <li class=""><a href="#oneimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">One implied</a></li>
+                                    <li class=""><a href="#twoimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">Two implied</a></li>
+                                </ul>
+                                <div class="tab-content no-padding">
+                                    <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
+<area shape="rect" id="node1" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="296,5,849,284">
+<area shape="rect" id="node2" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,95,252,277">
+</map>
+                                        <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/lite_lifecycle_boundary_scopes.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
+                                    </div>
+                                    <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
+<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="468,1639,677,1733">
+<area shape="rect" id="node2" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,1041,252,1223">
+<area shape="rect" id="node3" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="419,5,726,99">
+<area shape="rect" id="node4" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="419,117,726,211">
+<area shape="rect" id="node5" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="446,229,699,323">
+<area shape="rect" id="node6" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="414,341,731,435">
+<area shape="rect" id="node7" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="296,453,849,732">
+<area shape="rect" id="node8" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="441,749,704,843">
+<area shape="rect" id="node9" href="owner_approved_operations.html" target="_top" title="owner_approved_operations" alt="" coords="894,859,1231,953">
+<area shape="rect" id="node10" href="owner_operation_clients.html" target="_top" title="owner_operation_clients" alt="" coords="421,896,724,990">
+<area shape="rect" id="node11" href="owner_operation_client_pairings.html" target="_top" title="owner_operation_client_pairings" alt="" coords="385,1008,760,1102">
+<area shape="rect" id="node12" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="893,1173,1232,1267">
+<area shape="rect" id="node13" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="459,1191,686,1285">
+<area shape="rect" id="node14" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="456,1303,689,1397">
+<area shape="rect" id="node15" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1276,1127,1608,1221">
+<area shape="rect" id="node16" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="400,1415,745,1509">
+<area shape="rect" id="node17" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="427,1527,718,1621">
+<area shape="rect" id="node18" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="924,1673,1201,1767">
+<area shape="rect" id="node19" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="432,1785,713,1879">
+<area shape="rect" id="node20" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="457,1897,688,1991">
+</map>
+                                        <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/lite_lifecycle_boundary_scopes.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
+                                    </div>
+                                    <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
+<area shape="rect" id="node1" href="app_credential_metadata.html" target="_top" title="app_credential_metadata" alt="" coords="948,880,1259,1121">
+<area shape="rect" id="node2" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="337,1253,890,1532">
+<area shape="rect" id="node8" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="5,877,293,1001">
+<area shape="rect" id="node9" href="human_identities.html" target="_top" title="human_identities" alt="" coords="26,1343,272,1525">
+<area shape="rect" id="node3" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="976,1139,1231,1526">
+<area shape="rect" id="node4" href="auth_session_assurance.html" target="_top" title="auth_session_assurance" alt="" coords="954,1544,1254,1785">
+<area shape="rect" id="node5" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="964,1803,1243,2073">
+<area shape="rect" id="node6" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="974,2091,1234,2361">
+<area shape="rect" id="node7" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="984,2379,1224,2678">
+<area shape="rect" id="node10" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="952,5,1255,539">
+<area shape="rect" id="node11" href="lite_lifecycle_service_delegations.html" target="_top" title="lite_lifecycle_service_delegations" alt="" coords="1318,360,1698,601">
+<area shape="rect" id="node12" href="owner_operation_challenges.html" target="_top" title="owner_operation_challenges" alt="" coords="934,557,1274,827">
+<area shape="rect" id="node13" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="965,2696,1242,3025">
+</map>
+                                        <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/lite_lifecycle_boundary_scopes.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
+                                    </div>
+                                    <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
+<area shape="rect" id="node1" href="app_credential_metadata.html" target="_top" title="app_credential_metadata" alt="" coords="1322,1191,1632,1432">
+<area shape="rect" id="node2" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="638,1552,1191,1831">
+<area shape="rect" id="node13" href="human_identities.html" target="_top" title="human_identities" alt="" coords="331,2923,569,3017">
+<area shape="rect" id="node23" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="306,151,594,245">
+<area shape="rect" id="node3" href="assurance_execution_checkpoints.html" target="_top" title="assurance_execution_checkpoints" alt="" coords="1811,1431,2199,1525">
+<area shape="rect" id="node4" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="1349,1485,1604,1872">
+<area shape="rect" id="node6" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="783,2498,1046,2592">
+<area shape="rect" id="node5" href="assurance_findings.html" target="_top" title="assurance_findings" alt="" coords="1877,1543,2133,1637">
+<area shape="rect" id="node7" href="assurance_scenarios.html" target="_top" title="assurance_scenarios" alt="" coords="1870,1655,2140,1749">
+<area shape="rect" id="node8" href="assurance_tool_results.html" target="_top" title="assurance_tool_results" alt="" coords="1861,1319,2149,1413">
+<area shape="rect" id="node9" href="auth_session_assurance.html" target="_top" title="auth_session_assurance" alt="" coords="1327,933,1626,1173">
+<area shape="rect" id="node10" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="774,1394,1055,1488">
+<area shape="rect" id="node11" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="810,971,1019,1065">
+<area shape="rect" id="node12" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,671,262,765">
+<area shape="rect" id="node14" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="761,3622,1068,3716">
+<area shape="rect" id="node15" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="761,3510,1068,3604">
+<area shape="rect" id="node16" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="1338,1890,1616,2160">
+<area shape="rect" id="node17" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="1347,2178,1606,2448">
+<area shape="rect" id="node18" href="harness_recovery_receipts.html" target="_top" title="harness_recovery_receipts" alt="" coords="1844,2605,2166,2699">
+<area shape="rect" id="node19" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="1357,2466,1596,2765">
+<area shape="rect" id="node20" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="788,3327,1041,3421">
+<area shape="rect" id="node21" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="756,2662,1073,2756">
+<area shape="rect" id="node22" href="lite_lifecycle_audit.html" target="_top" title="lite_lifecycle_audit" alt="" coords="1880,375,2130,469">
+<area shape="rect" id="node24" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="1346,674,1608,768">
+<area shape="rect" id="node39" href="policy_decisions.html" target="_top" title="policy_decisions" alt="" coords="19,149,248,243">
+<area shape="rect" id="node25" href="lite_lifecycle_workspace.html" target="_top" title="lite_lifecycle_workspace" alt="" coords="765,561,1064,655">
+<area shape="rect" id="node26" href="lite_lifecycle_service_delegations.html" target="_top" title="lite_lifecycle_service_delegations" alt="" coords="1814,747,2196,841">
+<area shape="rect" id="node27" href="lite_system_health_automation_attempts.html" target="_top" title="lite_system_health_automation_attempts" alt="" coords="688,225,1141,319">
+<area shape="rect" id="node28" href="lite_system_health_automation_policy.html" target="_top" title="lite_system_health_automation_policy" alt="" coords="703,337,1126,431">
+<area shape="rect" id="node29" href="lite_system_health_maintenance__317c4e5a.html" target="_top" title="lite_system_health_maintenance_admissions" alt="" coords="1235,229,1718,323">
+<area shape="rect" id="node30" href="lite_system_health_maintenance__501ed277.html" target="_top" title="lite_system_health_maintenance_resolutions" alt="" coords="1762,117,2248,211">
+<area shape="rect" id="node31" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="1264,117,1689,211">
+<area shape="rect" id="node32" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="798,449,1031,543">
+<area shape="rect" id="node33" href="owner_approved_operations.html" target="_top" title="owner_approved_operations" alt="" coords="1308,3253,1645,3347">
+<area shape="rect" id="node34" href="owner_operation_clients.html" target="_top" title="owner_operation_clients" alt="" coords="763,2809,1066,2903">
+<area shape="rect" id="node35" href="owner_operation_challenges.html" target="_top" title="owner_operation_challenges" alt="" coords="1307,2818,1646,3088">
+<area shape="rect" id="node36" href="owner_operation_client_pairings.html" target="_top" title="owner_operation_client_pairings" alt="" coords="1290,3365,1664,3459">
+<area shape="rect" id="node37" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="1835,3141,2175,3235">
+<area shape="rect" id="node38" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="1364,3141,1590,3235">
+<area shape="rect" id="node40" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="2292,3211,2623,3305">
+<area shape="rect" id="node41" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="742,2921,1087,3015">
+<area shape="rect" id="node42" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="769,3033,1060,3127">
+<area shape="rect" id="node43" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="1338,821,1615,915">
+<area shape="rect" id="node44" href="owner_claims.html" target="_top" title="owner_claims" alt="" coords="812,859,1017,953">
+<area shape="rect" id="node45" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="799,3145,1030,3239">
+</map>
+                                        <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/lite_lifecycle_boundary_scopes.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- /.box-body -->
+                    </div>
+                </section>
+                <script>
+                    var config = {
+                        pagination: true
+                    }
+                </script>
+            </div>
+            <!-- /.content-wrapper -->
+            <footer class="main-footer">
+                <div>
+                    <div class="pull-right hidden-xs">
+                        <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
+                        <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
+                    </div>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.2.4</a></strong>
+                </div>
+                <!-- /.container -->
+            </footer>
+        </div>
+        <!-- ./wrapper -->
+
+        <!-- jQuery 2.2.3 -->
+        <script src="../bower/admin-lte/plugins/jQuery/jquery-2.2.3.min.js"></script>
+        <script src="../bower/admin-lte/plugins/jQueryUI/jquery-ui.min.js"></script>
+        <!-- Bootstrap 3.3.5 -->
+        <script src="../bower/admin-lte/bootstrap/js/bootstrap.min.js"></script>
+        <!-- DataTables -->
+        <script src="../bower/datatables.net/jquery.dataTables.min.js"></script>
+        <script src="../bower/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+        <script src="../bower/datatables.net-buttons/dataTables.buttons.min.js"></script>
+        <script src="../bower/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.html5.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.print.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.colVis.min.js"></script>
+        <!-- SheetJS -->
+        <script src="../bower/js-xlsx/xlsx.full.min.js"></script>
+        <!-- pdfmake -->
+        <script src="../bower/pdfmake/pdfmake.min.js"></script>
+        <script src="../bower/pdfmake/vfs_fonts.js"></script>
+        <!-- SlimScroll -->
+        <script src="../bower/admin-lte/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+        <!-- FastClick -->
+        <script src="../bower/admin-lte/plugins/fastclick/fastclick.js"></script>
+        <!-- Salvattore -->
+        <script src="../bower/salvattore/salvattore.min.js"></script>
+        <!-- AnchorJS -->
+        <script src="../bower/anchor-js/anchor.min.js"></script>
+        <!-- CodeMirror -->
+        <script src="../bower/codemirror/codemirror.js"></script>
+        <script src="../bower/codemirror/sql.js"></script>
+        <!-- AdminLTE App -->
+        <script src="../bower/admin-lte/dist/js/app.min.js"></script>
+        <script src="table.js"></script>
+        <script src="../schemaSpy.js"></script>
+    </body>
+</html>

@@ -87,7 +87,9 @@ MAX_SYMBOLS_PER_FILE = 200
 # Keep the static browser projection below its compactness guard as tracked
 # visual evidence and generated artifacts grow. Paths and primary labels are
 # emitted before this bounded search-only tail.
-MAX_BROWSER_SEARCH_CHARS = 150
+# Keep additional headroom for generated schema/documentation artifacts that
+# are intentionally present in the canonical map but add little search value.
+MAX_BROWSER_SEARCH_CHARS = 120
 MAX_BROWSER_SYMBOLS_PER_FILE = 70
 
 

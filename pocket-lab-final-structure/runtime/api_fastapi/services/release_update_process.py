@@ -160,11 +160,32 @@ def _request_headers(*, binary: bool = False) -> dict[str, str]:
     return headers
 
 
-def _open(url: str, *, timeout: float, binary: bool = False):
+class _TrustedReleaseRedirect(urllib.request.HTTPRedirectHandler):
+    @staticmethod
+    def check(url):
+        parsed = urllib.parse.urlsplit(url)
+        if (parsed.scheme != "https" or parsed.username or parsed.password or parsed.port not in (None,443)
+            or parsed.hostname not in {"github.com","objects.githubusercontent.com","release-assets.githubusercontent.com"}):
+            raise ReleaseProcessFailure("trusted_release_redirect_rejected")
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        self.check(newurl)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def _open(url: str, *, timeout: float, binary: bool = False, trusted_public: bool = False):
     original_host = _allowed_host(url)
-    request = urllib.request.Request(url, headers=_request_headers(binary=binary))
+    headers = _request_headers(binary=binary)
+    if trusted_public:
+        _TrustedReleaseRedirect.check(url)
+        headers.pop("Authorization", None)
+    request = urllib.request.Request(url, headers=headers)
     try:
-        response = urllib.request.urlopen(request, timeout=timeout)
+        if trusted_public:
+            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _TrustedReleaseRedirect())
+            response = opener.open(request, timeout=timeout)
+        else:
+            response = urllib.request.urlopen(request, timeout=timeout)
     except urllib.error.HTTPError as exc:
         if exc.code == 403 and exc.headers.get("X-RateLimit-Remaining") == "0":
             raise ReleaseProcessFailure("release_github_rate_limited") from exc
@@ -194,13 +215,14 @@ def _urlopen_bounded(url: str, *, timeout: float, max_bytes: int, binary: bool =
     return body, len(body)
 
 
-def _download_to_file(url: str, target: Path, *, timeout: float, max_bytes: int) -> tuple[str, int]:
+def _download_to_file(url: str, target: Path, *, timeout: float, max_bytes: int, trusted_public: bool = False) -> tuple[str, int]:
     target.parent.mkdir(parents=True, exist_ok=True)
     digest = hashlib.sha256()
     total = 0
     temporary: Path | None = None
     try:
-        with _open(url, timeout=timeout, binary=True) as response, tempfile.NamedTemporaryFile(
+        response_context = _open(url, timeout=timeout, binary=True, trusted_public=True) if trusted_public else _open(url, timeout=timeout, binary=True)
+        with response_context as response, tempfile.NamedTemporaryFile(
             mode="wb", dir=target.parent, prefix=f".{target.name}.", delete=False
         ) as handle:
             temporary = Path(handle.name)
@@ -851,7 +873,12 @@ def main() -> int:
         if not isinstance(request, dict):
             raise ReleaseProcessFailure("release_subprocess_request_invalid")
         operation = _safe_text(request.get("operation"), 32)
+        from .lite_release_trust_runtime import inspect_candidate
+        def verify_trust(payload):
+            result = inspect_candidate(payload)
+            return result, result.pop("acquisition_metrics", {})
         handlers = {
+            "verify_trust": verify_trust,
             "check": _check,
             "stage": _stage,
             "promote": _promote,
@@ -870,6 +897,11 @@ def main() -> int:
             "cpu_ms": round((time.process_time() - started_cpu) * 1000.0, 3),
             "peak_rss_bytes": _rss_bytes(),
         })
+        if operation == "verify_trust" and resource is not None:
+            children = resource.getrusage(resource.RUSAGE_CHILDREN)
+            metrics["cpu_ms"] += (children.ru_utime + children.ru_stime) * 1000
+            child_peak = int(children.ru_maxrss) * (1 if sys.platform == "darwin" else 1024)
+            metrics["peak_rss_bytes"] = max(metrics["peak_rss_bytes"], child_peak)
         if int(metrics["peak_rss_bytes"] or 0) > _memory_budget_bytes(operation):
             raise ReleaseProcessFailure("release_child_memory_budget_exceeded")
         _emit({"ok": True, "result": result, "metrics": metrics})

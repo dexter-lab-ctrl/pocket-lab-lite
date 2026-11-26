@@ -2215,6 +2215,18 @@
         "user_message": "Runtime Security Assurance could not continue safely."
       },
       {
+        "code": "candidate_invalid",
+        "domain": "release-trust",
+        "http_status": 409,
+        "meaning": "The candidate did not satisfy the bounded trusted lifecycle contract, so it cannot advance review or recovery state.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "error",
+        "terminal": true,
+        "user_message": "Pocket Lab could not verify this candidate safely."
+      },
+      {
         "code": "checkpoint_ineligible",
         "domain": "security",
         "http_status": 200,
@@ -3379,6 +3391,30 @@
         "user_message": "The requested Identity or Rules action could not continue."
       },
       {
+        "code": "independent_provenance_and_qualification_required",
+        "domain": "release-trust",
+        "http_status": 409,
+        "meaning": "Authenticity or artifact integrity was not sufficient to establish independent provenance and qualification for execution.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "error",
+        "terminal": false,
+        "user_message": "Independent provenance and qualification are required before this candidate can continue."
+      },
+      {
+        "code": "independent_root_required",
+        "domain": "release-trust",
+        "http_status": 409,
+        "meaning": "An independently configured trust root is required before trusted review can begin.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "An independently configured trust root is required before review can continue."
+      },
+      {
         "code": "insufficient_storage",
         "domain": "system",
         "http_status": 200,
@@ -3533,6 +3569,18 @@
         "severity": "info",
         "terminal": false,
         "user_message": "Pocket Lab is using a compatible device telemetry value."
+      },
+      {
+        "code": "local_candidate_or_root_missing",
+        "domain": "release-trust",
+        "http_status": 404,
+        "meaning": "The explicitly selected local candidate or trusted root is unavailable, so the review path does not fall back to an ambient source.",
+        "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+        "observed_in_current_health": [],
+        "retryable": true,
+        "severity": "warning",
+        "terminal": false,
+        "user_message": "The selected trusted candidate is unavailable."
       },
       {
         "code": "local_owner_required",
@@ -4787,6 +4835,18 @@
         "user_message": "The requested Identity or Rules action could not continue."
       },
       {
+        "code": "root_pin_invalid",
+        "domain": "release-trust",
+        "http_status": 409,
+        "meaning": "The configured trust root does not satisfy the independent root contract, so verification fails closed.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "error",
+        "terminal": true,
+        "user_message": "The configured trust root is invalid."
+      },
+      {
         "code": "run_not_found",
         "domain": "validation",
         "http_status": 409,
@@ -5085,6 +5145,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "The remaining safety targets were deferred by the configured thermal policy."
+      },
+      {
+        "code": "trust_contract_invalid",
+        "domain": "release-trust",
+        "http_status": 409,
+        "meaning": "The trusted release configuration or metadata contract is malformed or inconsistent, so the review path fails closed.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "error",
+        "terminal": true,
+        "user_message": "The trusted release contract is invalid."
       },
       {
         "code": "trusted_local_admin",
@@ -8062,5 +8134,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "1ee2120c013550416595d8251c7bfbe6e356d33b16fc46e4bbf65058806c624f"
+  "source_fingerprint": "3057e90e3d50ec9f95a9427c75e8abaf1340f410b935b6e505ca5c853b7ffd94"
 }

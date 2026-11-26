@@ -1570,6 +1570,118 @@
         "usage": "mutation"
       },
       {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.passkeyStepUpOptions",
+        "resolved": true,
+        "route": "/api/lite/identity/step-up/options",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.verifyPasskeyStepUp",
+        "resolved": true,
+        "route": "/api/lite/identity/step-up/verify",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleIssueBoundary",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/boundary",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleReviewBoundary",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/boundary/review",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleRevokeBoundary",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/boundary/revoke",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "PUT",
+        "mocked": false,
+        "owner": "liteApi.lifecyclePreference",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/preferences",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleReviewPreference",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/preferences/review",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "GET",
+        "mocked": false,
+        "owner": "liteApi.lifecycleSummary",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/summary",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "query"
+      },
+      {
         "dynamic": true,
         "import_chain": [
           "src/lite/devices/DeviceDetailsLazy.jsx",
@@ -2407,6 +2519,32 @@
         "import_chain": [
           "src/mocks/handlers.js"
         ],
+        "method": "POST",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/preferences/review",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
+        "method": "GET",
+        "mocked": true,
+        "owner": "MSW handler",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/summary",
+        "source_module": "src/mocks/handlers.js",
+        "usage": "mock"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/mocks/handlers.js"
+        ],
         "method": "GET",
         "mocked": true,
         "owner": "MSW handler",
@@ -3096,7 +3234,7 @@
         "import_chain": [
           "src/mocks/handlers.js"
         ],
-        "method": "GET",
+        "method": "POST",
         "mocked": true,
         "owner": "MSW handler",
         "resolved": true,
@@ -4109,7 +4247,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "701b1d09f47727e963c844fd05648275c63335da8174509a22d818f83a515790",
+    "aggregate_fingerprint": "5585721d87c7d67c9f6f34db7cf901ca2f07e7b5c25ea78cbefb0ecd360580ba",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -4119,11 +4257,11 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "541b9b956549a22a8300753ef4216ccbedb997decda0710ca60dadc271158cb5",
-      "contracts/metadata/documentation-platform.json": "e3ca5a37ded7b6f7eacc4ee2e7ea04a2a67b5efe783067ca8a8a61a726db2d88",
+      "contracts/generated/lite-openapi.json": "836ffc0f09712aede0ff821c8f18e47c6da3a03acd3e1bf2f2d05061045266e2",
+      "contracts/metadata/documentation-platform.json": "b8d66469fc3ab5b0b2b2ed610617a35c091810bc2d564d81075cce898682ddda",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "3b34f0debcf38e177dca50b99dea00a9b2710c4889dcb2b706d688ce0a9fcd9e",
       "scripts/docs/lite/generate_platform_catalogs.py": "03d45e1757f6eff0622b0bac8d53108a7229b00c2c746bf158a746224499fd08",
-      "src/lib/liteApi.js": "ca7cfacce56c0b0c89b2218f9009999762d3143ddb61b3e20cb75188b5a46660",
+      "src/lib/liteApi.js": "5cc6b2f0d6afe3477256abab06e26ae7e71cc504340937ba1116defd2faf113e",
       "src/lite/LiteActionProgress.jsx": "880d1bf891c3f76ef42e4565c01b0d2a39a9660a6f2d0ac9f909f0fce458f5a5",
       "src/lite/LiteApp.jsx": "809ff822ef1b6aa8d570f985a824240f5052d67a964d2cf71f8878ba33010b62",
       "src/lite/LiteAzureHorizon.stories.jsx": "a2ee55a0c896d4e6047164e8d08979241fe08c2a382992c87247cfd823811bf4",
@@ -4161,15 +4299,15 @@
       "src/lite/LiteSecurity.jsx": "8c316074e2fdfa67405fbafb678c06aad9e97adaeb9c30181a95f95ed5ea4074",
       "src/lite/LiteSecurity.stories.jsx": "447e7d25c5669fa9b1af095afc6bc75bf70c1461bc37b3df9ccc23ac24fd29d0",
       "src/lite/LiteServiceWorkerUpdateNotice.jsx": "450c8d4f9d858bcfd2781e55ae52101c8f37bc57deceb1dbe847c775ffc2288a",
-      "src/lite/LiteSystemHealth.jsx": "949ce547bfb786caf3d665c373ddb69e69ee303bcb8414e25739985b8ccdb212",
+      "src/lite/LiteSystemHealth.jsx": "647b38601724d9176ec1d87da518bbbb1ced3dc140fe7490894a3a4f6cd87e56",
       "src/lite/LiteSystemHealth.stories.jsx": "87996d03b6b9cdc7f9473c6739a56b13b14057a3721f105fb8681e251469f097",
       "src/lite/LiteSystemHealth.test.jsx": "2f2d0dbb049f9d188dc15b134c4e78cadd58be2845799fbd4e8d8e417d2ed45f",
       "src/lite/LiteToastHost.jsx": "4f06f72d896b56b05e9e4e9bded54c077128cff3a52bb6a3ecf2a52a83214995",
-      "src/lite/LiteUi.jsx": "4aac25020333e0c6413f778201810210375047a080954460d85d561f426b281b",
+      "src/lite/LiteUi.jsx": "ecbb1363a6f4e55ad6d44f6a878ebc0148ede72d94a6fb9b083dc7a92054df8b",
       "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "f093c59d1866f706dbeb2f54472d42e67fcfce624c99bd342c5c5297ce63f4ac",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "5502c5538b32e312620da7f7ab8b80b176f440e4fc06a0d2656679604e50c821"
+      "src/mocks/handlers.js": "1247333bfa5a3f0c6f774a2e28acdb583790108d0cd5469ffd55a341a5580b3d"
     },
     "validation_state": "generated"
   }

@@ -870,6 +870,17 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:get:/api/lite/lifecycle/summary",
+      "name": "GET /api/lite/lifecycle/summary",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:get:/api/lite/media-backup",
       "name": "GET /api/lite/media-backup",
       "note": "A test link does not by itself prove runtime verification.",
@@ -2489,6 +2500,50 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:post:/api/lite/lifecycle/boundary",
+      "name": "POST /api/lite/lifecycle/boundary",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/lifecycle/boundary/review",
+      "name": "POST /api/lite/lifecycle/boundary/review",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/lifecycle/boundary/revoke",
+      "name": "POST /api/lite/lifecycle/boundary/revoke",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
+      "entity": "api:post:/api/lite/lifecycle/preferences/review",
+      "name": "POST /api/lite/lifecycle/preferences/review",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:post:/api/lite/owner-operations/client-pairings",
       "name": "POST /api/lite/owner-operations/client-pairings",
       "note": "A test link does not by itself prove runtime verification.",
@@ -3061,6 +3116,17 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "api:put:/api/lite/lifecycle/preferences",
+      "name": "PUT /api/lite/lifecycle/preferences",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [
+        "test:tests/backend/test_lite_development_documentation_platform.py",
+        "test:tests/parity/test_api_contract_fences.py"
+      ],
+      "type": "api",
+      "verification_status": "test-linked"
+    },
+    {
       "entity": "api:put:/api/lite/system-health/automatic-policy",
       "name": "PUT /api/lite/system-health/automatic-policy",
       "note": "A test link does not by itself prove runtime verification.",
@@ -3429,6 +3495,7 @@
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [
         "test:tests/backend/test_lite_termux_runtime_documentation.py",
+        "test:tests/backend/test_lite_trusted_lifecycle.py",
         "test:tests/docs/test_documentation_presentation_polish.py",
         "test:tests/docs/test_enterprise_completion.py",
         "test:tests/docs/test_living_knowledgebase.py",
@@ -4233,6 +4300,14 @@
       "verification_status": "test-linked"
     },
     {
+      "entity": "domain:lifecycle",
+      "name": "Lifecycle",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
       "entity": "domain:lite",
       "name": "Lite",
       "note": "A test link does not by itself prove runtime verification.",
@@ -4370,6 +4445,14 @@
     {
       "entity": "domain:release-management",
       "name": "Release Management",
+      "note": "A test link does not by itself prove runtime verification.",
+      "tests": [],
+      "type": "domain",
+      "verification_status": "unvalidated"
+    },
+    {
+      "entity": "domain:release-trust",
+      "name": "Release Trust",
       "note": "A test link does not by itself prove runtime verification.",
       "tests": [],
       "type": "domain",
@@ -5069,6 +5152,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5a99f823b944ae3642b2f914852c337292611ac685c249568797580d6c5109e3"
+    "source_fingerprint": "1f30b69222bc5131517d56b80bd58de986f7f8fec42139920f80daaf5e708fef"
   }
 }

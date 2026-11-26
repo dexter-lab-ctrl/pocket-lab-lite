@@ -683,6 +683,12 @@
           "type": "owns"
         }
       ],
+      "api:get:/api/lite/lifecycle/summary": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
       "api:get:/api/lite/media-backup": [
         {
           "source": "domain:media-backup",
@@ -2001,6 +2007,30 @@
           "type": "uses"
         }
       ],
+      "api:post:/api/lite/lifecycle/boundary": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/boundary/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/boundary/revoke": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/preferences/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/owner-operations/client-pairings": [
         {
           "source": "domain:owner-operations",
@@ -2466,6 +2496,12 @@
         },
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "api:put:/api/lite/lifecycle/preferences": [
+        {
+          "source": "domain:lifecycle",
           "type": "owns"
         }
       ],
@@ -4015,6 +4051,12 @@
           "type": "owns"
         }
       ],
+      "reason:candidate_invalid": [
+        {
+          "source": "domain:release-trust",
+          "type": "owns"
+        }
+      ],
       "reason:checkpoint_ineligible": [
         {
           "source": "domain:security",
@@ -4597,6 +4639,18 @@
           "type": "owns"
         }
       ],
+      "reason:independent_provenance_and_qualification_required": [
+        {
+          "source": "domain:release-trust",
+          "type": "owns"
+        }
+      ],
+      "reason:independent_root_required": [
+        {
+          "source": "domain:release-trust",
+          "type": "owns"
+        }
+      ],
       "reason:insufficient_storage": [
         {
           "source": "domain:system",
@@ -4672,6 +4726,12 @@
       "reason:legacy_telemetry_value": [
         {
           "source": "domain:devices",
+          "type": "owns"
+        }
+      ],
+      "reason:local_candidate_or_root_missing": [
+        {
+          "source": "domain:release-trust",
           "type": "owns"
         }
       ],
@@ -5299,6 +5359,12 @@
           "type": "owns"
         }
       ],
+      "reason:root_pin_invalid": [
+        {
+          "source": "domain:release-trust",
+          "type": "owns"
+        }
+      ],
       "reason:run_not_found": [
         {
           "source": "domain:validation",
@@ -5446,6 +5512,12 @@
       "reason:thermal_policy_threshold": [
         {
           "source": "domain:security",
+          "type": "owns"
+        }
+      ],
+      "reason:trust_contract_invalid": [
+        {
+          "source": "domain:release-trust",
           "type": "owns"
         }
       ],
@@ -8219,6 +8291,84 @@
           "type": "reads"
         }
       ],
+      "table:lite_lifecycle_audit": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_boundary_scopes": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_grants": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_preferences": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_service_delegations": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_workspace": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trust_configuration": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trust_floor": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trust_observation": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trust_pin": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trust_receipts": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trust_transitions": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_release_trusted_time": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_revision_events": [
         {
           "source": "domain:control_plane",
@@ -9331,6 +9481,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:candidate_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:checkpoint_ineligible",
           "type": "verified_by"
         },
@@ -9719,6 +9873,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:independent_provenance_and_qualification_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:independent_root_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -9768,6 +9930,10 @@
         },
         {
           "source": "reason:legacy_telemetry_value",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:local_candidate_or_root_missing",
           "type": "verified_by"
         },
         {
@@ -10187,6 +10353,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:root_pin_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:run_not_found",
           "type": "verified_by"
         },
@@ -10284,6 +10454,10 @@
         },
         {
           "source": "reason:thermal_policy_threshold",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trust_contract_invalid",
           "type": "verified_by"
         },
         {
@@ -10802,6 +10976,10 @@
         },
         {
           "source": "api:get:/api/lite/identity/owner-claim/status",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/lifecycle/summary",
           "type": "verified_by"
         },
         {
@@ -11393,6 +11571,22 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/lifecycle/boundary",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/boundary/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/boundary/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/preferences/review",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/owner-operations/client-pairings",
           "type": "verified_by"
         },
@@ -11598,6 +11792,10 @@
         },
         {
           "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:put:/api/lite/lifecycle/preferences",
           "type": "verified_by"
         },
         {
@@ -12596,6 +12794,10 @@
       "test:tests/backend/test_lite_policy_lifecycle_p2_2.py": [
         {
           "source": "component:opa-policy-engine",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:candidate_invalid",
           "type": "verified_by"
         },
         {
@@ -13657,9 +13859,19 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_trusted_lifecycle.py": [
+        {
+          "source": "component:github-repository",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_ui_candidate_server.py": [
         {
           "source": "component:browser",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:confirmation_required",
           "type": "verified_by"
         }
       ],
@@ -15047,6 +15259,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:candidate_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:checkpoint_ineligible",
           "type": "verified_by"
         },
@@ -15435,6 +15651,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:independent_provenance_and_qualification_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:independent_root_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -15484,6 +15708,10 @@
         },
         {
           "source": "reason:legacy_telemetry_value",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:local_candidate_or_root_missing",
           "type": "verified_by"
         },
         {
@@ -15903,6 +16131,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:root_pin_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:run_not_found",
           "type": "verified_by"
         },
@@ -16000,6 +16232,10 @@
         },
         {
           "source": "reason:thermal_policy_threshold",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trust_contract_invalid",
           "type": "verified_by"
         },
         {
@@ -16333,6 +16569,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:candidate_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:checkpoint_ineligible",
           "type": "verified_by"
         },
@@ -16721,6 +16961,14 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:independent_provenance_and_qualification_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:independent_root_required",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -16770,6 +17018,10 @@
         },
         {
           "source": "reason:legacy_telemetry_value",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:local_candidate_or_root_missing",
           "type": "verified_by"
         },
         {
@@ -17189,6 +17441,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:root_pin_invalid",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:run_not_found",
           "type": "verified_by"
         },
@@ -17286,6 +17542,10 @@
         },
         {
           "source": "reason:thermal_policy_threshold",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trust_contract_invalid",
           "type": "verified_by"
         },
         {
@@ -17935,6 +18195,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/e2e/lite-trusted-lifecycle.spec.ts": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/e2e/lite-ux-maturity.spec.ts": [
         {
           "source": "domain:identity",
@@ -18292,6 +18558,10 @@
         },
         {
           "source": "api:get:/api/lite/identity/owner-claim/status",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:get:/api/lite/lifecycle/summary",
           "type": "verified_by"
         },
         {
@@ -18883,6 +19153,22 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/lifecycle/boundary",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/boundary/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/boundary/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/preferences/review",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/owner-operations/client-pairings",
           "type": "verified_by"
         },
@@ -19088,6 +19374,10 @@
         },
         {
           "source": "api:put:/api/lite/identity/passkeys/{credential_id}",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:put:/api/lite/lifecycle/preferences",
           "type": "verified_by"
         },
         {
@@ -20759,6 +21049,16 @@
           "type": "verified_by"
         }
       ],
+      "api:get:/api/lite/lifecycle/summary": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:get:/api/lite/media-backup": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -22389,6 +22689,46 @@
           "type": "verified_by"
         }
       ],
+      "api:post:/api/lite/lifecycle/boundary": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/boundary/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/boundary/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/preferences/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:post:/api/lite/owner-operations/client-pairings": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -22900,6 +23240,16 @@
         }
       ],
       "api:put:/api/lite/identity/passkeys/{credential_id}": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:put:/api/lite/lifecycle/preferences": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -24544,6 +24894,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_trusted_lifecycle.py",
           "type": "verified_by"
         },
         {
@@ -27369,6 +27723,58 @@
           "type": "owns"
         },
         {
+          "target": "table:lite_lifecycle_audit",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_boundary_scopes",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_grants",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_preferences",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_service_delegations",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_workspace",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trust_configuration",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trust_floor",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trust_observation",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trust_pin",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trust_receipts",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trust_transitions",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_release_trusted_time",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_revision_events",
           "type": "owns"
         },
@@ -29007,6 +29413,32 @@
           "type": "verified_by"
         }
       ],
+      "domain:lifecycle": [
+        {
+          "target": "api:get:/api/lite/lifecycle/summary",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/boundary",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/boundary/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/boundary/revoke",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/preferences/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:put:/api/lite/lifecycle/preferences",
+          "type": "owns"
+        }
+      ],
       "domain:lite": [
         {
           "target": "subject:pocketlab.commands.lite.app.backup.create",
@@ -30017,6 +30449,32 @@
         {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
+        }
+      ],
+      "domain:release-trust": [
+        {
+          "target": "reason:candidate_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:independent_provenance_and_qualification_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:independent_root_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:local_candidate_or_root_missing",
+          "type": "owns"
+        },
+        {
+          "target": "reason:root_pin_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:trust_contract_invalid",
+          "type": "owns"
         }
       ],
       "domain:remote-access": [
@@ -33241,6 +33699,24 @@
           "type": "verified_by"
         }
       ],
+      "reason:candidate_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_policy_lifecycle_p2_2.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:checkpoint_ineligible": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -33326,6 +33802,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_security_assurance_controls.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_ui_candidate_server.py",
           "type": "verified_by"
         },
         {
@@ -34004,6 +34484,10 @@
         },
         {
           "target": "test:tests/e2e/lite-system-health-visual.spec.ts",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/e2e/lite-trusted-lifecycle.spec.ts",
           "type": "verified_by"
         },
         {
@@ -35035,6 +35519,34 @@
           "type": "verified_by"
         }
       ],
+      "reason:independent_provenance_and_qualification_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:independent_root_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:insufficient_storage": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -35284,6 +35796,20 @@
         }
       ],
       "reason:legacy_telemetry_value": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:local_candidate_or_root_missing": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -37041,6 +37567,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:root_pin_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:run_not_found": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -37490,6 +38030,20 @@
         }
       ],
       "reason:thermal_policy_threshold": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:trust_contract_invalid": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -38535,6 +39089,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "5a99f823b944ae3642b2f914852c337292611ac685c249568797580d6c5109e3"
+    "source_fingerprint": "1f30b69222bc5131517d56b80bd58de986f7f8fec42139920f80daaf5e708fef"
   }
 }

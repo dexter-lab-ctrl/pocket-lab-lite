@@ -11,7 +11,7 @@
     "unapproved_breaking_changes": []
   },
   "metadata": {
-    "aggregate_fingerprint": "17202bff4f843834bdfc7cb3ca6dacd09609e4e4a4fcaf38b37d8ed8a4fef17c",
+    "aggregate_fingerprint": "788ef0956aa7106b876f809ae6f8bc79f78cf8ee0a1c3b022f61727b5b8752c1",
     "baseline_identity": {
       "checksum": null,
       "path": "contracts/generated/lite-openapi.previous.json",
@@ -26,9 +26,9 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "541b9b956549a22a8300753ef4216ccbedb997decda0710ca60dadc271158cb5",
+      "contracts/generated/lite-openapi.json": "836ffc0f09712aede0ff821c8f18e47c6da3a03acd3e1bf2f2d05061045266e2",
       "contracts/metadata/api-compatibility-exceptions.json": "cba7d99f8dc8a225a8b0fb0c07d8f4ec120b293edafce10b91e8593992843a2b",
-      "contracts/metadata/documentation-platform.json": "e3ca5a37ded7b6f7eacc4ee2e7ea04a2a67b5efe783067ca8a8a61a726db2d88",
+      "contracts/metadata/documentation-platform.json": "b8d66469fc3ab5b0b2b2ed610617a35c091810bc2d564d81075cce898682ddda",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "3b34f0debcf38e177dca50b99dea00a9b2710c4889dcb2b706d688ce0a9fcd9e",
       "scripts/docs/lite/generate_platform_catalogs.py": "03d45e1757f6eff0622b0bac8d53108a7229b00c2c746bf158a746224499fd08"
     },

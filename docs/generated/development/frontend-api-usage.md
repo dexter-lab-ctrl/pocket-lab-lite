@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: c5e949f990a0f6138778e6057fd9594322ff4cd871f88a79201f134f25996c83
+source_fingerprint: 74446271fac9e5adaa7450d55fb36fe5dac68f1298c76df39ec73de198df16ae
 schema_revision: 1
 validation_status: generated
 ---
@@ -134,6 +134,14 @@ validation_status: generated
 | src/lite/components/SystemHealthOwnerControls.jsx | liteApi.healthResolveMaintenance | POST | `/api/lite/system-health/maintenance` | mutation | no | static |
 | src/lite/components/SystemHealthOwnerControls.jsx | liteApi.healthPreferences | PUT | `/api/lite/system-health/preferences` | mutation | no | static |
 | src/lite/components/SystemHealthOwnerControls.jsx | liteApi.healthCancelRecovery | POST | `/api/lite/system-health/recovery-requests/{param}/cancel` | mutation | no | dynamic |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.passkeyStepUpOptions | POST | `/api/lite/identity/step-up/options` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.verifyPasskeyStepUp | POST | `/api/lite/identity/step-up/verify` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleIssueBoundary | POST | `/api/lite/lifecycle/boundary` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleReviewBoundary | POST | `/api/lite/lifecycle/boundary/review` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleRevokeBoundary | POST | `/api/lite/lifecycle/boundary/revoke` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecyclePreference | PUT | `/api/lite/lifecycle/preferences` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleReviewPreference | POST | `/api/lite/lifecycle/preferences/review` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleSummary | GET | `/api/lite/lifecycle/summary` | query | no | static |
 | src/lite/devices/DeviceDetailsLazy.jsx | liteApi.device | GET | `/api/lite/devices/{param}` | query | no | dynamic |
 | src/lite/devices/DeviceDetailsLazy.jsx | liteApi.deviceHealth | GET | `/api/lite/devices/{param}/health` | query | no | dynamic |
 | src/lite/devices/DeviceDetailsLazy.jsx | liteApi.deviceHealthHistory | GET | `/api/lite/devices/{param}/health/history` | query | no | dynamic |
@@ -197,6 +205,8 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/sessions/:sessionId` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/sessions/revoke-others` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/identity/setup` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/lifecycle/preferences/review` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/lifecycle/summary` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/media-backup` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/policy` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | POST | `/api/lite/policy/apply` | mock | yes | static |
@@ -250,7 +260,7 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/policies` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/repairs` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/resources` | mock | yes | static |
-| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/summary` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | POST | `/api/lite/system-health/summary` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system/activity-summary` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system/health` | mock | yes | static |
 | src/mocks/identityRulesCompatibilityHandlers.js | MSW handler | GET | `/api/lite/policy/decisions/:decisionId` | mock | yes | static |

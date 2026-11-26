@@ -1238,6 +1238,19 @@ function mockSystemHealthSummary() {
 }
 
 export const handlers = [
+  http.get('/api/lite/lifecycle/summary', () => HttpResponse.json({
+    schema_version: 1, owner_authority: rawScenario() !== 'system-health-lifecycle-viewer',
+    preferences: { revision: 0, profile: 'notify' }, boundary_revision: 0,
+    can_record_consent: false, enterprise_managed: rawScenario() === 'system-health-lifecycle-managed',
+    release_trust: { state: rawScenario() === 'system-health-lifecycle-expired' ? 'metadata_expired' : 'trust_setup_required',
+      historical_identity_verified: true, installed_tag: 'lite-2026.11.26.2', fresh_verification: false, history: [] },
+    assessment: { impact: 'UX' }, capabilities: [], grants: [], audit: [],
+    effective_execution: { software: false, policy: false, delegated: false }, execution_eligible: false,
+  })),
+  http.post('/api/lite/lifecycle/preferences/review', () => HttpResponse.json({
+    purpose: 'lifecycle:' + 'a'.repeat(64), confirmation_required: true, execution_eligible: false,
+  })),
+
 
   http.get('/api/lite/system-health/summary', ({ request }) =>
     HttpResponse.json(mockSystemHealthSummary(), { headers: liteSafeReadHeaders(request) })),

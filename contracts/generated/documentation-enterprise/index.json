@@ -6725,6 +6725,29 @@
         "affects_release": false,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "LITE_TRUSTED_LIFECYCLE_ANDROID_OUTPUT_DIR",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/run-system-health-android-ui-qualification.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "LITE_UI",
         "owner": "repository tooling",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -9025,6 +9048,30 @@
         "source": [
           "scripts/dev/lite/ui_performance_candidate_server.py",
           "tests/backend/test_lite_ui_candidate_server.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_CANDIDATE_TRUSTED_LIFECYCLE_UI_FIXTURE",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "scripts/dev/lite/run-system-health-android-ui-qualification.py",
+          "scripts/dev/lite/ui_performance_candidate_server.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -24477,6 +24524,32 @@
       },
       {
         "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_RELEASE_ATTESTATION_ROOT_SHA256",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_provenance.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_configuration.py",
+          "tests/backend/test_lite_trusted_lifecycle.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "repository tooling"
         ],
         "affects_release": false,
@@ -24520,6 +24593,29 @@
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py",
           "tests/backend/test_lite_native_release.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_RELEASE_CHECK_TOTAL_TIMEOUT_SECONDS",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -24989,6 +25085,31 @@
       },
       {
         "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_RELEASE_PUBLIC_ROOT",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          ".github/workflows/release-dist.yml",
+          "scripts/dev/lite/publish_trusted_release.py",
+          "scripts/dev/lite/sign_trusted_release_candidate.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
           "FastAPI"
         ],
         "affects_release": true,
@@ -25030,6 +25151,79 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/release_update_process.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_RELEASE_ROOT_SHA256",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_configuration.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_runtime.py",
+          "tests/backend/test_lite_trusted_lifecycle.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_RELEASE_ROOT_VERSION",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          ".github/workflows/release-dist.yml"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "repository tooling"
+        ],
+        "affects_release": false,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_RELEASE_SIGNING_SEEDS",
+        "owner": "repository tooling",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "source-dependent",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          ".github/workflows/release-dist.yml",
+          "scripts/dev/lite/sign_trusted_release_candidate.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -25134,6 +25328,54 @@
           "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
           "tests/backend/conftest.py",
           "tests/backend/test_lite_native_release.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_RELEASE_TRUST_SOURCE",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_runtime.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_RELEASE_TRUST_SUSPENDED",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_trust_configuration.py",
+          "tests/backend/test_lite_trusted_lifecycle.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -34501,7 +34743,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/main.py:123"
+          "pocket-lab-final-structure/runtime/api_fastapi/main.py:124"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -34538,7 +34780,7 @@
         "schema": "AsyncAPI channel metadata; payload schema is unobserved when channel has no message binding",
         "security_classification": "internal metadata",
         "source_owner": [
-          "pocket-lab-final-structure/runtime/api_fastapi/main.py:195"
+          "pocket-lab-final-structure/runtime/api_fastapi/main.py:196"
         ],
         "tests": [],
         "ui_state": "FastAPI projection only; browser never subscribes to NATS"
@@ -40462,9 +40704,9 @@
           "backup_binding_invalid",
           "backup_state_missing",
           "battery_policy_threshold",
+          "candidate_invalid",
           "checkpoint_ineligible",
-          "configured_target_budget",
-          "confirmation_required"
+          "configured_target_budget"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -40588,9 +40830,9 @@
           "backup_binding_invalid",
           "backup_state_missing",
           "battery_policy_threshold",
+          "candidate_invalid",
           "checkpoint_ineligible",
-          "configured_target_budget",
-          "confirmation_required"
+          "configured_target_budget"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -40768,9 +41010,9 @@
           "backup_binding_invalid",
           "backup_state_missing",
           "battery_policy_threshold",
+          "candidate_invalid",
           "checkpoint_ineligible",
-          "configured_target_budget",
-          "confirmation_required"
+          "configured_target_budget"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -40921,9 +41163,9 @@
           "backup_binding_invalid",
           "backup_state_missing",
           "battery_policy_threshold",
+          "candidate_invalid",
           "checkpoint_ineligible",
-          "configured_target_budget",
-          "confirmation_required"
+          "configured_target_budget"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -41048,9 +41290,9 @@
           "backup_binding_invalid",
           "backup_state_missing",
           "battery_policy_threshold",
+          "candidate_invalid",
           "checkpoint_ineligible",
-          "configured_target_budget",
-          "confirmation_required"
+          "configured_target_budget"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -41190,9 +41432,9 @@
           "backup_binding_invalid",
           "backup_state_missing",
           "battery_policy_threshold",
+          "candidate_invalid",
           "checkpoint_ineligible",
-          "configured_target_budget",
-          "confirmation_required"
+          "configured_target_budget"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -41281,11 +41523,11 @@
           "assurance_policy_sync_denied",
           "assurance_policy_sync_disabled",
           "battery_policy_threshold",
+          "candidate_invalid",
           "device_capability_not_authorized",
           "device_role_assignment_unauthorized",
           "device_role_change_requires_approval",
-          "generic_policy_toggle_retired",
-          "human_session_required"
+          "generic_policy_toggle_retired"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -41314,11 +41556,12 @@
         "reason_codes": [
           "device_role_change_requires_approval",
           "independent_approval_satisfied",
+          "independent_provenance_and_qualification_required",
+          "independent_root_required",
           "owner_approval_policy_inconsistent",
           "owner_outcome_not_verified",
           "owner_reconciliation_not_verified",
-          "owner_restart_not_verified",
-          "photoprism_indexing_not_proven"
+          "owner_restart_not_verified"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "moderate",
@@ -41382,9 +41625,9 @@
           "backup_binding_invalid",
           "backup_state_missing",
           "battery_policy_threshold",
+          "candidate_invalid",
           "checkpoint_ineligible",
-          "configured_target_budget",
-          "confirmation_required"
+          "configured_target_budget"
         ],
         "residual_risk": "human review; no arbitrary RPN",
         "severity": "high",
@@ -41508,7 +41751,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 547,
+      "page_count": 550,
       "top_level": [
         "start-here",
         "use",
@@ -49391,10 +49634,10 @@
       "exact_tag": "lite-2026.08.12.2",
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
-        "asyncapi": "6bdbcb7f3b8587784a349d6ccf2057eefe4ca0ad2ab6a935e98ade9a68d955e1",
-        "documentation": "efcf862956a68cca9918e4f6323501aa7ca21e5eb2bb1e39c1c018a25edd08bc",
-        "openapi": "541b9b956549a22a8300753ef4216ccbedb997decda0710ca60dadc271158cb5",
-        "operational_health": "869b7888fd1b40157da5ba95e8ae389d8763f9b8985745b6aac1d22e28e4ef02"
+        "asyncapi": "ee5184ffef8ef26126c043e7aefe7820acf37aefc511d5717b767635c7b816cd",
+        "documentation": "bc5b3654fa2472c464c27b2de9d375f5b0f10dcd059af185931297448d20258b",
+        "openapi": "836ffc0f09712aede0ff821c8f18e47c6da3a03acd3e1bf2f2d05061045266e2",
+        "operational_health": "d54a457f11782e34ee91fe84bb15b2ccae7c2a48a78846eba41a27530e861569"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -96976,6 +97219,216 @@
         "audience": "developer",
         "captures_runtime": false,
         "commands": [
+          "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_trusted_lifecycle.py"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:lifecycle:backend",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "tests/backend/test_lite_trusted_lifecycle.py"
+        ],
+        "name": "lite:lifecycle:backend",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Focused non-production trusted lifecycle contract and cryptographic fixtures",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npm exec playwright test tests/e2e/lite-trusted-lifecycle.spec.ts -- --project=mocked-desktop --project=mocked-mobile"
+        ],
+        "dependencies": [],
+        "environment": [
+          "LITE_E2E_MODE"
+        ],
+        "example_invocation": "task lite:lifecycle:mocked",
+        "expected_runtime_class": "heavy-dev",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "tests/e2e/lite-trusted-lifecycle.spec.ts"
+        ],
+        "name": "lite:lifecycle:mocked",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Trusted Lifecycle mocked desktop/mobile and accessibility qualification (visual baselines require review)",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": true,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": true,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "task lite:lifecycle:backend",
+          "task lite:lifecycle:ui",
+          "task lite:lifecycle:mocked"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:lifecycle:qualification",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [],
+        "name": "lite:lifecycle:qualification",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run authored lifecycle backend, component and mocked browser checks (qualification session only)",
+        "related_tasks": [
+          "lite:lifecycle:backend",
+          "lite:lifecycle:mocked",
+          "lite:lifecycle:ui"
+        ],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "{{.PYTHON}} -m pytest -q tests/backend/test_lite_native_release.py tests/backend/test_release_process_isolation.py tests/backend/test_lite_sqlite_migrations.py tests/backend/test_lite_database_restore_reconciliation.py tests/backend/test_lite_policy_opa_readiness.py"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:lifecycle:regression",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "tests/backend/test_lite_database_restore_reconciliation.py",
+          "tests/backend/test_lite_native_release.py",
+          "tests/backend/test_lite_policy_opa_readiness.py",
+          "tests/backend/test_lite_sqlite_migrations.py",
+          "tests/backend/test_release_process_isolation.py"
+        ],
+        "name": "lite:lifecycle:regression",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Run existing release, SQLite, restore and policy regressions in an isolated developer environment",
+        "related_tasks": [],
+        "repository_mutation": true,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": true,
+        "safe_local": false,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": true,
+          "runtime_mutation": true
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Release loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
+          "npm exec vitest run src/lite/components/TrustedLifecyclePanel.test.jsx"
+        ],
+        "dependencies": [],
+        "environment": [],
+        "example_invocation": "task lite:lifecycle:ui",
+        "expected_runtime_class": "bounded",
+        "failure_modes": [
+          "dependency task failure",
+          "missing required local tool or evidence",
+          "command failure"
+        ],
+        "generated_artifacts": [],
+        "implementation_status": "implemented",
+        "inputs": [
+          "src/lite/components/TrustedLifecyclePanel.test.jsx"
+        ],
+        "name": "lite:lifecycle:ui",
+        "outputs": [],
+        "promotes_evidence": false,
+        "purpose": "Focused Trusted Lifecycle frontend component qualification",
+        "related_tasks": [],
+        "repository_mutation": false,
+        "requires_termux": false,
+        "requires_wsl2": false,
+        "runtime_mutation": false,
+        "safe_local": true,
+        "side_effects": {
+          "network_or_external_tools": false,
+          "repository_mutation": false,
+          "runtime_mutation": false
+        },
+        "source": "tasks/Taskfile.lite.yml",
+        "validation_outcome": "not-a-validation-task",
+        "workflow_group": "Development loop"
+      },
+      {
+        "aliases": [],
+        "audience": "developer",
+        "captures_runtime": false,
+        "commands": [
           "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest tests/backend/test_lite_photo_backup_agent.py"
         ],
         "dependencies": [],
@@ -125052,5 +125505,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "72fc7b525408cb8785f7cba8c87233ec9e02f30d78a0d9d43d020ba998d7476b"
+  "source_fingerprint": "ec9919530076f171b204d17367906af5df31c43dbe25e22712deb930bc3f1ab6"
 }

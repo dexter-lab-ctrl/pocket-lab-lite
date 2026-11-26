@@ -15,12 +15,12 @@ Tasks remain source-derived; commands are documented but never executed by this 
 
 | Workflow | Task count |
 | --- | --- |
-| Development loop | 152 |
+| Development loop | 156 |
 | Documentation loop | 57 |
 | API-validation loop | 12 |
 | Runtime-evidence loop | 41 |
 | Security-analysis loop | 34 |
-| Release loop | 20 |
+| Release loop | 21 |
 | Recovery-diagnostics loop | 28 |
 
 ## `default`
@@ -4457,6 +4457,178 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** gate-defined
 
 **Example:** `task lite:harness:verify-off`
+
+## `lite:lifecycle:backend`
+
+**Purpose:** Focused non-production trusted lifecycle contract and cryptographic fixtures
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_trusted_lifecycle.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** tests/backend/test_lite_trusted_lifecycle.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:lifecycle:backend`
+
+## `lite:lifecycle:mocked`
+
+**Purpose:** Trusted Lifecycle mocked desktop/mobile and accessibility qualification (visual baselines require review)
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npm exec playwright test tests/e2e/lite-trusted-lifecycle.spec.ts -- --project=mocked-desktop --project=mocked-mobile`
+
+**Environment:** LITE_E2E_MODE
+
+**Inputs:** tests/e2e/lite-trusted-lifecycle.spec.ts
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=True; safe local=True; class=heavy-dev
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:lifecycle:mocked`
+
+## `lite:lifecycle:qualification`
+
+**Purpose:** Run authored lifecycle backend, component and mocked browser checks (qualification session only)
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `task lite:lifecycle:backend`
+- `task lite:lifecycle:ui`
+- `task lite:lifecycle:mocked`
+
+**Environment:** None source-discovered
+
+**Inputs:** No explicit file inputs discovered
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** lite:lifecycle:backend, lite:lifecycle:mocked, lite:lifecycle:ui
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:lifecycle:qualification`
+
+## `lite:lifecycle:regression`
+
+**Purpose:** Run existing release, SQLite, restore and policy regressions in an isolated developer environment
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `{{.PYTHON}} -m pytest -q tests/backend/test_lite_native_release.py tests/backend/test_release_process_isolation.py tests/backend/test_lite_sqlite_migrations.py tests/backend/test_lite_database_restore_reconciliation.py tests/backend/test_lite_policy_opa_readiness.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** tests/backend/test_lite_database_restore_reconciliation.py, tests/backend/test_lite_native_release.py, tests/backend/test_lite_policy_opa_readiness.py, tests/backend/test_lite_sqlite_migrations.py, tests/backend/test_release_process_isolation.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=True; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=False; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:lifecycle:regression`
+
+## `lite:lifecycle:ui`
+
+**Purpose:** Focused Trusted Lifecycle frontend component qualification
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `npm exec vitest run src/lite/components/TrustedLifecyclePanel.test.jsx`
+
+**Environment:** None source-discovered
+
+**Inputs:** src/lite/components/TrustedLifecyclePanel.test.jsx
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=False; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:lifecycle:ui`
 
 ## `lite:photo-backup:agent`
 

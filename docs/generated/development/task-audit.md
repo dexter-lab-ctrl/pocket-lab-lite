@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: d11d3e8c67333d43c1c4e80e2920b92cb548016caec509130306e4c0354230b3
+source_fingerprint: 6b1c8175cc46390c903c10c5c86c012cf4d84065adf51a852c952c2ad4741a1d
 schema_revision: 1
 validation_status: generated
 ---
@@ -262,6 +262,11 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:harness:session:start`
 - `lite:harness:status`
 - `lite:harness:verify-off`
+- `lite:lifecycle:backend`
+- `lite:lifecycle:mocked`
+- `lite:lifecycle:qualification`
+- `lite:lifecycle:regression`
+- `lite:lifecycle:ui`
 - `lite:parity:api`
 - `lite:parity:backend`
 - `lite:parity:check`
