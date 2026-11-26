@@ -410,7 +410,10 @@ def cached_review(conn, request):
 
 
 def _semantic_review(state, reason, tag, review):
-    return (state, reason, tag, {k: v for k, v in review.items() if k not in {"checked_at", "correlation_id", "clock_sample_ns", "clock_remaining_ns"}})
+    evidence = {k: v for k, v in review.items() if k not in {"checked_at", "correlation_id", "clock_sample_ns", "clock_remaining_ns", "clock_uncertainty_ms"}}
+    if isinstance(evidence.get("policy_runtime_observation"), dict):
+        evidence["policy_runtime_observation"] = {k: v for k, v in evidence["policy_runtime_observation"].items() if k != "observed_at"}
+    return (state, reason, tag, evidence)
 
 
 def persist(tx, observation, tag):

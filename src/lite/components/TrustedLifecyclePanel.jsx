@@ -90,7 +90,7 @@ export function CandidateReview({ review }) {
     <LiteTechnicalDetails summary="Review individual capability changes" haptic>
       <LiteActionRow label="Recorded changes" value={String(capabilities?.total ?? 'Not confirmed')} />
       {rows.map(row => <LiteActionRow key={row.id} label={row.id} value={impactNames[row.impact] || 'Review required'}
-        summary={Array.isArray(row.changed_fields) ? row.changed_fields.join(', ') : 'No detailed evidence available'} />)}
+        summary={typeof row.changed_fields === 'string' ? row.changed_fields : 'No detailed evidence available'} />)}
       {capabilities?.truncated && <p>Only the first recorded changes are shown. Further review is required.</p>}
       {!rows.length && <p>No individual changes recorded here. This does not establish authorization.</p>}
     </LiteTechnicalDetails>

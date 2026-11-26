@@ -62,7 +62,7 @@ it('shows scoped candidate evidence without any activation controls', () => {
   const candidate_review = { release_tag: 'lite-2026.11.27.1', source_package: { state: 'verified_for_review' },
     policy_review: { state: 'unknown_semantic_impact' }, policy_runtime_observation: { state: 'modules_match' },
     migration_review: { state: 'review_required' },
-    capability_review: { total: 1, changes: [{ id: 'fixture.capability', impact: 'U4', changed_fields: ['targets'] }] } };
+    capability_review: { total: 1, changes: [{ id: 'fixture.capability', impact: 'U4', changed_fields: 'targets' }] } };
   render(<LifecycleContent data={{ ...data, candidate_review }} />);
   expect(screen.getByText('Verified for review')).toBeTruthy();
   expect(screen.getByText('Policy change requires review')).toBeTruthy();

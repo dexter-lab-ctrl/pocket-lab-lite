@@ -33,8 +33,8 @@ def compare_capabilities(old: tuple[Capability, ...], new: tuple[Capability, ...
         old_fields = a.model_dump(mode="json") if a else {}
         new_fields = b.model_dump(mode="json") if b else {}
         rows.append({"id": key, "impact": impact.value,
-                     "changed_fields": sorted(k for k in old_fields.keys() | new_fields.keys()
-                                              if old_fields.get(k) != new_fields.get(k)),
+                     "changed_fields": ", ".join(sorted(k for k in old_fields.keys() | new_fields.keys()
+                                              if old_fields.get(k) != new_fields.get(k))),
                      "review_required": True, "execution_eligible": False})
     # Authority expansion and trust changes appear first. Bounded prepared read.
     priority = {"U5": 0, "U4": 1, "UX": 2, "U2": 3}
