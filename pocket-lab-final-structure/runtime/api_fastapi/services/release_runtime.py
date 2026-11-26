@@ -987,6 +987,9 @@ def commit_release_result(
                 or int(row["lease_expires_epoch_ms"] or 0) < now_ms
             )
             if not stale:
+                if payload.get("_trust_observation") is not None:
+                    from .lite_release_trust_runtime import persist
+                    persist(tx, payload["_trust_observation"], str(payload.get("latest_tag") or ""))
                 changed = str(row["canonical_hash"] or "") != digest
                 phase = str(canonical.get("phase") or "current")
                 current_tag = str(canonical.get("current_tag") or "unknown")
@@ -1321,7 +1324,7 @@ async def execute_release_subprocess(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     _require_worker()
     operation = _safe_text(operation, 32)
-    if operation not in {"check", "stage", "promote", "validate", "rollback", "recover", "cleanup"}:
+    if operation not in {"check", "stage", "promote", "validate", "rollback", "recover", "cleanup", "verify_trust"}:
         raise ReleaseRuntimeError("unsupported_release_subprocess_operation")
     body = json.dumps(
         {"operation": operation, **_sanitize(dict(request_payload))},
@@ -1742,8 +1745,22 @@ async def run_release_check(
             request = build_check_request()
             result, metrics = await execute_release_subprocess("check", request)
             interval = stable_release_interval_seconds()
+            observation = None
+            if os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256"):
+                from .lite_release_trust_runtime import floor_request
+                with connection() as conn:
+                    floor = floor_request(conn)
+                latest = result.get("latest_release") or {}
+                manifest = latest.get("manifest") or {}
+                observation, _ = await execute_release_subprocess("verify_trust", {
+                    **floor, "release_tag": result.get("latest_tag"),
+                    "source_commit": manifest.get("source_commit"),
+                    "artifact_sha256": manifest.get("artifact_sha256"),
+                    "channel": "preview" if latest.get("prerelease") else "stable",
+                })
             payload = {
                 **result,
+                "_trust_observation": observation,
                 "configured_repository": request.get("configured_repository"),
                 "verified_repository": request.get("verified_repository"),
                 "repository_match": bool(request.get("repository_match")),
@@ -1798,6 +1815,13 @@ async def check_for_apply(lease: ReleaseLease) -> tuple[dict[str, Any], dict[str
     request = build_check_request()
     if not request.get("repository_match"):
         raise ReleaseRuntimeError("release_product_unverified")
+    # An explicitly provisioned trust deployment cannot fall back to the legacy
+    # installer until a qualified trusted promotion contract exists (T4).
+    from .lite_release_trust_runtime import floor_request
+    with connection() as conn:
+        pinned = floor_request(conn)["pinned_root_sha256"]
+    if os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256") or pinned:
+        raise ReleaseRuntimeError("trusted_promotion_not_qualified")
     result, metrics = await execute_release_subprocess("check", request)
     result.update(
         {

@@ -851,7 +851,9 @@ def main() -> int:
         if not isinstance(request, dict):
             raise ReleaseProcessFailure("release_subprocess_request_invalid")
         operation = _safe_text(request.get("operation"), 32)
+        from .lite_release_trust_runtime import inspect_candidate
         handlers = {
+            "verify_trust": lambda payload: (inspect_candidate(payload), {}),
             "check": _check,
             "stage": _stage,
             "promote": _promote,

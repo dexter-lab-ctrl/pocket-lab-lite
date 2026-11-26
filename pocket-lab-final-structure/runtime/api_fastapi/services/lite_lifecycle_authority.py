@@ -249,6 +249,7 @@ def summary(context):
         ws = _workspace(conn)
         prefs = _prefs(conn)
         receipt = conn.execute("SELECT receipt_id,release_tag,checked_at,receipt_json FROM lite_release_trust_receipts ORDER BY metadata_version DESC LIMIT 1").fetchone()
+        trust_observation = conn.execute("SELECT state,reason_code FROM lite_release_trust_observation WHERE singleton_id=1").fetchone()
         rows = conn.execute("SELECT * FROM lite_lifecycle_grants ORDER BY boundary_revision DESC LIMIT 20").fetchall()
         grants = [{"grant_id": row["grant_id"], "purpose": row["purpose"], "capability_id": row["capability_id"],
                    "capability_version": row["capability_version"], "expires_at": row["expires_at"],
@@ -266,7 +267,8 @@ def summary(context):
             "preferences": prefs, "enterprise_managed": enterprise,
             "boundary_revision": ws["boundary_revision"], "capabilities": inventory(),
             "grants": grants, "audit": audit,
-            "release_trust": {"state": "historical_evidence" if historical else "trust_setup_required",
+            "release_trust": {"state": trust_observation["state"] if trust_observation else ("historical_evidence" if historical else "trust_setup_required"),
+                              "reason_code": trust_observation["reason_code"] if trust_observation else "independent_root_required",
                               "installed_tag": identity.get("release_tag") or None,
                               "historical_identity_verified": bool(identity.get("verified")),
                               "receipt": historical, "fresh_verification": False},
