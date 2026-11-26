@@ -104,10 +104,26 @@ async function main() {
   const dialog = page.getByRole('dialog', { name: /System Health Manage/i });
   await dialog.waitFor({ state: 'visible', timeout: 10_000 });
   interactions.push('manage_open');
+  const lifecycleSummaryResponsePromise = page.waitForResponse(
+    response => response.url().includes('/api/lite/lifecycle/summary'),
+    { timeout: 20_000 },
+  ).catch(() => null);
   await dialog.getByRole('button', { name: 'Updates & protection', exact: true }).click();
+  const lifecycleSummaryResponse = await lifecycleSummaryResponsePromise;
+  if (!lifecycleSummaryResponse) fail('Trusted Lifecycle summary response was not observed');
+  let lifecycleSummaryPayload = {};
+  try { lifecycleSummaryPayload = await lifecycleSummaryResponse.json(); } catch { lifecycleSummaryPayload = {}; }
+  if (!lifecycleSummaryResponse.ok()) {
+    fail(`Trusted Lifecycle summary was unavailable (${lifecycleSummaryResponse.status()})`);
+  }
   const selectedWorkspace = dialog.locator('[data-home-settings-selected="updates-protection"]');
   await selectedWorkspace.waitFor({ state: 'visible', timeout: 10_000 });
-  const panel = selectedWorkspace.locator('section.lite-system-health-manage-section[aria-label="Updates & protection"]');
+  const detail = selectedWorkspace.locator('.lite-home-settings-detail[aria-label="Updates & protection"]');
+  await detail.waitFor({ state: 'visible', timeout: 10_000 });
+  const panel = detail.locator('section.lite-system-health-manage-section[aria-label="Updates & protection"]');
+  if (!await panel.count()) {
+    fail(`Trusted Lifecycle content was unavailable (schema=${String(lifecycleSummaryPayload.schema_version || 'unknown')}, owner=${String(lifecycleSummaryPayload.owner_authority || 'unknown')})`);
+  }
   await panel.waitFor({ state: 'visible', timeout: 10_000 });
   await panel.getByRole('heading', { name: 'Updates & protection', exact: true }).waitFor({ state: 'visible' });
   interactions.push('updates_protection_entry');
