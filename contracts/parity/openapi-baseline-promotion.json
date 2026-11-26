@@ -29,5 +29,5 @@
   },
   "source_revision": "feat/trusted-lifecycle-governance@eea0d2fa5d81affc120a14459673b1b74db60f88",
   "status": "promoted",
-  "validation_status": "dev-pc-focused-and-full-gates-passed; exact-candidate-isolated-trusted-lifecycle-execution-and-verification-validated; physical-android-system-ui-and-system-only-performance-qualified-against-exact-candidate; installed-phone-backend-remains-main-and-does-not-expose-trusted-lifecycle; canonical-docs-and-final-local-repository-gates-passed; exact-head-ci-openapi-promotion-remediation-in-progress; live-production-transfer-pending-reviewed-release"
+  "validation_status": "dev-pc-focused-and-full-gates-passed; exact-candidate-isolated-trusted-lifecycle-execution-and-verification-validated; physical-android-system-ui-and-system-only-performance-qualified-against-exact-candidate; installed-phone-backend-remains-main-and-does-not-expose-trusted-lifecycle; canonical-docs-and-final-local-repository-gates-passed; exact-head-ci-openapi-promotion-remediation-complete; live-production-transfer-pending-reviewed-release"
 }
