@@ -1995,6 +1995,8 @@ def _restore_database_backup_unlocked(command: dict[str, Any]) -> dict[str, Any]
         restore_failure_stage = "staged_validation"
         _transition(restore_id, "validating_staged", "Validating and migrating the staged database.")
         applied = _apply_migrations_to_database(staged_db)
+        from .lite_lifecycle_restore import fence_staged_restore
+        fence_staged_restore(staged_db, checkpoint_db)
         staged_validation = validate_database_file(staged_db)
         staged_parity = _compare_projection(expected_projection, staged_db)
         if (
