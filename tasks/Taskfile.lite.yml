@@ -838,3 +838,8 @@ tasks:
     desc: Focused Trusted Lifecycle frontend component qualification
     cmds:
       - npm exec vitest run src/lite/components/TrustedLifecyclePanel.test.jsx
+
+  lite:lifecycle:mocked:
+    desc: Trusted Lifecycle mocked desktop/mobile and accessibility qualification (visual baselines require review)
+    cmds:
+      - VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npm exec playwright test tests/e2e/lite-trusted-lifecycle.spec.ts -- --project=mocked-desktop --project=mocked-mobile

@@ -11,3 +11,8 @@ export const UnknownImpact = { args: { data: { ...base, assessment: { impact: 'U
 export const RecordedConsent = { args: { data: { ...base, preferences: { profile: 'recommended', revision: 1 },
   grants: [{ grant_id: 'fixture', purpose: 'release-reconciler', status: 'within_recorded_boundary' }] } } };
 export const Review = { args: { pending: { kind: 'revoke', label: 'Revoke standing consent' } } };
+
+export const ExpiredEvidence = { args: { data: { ...base, release_trust: { state: 'metadata_expired' } } } };
+export const FailedVerification = { args: { data: { ...base, release_trust: { state: 'verification_failed' } } } };
+export const ExpandedPermissions = { args: { data: { ...base, assessment: { impact: 'U4', added: ['fixture'] } } } };
+export const NonOwner = { args: { data: { ...base, owner_authority: false } } };

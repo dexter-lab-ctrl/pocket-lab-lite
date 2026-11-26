@@ -27,3 +27,15 @@ describe('Trusted Lifecycle presentation', () => {
     expect(screen.queryByText('Review Recommended')).toBeNull();
   });
 });
+
+it('blocks non-Owner changes and leaves historical trust separate', () => {
+  render(<LifecycleContent data={{ ...data, owner_authority: false }} onReview={vi.fn()} />);
+  expect(screen.getByRole('button', { name: 'Review Recommended' }).disabled).toBe(true);
+  expect(screen.getByText(/only the current owner/i)).toBeTruthy();
+});
+it('shows expired evidence without installation eligibility', () => {
+  render(<LifecycleContent data={{ ...data, release_trust: { state: 'metadata_expired' }, assessment: { impact: 'U4' } }} />);
+  expect(screen.getByText('Metadata expired')).toBeTruthy();
+  expect(screen.getByText('Additional permissions require review')).toBeTruthy();
+  expect(screen.getByText('Not enabled by this foundation')).toBeTruthy();
+});

@@ -57,12 +57,14 @@ export function ChangeImpactReview({ assessment }) {
 export function LifecycleContent({ data, readOnly = false, busy = false, pending, onReview, onConfirm, onCancel, message }) {
   const prefs = data?.preferences;
   const managed = data?.enterprise_managed === true;
-  const blocked = readOnly || busy || !prefs;
+  const blocked = readOnly || busy || !prefs || data?.owner_authority === false;
   const canGrant = !managed && data?.can_record_consent === true;
   const grants = Array.isArray(data?.grants) ? data.grants : [];
   return <section className="lite-system-health-manage-section" aria-label="Updates & protection">
     <div className="lite-system-health-manage-intro"><h3>Updates &amp; protection</h3>
-      <p>Review release trust, choose update preferences and manage recorded permissions.</p></div>
+      <p>Review release trust, choose update preferences and manage recorded permissions.</p>
+      {data?.owner_authority === false && <p>Read-only. Only the current Owner can change these settings.</p>}
+      {readOnly && data?.owner_authority !== false && <p>Changes are unavailable until current information is confirmed.</p>}</div>
     <ReleaseTrustSummary trust={data?.release_trust} />
     <div className="lite-system-health-detail-block">
       <h4>Update preferences</h4>
@@ -108,6 +110,7 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
       <p>{pending.kind === 'grant' ? 'Record a limited, revocable review permission for 30 days. This replaces previous standing consent; it cannot start a service or install anything.'
         : pending.kind === 'revoke' ? 'Prevent new use of recorded consent. This does not claim to cancel existing work.'
         : 'Save this preference and revoke previous standing consent. Existing release and recovery settings are not changed.'}</p>
+      {pending.review?.scope && <LiteActionRow label="Exact reviewed scope" value={pending.review.scope.purpose} summary={pending.review.scope.channel + " channel · risk " + pending.review.scope.max_risk + " · no execution or secret access"} />}
       <LiteButton haptic tone="primary" disabled={blocked} onClick={onConfirm}>{busy ? 'Submitting…' : 'Confirm'}</LiteButton>
       <LiteButton haptic tone="secondary" disabled={busy} onClick={onCancel}>Cancel</LiteButton>
     </div>}
@@ -122,9 +125,9 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
   const inFlight = useRef(false);
   const query = useLiteQuery({ queryKey: ['lite', 'lifecycle', 'owner-summary'], path: '/api/lite/lifecycle/summary',
     queryFn: liteApi.lifecycleSummary, enabled: !readOnly, staleTime: 0, gcTime: 0,
-    refetchOnMount: 'always', pollingMode: 'off' });
+    refetchOnMount: 'always', refetchOnWindowFocus: true, pollingMode: 'off' });
   const data = query.data;
-  const writable = !readOnly && !query.error && query.backendReachable === true && !query.refreshing && data?.schema_version === 1;
+  const writable = !readOnly && !query.error && query.backendReachable === true && !query.refreshing && data?.schema_version === 1 && data?.owner_authority === true;
   async function exactPasskey(review) {
     if (!webAuthnAvailable()) throw new Error('passkey_unavailable');
     const options = await liteApi.passkeyStepUpOptions(review.purpose);
@@ -137,11 +140,11 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
     try {
       if (pending.kind === 'profile') {
         const body = { expected_revision: pending.revision, profile: pending.value, confirm: true };
-        if (pending.value !== 'notify') await exactPasskey(await liteApi.lifecycleReviewPreference(body));
+        if (pending.value !== 'notify') await exactPasskey(pending.review);
         await liteApi.lifecyclePreference(body);
       } else if (pending.kind === 'grant') {
         const body = { expected_revision: pending.boundary, expected_profile_revision: pending.revision, purpose: pending.value, confirm: true };
-        await exactPasskey(await liteApi.lifecycleReviewBoundary(body));
+        await exactPasskey(pending.review);
         await liteApi.lifecycleIssueBoundary(body);
       } else if (pending.kind === 'revoke') {
         await liteApi.lifecycleRevokeBoundary({ expected_revision: pending.boundary, confirm: true });
@@ -158,6 +161,18 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
     title={query.loading && !readOnly ? 'Loading updates & protection' : 'Verification unavailable'}
     description="Reconnect and sign in as Owner to review current permissions. No change can be submitted." />;
   return <LifecycleContent data={data} readOnly={!writable} busy={busy} pending={pending} message={message}
-    onReview={change => { if (writable && !busy) { setMessage(''); setPending({ ...change, revision: data.preferences.revision, boundary: data.boundary_revision }); } }}
+    onReview={async change => {
+      if (!writable || busy || inFlight.current) return;
+      inFlight.current = true; setBusy(true); setMessage('');
+      try {
+        const next = { ...change, revision: data.preferences.revision, boundary: data.boundary_revision };
+        if (change.kind === 'grant') next.review = await liteApi.lifecycleReviewBoundary({
+          expected_revision: next.boundary, expected_profile_revision: next.revision, purpose: change.value, confirm: true });
+        if (change.kind === 'profile' && change.value !== 'notify') next.review = await liteApi.lifecycleReviewPreference({
+          expected_revision: next.revision, profile: change.value, confirm: true });
+        setPending(next);
+      } catch { setMessage('Review is unavailable. Reconnect or refresh current information.'); }
+      finally { setBusy(false); inFlight.current = false; }
+    }}
     onConfirm={confirm} onCancel={() => setPending(null)} />;
 }
