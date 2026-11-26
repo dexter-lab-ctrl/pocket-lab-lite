@@ -35,9 +35,9 @@ jobs:
     name: Build and package Lite PWA
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      id-token: write
-      attestations: write
+      contents: read
+    outputs:
+      release_tag: ${{ steps.release_tag.outputs.tag }}
     env:
       PUPPETEER_SKIP_DOWNLOAD: '1'
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
@@ -256,11 +256,62 @@ jobs:
       - name: Validate release artifact contract
         run: python3 scripts/dev/lite/release_artifact_check.py --root .
 
+      - name: Upload release assets
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pocket-lab-lite-dist
+          path: |
+            dist.zip
+            checksums.txt
+            pocketlab-lite-release.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  publish-trusted:
+    name: Sign, attest and publish trusted release
+    needs: build-dist
+    if: needs.build-dist.outputs.release_tag != ''
+    runs-on: ubuntu-latest
+    environment: pocketlab-release-signing
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Checkout exact release source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Fence publishing to reviewed main history
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main --tags
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            test "$GITHUB_REF" = refs/heads/main
+            test "$GITHUB_SHA" = "$(git rev-parse origin/main)"
+          else
+            test "$GITHUB_REF_TYPE" = tag
+            test "$GITHUB_SHA" = "$(git rev-list -n 1 "$GITHUB_REF_NAME")"
+          fi
+      - name: Download exact build artifacts from this run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: pocket-lab-lite-dist
+          path: .
+      - name: Verify downloaded release bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum -c checksums.txt
+          test -s dist.zip && test -s pocketlab-lite-release.json
       # Release-only steps. No pull-request trigger receives signing material.
       - name: Prepare authenticated release metadata
-        if: steps.release_tag.outputs.tag != ''
+        if: needs.build-dist.outputs.release_tag != ''
         env:
-          RELEASE_TAG: ${{ steps.release_tag.outputs.tag }}
+          RELEASE_TAG: ${{ needs.build-dist.outputs.release_tag }}
           PRERELEASE: ${{ github.event.inputs.prerelease }}
           ROOT_VERSION: ${{ vars.POCKETLAB_RELEASE_ROOT_VERSION }}
           METADATA_VERSION: ${{ vars.POCKETLAB_RELEASE_METADATA_VERSION }}
@@ -282,7 +333,7 @@ jobs:
             --schema-min "$schema_max" --schema-max "$schema_max"
 
       - name: Sign authenticated release metadata
-        if: steps.release_tag.outputs.tag != ''
+        if: needs.build-dist.outputs.release_tag != ''
         env:
           POCKETLAB_RELEASE_PUBLIC_ROOT: ${{ vars.POCKETLAB_RELEASE_PUBLIC_ROOT }}
           POCKETLAB_RELEASE_SIGNING_SEEDS: ${{ secrets.POCKETLAB_RELEASE_SIGNING_SEEDS }}
@@ -295,7 +346,7 @@ jobs:
           done
 
       - name: Attest release artifact and signed metadata
-        if: steps.release_tag.outputs.tag != ''
+        if: needs.build-dist.outputs.release_tag != ''
         id: provenance
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
@@ -304,7 +355,7 @@ jobs:
             pocketlab-lite-trust.dsse.json
 
       - name: Prepare provenance bundle
-        if: steps.release_tag.outputs.tag != ''
+        if: needs.build-dist.outputs.release_tag != ''
         env:
           BUNDLE_PATH: ${{ steps.provenance.outputs.bundle-path }}
         run: |
@@ -312,10 +363,10 @@ jobs:
           test -s "$BUNDLE_PATH"
           cp "$BUNDLE_PATH" pocketlab-lite-provenance.jsonl
 
-      - name: Upload release assets
+      - name: Archive signed release evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: pocket-lab-lite-dist
+          name: pocket-lab-lite-trusted-release
           path: |
             dist.zip
             checksums.txt
@@ -325,14 +376,14 @@ jobs:
             pocketlab-lite-migration-inventory.json
             pocketlab-lite-trust.dsse.json
             pocketlab-lite-provenance.jsonl
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 30
 
       - name: Create GitHub release
-        if: steps.release_tag.outputs.tag != ''
+        if: needs.build-dist.outputs.release_tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ steps.release_tag.outputs.tag }}
+          RELEASE_TAG: ${{ needs.build-dist.outputs.release_tag }}
           PRERELEASE: ${{ github.event.inputs.prerelease }}
           REPAIR_EXISTING_RELEASE: ${{ github.event.inputs.repair_existing_release }}
         run: |
@@ -377,10 +428,10 @@ jobs:
           fi
 
       - name: Verify published release identity
-        if: steps.release_tag.outputs.tag != ''
+        if: needs.build-dist.outputs.release_tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ steps.release_tag.outputs.tag }}
+          RELEASE_TAG: ${{ needs.build-dist.outputs.release_tag }}
         shell: bash
         run: |
           set -euo pipefail

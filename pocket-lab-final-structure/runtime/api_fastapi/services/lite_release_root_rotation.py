@@ -43,8 +43,14 @@ def verify_rotation(old_bytes, new_bytes, transition, *, old_pin, new_pin, now):
             raise TrustError("root_transition_signatures_invalid")
         by_id[sig["keyid"]] = _decode(sig["sig"], 64)
     for root in (old, new):
+        if not root.rotation_keys or not root.rotation_threshold or root.rotation_threshold > len(root.rotation_keys):
+            raise TrustError("root_rotation_role_unprovisioned")
+        if set(k.keyid for k in root.rotation_keys) & set(k.keyid for k in root.keys):
+            raise TrustError("root_role_separation_invalid")
+        if len(set(k.keyid for k in root.rotation_keys)) != len(root.rotation_keys):
+            raise TrustError("duplicate_rotation_key")
         valid = set()
-        for key in root.keys:
+        for key in root.rotation_keys:
             raw = _decode(key.public_key, 32)
             if hashlib.sha256(raw).hexdigest() != key.keyid:
                 raise TrustError("root_key_invalid")
@@ -55,6 +61,6 @@ def verify_rotation(old_bytes, new_bytes, transition, *, old_pin, new_pin, now):
                 valid.add(key.keyid)
             except InvalidSignature:
                 continue
-        if len(valid) < root.threshold:
+        if len(valid) < root.rotation_threshold:
             raise TrustError("root_transition_threshold_not_met")
     return {"previous_root_sha256": old_pin, "root_transition_sha256": hashlib.sha256(transition).hexdigest()}

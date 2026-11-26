@@ -126,6 +126,10 @@ def inspect_candidate(request):
         if now is None:
             raise TrustError("trusted_time_unavailable")
         _expiry(root.expires, now)
+        if request.get("highest_trusted_time"):
+            previous = datetime.fromisoformat(request["highest_trusted_time"])
+            if now < previous:
+                raise TrustError("trusted_clock_rollback")
         rotation = {}
         if request.get("pinned_root_sha256") not in (None, "", pin):
             from .lite_release_root_rotation import verify_rotation
@@ -187,7 +191,9 @@ def inspect_candidate(request):
 def floor_request(conn):
     floor = conn.execute("SELECT * FROM lite_release_trust_floor WHERE singleton_id=1").fetchone()
     pin = conn.execute("SELECT root_sha256 FROM lite_release_trust_pin WHERE singleton_id=1").fetchone()
-    return {"highest_version": floor["metadata_version"] if floor else 0,
+    clock = conn.execute("SELECT trusted_at FROM lite_release_trusted_time WHERE singleton_id=1").fetchone()
+    return {"highest_trusted_time": clock["trusted_at"] if clock else "",
+            "highest_version": floor["metadata_version"] if floor else 0,
             "highest_root": floor["root_version"] if floor else 0,
             "highest_tag": floor["release_tag"] if floor else "",
             "highest_digest": floor["metadata_sha256"] if floor else "",
@@ -207,7 +213,8 @@ def persist(tx, observation, tag):
         rotated = (receipt.get("previous_root_sha256") == old["pinned_root_sha256"]
                    and receipt.get("root_transition_sha256") and receipt["root_version"] == old["highest_root"] + 1
                    and version > old["highest_version"])
-        if ((old["pinned_root_sha256"] not in ("", root_pin) and not rotated)
+        if ((old["highest_trusted_time"] and datetime.fromisoformat(receipt["checked_at"]) < datetime.fromisoformat(old["highest_trusted_time"]))
+                or (old["pinned_root_sha256"] not in ("", root_pin) and not rotated)
                 or version < old["highest_version"]
                 or receipt["root_version"] < old["highest_root"]
                 or (version == old["highest_version"] and receipt["metadata_sha256"] != old["highest_digest"])
@@ -227,6 +234,9 @@ def persist(tx, observation, tag):
             tx.execute("INSERT INTO lite_release_trust_receipts VALUES (?,?,?,?,?,?)",
                        (correlation, version, receipt["root_version"], tag, receipt["checked_at"],
                         json.dumps({**receipt, "correlation_id": correlation}, sort_keys=True, separators=(",", ":"))))
+    if receipt is not None:
+        tx.execute("""INSERT INTO lite_release_trusted_time VALUES(1,?) ON CONFLICT(singleton_id)
+            DO UPDATE SET trusted_at=excluded.trusted_at""", (receipt["checked_at"],))
     tx.execute("""INSERT INTO lite_release_trust_observation(singleton_id,state,reason_code,checked_at,release_tag,review_json)
                VALUES (1,?,?,?,?,?) ON CONFLICT(singleton_id) DO UPDATE SET state=excluded.state,
                reason_code=excluded.reason_code,checked_at=excluded.checked_at,release_tag=excluded.release_tag,

@@ -82,6 +82,8 @@ class Root(Strict):
     keys: list[PublicKey] = Field(min_length=1, max_length=8)
     revoked: list[str] = Field(max_length=32)
     expires: str = Field(max_length=32)
+    rotation_keys: list[PublicKey] = Field(default_factory=list, max_length=8)
+    rotation_threshold: int = Field(default=0, ge=0, le=8)
 
 
 class Signature(Strict):
@@ -161,6 +163,10 @@ def verify(envelope_bytes: bytes, *, pinned_root: Root, trusted_now: datetime | 
     if pinned_root.version < highest_root:
         raise TrustError("root_rollback")
     keys = {}
+    if (pinned_root.rotation_threshold > len(pinned_root.rotation_keys)
+        or bool(pinned_root.rotation_keys) != bool(pinned_root.rotation_threshold)
+        or set(k.keyid for k in pinned_root.rotation_keys) & set(k.keyid for k in pinned_root.keys)):
+        raise TrustError("root_role_separation_invalid")
     if len(set(pinned_root.revoked)) != len(pinned_root.revoked):
         raise TrustError("duplicate_revoked_key")
     for key in pinned_root.keys:

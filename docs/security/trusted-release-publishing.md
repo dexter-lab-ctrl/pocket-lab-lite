@@ -4,12 +4,13 @@ attestation for tagged/manual releases. Main source builds retain their normal
 artifact flow. There is no fallback for missing signing configuration.
 
 Before release readiness, configure independently approved public root JSON
-(repository variable POCKETLAB_RELEASE_PUBLIC_ROOT), root version, strictly
+(protected environment variable POCKETLAB_RELEASE_PUBLIC_ROOT), root version, strictly
 increasing POCKETLAB_RELEASE_METADATA_VERSION (including repairs), and the
 protected secret POCKETLAB_RELEASE_SIGNING_SEEDS (JSON array of base64 32-byte
-Ed25519 seeds, enough distinct active keys to meet the root threshold). Restrict
-repository secret access and release workflow execution to reviewed protected
-refs. Prefer a separately protected signer/HSM in a future deployment. No
+Ed25519 seeds, enough distinct active keys to meet the root threshold). Configure the pocketlab-release-signing GitHub environment with required
+reviewers, approved main/release-tag deployment restrictions, and environment-scoped
+secrets (not repository-level signing secrets). This is a mandatory configuration
+prerequisite; ordinary builds have read-only contents permission and no OIDC. Prefer a separately protected signer/HSM in a future deployment. No
 production secret has been created here. Do not merge into a release-enabled
 environment before this configuration and workflow have been qualified.
 
@@ -21,3 +22,12 @@ the exact current schema; broader migration claims require separate evidence.
 
 References: https://github.com/actions/attest and
 https://cli.github.com/manual/gh_attestation_verify.
+
+The rotation role is separately provisioned: rotation_keys and rotation_threshold
+must be disjoint from the release signing keys. To rotate, the administrator
+independently authorizes the new root fingerprint and provides previous-root.json
+and root-transition.dsse.json, signed by both the previous and next rotation
+thresholds. Rotation without these independent role keys is blocked. A compromised
+or expired old root threshold requires a separate Owner-governed offline recovery
+procedure; it cannot be overridden by candidate metadata. Retained time high-water
+also rejects a backward clock anchor after successful verification.
