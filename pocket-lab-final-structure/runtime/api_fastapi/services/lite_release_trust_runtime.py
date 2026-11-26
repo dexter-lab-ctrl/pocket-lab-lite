@@ -114,14 +114,16 @@ def _candidate(root_dir, tag, request):
     names = {name: MAX_ARTIFACT if name == "dist.zip" else MAX_BYTES for name in FILES.values()}
     names.update({"pocketlab-lite-capabilities.json": MAX_BYTES, "pocketlab-lite-trust.dsse.json": MAX_BYTES,
                   "pocketlab-lite-provenance.jsonl": 2 * 1024 * 1024})
-    if root_dir.is_symlink() or not root_dir.is_dir():
+    if root_dir.is_symlink() or not root_dir.is_dir() or root_dir.stat().st_uid != os.getuid() or root_dir.stat().st_mode & 0o077:
         raise TrustError("unsafe_trust_directory")
-    if __import__("shutil").disk_usage(root_dir).free < MAX_ARTIFACT + 32 * 1024 * 1024:
+    if shutil.disk_usage(root_dir).free < sum(names.values()) + 32 * 1024 * 1024:
         raise TrustError("trust_disk_pressure")
     with tempfile.TemporaryDirectory(prefix="candidate-", dir=root_dir) as temp:
         path = Path(temp)
         total = 0
         for name, limit in sorted(names.items(), key=lambda pair: pair[0] == "dist.zip"):
+            if time.monotonic_ns() >= int(request.get("deadline_ns") or (time.monotonic_ns() + 1)):
+                raise TrustError("trust_deadline_exceeded")
             if mode == "local":
                 with _open_controlled(root_dir / "candidate", name, limit) as (stream, info):
                     with (path / name).open("xb") as out:
@@ -137,7 +139,7 @@ def _candidate(root_dir, tag, request):
                 # Fixed repository, tag and filenames, not metadata-provided URLs.
                 url = f"https://github.com/dexter-lab-ctrl/pocket-lab-lite/releases/download/{tag}/{name}"
                 try:
-                    _download_to_file(url, path / name, timeout=20, max_bytes=limit)
+                    _download_to_file(url, path / name, timeout=max(1, min(20, (int(request.get("deadline_ns") or (time.monotonic_ns() + 20_000_000_000)) - time.monotonic_ns()) / 1e9)), max_bytes=limit)
                 except ReleaseProcessFailure as exc:
                     raise FileNotFoundError("trusted_asset_unavailable") from exc
             (path / name).chmod(0o400)
@@ -221,7 +223,8 @@ def inspect_candidate(request):
                 schema_range_matches=schema_match, current_schema=current_schema,
                 registry_revision=registry_revision(),
                 compatibility="unknown" if schema_match else "incompatible")
-            return {"state": "historical_evidence" if disposition != "failed" else "verification_failed",
+            return {"state": "historical_evidence" if disposition == "verified" else
+                    ("verification_failed" if disposition == "failed" else "metadata_unavailable"),
                     "reason_code": reason, "root_sha256": pin, "receipt": receipt if disposition == "verified" else None,
                     "acquisition_metrics": acquisition_metrics}
     except FileNotFoundError:
@@ -275,7 +278,7 @@ def cached_review(conn, request):
 
 
 def _semantic_review(state, reason, tag, review):
-    return (state, reason, tag, {k: v for k, v in review.items() if k not in {"checked_at", "correlation_id"}})
+    return (state, reason, tag, {k: v for k, v in review.items() if k not in {"checked_at", "correlation_id", "clock_sample_ns", "clock_remaining_ns"}})
 
 
 def persist(tx, observation, tag):

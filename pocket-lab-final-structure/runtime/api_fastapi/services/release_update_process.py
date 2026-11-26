@@ -852,8 +852,11 @@ def main() -> int:
             raise ReleaseProcessFailure("release_subprocess_request_invalid")
         operation = _safe_text(request.get("operation"), 32)
         from .lite_release_trust_runtime import inspect_candidate
+        def verify_trust(payload):
+            result = inspect_candidate(payload)
+            return result, result.pop("acquisition_metrics", {})
         handlers = {
-            "verify_trust": lambda payload: (inspect_candidate(payload), {}),
+            "verify_trust": verify_trust,
             "check": _check,
             "stage": _stage,
             "promote": _promote,

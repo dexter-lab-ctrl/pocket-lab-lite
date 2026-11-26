@@ -35,6 +35,14 @@ def write(out, name, value):
     return hashlib.sha256(raw).hexdigest()
 
 
+def metadata_version(tag):
+    # Strictly ordered by date and sequence; independent of run scheduling,
+    # retry attempts and mutable GitHub repository variables.
+    parse_lite_tag(tag)
+    date, sequence = tag.removeprefix("lite-").rsplit(".", 1)
+    return int(date.replace(".", "")) * 1_000_000 + int(sequence)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--assets", type=Path, required=True)
@@ -42,13 +50,15 @@ def main():
     parser.add_argument("--tag", required=True)
     parser.add_argument("--commit", required=True)
     parser.add_argument("--channel", choices=("stable", "preview"), required=True)
-    parser.add_argument("--metadata-version", type=int, required=True)
+    parser.add_argument("--metadata-version", type=int, help="Optional assertion of the deterministic version")
     parser.add_argument("--root-version", type=int, required=True)
     parser.add_argument("--expires", required=True)
     parser.add_argument("--schema-min", type=int, required=True)
     parser.add_argument("--schema-max", type=int, required=True)
     args = parser.parse_args()
-    parse_lite_tag(args.tag)
+    version = metadata_version(args.tag)
+    if args.metadata_version is not None and args.metadata_version != version:
+        raise SystemExit("metadata version must match the release tag")
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     if head != args.commit or subprocess.check_output(
         ["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT, text=True
@@ -71,7 +81,7 @@ def main():
         return [{"path": x.relative_to(ROOT).as_posix(), "sha256": file_hash(x)} for x in sorted(paths)]
     policy_digest = write(out, "pocketlab-lite-policy-inventory.json", entries(policy.rglob("*.rego")))
     migration_digest = write(out, "pocketlab-lite-migration-inventory.json", entries(migrations.glob("*.sql")))
-    payload = {"schema_version": 1, "version": args.metadata_version, "root_version": args.root_version,
+    payload = {"schema_version": 1, "version": version, "root_version": args.root_version,
                "repository": "dexter-lab-ctrl/pocket-lab-lite", "workflow": ".github/workflows/release-dist.yml",
                "release_tag": args.tag, "source_commit": args.commit, "channel": args.channel,
                "expires": args.expires, "artifact_sha256": digest,

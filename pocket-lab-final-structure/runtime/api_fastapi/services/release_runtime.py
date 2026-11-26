@@ -1321,6 +1321,8 @@ def _subprocess_env() -> dict[str, str]:
 async def execute_release_subprocess(
     operation: str,
     request_payload: Mapping[str, Any],
+    *,
+    deadline: float | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     _require_worker()
     operation = _safe_text(operation, 32)
@@ -1338,6 +1340,10 @@ async def execute_release_subprocess(
         "POCKETLAB_RELEASE_SUBPROCESS_TIMEOUT_SECONDS", 120.0, 2.0, 1800.0
     )
     started = time.monotonic()
+    if deadline is not None:
+        timeout = min(timeout, deadline - started)
+        if timeout <= 0:
+            raise ReleaseSubprocessError("release_subprocess_timeout")
     process = await asyncio.create_subprocess_exec(
         sys.executable,
         "-m",
@@ -1743,13 +1749,15 @@ async def run_release_check(
         metrics: dict[str, Any] = {}
         try:
             from .lite_release_trust_configuration import reconcile_configuration, latched
-            if not renew_release_lease(lease):
+            budget = _bounded_float("POCKETLAB_RELEASE_CHECK_TOTAL_TIMEOUT_SECONDS", 240.0, 10.0, 900.0)
+            deadline = time.monotonic() + budget
+            if not renew_release_lease(lease, lease_seconds=int(budget) + 15):
                 raise ReleaseStaleResult("release_check_lease_lost")
             with connection() as conn:
                 with begin_immediate(conn) as tx:
                     reconcile_configuration(tx)
             request = build_check_request()
-            result, metrics = await execute_release_subprocess("check", request)
+            result, metrics = await execute_release_subprocess("check", request, deadline=deadline)
             interval = stable_release_interval_seconds()
             observation = None
             from .lite_release_trust_runtime import floor_request, cached_review
@@ -1769,10 +1777,22 @@ async def run_release_check(
                 with connection() as conn:
                     reuse = source == "automatic" and cached_review(conn, trust_request)
                 if not reuse:
-                    try:
-                        observation, _ = await execute_release_subprocess("verify_trust", trust_request)
-                    except ReleaseSubprocessError:
-                        observation = {"state": "metadata_unavailable", "reason_code": "trust_review_unavailable"}
+                    remaining = deadline - time.monotonic()
+                    pressure = release_admission_reason()
+                    if pressure or remaining <= 2:
+                        observation = {"state": "metadata_unavailable", "reason_code": pressure or "trust_deadline_exceeded"}
+                    else:
+                        if not renew_release_lease(lease, lease_seconds=int(remaining) + 15):
+                            raise ReleaseStaleResult("release_check_lease_lost")
+                        trust_request["deadline_ns"] = int(deadline * 1e9)
+                        try:
+                            observation, trust_metrics = await execute_release_subprocess("verify_trust", trust_request, deadline=deadline)
+                        except ReleaseSubprocessError as exc:
+                            observation = {"state": "metadata_unavailable", "reason_code": exc.code}
+                            trust_metrics = exc.metrics
+                        for field in ("wall_ms", "cpu_ms", "bytes_read", "files_examined"):
+                            metrics[field] = (metrics.get(field) or 0) + (trust_metrics.get(field) or 0)
+                        metrics["peak_rss_bytes"] = max(metrics.get("peak_rss_bytes") or 0, trust_metrics.get("peak_rss_bytes") or 0)
             payload = {
                 **result,
                 "_trust_observation": observation,

@@ -99,7 +99,7 @@ class Envelope(Strict):
 
 class ReleaseMetadata(Strict):
     schema_version: Literal[1]
-    version: int = Field(ge=1, le=2147483647)
+    version: int = Field(ge=1, le=99_991_231_999_999)
     root_version: int = Field(ge=1, le=2147483647)
     repository: Literal["dexter-lab-ctrl/pocket-lab-lite"]
     workflow: Literal[".github/workflows/release-dist.yml"]

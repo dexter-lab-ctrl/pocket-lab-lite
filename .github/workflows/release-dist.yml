@@ -18,7 +18,7 @@ on:
         default: false
         type: boolean
       repair_existing_release:
-        description: 'Explicit repair mode: allow replacing assets only when the existing tag resolves to this exact source commit.'
+        description: 'Explicit recovery mode: only resume a matching draft or confirm an identical published release; never replace assets.'
         required: false
         default: false
         type: boolean
@@ -27,7 +27,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: pocket-lab-lite-dist-${{ github.ref }}
+  group: pocket-lab-lite-dist
   cancel-in-progress: false
 
 jobs:
@@ -314,11 +314,10 @@ jobs:
           RELEASE_TAG: ${{ needs.build-dist.outputs.release_tag }}
           PRERELEASE: ${{ github.event.inputs.prerelease }}
           ROOT_VERSION: ${{ vars.POCKETLAB_RELEASE_ROOT_VERSION }}
-          METADATA_VERSION: ${{ vars.POCKETLAB_RELEASE_METADATA_VERSION }}
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$ROOT_VERSION" && test -n "$METADATA_VERSION"
+          test -n "$ROOT_VERSION"
           python3 -m venv "$RUNNER_TEMP/pocketlab-release-venv"
           "$RUNNER_TEMP/pocketlab-release-venv/bin/pip" install -r pocket-lab-final-structure/runtime/requirements.txt
           channel=stable
@@ -328,7 +327,7 @@ jobs:
           "$RUNNER_TEMP/pocketlab-release-venv/bin/python" scripts/dev/lite/prepare_trusted_release_candidate.py \
             --assets . --output "$RUNNER_TEMP/pocketlab-trusted-release" \
             --tag "$RELEASE_TAG" --commit "$GITHUB_SHA" --channel "$channel" \
-            --metadata-version "$METADATA_VERSION" --root-version "$ROOT_VERSION" \
+            --root-version "$ROOT_VERSION" \
             --expires "$(date -u -d '+30 days' +%Y-%m-%dT%H:%M:%SZ)" \
             --schema-min "$schema_max" --schema-max "$schema_max"
 
@@ -384,6 +383,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.build-dist.outputs.release_tag }}
+          POCKETLAB_RELEASE_PUBLIC_ROOT: ${{ vars.POCKETLAB_RELEASE_PUBLIC_ROOT }}
           PRERELEASE: ${{ github.event.inputs.prerelease }}
           REPAIR_EXISTING_RELEASE: ${{ github.event.inputs.repair_existing_release }}
         run: |
@@ -414,18 +414,12 @@ jobs:
 
           assets=(dist.zip checksums.txt pocketlab-lite-release.json pocketlab-lite-capabilities.json pocketlab-lite-policy-inventory.json pocketlab-lite-migration-inventory.json pocketlab-lite-trust.dsse.json pocketlab-lite-provenance.jsonl)
           for asset in "${assets[@]}"; do test -s "$asset"; done
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" || "${REPAIR_EXISTING_RELEASE:-false}" != "true" ]]; then
-              echo "ERROR existing release encountered without explicit repair mode" >&2
-              exit 2
-            fi
-            gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber
-          else
-            gh release create "$RELEASE_TAG" "${assets[@]}" \
-              --title "Pocket Lab Lite ${RELEASE_TAG}" \
-              --notes "Pocket Lab Lite native PWA release with a verified manifest and checksums." \
-              "${flags[@]}"
-          fi
+          # All new assets are uploaded and compared while the release is a draft.
+          # Never clobber signed or legacy assets on an existing release.
+          "$RUNNER_TEMP/pocketlab-release-venv/bin/python" scripts/dev/lite/publish_trusted_release.py \
+            --tag "$RELEASE_TAG" --commit "$GITHUB_SHA" --assets . \
+            --channel "$([[ "${PRERELEASE:-false}" == true ]] && echo preview || echo stable)" \
+            --repair "${REPAIR_EXISTING_RELEASE:-false}"
 
       - name: Verify published release identity
         if: needs.build-dist.outputs.release_tag != ''
