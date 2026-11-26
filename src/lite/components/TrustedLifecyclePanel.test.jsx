@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import React from 'react';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LifecycleContent, ReleaseTrustSummary, ChangeImpactReview } from './TrustedLifecyclePanel.jsx';
 
@@ -37,5 +37,22 @@ it('shows expired evidence without installation eligibility', () => {
   render(<LifecycleContent data={{ ...data, release_trust: { state: 'metadata_expired' }, assessment: { impact: 'U4' } }} />);
   expect(screen.getByText('Metadata expired')).toBeTruthy();
   expect(screen.getByText('Additional permissions require review')).toBeTruthy();
+  expect(screen.getByText('Not enabled by this foundation')).toBeTruthy();
+});
+
+it('offers an independent revoke without selecting the other permission', () => {
+  const onReview = vi.fn();
+  render(<LifecycleContent data={{ ...data, grants: [
+    { grant_id: 'a'.repeat(32), purpose: 'release-reconciler', status: 'within_recorded_boundary' },
+    { grant_id: 'b'.repeat(32), purpose: 'policy-reconciler', status: 'within_recorded_boundary' },
+  ] }} onReview={onReview} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Revoke Release verification review' }));
+  expect(onReview).toHaveBeenCalledWith({ kind: 'revoke', value: 'a'.repeat(32), label: 'Revoke Release verification review' });
+  expect(screen.getByRole('button', { name: 'Revoke Safety Rules review' })).toBeTruthy();
+});
+it('distinguishes unconfirmed current trust from historical evidence', () => {
+  render(<LifecycleContent data={{ ...data, release_trust: { state: 'current_trust_unconfirmed', current_review_eligible: false } }} />);
+  expect(screen.getByText('Current trust not confirmed')).toBeTruthy();
+  expect(screen.queryByRole('button', { name: 'Review release verification review' })).toBeNull();
   expect(screen.getByText('Not enabled by this foundation')).toBeTruthy();
 });

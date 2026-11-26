@@ -25,8 +25,7 @@ and PR #661 activation fences retain their ownership and authority.
 ## T1 — release trust
 
 The existing release worker owns discovery, lease fencing and bounded
-subprocesses. Configuring `POCKETLAB_RELEASE_ROOT_SHA256` enables the review
-path, not installation. It fetches fixed GitHub release assets (or the
+subprocesses. Configuring both independent root fingerprints enables the review path, not installation. The durable configuration latch precedes candidate acceptance; missing or invalid configuration suspends trust instead of falling back to legacy promotion. It fetches fixed GitHub release assets (or the
 explicit local candidate directory), checks strict bounded JSON, DSSE
 Ed25519 thresholds and revocations, expected identity/channel/digests,
 independent provenance, expiry and anti-rollback floors. It compares the
@@ -44,8 +43,8 @@ The private state root contains release-trust/root.json and independently
 pinned GitHub trusted root bundle github-trusted-root.jsonl. Provision both
 fingerprints via protected local configuration; the candidate cannot provision
 either. Local-only review uses POCKETLAB_RELEASE_TRUST_SOURCE=local and
-release-trust/candidate. The operator clock anchor is boot ID, monotonic
-nanoseconds and independently confirmed UTC; it expires after ten minutes
+release-trust/candidate. The operator clock anchor is boot ID, CLOCK_BOOTTIME
+nanoseconds (including suspend) and independently confirmed UTC; it expires after ten minutes
 and cannot go backwards against the durable trusted time floor. Root expiry
 and metadata expiry are fail-closed. This is an operator trust contract, not
 authenticated network time or a complete TUF implementation. Root transitions
@@ -53,16 +52,14 @@ require a locally pinned new root and dual independent rotation thresholds.
 Compromise of the old rotation threshold or expiry requires out-of-band recovery.
 
 First accepted receipts, current review state and durable floors are separate.
-Exact repeat metadata does not replace the first receipt. Automatic checks
-can reuse matching historical evidence for up to 24 hours; manual review
-reverifies. Cache reuse is not fresh verification. Loss of network or trusted
+Exact repeat metadata does not replace the first receipt. Automatic checks can reuse matching historical evidence for up to 24 hours only while the shorter same-boot trusted-time anchor, root configuration and local inventory still match; manual review reverifies. Unknown provenance cannot advance the floor. Cache reuse is not fresh verification. Loss of network or trusted
 metadata does not rewrite the installed identity. A configured or durable
 pin blocks legacy promotion until T4 supplies qualified trusted promotion.
 Unprovisioned workspaces retain the existing legacy path.
 
 ## T2 — Owner boundary
 
-SQLite migrations 0056–0060 add independent trust, preferences, boundary,
+SQLite migrations 0056–0063 add independent trust, preferences, boundary,
 standing authorization, service delegation and trusted time records.
 No existing migration or activation record is rewritten. Default profile is
 Notify me. Recommended and Security updates only are preferences, not
@@ -74,9 +71,7 @@ consent for release verification or Safety Rules review. The server constructs
 the scope and exact confirmation digest, binds it to the current workspace,
 authority versions, policy, trust, registry and expected revisions, and requires
 the existing purpose-bound passkey/OPA mechanism. A transaction consumes the
-assurance and records the grant, delegation and correlated audit. The current
-bounded implementation allows one active grant, lasting 30 days; changing the
-boundary revokes prior grants. Scope expansion requires new review. A stale,
+assurance and records the grant, delegation and correlated audit. The bounded implementation allows independent 30-day review-only grants for the two supported purposes. A same-purpose grant supersedes its predecessor. Individual revocation does not revoke the other purpose; a profile or global boundary change invalidates the authority epoch. Scope expansion requires new review. A stale,
 revoked, expired, unknown or unsupported record cannot authorize new claims.
 The evaluator additionally requires current OPA and runtime evidence; even a
 within-boundary result has execution_eligible=false.
@@ -118,8 +113,8 @@ the active lifecycle query; no new polling service is introduced.
 T3 owns compatible policy proof, active/known-good/observed reconciliation and
 fresh authorization. T4 owns coordinated release/schema/checkpoint/rollback
 and promotion through existing leases. T5 connects local authority to separately
-qualified capabilities. T6 maps existing app/device/identity/safety/recovery
-registries. T7 supplies organization restrictions and independent approvals.
+qualified capabilities. T6 qualifies and connects the existing app/device/identity/safety/recovery
+registries; T0 describes their contracts without enabling dispatch. T7 supplies organization restrictions and independent approvals.
 Database rollback must preserve intervening user data. None is activated here.
 
 ## Authored qualification assets
@@ -139,3 +134,35 @@ on Ubuntu/WSL2 and Android ARM64, existing release and recovery regression,
 offline/resource behavior and accessible responsive UI. Use existing task
 and evidence tools; no server phone or live publisher modification is needed
 for source implementation. Qualification coverage is focused, not exhaustive.
+
+## Source-hardening increment SC0–SC6
+
+See [source closure ledger](trusted-lifecycle-source-closure.md) for requirement
+mapping, source locations, reuse and qualification limitations.
+
+Trust review uses private candidate copies, bounded regular-file reads, strict
+HTTPS public acquisition without ambient credentials, isolated attestation
+configuration, worker lease renewal and a shared deadline. A configured trust
+latch blocks legacy apply. Prepared summaries consume SQLite identity, policy
+and review evidence; current loaded-policy and backend binary identity remain
+unknown unless independently observed. No wall-clock fallback is allowed for
+review eligibility. Reboot, suspend beyond the anchor, missing anchor or
+configuration change requires fresh verification. This deliberately trades
+availability for integrity.
+
+A controlled restore preserves the live trust floor/configuration/time and
+advances the restored authority epochs beyond both live and staged values.
+Restored grants and clock receipts cannot become current. Conflicting higher
+floors fail closed. This is not a hardware-backed rollback-resistant store.
+The old recovery activation records are untouched.
+
+The existing Manage shell presents independently revocable permissions,
+shared disclosure controls and explicit current versus historical trust.
+Audit evidence is bounded and successful grants link to policy decisions.
+Fresh authoritative review is still required for mutation. Retention is not
+an immutable off-device audit ledger.
+
+Additional authored tasks: `task lite:lifecycle:qualification` (focused
+aggregate) and `task lite:lifecycle:regression` (selected existing suites).
+Neither was executed. CI, exact platform and end-to-end qualification
+remain necessary before release.

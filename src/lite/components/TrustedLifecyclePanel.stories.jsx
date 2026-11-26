@@ -22,7 +22,9 @@ export const IndependentPermissions = { args: { data: { ...base, preferences: { 
     { grant_id: 'a'.repeat(32), purpose: 'release-reconciler', status: 'within_recorded_boundary' },
     { grant_id: 'b'.repeat(32), purpose: 'policy-reconciler', status: 'within_recorded_boundary' },
   ] } } };
-export const SecurityOnly = { args: { data: { ...base, preferences: { profile: 'security_only', revision: 3 } } } };
+export const SecurityOnly = { args: { data: { ...base, preferences: { profile: 'security', revision: 3 } } } };
 export const RevokedPermission = { args: { data: { ...base, grants: [
   { grant_id: 'a'.repeat(32), purpose: 'release-reconciler', status: 'revoked' },
 ] } } };
+
+export const CurrentTrustUnconfirmed = { args: { data: { ...base, release_trust: { state: 'current_trust_unconfirmed', current_review_eligible: false } } } };
