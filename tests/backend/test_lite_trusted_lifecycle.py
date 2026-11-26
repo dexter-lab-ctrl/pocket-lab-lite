@@ -149,3 +149,71 @@ def test_delegation_cannot_override_policy_or_runtime():
                    {"proposed": cap.model_copy(update={"secret_access": True})},
                    {"proposed": cap.model_copy(update={"version": 2})}):
         assert scope_review(**{**args, **change}).disposition != "within"
+
+
+def test_root_rotation_requires_both_independent_thresholds(candidate):
+    from api_fastapi.services.lite_release_root_rotation import verify_rotation, TYPE
+    _, kwargs = candidate
+    release_root = kwargs["pinned_root"]
+    old_key, next_key = Ed25519PrivateKey.generate(), Ed25519PrivateKey.generate()
+    def public(key):
+        raw = key.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
+        return trust.PublicKey(keyid=hashlib.sha256(raw).hexdigest(), algorithm="ed25519",
+                               public_key=base64.b64encode(raw).decode())
+    old = release_root.model_copy(update={"rotation_keys": [public(old_key)], "rotation_threshold": 1})
+    new = release_root.model_copy(update={"version": 2, "rotation_keys": [public(next_key)], "rotation_threshold": 1})
+    old_bytes, new_bytes = (canonical_bytes(item.model_dump(mode="json")) for item in (old, new))
+    pins = dict(old_pin=hashlib.sha256(old_bytes).hexdigest(), new_pin=hashlib.sha256(new_bytes).hexdigest(), now=NOW)
+    payload = canonical_bytes({"schema_version": 1, "old_sha256": pins["old_pin"], "new_sha256": pins["new_pin"],
+                               "old_version": 1, "new_version": 2})
+    message = b"DSSEv1 " + str(len(TYPE)).encode() + b" " + TYPE + b" " + str(len(payload)).encode() + b" " + payload
+    transition = {"payloadType": TYPE.decode(), "payload": base64.b64encode(payload).decode(),
+                  "signatures": [{"keyid": public(key).keyid, "sig": base64.b64encode(key.sign(message)).decode()}
+                                 for key in (old_key, next_key)]}
+    assert verify_rotation(old_bytes, new_bytes, canonical_bytes(transition), **pins)["previous_root_sha256"] == pins["old_pin"]
+    transition["signatures"].pop()
+    with pytest.raises(trust.TrustError):
+        verify_rotation(old_bytes, new_bytes, canonical_bytes(transition), **pins)
+
+
+def test_artifact_tampering_and_untrusted_key(candidate):
+    envelope, kwargs = candidate
+    kwargs["observed_digests"]["artifact_sha256"] = "d" * 64
+    with pytest.raises(trust.TrustError):
+        trust.verify(canonical_bytes(envelope), **kwargs)
+    kwargs["observed_digests"]["artifact_sha256"] = D
+    envelope["signatures"][0]["keyid"] = "c" * 64
+    with pytest.raises(trust.TrustError):
+        trust.verify(canonical_bytes(envelope), **kwargs)
+
+
+def test_narrowing_and_revocation_require_owner_and_revision_not_opa(tmp_path, monkeypatch):
+    from contextlib import contextmanager
+    from api_fastapi.services import lite_lifecycle_authority as lifecycle
+    from api_fastapi.services import lite_control_plane_store
+    from api_fastapi.services.lite_infrastructure_authority import require_owner
+    schema = Path(__file__).parents[2] / "pocket-lab-final-structure/runtime/api_fastapi/db/schema"
+    db = sqlite3.connect(tmp_path / "authority.sqlite3", isolation_level=None)
+    db.row_factory = sqlite3.Row
+    for name in ("0056_trusted_lifecycle.sql", "0057_lifecycle_authority.sql", "0058_release_trust_observations.sql",
+                 "0059_lifecycle_review_state.sql", "0060_lifecycle_trusted_time.sql"):
+        db.executescript((schema / name).read_text())
+    @contextmanager
+    def connection():
+        yield db
+    monkeypatch.setattr(lifecycle, "connection", connection)
+    monkeypatch.setattr(lite_control_plane_store, "_bump_revision", lambda *args, **kwargs: None)
+    monkeypatch.setattr(lifecycle.opa, "evaluate_authorization",
+                        lambda **kwargs: pytest.fail("Safety narrowing must not call OPA"))
+    with pytest.raises(PermissionError):
+        require_owner(db, {"actor": {"type": "service"}, "session": {"authenticated": True}})
+    monkeypatch.setattr(lifecycle, "_owner", lambda conn, context: ("fixture-owner", (1, 1, 1), False))
+    db.execute("INSERT INTO lite_lifecycle_preferences VALUES(1,1,'recommended','2026-11-26T00:00:00Z','fixture-owner')")
+    assert lifecycle.save_profile({}, lifecycle.PreferenceRequest(expected_revision=1, profile="notify", confirm=True))["revision"] == 2
+    with pytest.raises(ValueError, match="preference_revision_changed"):
+        lifecycle.save_profile({}, lifecycle.PreferenceRequest(expected_revision=1, profile="notify", confirm=True))
+    assert lifecycle.revoke({}, lifecycle.RevokeRequest(expected_revision=1, confirm=True))["revision"] == 2
+    with pytest.raises(ValueError, match="boundary_revision_changed"):
+        lifecycle.revoke({}, lifecycle.RevokeRequest(expected_revision=1, confirm=True))
+    assert db.execute("SELECT COUNT(*) FROM lite_lifecycle_audit").fetchone()[0] == 2
+    db.close()

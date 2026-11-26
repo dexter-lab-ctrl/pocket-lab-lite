@@ -1,100 +1,141 @@
 # Trusted Lifecycle foundations (T0–T2)
 
-Status: partial source implementation; all qualification is pending. Baseline
-8fa96db378364891e645ed3e22f76218b3412da3 (PR #661).
+Status: source implementation, unqualified. Baseline
+`8fa96db378364891e645ed3e22f76218b3412da3` (PR #661).
+No test, build, scan, CI remediation, release or device activation was performed
+in this implementation session. No production trust roots or signing keys were provisioned.
 
-## Boundaries
+## T0 — authority and change contracts
 
-The existing release runtime owns discovery, staging and promotion leases,
-isolated subprocesses and installed identity. Its checksum status is not
-publisher authentication. Policy source sync, lifecycle and OPA remain the
-active/known-good/observed authority. System Health's projection reconciliation
-and activation fences remain unchanged. No new execution owner is introduced.
+The versioned capability inventory describes capabilities, not executable
+routes. It references existing domain ownership, including the existing
+projection reconciliation operation. Local structured comparison assigns
+U0 (locally proven presentation), U1 (unchanged inventory), U2 (restriction),
+U3 (optional within locally approved ceiling), U4 (expanded scope), U5
+(trust/owner change), or UX (unknown). Unchanged inventory does not prove
+arbitrary application or Rego equivalence. Policy/schema change remains
+unqualified; actual compatibility admission belongs to T3/T4.
 
-The lifecycle registry describes authority metadata, not dispatch. Structured
-comparison is intentionally conservative: additions require review, unknown
-policy/migration changes remain UX, and root changes require U5 review.
-Unchanged metadata is not proof of arbitrary program or Rego equivalence.
+Release commit, artifact digest, policy content, policy contract, registry,
+workspace, authority, delegation, root, metadata and recovery revisions are
+separate identifiers. An absent independent observation is null, not inferred
+from another identifier. The existing OPA source/runtime consistency checks
+and PR #661 activation fences retain their ownership and authority.
 
-The verification primitive uses DSSE v1 PAE and Ed25519 from the existing
-cryptography dependency. The caller must provide independently pinned trust
-and reliable time; no production keys are provisioned. It binds release,
-repository, workflow claim, source commit and fixed digest fields. Signed
-workflow claims are not independent build attestations. Full TUF root
-rotation, timestamp/snapshot/delegated roles and freeze protection, GitHub
-attestation verification and production trust bootstrap are not implemented.
-Do not treat the primitive as a qualified production verifier.
+## T1 — release trust
 
-```mermaid
-flowchart LR
-  A[Existing release owner] --> B[Bounded metadata verification]
-  B --> C[Separate authenticity and integrity facts]
-  C --> D[Prepared historical receipt]
-  E[Owner preference] --> F[Future boundary and delegation]
-  D -. future compatibility and provenance proof .-> F
-  F -. future qualified admission .-> G[Existing OPA and execution owners]
-```
+The existing release worker owns discovery, lease fencing and bounded
+subprocesses. Configuring `POCKETLAB_RELEASE_ROOT_SHA256` enables the review
+path, not installation. It fetches fixed GitHub release assets (or the
+explicit local candidate directory), checks strict bounded JSON, DSSE
+Ed25519 thresholds and revocations, expected identity/channel/digests,
+independent provenance, expiry and anti-rollback floors. It compares the
+candidate inventory with local registry and policy/schema source. Verification
+has no extraction or execution side effects. The existing installed identity
+remains authoritative for the running PWA, independently of publisher trust.
 
-No future execution is enabled. T3 requires compatible-policy proof and
-current OPA decision; T4 requires release/provenance/migration/checkpoint
-qualification; T5 requires explicit feature authority; T6 maps existing domain
-registries; T7 adds enterprise profiles with independent approval.
+The publishing workflow retains dist.zip, checksums and release manifest.
+It adds capability/policy/migration inventories, signed metadata and GitHub
+attestations for both the archive and envelope. Only the protected publishing
+job receives signing material; missing configuration fails closed.
+See [publishing configuration](trusted-release-publishing.md).
 
-## Qualification handover
+The private state root contains release-trust/root.json and independently
+pinned GitHub trusted root bundle github-trusted-root.jsonl. Provision both
+fingerprints via protected local configuration; the candidate cannot provision
+either. Local-only review uses POCKETLAB_RELEASE_TRUST_SOURCE=local and
+release-trust/candidate. The operator clock anchor is boot ID, monotonic
+nanoseconds and independently confirmed UTC; it expires after ten minutes
+and cannot go backwards against the durable trusted time floor. Root expiry
+and metadata expiry are fail-closed. This is an operator trust contract, not
+authenticated network time or a complete TUF implementation. Root transitions
+require a locally pinned new root and dual independent rotation thresholds.
+Compromise of the old rotation threshold or expiry requires out-of-band recovery.
 
-Authoring only. No tests, builds, checks, generators, scans, CI remediation or
-device execution performed. Before readiness: inspect the exact candidate,
-complete missing integration, run focused backend and crypto fixtures, mocked
-desktop/mobile accessibility and visual tests, isolated Linux/Termux verification
-with synthetic keys, rollback/replay and negative authority tests, then canonical
-documentation generation and existing repository gates. Review exact-head CI.
-Never provision production keys or activate unattended operation as part of
-test qualification.
+First accepted receipts, current review state and durable floors are separate.
+Exact repeat metadata does not replace the first receipt. Automatic checks
+can reuse matching historical evidence for up to 24 hours; manual review
+reverifies. Cache reuse is not fresh verification. Loss of network or trusted
+metadata does not rewrite the installed identity. A configured or durable
+pin blocks legacy promotion until T4 supplies qualified trusted promotion.
+Unprovisioned workspaces retain the existing legacy path.
 
+## T2 — Owner boundary
 
-## Review-only worker integration (source, unqualified)
+SQLite migrations 0056–0060 add independent trust, preferences, boundary,
+standing authorization, service delegation and trusted time records.
+No existing migration or activation record is rewritten. Default profile is
+Notify me. Recommended and Security updates only are preferences, not
+execution permission. Enterprise managed is read-only for expanded consent.
+Existing release and recovery settings are not migrated into standing consent.
 
-The existing release check may invoke the existing bounded subprocess with the
-fixed operation `verify_trust` if the administrator has explicitly configured
-`POCKETLAB_RELEASE_ROOT_SHA256`. It hashes a locally staged candidate and
-checks exact discovered tag/commit/artifact/channel. A current release lease
-fences transactional receipt and anti-rollback-floor persistence (migration
-0058). Repeated identical versions preserve the historical receipt; conflicting
-versions and earlier tags fail closed. This is not a downloader or an installer.
+The current Owner may review and record a stable-channel, read-only Risk A
+consent for release verification or Safety Rules review. The server constructs
+the scope and exact confirmation digest, binds it to the current workspace,
+authority versions, policy, trust, registry and expected revisions, and requires
+the existing purpose-bound passkey/OPA mechanism. A transaction consumes the
+assurance and records the grant, delegation and correlated audit. The current
+bounded implementation allows one active grant, lasting 30 days; changing the
+boundary revokes prior grants. Scope expansion requires new review. A stale,
+revoked, expired, unknown or unsupported record cannot authorize new claims.
+The evaluator additionally requires current OPA and runtime evidence; even a
+within-boundary result has execution_eligible=false.
 
-### Operator provisioning contract (do not apply to production before qualification)
+The registered service purposes describe existing owner integration points,
+not new principals with reusable credentials. No service can broaden its
+delegation, manage trust roots, impersonate humans or invoke a human-only
+activation API. Migration, maintenance and app execution are not grantable here.
+Revocation and Notify narrowing require the current Owner and expected revision
+but not a permissive OPA response. Revocation prevents future use; it does not
+claim to cancel in-flight work. Future owners must reconcile uncertain outcomes.
 
-* Independently authenticate the public root and its SHA-256 through an
-  out-of-band trusted channel. Pin the fingerprint in the worker's protected
-  local configuration, never in release metadata or the UI.
-* The private state directory contains `release-trust/root.json`; candidate
-  files are placed in `release-trust/candidate/` with the fixed names listed
-  in the adapter. Only a local authorized administrator may populate it.
-* A recent independently checked UTC anchor is required in
-  `release-trust/clock-anchor.json`: `boot_id` from Linux, `monotonic_ns`
-  from the same boot, and UTC RFC3339 `utc`. The anchor expires after ten
-  minutes; reboot, unsupported platform, absent or malformed anchor blocks
-  verification. This is an operator assertion, not a network time attestation.
-* Root replacement after a receipt is recorded is blocked; a reviewed root
-  rotation and compromised-key recovery protocol remains future work.
-* Do not configure a production pin yet: a configured or durably recorded pin
-  deliberately blocks legacy promotion until a trusted promotion contract is
-  qualified. Historical unprovisioned installations retain the existing flow.
+## UI and synchronization
 
-The candidate producer `scripts/dev/lite/prepare_trusted_release_candidate.py`
-writes unsigned capability, policy and migration inventories plus a typed
-unsigned metadata document and DSSE PAE bytes from exact clean source and
-release assets. It performs no signing or publishing. A separately authorized
-release signer must sign those exact bytes and create the DSSE envelope.
-Production workflow wiring, independent build attestation verification, complete
-provenance chain and platform qualification are **missing**, not certified.
-The existing release workflow and three legacy assets have not been modified.
+System Health Manage contains one Updates & protection destination. It reuses
+the current Manage shell, grouped navigation, LiteActionRow, LiteButton,
+StateSurface and System Health section/detail classes. Shared haptics and
+theme tokens are inherited; no new independent color palette or panel geometry.
+The backend provides bounded historical release evidence, impact, preferences,
+grant and audit data. Non-Owners get a read-only summary. The review dialog
+requires the server-built scope and exact passkey purpose before committing.
+No private keys, Owner credentials or authorization facts are persisted in
+browser snapshot storage. The existing audit revision stream invalidates
+the active lifecycle query; no new polling service is introduced.
 
-## Deferred qualification tasks
+## Security model and limitations
 
-`task lite:lifecycle:backend` and `task lite:lifecycle:ui` are authored only.
-Do not use the new API on production until the schema, source-policy reconciliation,
-Owner/passkey, UI, resource and regression checks have passed. Full mock
-Playwright, accessibility, visual, performance, migration and live qualification
-coverage is still required. No checks, tests, builds or generation were run
-during source implementation.
+| Threat | Control / remaining limitation |
+| --- | --- |
+| Artifact substitution, spoofed publisher | Digest binding, threshold signature, independent attestation pinned to repository/workflow/source. A signed malicious release is not semantically safe. |
+| Replay, downgrade, freeze | Durable metadata/tag/root/time floors, expiry, bounded historical cache. Full TUF timestamp/snapshot roles are not supplied. |
+| Stolen release signing key | Rotation role separation, revocation, protected publishing job. Compromised root recovery is independently governed out-of-band. |
+| Owner impersonation, stale consent | Current session/role, exact passkey assurance, OPA, revision-fenced transactional scope. |
+| Browser or service impersonation | No client keys/actor construction or execution endpoints; current authority is server-derived. |
+| Corrupt database or shared Android UID | SQLite transactional safeguards and explicit trust configuration; arbitrary malicious code running as the same UID can undermine local state. Strong isolation or external signer/hardware trust is future work. |
+
+## Future extensions
+
+T3 owns compatible policy proof, active/known-good/observed reconciliation and
+fresh authorization. T4 owns coordinated release/schema/checkpoint/rollback
+and promotion through existing leases. T5 connects local authority to separately
+qualified capabilities. T6 maps existing app/device/identity/safety/recovery
+registries. T7 supplies organization restrictions and independent approvals.
+Database rollback must preserve intervening user data. None is activated here.
+
+## Authored qualification assets
+
+- `task lite:lifecycle:backend`: synthetic signature, scope, anti-rollback,
+  root rotation and isolated revocation fixtures.
+- `task lite:lifecycle:ui`: focused Vitest component cases.
+- `task lite:lifecycle:mocked`: desktop/mobile Playwright and axe cases,
+  including visual specifications. No new approved screenshot baselines.
+- Storybook examples cover historical/expired/failed trust, unknown/expanded
+  scope, managed restriction, recorded consent and read-only states.
+
+Before any production readiness decision, qualify exact-head forward migrations,
+policy and passkey integration, concurrency and revocation, release job with
+test-only keys, root transition and replay, provenance verifier/tool availability
+on Ubuntu/WSL2 and Android ARM64, existing release and recovery regression,
+offline/resource behavior and accessible responsive UI. Use existing task
+and evidence tools; no server phone or live publisher modification is needed
+for source implementation. Qualification coverage is focused, not exhaustive.

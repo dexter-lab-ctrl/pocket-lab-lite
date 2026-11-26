@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
-import { LiteActionRow, LiteButton, StateSurface } from '../LiteUi.jsx';
+import { LiteActionRow, LiteButton, StateSurface, LiteTechnicalDetails } from '../LiteUi.jsx';
 import { useLiteQuery } from '../../hooks/useLiteQuery.js';
 import { liteApi } from '../../lib/liteApi.js';
 import { getLitePasskey, webAuthnAvailable } from '../../lib/liteWebAuthn.js';
@@ -23,8 +23,7 @@ export function ReleaseTrustSummary({ trust }) {
       summary={trust?.historical_identity_verified ? 'Verified under the existing release identity contract. This is not publisher authentication.' : 'Installed identity is not confirmed.'} />
     <LiteActionRow label="Publisher trust" value={({historical_evidence: 'Historical evidence', verification_failed: 'Verification failed', metadata_unavailable: 'Trusted metadata unavailable', trust_setup_required: 'Trust setup required', metadata_expired: 'Metadata expired'})[trust?.state] || (receipt ? 'Historical evidence' : 'Trust setup required')}
       summary="A checksum alone does not establish publisher trust. No fresh verification is claimed here." />
-    <details>
-      <summary>View verification details</summary>
+    <LiteTechnicalDetails summary="View verification details">
       {receipt ? <>
         <LiteActionRow label="Recorded release" value={receipt.release_tag || 'Not confirmed'} />
         <LiteActionRow label="Metadata signature" value={facts[receipt.authenticity] || 'Not confirmed'} />
@@ -33,7 +32,7 @@ export function ReleaseTrustSummary({ trust }) {
         <LiteActionRow label="Recorded check" value={receipt.checked_at || 'Not confirmed'} />
         <LiteActionRow label="Metadata expiry" value={receipt.expires || 'Not confirmed'} />
       </> : <p>New signed release evidence is not available. Historical releases remain distinct from authenticated releases.</p>}
-    </details>
+    </LiteTechnicalDetails>
   </div>;
 }
 
@@ -82,11 +81,10 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
       <LiteActionRow label="Unattended execution" value="Not enabled by this foundation" />
       <LiteActionRow label="Safety Rules" value="Existing authority unchanged" />
       <LiteActionRow label="Routine maintenance and app updates" value="Existing controls unchanged" />
-      <details>
-        <summary>Review capability contracts</summary>
+      <LiteTechnicalDetails summary="Review capability contracts">
         {(data?.capabilities || []).map(cap => <LiteActionRow key={cap.id} label={cap.id}
           value={'Version ' + cap.version} summary="Descriptive contract only; no new execution rights." />)}
-      </details>
+      </LiteTechnicalDetails>
       {grants.map(grant => <LiteActionRow key={grant.grant_id} label={purposes[grant.purpose] || 'Recorded permission'}
         value={dispositions[grant.status] || 'Review required'} summary={'Stable channel · review only · expires ' + (grant.expires_at || 'not confirmed')} />)}
       {canGrant && Object.entries(purposes).map(([value, label]) =>
