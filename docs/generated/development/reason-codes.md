@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 13fa9086ba7eefd821c2a0a101eaf2ab7e824923fddddc1068375d41bb7f2a78
+source_fingerprint: bf9b83323eb67738047f3bccdea30b723f12e14fced6171739f2c14dfba79385
 schema_revision: 1
 validation_status: generated
 ---
@@ -157,7 +157,9 @@ validation_status: generated
 | `invite_identity_mismatch` | devices | The invite identity does not match the enrolled device. | no | yes | 409 | high | structured reason/failure fields in Lite backend or contracts metadata |
 | `invite_role_set_mismatch` | devices | The roles reported while consuming an invite do not match the server-owned invite role set. | no | yes | 409 | warning | pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py |
 | `lease_active` | projections | Another bounded owner currently holds the lease. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `legacy_gitops_api_retired` | release | The legacy GitOps and pipeline compatibility endpoints are retired and do not execute infrastructure work. | no | yes | 410 | info | pocket-lab-final-structure/runtime/api_fastapi/routers/gitops.py |
 | `legacy_multiple_active_runs` | system | Legacy state contains multiple active runs. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `legacy_observability_stack_retired` | telemetry | The legacy observability service-management and Loki compatibility endpoints are retired and do not start or query legacy services. | no | yes | 410 | info | pocket-lab-final-structure/runtime/api_fastapi/routers/observability.py |
 | `legacy_secret_rotation_retired` | identity | The legacy generic secret-rotation endpoint is retired and is not a human password operation. | no | yes | 410 | info | structured reason/failure fields in Lite backend or contracts metadata |
 | `legacy_telemetry_value` | devices | A sanitized compatibility telemetry field was normalized into the canonical Device Facts resource contract while older agent payloads are still supported. | no | no | 200 | info | pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_facts.py |
 | `local_owner_required` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | yes | no | 403 | warning | contracts/metadata/documentation-platform.json identity_rules_reason_codes |

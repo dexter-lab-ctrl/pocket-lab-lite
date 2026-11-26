@@ -5,7 +5,8 @@ const OPERATION_LABELS = {
   fleet_join: 'Add device',
   restore_backup: 'Restore backup',
   release_sync: 'Update release',
-  rotate_secret: 'Change password',
+  rotate_secret: 'Retired credential action',
+  secret_read_dynamic: 'Retired temporary-access action',
   policy_deploy: 'Run safety check',
   backup_now: 'Create backup',
 };
@@ -17,7 +18,8 @@ const EVIDENCE_BY_OPERATION = {
   fleet_join: ['Device onboarding request', 'Device invite event', 'Audit record'],
   restore_backup: ['Restore request', 'Backup reference', 'Recovery audit record'],
   release_sync: ['Release operation request', 'Release validation event', 'Audit record'],
-  rotate_secret: ['Secret rotation request', 'Credential store event', 'Audit record'],
+  rotate_secret: ['Retirement rejection request', 'Retired command event', 'Audit record'],
+  secret_read_dynamic: ['Retirement rejection request', 'Retired command event', 'Audit record'],
   policy_deploy: ['Policy check request', 'Policy decision event', 'Audit record'],
   backup_now: ['Backup request', 'Backup status event', 'Restore point evidence'],
 };

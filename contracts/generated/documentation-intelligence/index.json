@@ -3475,6 +3475,18 @@
         "user_message": "Another bounded owner currently holds the lease."
       },
       {
+        "code": "legacy_gitops_api_retired",
+        "domain": "release",
+        "http_status": 410,
+        "meaning": "The legacy GitOps and pipeline compatibility endpoints are retired and do not execute infrastructure work.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "info",
+        "terminal": true,
+        "user_message": "Use the native release, drift and System Health controls instead."
+      },
+      {
         "code": "legacy_multiple_active_runs",
         "domain": "system",
         "http_status": 200,
@@ -3485,6 +3497,18 @@
         "severity": "warning",
         "terminal": false,
         "user_message": "Legacy state contains multiple active runs."
+      },
+      {
+        "code": "legacy_observability_stack_retired",
+        "domain": "telemetry",
+        "http_status": 410,
+        "meaning": "The legacy observability service-management and Loki compatibility endpoints are retired and do not start or query legacy services.",
+        "next_action": "Review the owning evidence and operator guidance before another action.",
+        "observed_in_current_health": [],
+        "retryable": false,
+        "severity": "info",
+        "terminal": true,
+        "user_message": "Use native System Health, runtime diagnostics and operational evidence instead."
       },
       {
         "code": "legacy_secret_rotation_retired",
@@ -8038,5 +8062,5 @@
     "schema_version": "1.0.0"
   },
   "schema_version": "1.0.0",
-  "source_fingerprint": "dbe9b7bcd90361235e219040e369877353c6e83c48e687455e0028ba09cd3e9e"
+  "source_fingerprint": "8b65c2ff03fd30f79f74296d58a3e4ba95a0431e1320f61658bb505ec55bef72"
 }

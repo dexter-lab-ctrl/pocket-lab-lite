@@ -15,7 +15,12 @@ from sources.getter import SourceIngestor
 from artifacts.oras_store import OciArtifactStore
 from ansible.runner_service import AnsibleRunnerService
 from operations.taskfile import TaskDefinition, TaskfileRegistry
-from operations.registry import OperationRegistry
+from operations.registry import (
+    OperationRegistry,
+    RetiredOperationError,
+    is_retired_operation,
+    retired_operation_payload,
+)
 
 
 class OperationService:
@@ -77,6 +82,8 @@ class OperationService:
     def _create_queued_run(
         self, request: OperationRequest, *, job_id: Optional[str] = None
     ) -> tuple[str, OperationRequest, TaskDefinition]:
+        if is_retired_operation(request.operation):
+            raise RetiredOperationError(request.operation)
         task = self.tasks.resolve_operation(request.operation)
         effective_request = self._apply_task_defaults(request, task)
 
@@ -141,6 +148,12 @@ class OperationService:
         run = self.get(job_id)
         if not run:
             raise KeyError(f"Operation job not found: {job_id}")
+        if is_retired_operation(str(run.get("operation") or "")):
+            return {
+                **run,
+                **retired_operation_payload(operation=str(run.get("operation") or "")),
+                "job_id": job_id,
+            }
         if run.get("status") not in {"queued", "retrying"}:
             return run
         target = run.get("target") or {}
@@ -181,6 +194,8 @@ class OperationService:
         return self.state.list_runs(limit=limit)
 
     def preview(self, request: OperationRequest) -> Dict[str, Any]:
+        if is_retired_operation(request.operation):
+            return retired_operation_payload(operation=request.operation)
         task = self.tasks.resolve_operation(request.operation)
         effective_request = self._apply_task_defaults(request, task)
         return {
@@ -343,6 +358,8 @@ class OperationService:
         self, job_id: str, request: OperationRequest, task: TaskDefinition
     ) -> Dict[str, Any]:
         op = task.operation or request.operation
+        if is_retired_operation(op):
+            raise RetiredOperationError(op)
         if op == "git_sync":
             return self._op_git_sync(job_id, request, task)
         if op == "drift_scan":
@@ -353,14 +370,10 @@ class OperationService:
             return self._op_backup_now(job_id, request, task)
         if op == "restore_backup":
             return self._op_restore_backup(job_id, request, task)
-        if op == "rotate_secret":
-            return self._op_rotate_secret(job_id, request, task)
         if op == "fleet_join":
             return self._op_fleet_join(job_id, request, task)
         if op == "policy_deploy":
             return self._op_policy_deploy(job_id, request, task)
-        if op == "secret_read_dynamic":
-            return self._op_dynamic_secret(job_id, request, task)
         if op == "backup_verify":
             return self._op_backup_verify(job_id, request, task)
         raise ValueError(f"Unsupported operation: {request.operation}")
@@ -909,71 +922,6 @@ class OperationService:
             },
         }
 
-    def _op_rotate_secret(
-        self, job_id: str, request: OperationRequest, task: TaskDefinition
-    ) -> Dict[str, Any]:
-        secret_name = (
-            str(request.params.get("target") or request.target.ref or "secret").strip()
-            or "secret"
-        )
-        value = str(request.params.get("value") or f"rot-{uuid.uuid4().hex[:24]}")
-        secrets = self._read_json(self.state.state_dir / "secrets.json", {})
-        current = dict(secrets.get(secret_name) or {})
-        version = int(current.get("version") or 0) + 1
-        rotated_at = utc_now_iso()
-        lease_duration = str(
-            request.params.get("lease_duration") or request.params.get("ttl") or "1h"
-        )
-        stored_secret = {
-            "secret": secret_name,
-            "value": value,
-            "rotated_at": rotated_at,
-            "version": version,
-            "lease_duration": lease_duration,
-        }
-        artifact = {
-            "secret": secret_name,
-            "rotated_at": rotated_at,
-            "version": version,
-            "lease_duration": lease_duration,
-            "secret_material": "hidden",
-        }
-        secrets[secret_name] = stored_secret
-        self._write_json(self.state.state_dir / "secrets.json", secrets)
-        if secret_name == "tailscale":
-            self.state.update_run(
-                job_id,
-                lambda run: {
-                    **run,
-                    "artifacts": {
-                        **(run.get("artifacts") or {}),
-                        "secret_material": "hidden",
-                        "secret_version": version,
-                        "rotated_at": rotated_at,
-                        "lease_duration": lease_duration,
-                    },
-                    "updated_at": utc_now_iso(),
-                },
-            )
-        self._emit(job_id, "info", f"Rotated secret {secret_name}", task=task.name)
-        return {
-            "stdout": json.dumps(
-                {
-                    "secret": {
-                        "name": secret_name,
-                        "version": version,
-                        "rotated_at": rotated_at,
-                        "lease_duration": lease_duration,
-                        "secret_material": "hidden",
-                    },
-                },
-                indent=2,
-                ensure_ascii=False,
-            ),
-            "stderr": "",
-            "artifacts": artifact,
-        }
-
     def _op_fleet_join(
         self, job_id: str, request: OperationRequest, task: TaskDefinition
     ) -> Dict[str, Any]:
@@ -1058,30 +1006,6 @@ class OperationService:
             "stdout": json.dumps(result, indent=2, ensure_ascii=False),
             "stderr": "",
             "artifacts": {"runner": result},
-        }
-
-    def _op_dynamic_secret(
-        self, job_id: str, request: OperationRequest, task: TaskDefinition
-    ) -> Dict[str, Any]:
-        username = f"v-user-{uuid.uuid4().hex[:8]}"
-        password = uuid.uuid4().hex + uuid.uuid4().hex[:8]
-        lease = {
-            "leaseId": f"lease/{uuid.uuid4().hex[:12]}",
-            "username": username,
-            "password": password,
-            "issuedAt": utc_now_iso(),
-            "ttl": "1h 0m",
-        }
-        self._emit(
-            job_id,
-            "info",
-            f"Issued dynamic secret for {request.params.get('target') or 'default'}",
-            task=task.name,
-        )
-        return {
-            "stdout": json.dumps({"lease": lease}, indent=2),
-            "stderr": "",
-            "artifacts": {"lease": lease},
         }
 
     def _op_backup_verify(

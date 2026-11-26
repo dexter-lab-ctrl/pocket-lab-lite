@@ -140,7 +140,7 @@ fi
 
 for subject in \
   pocketlab.commands.operation.execute \
-  pocketlab.commands.vault.rotate \
+  pocketlab.commands.retired.legacy_guard \
   pocketlab.commands.fleet \
   pocketlab.events.operation \
   pocketlab.events.health \

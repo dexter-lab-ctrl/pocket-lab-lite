@@ -1,14 +1,6 @@
 {
   "documentation_links": {
     "entities": {
-      "bootstrap:init_mariadb": {
-        "title": "init_mariadb",
-        "url": "../../docs/generated/development/bootstrap-stages.md#init-mariadb"
-      },
-      "bootstrap:init_vault": {
-        "title": "init_vault",
-        "url": "../../docs/generated/development/bootstrap-stages.md#init-vault"
-      },
       "bootstrap:install_binaries": {
         "title": "install_binaries",
         "url": "../../docs/generated/development/bootstrap-stages.md#install-binaries"
@@ -37,10 +29,6 @@
         "title": "install_termux_packages",
         "url": "../../docs/generated/development/bootstrap-stages.md#install-termux-packages"
       },
-      "bootstrap:seed_gitops_repo": {
-        "title": "seed_gitops_repo",
-        "url": "../../docs/generated/development/bootstrap-stages.md#seed-gitops-repo"
-      },
       "bootstrap:smoke_test": {
         "title": "smoke_test",
         "url": "../../docs/generated/development/bootstrap-stages.md#smoke-test"
@@ -48,10 +36,6 @@
       "bootstrap:start_dashboard": {
         "title": "start_dashboard",
         "url": "../../docs/generated/development/bootstrap-stages.md#start-dashboard"
-      },
-      "bootstrap:start_gitea": {
-        "title": "start_gitea",
-        "url": "../../docs/generated/development/bootstrap-stages.md#start-gitea"
       },
       "endpoint:DELETE:/api/lite/apps/photoprism/storage-mappings/{mapping_id}": {
         "title": "DELETE /api/lite/apps/photoprism/storage-mappings/{mapping_id}",
@@ -1409,14 +1393,6 @@
         "title": "pocketlab.commands.unknown",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-unknown"
       },
-      "event:pocketlab.commands.vault.dynamic_secret": {
-        "title": "pocketlab.commands.vault.dynamic_secret",
-        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-vault-dynamic-secret"
-      },
-      "event:pocketlab.commands.vault.rotate": {
-        "title": "pocketlab.commands.vault.rotate",
-        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-vault-rotate"
-      },
       "event:pocketlab.events": {
         "title": "pocketlab.events",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-events"
@@ -1456,6 +1432,10 @@
       "event:pocketlab.events.command.received": {
         "title": "pocketlab.events.command.received",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-events-command-received"
+      },
+      "event:pocketlab.events.command.retired": {
+        "title": "pocketlab.events.command.retired",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-command-retired"
       },
       "event:pocketlab.events.command.retry_scheduled": {
         "title": "pocketlab.events.command.retry_scheduled",
@@ -2012,14 +1992,6 @@
       "event:pocketlab.events.telemetry.sampled": {
         "title": "pocketlab.events.telemetry.sampled",
         "url": "../../docs/generated/development/lite-events.md#pocketlab-events-telemetry-sampled"
-      },
-      "event:pocketlab.events.vault.lease_created": {
-        "title": "pocketlab.events.vault.lease_created",
-        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-vault-lease-created"
-      },
-      "event:pocketlab.events.vault.secret_rotated": {
-        "title": "pocketlab.events.vault.secret_rotated",
-        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-vault-secret-rotated"
       },
       "event:pocketlab.events.websocket.heartbeat": {
         "title": "pocketlab.events.websocket.heartbeat",
@@ -2629,9 +2601,17 @@
         "title": "lease_active",
         "url": "../../docs/generated/development/reason-codes.md#lease-active"
       },
+      "reason:legacy_gitops_api_retired": {
+        "title": "legacy_gitops_api_retired",
+        "url": "../../docs/generated/development/reason-codes.md#legacy-gitops-api-retired"
+      },
       "reason:legacy_multiple_active_runs": {
         "title": "legacy_multiple_active_runs",
         "url": "../../docs/generated/development/reason-codes.md#legacy-multiple-active-runs"
+      },
+      "reason:legacy_observability_stack_retired": {
+        "title": "legacy_observability_stack_retired",
+        "url": "../../docs/generated/development/reason-codes.md#legacy-observability-stack-retired"
       },
       "reason:legacy_secret_rotation_retired": {
         "title": "legacy_secret_rotation_retired",
@@ -3851,7 +3831,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "5e14e8d63cb6e197ed3b2bcbdb98957d9e09385528c64927c5cd0c50d4b1df57",
+    "aggregate_fingerprint": "5e8a06b2722b3ed4fe05be12e09b65986825cf794459171193f92985810ed05c",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3862,7 +3842,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "541b9b956549a22a8300753ef4216ccbedb997decda0710ca60dadc271158cb5",
-      "contracts/metadata/documentation-platform.json": "df01b8d3f5474a3e9f9e6e4de02e0f7d2b30da8fc3190147af4a02e369d50134",
+      "contracts/metadata/documentation-platform.json": "e3ca5a37ded7b6f7eacc4ee2e7ea04a2a67b5efe783067ca8a8a61a726db2d88",
       "contracts/metadata/identity-rules-reason-code-overrides.json": "3b34f0debcf38e177dca50b99dea00a9b2710c4889dcb2b706d688ce0a9fcd9e",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -3918,7 +3898,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql": "b638b291b99780032fa71a1077a77c44bda39f9cbba55caf567785ffa12d75f1",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql": "cdcad7a2e9379023be73e79eeab7ee1497cbf6a41e90ecd0e6291c2fa4de4a5c",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql": "df830f0948f0b6fc689cb7a65e835d1039f35bf0fe42a7cca73309a12005f6c5",
-      "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
+      "scripts/docs/lite/generate_platform_catalogs.py": "03d45e1757f6eff0622b0bac8d53108a7229b00c2c746bf158a746224499fd08"
     },
     "validation_state": "generated"
   }

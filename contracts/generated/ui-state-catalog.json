@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "5dc29e2d746e20c45f52be280b7e8e9e072a7164a9f317b8eb82b155326d390a",
+    "aggregate_fingerprint": "c8c6e1c5f2fbbb20eee713e54b4f1cb5b14123deb2cb13a97758d7e3047a1ff7",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -11,7 +11,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "scripts/docs/lite/capture-storybook.mjs": "8f23bf560451088cdb0f456d444913ca6ea620108eee764b9d421cc372b9b2c8",
-      "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a",
+      "scripts/docs/lite/generate_platform_catalogs.py": "03d45e1757f6eff0622b0bac8d53108a7229b00c2c746bf158a746224499fd08",
       "src/lite/LiteAzureHorizon.stories.jsx": "a2ee55a0c896d4e6047164e8d08979241fe08c2a382992c87247cfd823811bf4",
       "src/lite/LiteCatalog.stories.jsx": "8e0f8e0a2a4964187ec27a466152bf74b39d2e36184c31801dfc418793e492c8",
       "src/lite/LiteDevices.stories.jsx": "1c65d09941343fb754748f57fcb9fb5200037f22f60741727f39d7a9a3d8bcab",
@@ -26,7 +26,7 @@
       "src/lite/LiteSecurity.stories.jsx": "447e7d25c5669fa9b1af095afc6bc75bf70c1461bc37b3df9ccc23ac24fd29d0",
       "src/lite/LiteSystemHealth.stories.jsx": "87996d03b6b9cdc7f9473c6739a56b13b14057a3721f105fb8681e251469f097",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "9364c60a34209f1c0fe6ba1aa4f6034133d729d66a2b63d9b1f175a144e4911d"
+      "src/mocks/handlers.js": "c588e7eeeb61c7dc787ca2a3ae817d3d20610175783cb528474d16d5f7ff3595"
     },
     "validation_state": "generated"
   },

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "275c376596cf7969aafde5aa0c9566a8ab960508b5b18af994ba555be371ebdb",
+    "aggregate_fingerprint": "c689d7126df2b3e014d0a2f25a6b9c7d95dc7e7bb90f251fcfeef3a00a124d61",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -13,7 +13,7 @@
       "contracts/generated/releases/manifests/lite-2026.08.12.2/pocketlab-lite-release.json": "c155fec8543dcdfda7f862bc5de9e94093a38ec7084f77ff5a194cf8b89292fc",
       "contracts/generated/releases/manifests/lite-2026.08.19.2/pocketlab-lite-release.json": "29b7b33c8b9f9153dd6b5008ee25a3c54876d627e0034961342f87a7fdd6994c",
       "contracts/generated/releases/manifests/lite-2026.08.29.1/pocketlab-lite-release.json": "1c7a74faa6311259ce5394411c00dec4e440be7ee37d0f40b407a54005ccede1",
-      "scripts/docs/lite/generate_platform_catalogs.py": "321f9285a8181351e4bb1d0a2bc5763f04348693a6c89959b1219b80d3088f4a"
+      "scripts/docs/lite/generate_platform_catalogs.py": "03d45e1757f6eff0622b0bac8d53108a7229b00c2c746bf158a746224499fd08"
     },
     "validation_state": "verified"
   },

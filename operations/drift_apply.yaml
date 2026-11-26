@@ -12,7 +12,7 @@ spec:
   professionalLabel: Apply remediation
   simpleLabel: Fix issue
   uiEntrypoints:
-  - Drift Center
+  - System Health
   apiEntrypoints:
   - /api/operations/execute
   natsSubject: pocketlab.commands.drift.apply

@@ -69,6 +69,7 @@ Primary architecture: [open architecture](../../production/architecture/device-o
 
 - `pocketlab.commands.lite.device.restart`
 - `pocketlab.commands.node.{normalized_node_id}.agent.restart`
+- `pocketlab.events.command.retired`
 - `pocketlab.events.fleet.bootstrap_blocked`
 - `pocketlab.events.fleet.device_removed`
 - `pocketlab.events.fleet.invite_accepted`

@@ -305,7 +305,6 @@ def test_status_builder_projects_live_equivalent_canonical_server_facts(monkeypa
     from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
 
     lite_device_runtime_extensions.install_status_projection_extension()
-    monkeypatch.setattr(lite_status, "_mysql_socket_available", lambda: None)
     monkeypatch.setattr(lite_status.lite_catalog_service, "catalog_apps_count", lambda: 1)
     monkeypatch.setattr(
         CONTROL_PLANE,

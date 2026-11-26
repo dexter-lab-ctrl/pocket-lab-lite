@@ -44,8 +44,8 @@ def write_markdown() -> None:
 | `system-context` | Shows Pocket Lab and external systems. |
 | `container-view` | Shows major runtime containers. |
 | `event-driven-runtime` | Shows FastAPI, NATS, worker, event journal, docs, and typed operation registry. |
-| `domain-services` | Shows app catalog, GitOps, drift, fleet, vault, security, telemetry, release, and DR domains. |
-| `security-review` | Shows Security / Policy Guardrails, Vault/OpenBao, OPA, typed operation validation, and audit evidence relationships. |
+| `domain-services` | Shows app catalog, supported release/source sync, drift, fleet, native Identity & Access, security, telemetry, release, and DR domains. |
+| `security-review` | Shows Security / Policy Guardrails, native Identity & Access, OPA, typed operation validation, and audit evidence relationships. |
 | `nats-command-event-boundaries` | Shows frontend/API/NATS/worker command and event boundaries. |
 | `audit-and-dlq-paths` | Shows retry exhaustion, DLQ subjects, audit evidence, workflow state, and recovery paths. |
 | `android-termux-deployment` | Shows Android/Termux deployment topology. |
@@ -96,7 +96,7 @@ structurizr-cli export \\
 - All major runtime components must be represented in the DSL.
 - Every new major domain service must update the `container-view` and `domain-services` view.
 - Every major runtime flow must have a dynamic view.
-- Security, policy, secret-management, audit, retry, and DLQ changes must update the enterprise security-review views.
+- Security, policy, credential-handling, audit, retry, and DLQ changes must update the enterprise security-review views.
 - Deployment topology changes must update deployment views.
 - Architecture docs should stay aligned with OpenAPI, AsyncAPI, and Typed Operations tiers.
 

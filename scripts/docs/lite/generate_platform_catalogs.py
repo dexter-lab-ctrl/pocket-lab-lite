@@ -30,6 +30,15 @@ SOURCE_GENERATED_AT = os.environ.get("SOURCE_GENERATED_AT", "").strip() or "unco
 SOURCE_COMMIT = os.environ.get("SOURCE_COMMIT", "").strip() or "uncommitted"
 GENERATOR = "scripts/docs/lite/generate_platform_catalogs.py"
 SCHEMA_REVISION = 1
+# Retired subjects remain in the runtime registry only as bounded compatibility
+# vocabulary for historical messages. They are not current Lite channels and
+# must not be reintroduced into the generated executable subject catalog.
+RETIRED_COMMAND_SUBJECTS = frozenset(
+    {
+        "pocketlab.commands.vault.rotate",
+        "pocketlab.commands.vault.dynamic_secret",
+    }
+)
 # Require a path boundary before machine paths.  Without the boundary, an API
 # route such as ``/api/lite/home/activity-cursor`` is misclassified because it
 # contains the URL path segment ``/home/``.  A development path such as
@@ -558,6 +567,8 @@ def subject_inventory() -> list[dict[str, Any]]:
         relative = path.relative_to(ROOT).as_posix()
         for match in re.finditer(r"pocketlab\.(?:commands|events|telemetry|health|agent|lite|workflows)[A-Za-z0-9_.{}:-]*", text):
             subject = match.group(0).rstrip(".,:;")
+            if subject in RETIRED_COMMAND_SUBJECTS:
+                continue
             window = text[max(0, match.start()-180):match.end()+180].lower()
             direction = "publish" if any(token in window for token in ("publish(", ".publish", "request(")) else "consume" if any(token in window for token in ("subscribe(", "pull_subscribe", "consumer")) else "reference"
             item = found.setdefault(subject, {

@@ -131,6 +131,14 @@ def tracked_paths() -> list[str]:
     paths = sorted(p for p in raw.split("\0") if p)
     if not paths:
         raise RuntimeError("git ls-files returned no tracked files")
+    # During a source-retirement change, deleted files remain in the index until
+    # the final commit.  The map describes the current checkout, so omit those
+    # absent working-tree paths rather than failing while stat-ing a file that is
+    # intentionally being removed.  Once committed, git ls-files and the
+    # working tree converge again.
+    paths = [path for path in paths if (ROOT / path).exists()]
+    if not paths:
+        raise RuntimeError("git ls-files returned no present tracked files")
     for path in paths:
         normalize_repo_path(path)
     return paths

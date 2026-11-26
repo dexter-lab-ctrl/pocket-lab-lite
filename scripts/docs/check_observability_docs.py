@@ -17,7 +17,7 @@ GENERATED_FILES = [
     Path("docs/observability/generated/observability-runtime-map.md"),
 ]
 REQUIRED_NAV_TOKENS = [
-    "observability/observability-logging-guide.md",
+    "development/lite-native-control-plane-retirement.md",
     "observability/generated/prometheus-scrape-reference.md",
     "observability/generated/loki-log-pipeline-reference.md",
     "observability/generated/grafana-dashboards-reference.md",

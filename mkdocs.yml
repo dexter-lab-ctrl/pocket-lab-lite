@@ -328,6 +328,15 @@ nav:
       - Backup & restore reference: recovery/backup-restore.md
       - Lite validation: validation/lite-validation.md
       - UI performance qualification: validation/ui-performance-qualification.md
+      - Lite-native control-plane retirement: development/lite-native-control-plane-retirement.md
+      - Native telemetry contract: observability/generated/telemetry-contract-reference.md
+      - Runtime map: observability/generated/observability-runtime-map.md
+      - Retired infrastructure references:
+          - Prometheus: observability/generated/prometheus-scrape-reference.md
+          - Loki and Promtail: observability/generated/loki-log-pipeline-reference.md
+          - Grafana: observability/generated/grafana-dashboards-reference.md
+          - Gatus: observability/generated/gatus-health-reference.md
+          - Alerting and SLO boundary: observability/generated/alerting-slo-reference.md
   - Documentation Platform:
       - Overview: generated/enterprise/documentation-platform/index.md
       - How to use these docs: generated/enterprise/documentation-platform/how-to-use.md

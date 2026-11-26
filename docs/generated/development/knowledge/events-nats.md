@@ -75,8 +75,6 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.commands.security.configure_opa` | security | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.security.scan` | security | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.commands.unknown` | unknown | — | — | incomplete | incomplete | incomplete |
-| `pocketlab.commands.vault.dynamic_secret` | vault | — | — | incomplete | incomplete | incomplete |
-| `pocketlab.commands.vault.rotate` | vault | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.events` | unknown | — | nats_bus.py | incomplete | incomplete | incomplete |
 | `pocketlab.events.api.started` | api | main.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.api.stopped` | api | main.py | — | incomplete | incomplete | incomplete |
@@ -87,6 +85,7 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.events.command.failed` | command | pocketlab_worker.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.command.queued` | command | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.command.received` | command | pocketlab_worker.py | — | incomplete | incomplete | incomplete |
+| `pocketlab.events.command.retired` | command | pocketlab_worker.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.command.retry_scheduled` | command | pocketlab_worker.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.command.running` | command | pocketlab_worker.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.command.succeeded` | command | pocketlab_worker.py | — | incomplete | incomplete | incomplete |
@@ -226,8 +225,6 @@ Credentials are never included. Incomplete delivery semantics remain explicitly 
 | `pocketlab.events.telemetry` | telemetry | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.telemetry.changed` | telemetry | live_status.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.telemetry.sampled` | telemetry | live_status.py | — | incomplete | incomplete | incomplete |
-| `pocketlab.events.vault.lease_created` | vault | domain_commands.py | — | incomplete | incomplete | incomplete |
-| `pocketlab.events.vault.secret_rotated` | vault | domain_commands.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.websocket.heartbeat` | websocket | — | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.worker.error` | worker | pocketlab_worker.py | — | incomplete | incomplete | incomplete |
 | `pocketlab.events.worker.heartbeat` | worker | pocketlab_worker.py | — | incomplete | incomplete | incomplete |

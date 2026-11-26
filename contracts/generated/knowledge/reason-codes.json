@@ -2816,6 +2816,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The legacy GitOps and pipeline compatibility endpoints are retired and do not execute infrastructure work.",
+      "domain": "release",
+      "event_mapping": [],
+      "http_status": 410,
+      "id": "reason:legacy_gitops_api_retired",
+      "name": "legacy_gitops_api_retired",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "info",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Use the native release, drift and System Health controls instead."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Legacy state contains multiple active runs.",
       "domain": "system",
       "event_mapping": [],
@@ -2833,6 +2853,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Legacy state contains multiple active runs."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The legacy observability service-management and Loki compatibility endpoints are retired and do not start or query legacy services.",
+      "domain": "telemetry",
+      "event_mapping": [],
+      "http_status": 410,
+      "id": "reason:legacy_observability_stack_retired",
+      "name": "legacy_observability_stack_retired",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "info",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Use native System Health, runtime diagnostics and operational evidence instead."
     },
     {
       "confidence": "source-derived",
@@ -6135,6 +6175,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e320261c60545eb0180949f076f03001445ac0c1febb46eeeb9fdaf647f43f5f"
+    "source_fingerprint": "54e0e736fc1a97541d826775ffffda546b9c541a1aa4dd29ca255a44d7a1d8d6"
   }
 }

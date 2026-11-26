@@ -50,36 +50,32 @@ def build_release_workflow(root_dir: str | Path) -> Dict[str, Any]:
             "role": "Configures Vite PWA auto-update for the served frontend bundle.",
         },
         {
-            "path": "src/lib/operations.js",
-            "role": "Provides typed helper calls for workflow execution and refreshes.",
+            "path": "src/lib/liteApi.js",
+            "role": "Provides same-origin Lite API calls for workflow execution and prepared reads.",
         },
         {
-            "path": "src/tabs/ReleaseWorkflowTab.jsx",
-            "role": "Shows the concrete end-to-end release workflow and exposes stage actions.",
+            "path": "src/lite/LiteApp.jsx",
+            "role": "Provides the Lite shell and release-aware workspace navigation.",
         },
         {
-            "path": "src/tabs/GitOpsTab.jsx",
-            "role": "Runs git sync and repository reconciliation from the UI.",
+            "path": "src/lite/LiteSystemHealth.jsx",
+            "role": "Surfaces native consistency and health evidence from the Lite workspace.",
         },
         {
-            "path": "src/tabs/AppStoreTab.jsx",
+            "path": "src/lite/LiteCatalog.jsx",
             "role": "Promotes catalogued workloads and blueprint sources.",
         },
         {
-            "path": "src/tabs/BlueprintTab.jsx",
+            "path": "src/lite/LiteCatalog.jsx",
             "role": "Deploys repo, zip, OCI, or HTTP blueprint sources.",
         },
         {
-            "path": "src/tabs/DriftCenterTab.jsx",
+            "path": "src/lite/LiteSystemHealth.jsx",
             "role": "Validates drift before and after promotion.",
         },
         {
-            "path": "src/tabs/SecurityPostureTab.jsx",
+            "path": "src/lite/LiteSecurity.jsx",
             "role": "Blocks release promotion when posture is weak.",
-        },
-        {
-            "path": "src/tabs/IdentityVaultTab.jsx",
-            "role": "Handles vault-backed credentials and secret rotation during release prep.",
         },
         {
             "path": "pocket-lab-final-structure/runtime/api_fastapi/pocket_lab_fastapi_server.py",
@@ -134,12 +130,12 @@ def build_release_workflow(root_dir: str | Path) -> Dict[str, Any]:
                     "note": "Keep update messaging aligned with release promotion.",
                 },
                 {
-                    "path": "src/lib/operations.js",
-                    "note": "Add helpers for workflow fetch/refresh calls.",
+                    "path": "src/lib/liteApi.js",
+                    "note": "Use same-origin Lite API helpers for workflow fetch/refresh calls.",
                 },
                 {
-                    "path": "src/tabs/ReleaseWorkflowTab.jsx",
-                    "note": "Render the step-by-step release plan.",
+                    "path": "src/lite/LiteApp.jsx",
+                    "note": "Render the Lite workspace and release-aware navigation.",
                 },
                 {
                     "path": "pocket-lab-final-structure/runtime/api_fastapi/pocket_lab_fastapi_server.py",
@@ -180,11 +176,11 @@ def build_release_workflow(root_dir: str | Path) -> Dict[str, Any]:
                     "note": "Record the workflow in the archive documentation.",
                 },
                 {
-                    "path": "src/tabs/GitOpsTab.jsx",
-                    "note": "Surface repo sync and release sequencing.",
+                    "path": "src/lite/LiteSystemHealth.jsx",
+                    "note": "Surface native consistency and release health evidence.",
                 },
             ],
-            ["GitHub Repo", "Release tagging", "Taskfile", "GitOps UI"],
+            ["GitHub Repo", "Release tagging", "Taskfile", "Lite workspace"],
             [
                 "Commit only source files and workflow docs.",
                 "Push the change set to the public GitHub repository.",
@@ -200,8 +196,8 @@ def build_release_workflow(root_dir: str | Path) -> Dict[str, Any]:
             "Make the GitHub commit visible to Pocket Lab services.",
             [
                 {
-                    "path": "src/tabs/GitOpsTab.jsx",
-                    "note": "Trigger git sync from the UI.",
+                    "path": "src/lite/LiteSystemHealth.jsx",
+                    "note": "Present native release/source consistency evidence.",
                 },
                 {
                     "path": "pocket-lab-final-structure/runtime/core/operations/service.py",
@@ -213,7 +209,7 @@ def build_release_workflow(root_dir: str | Path) -> Dict[str, Any]:
                 },
             ],
             [
-                "GitOps subsystem",
+                "Release/source adapter",
                 "Dulwich repository layer",
                 "Catalog store",
                 "Release workflow API",
@@ -234,19 +230,19 @@ def build_release_workflow(root_dir: str | Path) -> Dict[str, Any]:
             "Use the existing safety subsystems before any rollout.",
             [
                 {
-                    "path": "src/tabs/SecurityPostureTab.jsx",
+                    "path": "src/lite/LiteSecurity.jsx",
                     "note": "Confirm policy posture is acceptable.",
                 },
                 {
-                    "path": "src/tabs/IdentityVaultTab.jsx",
-                    "note": "Ensure secrets and dynamic credentials are ready.",
+                    "path": "src/lite/LiteIdentity.jsx",
+                    "note": "Ensure native Identity & Access readiness is visible.",
                 },
                 {
-                    "path": "src/tabs/AppStoreTab.jsx",
+                    "path": "src/lite/LiteCatalog.jsx",
                     "note": "Promote catalogued workloads.",
                 },
                 {
-                    "path": "src/tabs/BlueprintTab.jsx",
+                    "path": "src/lite/LiteCatalog.jsx",
                     "note": "Deploy the selected blueprint source.",
                 },
                 {
@@ -264,7 +260,6 @@ def build_release_workflow(root_dir: str | Path) -> Dict[str, Any]:
             ],
             [
                 "Security guardrails",
-                "Vault",
                 "App Store",
                 "Blueprint engine",
                 "Ansible runner",
@@ -273,12 +268,10 @@ def build_release_workflow(root_dir: str | Path) -> Dict[str, Any]:
             [
                 "Take a backup snapshot before promotion.",
                 "Apply the blueprint or workload through the typed operation layer.",
-                "Rotate secrets only when the deployment path requires it.",
             ],
             [
                 {"name": "backup_now", "operation": "backup_now"},
                 {"name": "deploy_blueprint", "operation": "deploy_blueprint"},
-                {"name": "rotate_secret", "operation": "rotate_secret"},
             ],
         ),
         _stage(
@@ -287,7 +280,7 @@ def build_release_workflow(root_dir: str | Path) -> Dict[str, Any]:
             "Confirm the change is stable and visible to users.",
             [
                 {
-                    "path": "src/tabs/DriftCenterTab.jsx",
+                    "path": "src/lite/LiteSystemHealth.jsx",
                     "note": "Run post-deploy drift scans and review diffs.",
                 },
                 {
@@ -372,8 +365,8 @@ def build_release_workflow(root_dir: str | Path) -> Dict[str, Any]:
         "stages": stages,
         "summary": [
             "Frontend change is committed to GitHub.",
-            "GitOps sync updates the repo cache and catalog.",
-            "Security, vault, drift, and health gates protect promotion.",
+            "Supported release/source synchronization updates the local release cache and catalog.",
+            "Security, drift, and health gates protect promotion.",
             "Blueprint and workload deployment happens through typed operations.",
             "Clients receive the new release through the served PWA bundle.",
             "A NATS-backed release orchestrator emits each update stage as live events for Simple and Professional Mode.",

@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: e3be226c38a9485c60f9628eea7ec262a39e6814cb5f8cefa02ea85df0aa558c
+source_fingerprint: cd1cb9003e1ba0dc7a620a54482767ca49aaf5d0cb4856e792e3e948bcc465d9
 schema_revision: 1
 validation_status: generated
 ---
@@ -24,16 +24,12 @@ Documentation generation inspects stage definitions only and never executes boot
 
 | # | Stage | Script | Description | Safe retry | Failure behavior |
 | --- | --- | --- | --- | --- | --- |
-| 1 | `install_termux_packages` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-termux-packages.sh` | Install Termux packages, base CLI tools, Node, PM2, MariaDB, Gitea, Caddy, and build dependencies | yes | fail closed; later stages do not run |
+| 1 | `install_termux_packages` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-termux-packages.sh` | Install Termux packages, base CLI tools, Node, PM2, Caddy, and build dependencies | yes | fail closed; later stages do not run |
 | 2 | `install_proot_ubuntu` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-proot-ubuntu.sh` | Install and prepare the proot Ubuntu compatibility layer | yes | fail closed; later stages do not run |
-| 3 | `install_binaries` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-binaries.sh` | Install Vault, act_runner, Python runtime packages, NATS tooling, and profile-selected optional binaries | yes | fail closed; later stages do not run |
-| 4 | `init_vault` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-vault.sh` | Start and initialize Vault, unseal it, enable engines, and seed initial platform secrets | yes | fail closed; later stages do not run |
-| 5 | `init_mariadb` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-mariadb.sh` | Initialize MariaDB, create Pocket Lab service users, and register Vault database integration | yes | fail closed; later stages do not run |
-| 6 | `start_gitea` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-gitea.sh` | Start Gitea and act_runner, create the admin user, and prepare GitOps repositories | yes | fail closed; later stages do not run |
-| 7 | `seed_gitops_repo` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/seed-gitops-repo.sh` | Seed or refresh the GitOps/IaC repository in local Gitea | yes | fail closed; later stages do not run |
-| 8 | `install_tailscale` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh` | Install or prepare Tailscale connectivity for fleet access | yes | fail closed; later stages do not run |
-| 9 | `install_pwa_ui` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh` | Install the production React/Vite PWA assets | yes | fail closed; later stages do not run |
-| 10 | `start_dashboard` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh` | Start NATS/JetStream, FastAPI, worker, node agent, Caddy, and profile-selected services | yes | fail closed; later stages do not run |
-| 11 | `install_fleet_agent` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh` | Install the local NATS-backed fleet agent wrapper using generated NATS credentials | yes | fail closed; later stages do not run |
-| 12 | `smoke_test` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh` | Run profile-aware Day-0 smoke tests | yes | fail closed; later stages do not run |
-| 13 | `install_lite_boot_recovery` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-boot-recovery.sh` | Install Pocket Lab Lite Android boot recovery and external PM2 guardian | yes | fail closed; later stages do not run |
+| 3 | `install_binaries` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-binaries.sh` | Install Python runtime packages, NATS tooling, security tools, OPA, and profile-selected native binaries | yes | fail closed; later stages do not run |
+| 4 | `install_tailscale` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh` | Install or prepare Tailscale connectivity for fleet access | yes | fail closed; later stages do not run |
+| 5 | `install_pwa_ui` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh` | Install the production React/Vite PWA assets | yes | fail closed; later stages do not run |
+| 6 | `start_dashboard` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh` | Start NATS/JetStream, FastAPI, worker, node agent, Caddy, and native Lite services | yes | fail closed; later stages do not run |
+| 7 | `install_fleet_agent` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh` | Install the local NATS-backed fleet agent wrapper using generated NATS credentials | yes | fail closed; later stages do not run |
+| 8 | `smoke_test` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh` | Run profile-aware Day-0 smoke tests | yes | fail closed; later stages do not run |
+| 9 | `install_lite_boot_recovery` | `pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-boot-recovery.sh` | Install Pocket Lab Lite Android boot recovery and external PM2 guardian | yes | fail closed; later stages do not run |

@@ -32,7 +32,7 @@ export function deviceManageSections(isProtectedServer = false) {
 
 const serviceGroupFor = (service = {}) => {
   const id = String(service.service_id || service.id || '').toLowerCase();
-  if (/photo|prism|gitea|hosted|app[-_]/.test(id)) return 'Hosted apps';
+  if (/photo|prism|hosted|app[-_]/.test(id)) return 'Hosted apps';
   if (/tailscale|nats|caddy|proxy|network|connect/.test(id)) return 'Connectivity';
   if (/supervisor|recover|backup/.test(id)) return 'Recovery';
   if (/pocket|api|worker|agent|telemetry/.test(id)) return 'Pocket Lab core';

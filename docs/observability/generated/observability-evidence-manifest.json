@@ -1,0 +1,460 @@
+{
+  "alerting_slo_sources": [],
+  "bootstrap_observability_scripts": [
+    {
+      "kind": "bootstrap_native",
+      "path": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh",
+      "sha256": "45e680e567d385ab01cdd61624a1cd6314fd3729d939b5d6b6d0c72526051b93",
+      "summary": "Supported Lite native bootstrap topology."
+    },
+    {
+      "kind": "bootstrap_native",
+      "path": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+      "sha256": "cb71c7c2d6547561eff9d4d5cc5071adaa43b9bd3053c2377120a6e8b0265a4d",
+      "summary": "Supported Lite native bootstrap topology."
+    },
+    {
+      "kind": "bootstrap_native",
+      "path": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh",
+      "sha256": "88ee7e1c68ea79dd85cf827957d81ca4d03387da2083aa57ba22b70e6e3c26cc",
+      "summary": "Supported Lite native bootstrap topology."
+    },
+    {
+      "kind": "bootstrap_native",
+      "path": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh",
+      "sha256": "98a5878ee1b3c3da3640a24f1a1ade39e5347905536b6ec75c4c4f9f17f2819b",
+      "summary": "Supported Lite native bootstrap topology."
+    }
+  ],
+  "fastapi_observability_routes": [
+    {
+      "function": "health",
+      "method": "GET",
+      "route": "/health",
+      "source_file": "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py"
+    },
+    {
+      "function": "health",
+      "method": "GET",
+      "route": "/healthz",
+      "source_file": "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py"
+    },
+    {
+      "function": "ready",
+      "method": "GET",
+      "route": "/ready",
+      "source_file": "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py"
+    },
+    {
+      "function": "health_engine",
+      "method": "GET",
+      "route": "/api/health-engine.json",
+      "source_file": "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py"
+    },
+    {
+      "function": "health_check",
+      "method": "POST",
+      "route": "/api/health/check",
+      "source_file": "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py"
+    },
+    {
+      "function": "get_lite_system_health",
+      "method": "GET",
+      "route": "/api/lite/system/health",
+      "source_file": "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+    }
+  ],
+  "frontend_observability_consumers": [
+    {
+      "path": "src/lite/LiteSystemHealth.jsx",
+      "purpose": "Native health, readiness, freshness, incidents, and runtime evidence.",
+      "screen": "LiteSystemHealth"
+    },
+    {
+      "path": "src/lite/LiteHome.jsx",
+      "purpose": "Prepared workspace status and next-step presentation.",
+      "screen": "LiteHome"
+    },
+    {
+      "path": "src/lite/LiteIdentity.jsx",
+      "purpose": "Native Identity & Access readiness and authentication state.",
+      "screen": "LiteIdentity"
+    }
+  ],
+  "gatus": {
+    "replacement": "Prepared system.health projection",
+    "retired": true
+  },
+  "gatus_endpoints": [],
+  "generated_at": "2026-11-25T17:56:56.862576Z",
+  "generated_by": "scripts/docs/generate_observability_evidence.py",
+  "grafana_config": {
+    "replacement": "System Health and generated evidence",
+    "retired": true
+  },
+  "grafana_provisioning_paths": {
+    "dashboards": [],
+    "datasources": []
+  },
+  "legacy_components": [
+    {
+      "current_replacement": "Native Identity & Access and approved provider integration",
+      "disposition": "retired",
+      "name": "Vault / OpenBao"
+    },
+    {
+      "current_replacement": "GitHub release/source metadata and Application Catalog",
+      "disposition": "retired",
+      "name": "Gitea"
+    },
+    {
+      "current_replacement": "SQLite state and application-owned database integrations",
+      "disposition": "retired",
+      "name": "MariaDB"
+    },
+    {
+      "current_replacement": "Prepared native system.health projection",
+      "disposition": "retired",
+      "name": "Gatus"
+    },
+    {
+      "current_replacement": "Native Telemetry / Diagnostics",
+      "disposition": "retired",
+      "name": "Prometheus"
+    },
+    {
+      "current_replacement": "System Health and generated evidence",
+      "disposition": "retired",
+      "name": "Grafana"
+    },
+    {
+      "current_replacement": "Sanitized operational evidence and native log retention",
+      "disposition": "retired",
+      "name": "Loki / Promtail"
+    }
+  ],
+  "loki_pipeline": {
+    "replacement": "Sanitized operational evidence and native log retention",
+    "retired": true
+  },
+  "missing_enterprise_features": [],
+  "native_health_authority": {
+    "collector_owner": "LiveStatusSampler / worker-owned projection scheduler",
+    "read_endpoints": [
+      "/health",
+      "/healthz",
+      "/ready",
+      "/api/health-engine.json",
+      "/api/lite/system/health"
+    ],
+    "request_side_effects": false,
+    "source": "prepared-lite-native",
+    "status_vocabulary": [
+      "healthy",
+      "degraded",
+      "unhealthy",
+      "starting",
+      "repairing",
+      "unknown",
+      "stale",
+      "unsupported",
+      "not_configured",
+      "maintenance"
+    ]
+  },
+  "observability_components": [
+    {
+      "name": "Prepared Health Projection",
+      "purpose": "Native system.health/readiness authority",
+      "verified_from_source": true
+    },
+    {
+      "name": "Native Telemetry / Diagnostics",
+      "purpose": "Host, worker, device, storage, and runtime observations",
+      "verified_from_source": true
+    },
+    {
+      "name": "NATS / JetStream",
+      "purpose": "Durable command, event, and worker-consumer readiness",
+      "verified_from_source": true
+    },
+    {
+      "name": "Native Identity & Access",
+      "purpose": "SQLite-backed identity readiness and supported authentication",
+      "verified_from_source": true
+    },
+    {
+      "name": "OPA Policy Lifecycle",
+      "purpose": "Loopback policy decisions with fail-closed activation",
+      "verified_from_source": true
+    },
+    {
+      "name": "Caddy / FastAPI",
+      "purpose": "Same-origin HTTPS gateway and authoritative control API",
+      "verified_from_source": true
+    }
+  ],
+  "ports": {},
+  "prometheus": {
+    "replacement": "Native Telemetry / Diagnostics",
+    "retired": true
+  },
+  "prometheus_jobs": [],
+  "promtail_scrape_configs": [],
+  "routes": [
+    {
+      "function": "health",
+      "method": "GET",
+      "route": "/health",
+      "source_file": "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py"
+    },
+    {
+      "function": "health",
+      "method": "GET",
+      "route": "/healthz",
+      "source_file": "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py"
+    },
+    {
+      "function": "ready",
+      "method": "GET",
+      "route": "/ready",
+      "source_file": "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py"
+    },
+    {
+      "function": "health_engine",
+      "method": "GET",
+      "route": "/api/health-engine.json",
+      "source_file": "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py"
+    },
+    {
+      "function": "health_check",
+      "method": "POST",
+      "route": "/api/health/check",
+      "source_file": "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py"
+    },
+    {
+      "function": "get_lite_system_health",
+      "method": "GET",
+      "route": "/api/lite/system/health",
+      "source_file": "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+    }
+  ],
+  "runtime_contract_links": {
+    "asyncapi_subjects": [
+      "pocketlab.events.health.checked",
+      "pocketlab.events.telemetry.sampled",
+      "pocketlab.events.command.retired"
+    ],
+    "contract_sources": [
+      "contracts/generated/openapi.json",
+      "contracts/asyncapi/pocketlab-nats-jetstream.yaml",
+      "contracts/operations/pocketlab-typed-operations.json"
+    ],
+    "openapi_paths": [
+      "/health",
+      "/healthz",
+      "/ready",
+      "/api/health-engine.json",
+      "/api/health/check",
+      "/api/lite/system/health"
+    ],
+    "operation_contracts": [],
+    "redaction_rules": [
+      "credentials",
+      "tokens",
+      "raw logs",
+      "private paths"
+    ]
+  },
+  "schema_version": "pocketlab.observability_evidence.v1",
+  "source_files": [
+    {
+      "kind": "native_health_authority",
+      "path": "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py",
+      "sha256": "3736a970fee78c4ddcaf04a84802f418720c6c6950eed0e4ea5f1f53bca42c47",
+      "size_bytes": 5384
+    },
+    {
+      "kind": "native_health_authority",
+      "path": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3b_projections.py",
+      "sha256": "9771550732e71549f149590147308a19ced96aafc5bfb1928d2572574be18f53",
+      "size_bytes": 69471
+    },
+    {
+      "kind": "native_health_authority",
+      "path": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+      "sha256": "49c964245b13497b866fef1e0507fd4c0d9e3e044ed8d345daf46c05c77be595",
+      "size_bytes": 39688
+    },
+    {
+      "kind": "native_telemetry",
+      "path": "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py",
+      "sha256": "b0192e5b2d68fb235b051d6496cf055f46c3899f77cb0f46e84936dd50250d6a",
+      "size_bytes": 29591
+    },
+    {
+      "kind": "native_telemetry",
+      "path": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py",
+      "sha256": "090b76e5ca4661bc46a3e9353c7590a95d61969ef6cb71212232485aa2a3b334",
+      "size_bytes": 74170
+    },
+    {
+      "kind": "native_telemetry",
+      "path": "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
+      "sha256": "40bf8bb41a113eea49c88486949a09ad39d2fcb46f02b8d8635e318c912d1b99",
+      "size_bytes": 51019
+    },
+    {
+      "kind": "native_telemetry",
+      "path": "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py",
+      "sha256": "3c0e21e8a5924e1ec1529f792a27d1cea6cb65597faeab0e80c1544a480fdd9b",
+      "size_bytes": 68475
+    },
+    {
+      "kind": "fastapi_runtime_observability",
+      "path": "pocket-lab-final-structure/runtime/api_fastapi/routers/telemetry.py",
+      "sha256": "dbd6dbffff711a8e859de1dcfe63512ae18164969dc1843f388b8da6110c20dc",
+      "size_bytes": 553
+    },
+    {
+      "kind": "fastapi_runtime_observability",
+      "path": "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py",
+      "sha256": "f8ac4edfc0ea3c00f37deca914f53c1852414bfac5f934035df0b570defae5c4",
+      "size_bytes": 5036
+    },
+    {
+      "kind": "fastapi_runtime_observability",
+      "path": "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py",
+      "sha256": "f8ac4edfc0ea3c00f37deca914f53c1852414bfac5f934035df0b570defae5c4",
+      "size_bytes": 5036
+    },
+    {
+      "kind": "frontend_active_lite",
+      "path": "src/lite/LiteApp.jsx",
+      "sha256": "809ff822ef1b6aa8d570f985a824240f5052d67a964d2cf71f8878ba33010b62",
+      "size_bytes": 34967
+    },
+    {
+      "kind": "frontend_active_lite",
+      "path": "src/lite/LiteHome.jsx",
+      "sha256": "b791f80c66e28aac77f811dfc7ddad5928197ba6fcff6717450aaeb24196d885",
+      "size_bytes": 26477
+    },
+    {
+      "kind": "frontend_active_lite",
+      "path": "src/lite/LiteIdentity.jsx",
+      "sha256": "094878cf4ab986b71e33ebe7f786dd32de259c768c132fe5211c83f42d000274",
+      "size_bytes": 41650
+    },
+    {
+      "kind": "frontend_active_lite",
+      "path": "src/lite/LiteSystemHealth.jsx",
+      "sha256": "657fbbea42340eba3671543e0be6f6813118f4e86d1bab89faeddbcd04e06a1c",
+      "size_bytes": 48664
+    },
+    {
+      "kind": "frontend_active_lite",
+      "path": "src/lib/liteApi.js",
+      "sha256": "ca7cfacce56c0b0c89b2218f9009999762d3143ddb61b3e20cb75188b5a46660",
+      "size_bytes": 31251
+    },
+    {
+      "kind": "runtime_contracts",
+      "path": "contracts/generated/openapi.json",
+      "sha256": "2537996b51ed502593ad0f0b84bbc1079711fb3a36b3d58d1b6167e87bb63b7f",
+      "size_bytes": 710598
+    },
+    {
+      "kind": "runtime_contracts",
+      "path": "contracts/asyncapi/pocketlab-nats-jetstream.yaml",
+      "sha256": "bd69930135725c517a54938c0309381f278c00a8473d6d6ef0691fae29c1e523",
+      "size_bytes": 34804
+    },
+    {
+      "kind": "runtime_contracts",
+      "path": "contracts/operations/pocketlab-typed-operations.json",
+      "sha256": "e339862aaf5979a0884aeb9fcd1a7c3a039274a4785cd3bd9717d847cbc9808d",
+      "size_bytes": 19986
+    },
+    {
+      "kind": "bootstrap_native",
+      "path": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh",
+      "sha256": "45e680e567d385ab01cdd61624a1cd6314fd3729d939b5d6b6d0c72526051b93",
+      "size_bytes": 13890
+    },
+    {
+      "kind": "bootstrap_native",
+      "path": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+      "sha256": "cb71c7c2d6547561eff9d4d5cc5071adaa43b9bd3053c2377120a6e8b0265a4d",
+      "size_bytes": 48263
+    },
+    {
+      "kind": "bootstrap_native",
+      "path": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh",
+      "sha256": "88ee7e1c68ea79dd85cf827957d81ca4d03387da2083aa57ba22b70e6e3c26cc",
+      "size_bytes": 1814
+    },
+    {
+      "kind": "bootstrap_native",
+      "path": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh",
+      "sha256": "98a5878ee1b3c3da3640a24f1a1ade39e5347905536b6ec75c4c4f9f17f2819b",
+      "size_bytes": 55339
+    },
+    {
+      "kind": "retirement_documentation",
+      "path": "docs/operations/bootstrap-lite.md",
+      "sha256": "c51a3a23ccef6e37d85481093dbf378826c6fb20e2ddeb19d19e20bf5ced8f13",
+      "size_bytes": 1958
+    },
+    {
+      "kind": "retirement_documentation",
+      "path": "docs/development/lite-native-control-plane-retirement.md",
+      "sha256": "6b2af04a25e7348ac00389d7244858849aa07028f8361ab5c4ad456be3c37de1",
+      "size_bytes": 14107
+    }
+  ],
+  "source_groups": {
+    "bootstrap_native": [
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+    ],
+    "fastapi_runtime_observability": [
+      "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py",
+      "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py",
+      "pocket-lab-final-structure/runtime/api_fastapi/routers/telemetry.py"
+    ],
+    "frontend_active_lite": [
+      "src/lib/liteApi.js",
+      "src/lite/LiteApp.jsx",
+      "src/lite/LiteHome.jsx",
+      "src/lite/LiteIdentity.jsx",
+      "src/lite/LiteSystemHealth.jsx"
+    ],
+    "native_health_authority": [
+      "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_identity_auth.py",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_phase3b_projections.py"
+    ],
+    "native_telemetry": [
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py",
+      "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py"
+    ],
+    "retirement_documentation": [
+      "docs/development/lite-native-control-plane-retirement.md",
+      "docs/operations/bootstrap-lite.md"
+    ],
+    "runtime_contracts": [
+      "contracts/asyncapi/pocketlab-nats-jetstream.yaml",
+      "contracts/generated/openapi.json",
+      "contracts/operations/pocketlab-typed-operations.json"
+    ]
+  },
+  "warnings": [
+    "Static source inspection does not prove a live candidate is healthy; use the bounded qualification harness.",
+    "Optional remote access and secondary-device reachability do not gate local API readiness."
+  ]
+}

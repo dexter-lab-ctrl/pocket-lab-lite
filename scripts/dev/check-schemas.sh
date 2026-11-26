@@ -11,7 +11,8 @@ checks = [
     ('contracts/schemas/telemetry.schema.json', 'tests/fixtures/telemetry_normal.json'),
     ('contracts/schemas/telemetry.schema.json', 'tests/fixtures/telemetry_low_disk.json'),
     ('contracts/schemas/health.schema.json', 'tests/fixtures/health_all_green.json'),
-    ('contracts/schemas/health.schema.json', 'tests/fixtures/health_vault_sealed.json'),
+    ('contracts/schemas/health.schema.json', 'tests/fixtures/health_native_degraded.json'),
+    ('contracts/schemas/health.schema.json', 'tests/fixtures/health_native_unhealthy.json'),
 ]
 for schema_path, fixture_path in checks:
     schema = json.loads(Path(schema_path).read_text())

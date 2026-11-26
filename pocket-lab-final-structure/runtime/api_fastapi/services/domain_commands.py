@@ -8,6 +8,10 @@ from typing import Any, Dict, Iterable
 from contracts import OperationRequest, OperationTarget  # type: ignore
 from .. import deps
 from .nats_bus import BUS
+from operations.registry import (
+    is_retired_command_subject,
+    retired_operation_payload,
+)
 
 SENSITIVE_KEYS = {"api_key", "token", "password", "secret", "value"}
 
@@ -421,74 +425,6 @@ async def handle_security_configure_opa(command: Dict[str, Any]) -> Dict[str, An
         "pocketlab.audit.security.policy_updated",
         "security.policy_updated",
         {"command_id": command_id, "enforce_mode": state["enforce_mode"]},
-        trace_id=command_id,
-    )
-    return result
-
-
-async def handle_vault_rotate(command: Dict[str, Any]) -> Dict[str, Any]:
-    command_id = _command_id(command)
-    target = str(command.get("target") or command.get("secret") or "secret")
-    params = {"target": target}
-    if command.get("lease_duration"):
-        params["lease_duration"] = command.get("lease_duration")
-    if command.get("value"):
-        params["value"] = command.get("value")
-    run = await asyncio.to_thread(
-        _run_typed_operation,
-        command_id,
-        "rotate_secret",
-        {"type": "vault", "ref": target},
-        params,
-    )
-    result = {
-        "status": run.get("status"),
-        "command_id": command_id,
-        "job_id": run.get("job_id"),
-        "secret": target,
-        "artifacts": {
-            "version": (run.get("artifacts") or {}).get("version"),
-            "rotated_at": (run.get("artifacts") or {}).get("rotated_at"),
-            "lease_duration": (run.get("artifacts") or {}).get("lease_duration"),
-            "secret_material": "hidden",
-        },
-    }
-    await _publish(
-        "pocketlab.events.vault.secret_rotated",
-        "vault.secret_rotated",
-        result,
-        trace_id=command_id,
-    )
-    await _publish(
-        "pocketlab.audit.vault.secret_rotated",
-        "vault.secret_rotated",
-        {"command_id": command_id, "secret": target},
-        trace_id=command_id,
-    )
-    return result
-
-
-async def handle_vault_dynamic_secret(command: Dict[str, Any]) -> Dict[str, Any]:
-    command_id = _command_id(command)
-    target = str(command.get("target") or "default")
-    run = await asyncio.to_thread(
-        _run_typed_operation,
-        command_id,
-        "secret_read_dynamic",
-        {"type": "vault", "ref": target},
-        {"target": target},
-    )
-    result = {
-        "status": run.get("status"),
-        "command_id": command_id,
-        "job_id": run.get("job_id"),
-        "target": target,
-        "artifacts": run.get("artifacts") or {},
-    }
-    await _publish(
-        "pocketlab.events.vault.lease_created",
-        "vault.lease_created",
-        result,
         trace_id=command_id,
     )
     return result
@@ -1669,8 +1605,6 @@ HANDLERS = {
     "pocketlab.commands.lite.security.scan": handle_lite_security_scan,
     "pocketlab.commands.lite.security.assurance": handle_lite_security_assurance,
     "pocketlab.commands.security.configure_opa": handle_security_configure_opa,
-    "pocketlab.commands.vault.rotate": handle_vault_rotate,
-    "pocketlab.commands.vault.dynamic_secret": handle_vault_dynamic_secret,
     "pocketlab.commands.lite.backup.create": handle_lite_backup_create,
     "pocketlab.commands.lite.backup.location.discover": handle_lite_backup_location_discover,
     "pocketlab.commands.lite.backup.location.select": handle_lite_backup_location_select,
@@ -1704,6 +1638,16 @@ def supported_subjects() -> list[str]:
 async def execute_domain_command(
     subject: str, command: Dict[str, Any]
 ) -> Dict[str, Any]:
+    if is_retired_command_subject(subject):
+        operation = (
+            "rotate_secret"
+            if subject.endswith(".rotate")
+            else "secret_read_dynamic"
+        )
+        return {
+            **retired_operation_payload(operation=operation, subject=subject),
+            "command_id": _command_id(command),
+        }
     handler = HANDLERS.get(subject)
     if handler is None:
         raise KeyError(f"No domain handler for command subject: {subject}")

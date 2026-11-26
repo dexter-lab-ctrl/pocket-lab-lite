@@ -200,6 +200,38 @@ def owner_exists() -> bool:
         return conn.execute("SELECT 1 FROM human_identities WHERE status='active' LIMIT 1").fetchone() is not None
 
 
+def identity_readiness() -> dict[str, Any]:
+    """Return the bounded native Identity & Access readiness observation.
+
+    Health collection must not initialize schemas or inspect credentials. The
+    startup lifecycle owns migrations; this read only observes the authoritative
+    human-identity table and remains truthful during first-run setup.
+    """
+    try:
+        with connection() as conn:
+            row = conn.execute(
+                "SELECT 1 FROM human_identities WHERE status='active' LIMIT 1"
+            ).fetchone()
+    except sqlite3.OperationalError as exc:
+        if "no such table" not in str(exc).lower():
+            raise
+        row = None
+    ready = row is not None
+    return {
+        "status": "healthy" if ready else "not_configured",
+        "identity_status": "ready" if ready else "setup_required",
+        "ready": ready,
+        "setup_required": not ready,
+        "summary": (
+            "Native Identity & Access is initialized."
+            if ready
+            else "Create the local Pocket Lab owner before protected changes can run."
+        ),
+        "source": "sqlite.human_identities",
+        "sanitized": True,
+    }
+
+
 def _create_owner(*, username: str, display_name: str, password: str, event_reason: str) -> dict[str, Any]:
     normalized = _normalize_username(username)
     display = str(display_name or "Pocket Lab Owner").strip()[:120] or "Pocket Lab Owner"

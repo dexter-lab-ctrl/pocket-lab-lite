@@ -77,6 +77,7 @@ Exposes local and verified Tailnet-reachable NATS listeners for agents without h
 - verified_by: `tests/backend/test_lite_api.py`
 - verified_by: `tests/backend/test_lite_device_system_profile.py`
 - verified_by: `tests/backend/test_lite_identity_rules_authorization.py`
+- verified_by: `tests/backend/test_lite_native_control_plane_retirement.py`
 - verified_by: `tests/backend/test_lite_opa_bootstrap_reconciliation.py`
 - verified_by: `tests/backend/test_lite_qualification_owner.py`
 - verified_by: `tests/backend/test_lite_security_s6_frontend_contract.py`

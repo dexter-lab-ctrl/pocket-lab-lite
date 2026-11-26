@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 1aed10766a8a984e6a833aab51ea6e0c72ab53c6ae5c017d9983caaa23deedaa
+source_fingerprint: 63fe5e382f787509acef4d1125a409a6343233a16502c4ddee2b41dffec842ce
 schema_revision: 1
 validation_status: generated
 ---
@@ -252,6 +252,7 @@ validation_status: generated
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/resources` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system-health/summary` | mock | yes | static |
 | src/mocks/handlers.js | MSW handler | GET | `/api/lite/system/activity-summary` | mock | yes | static |
+| src/mocks/handlers.js | MSW handler | GET | `/api/lite/system/health` | mock | yes | static |
 | src/mocks/identityRulesCompatibilityHandlers.js | MSW handler | GET | `/api/lite/policy/decisions/:decisionId` | mock | yes | static |
 | src/mocks/identityRulesCompatibilityHandlers.js | MSW handler | GET | `/api/lite/policy/templates` | mock | yes | static |
 | src/mocks/identityRulesP1Handlers.js | MSW handler | POST | `/api/lite/enterprise/access` | mock | yes | static |

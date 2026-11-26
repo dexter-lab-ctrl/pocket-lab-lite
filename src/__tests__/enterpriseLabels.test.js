@@ -7,7 +7,7 @@ describe('enterprise-facing labels', () => {
     expect(enterpriseOperationLabel('git_sync')).toBe('Update Environment');
     expect(enterpriseOperationLabel('deploy_blueprint')).toBe('Install Service');
     expect(enterpriseOperationLabel('fleet_join')).toBe('Add Device to Fleet');
-    expect(enterpriseOperationLabel('rotate_secret')).toBe('Rotate Credential');
+    expect(enterpriseOperationLabel('rotate_secret')).toBe('Retired Credential Action');
   });
 
   test('display text sanitizes backend endpoints and event subjects', () => {

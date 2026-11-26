@@ -410,8 +410,8 @@ def test_fastapi_owned_thread_hops_are_bounded_or_execution_plane_owned():
     root = Path(__file__).resolve().parents[2]
     services = root / "pocket-lab-final-structure/runtime/api_fastapi/services"
     action_queue = (services / "action_queue.py").read_text()
-    observability = (services / "observability_status.py").read_text()
     live_status = (services / "live_status.py").read_text()
+    workload_admission = (services / "workload_admission.py").read_text()
     domain_commands = (services / "domain_commands.py").read_text()
     release_orchestrator = (services / "release_orchestrator.py").read_text()
     nats_bus = (services / "nats_bus.py").read_text()
@@ -427,7 +427,8 @@ def test_fastapi_owned_thread_hops_are_bounded_or_execution_plane_owned():
     assert "subprocess" not in record_block
     assert "BUS.publish" not in record_block
 
-    assert '"system.observability_probe"' in observability
+    assert not (services / "observability_status.py").exists()
+    assert '"system.observability_probe"' not in workload_admission
     assert '"system.telemetry_probe"' in live_status
     assert '"system.health_probe"' in live_status
     assert '"system.fleet_probe"' in live_status
@@ -447,33 +448,9 @@ def test_fastapi_owned_thread_hops_are_bounded_or_execution_plane_owned():
     assert "WORKFLOW_ENGINE.stop_writer" in nats_bus
 
 
-def test_generic_admission_error_handler_is_sanitized_and_retryable(monkeypatch):
-    ensure_runtime_path()
-    from api_fastapi.services import observability_status
-    from api_fastapi.services.workload_admission import (
-        AdmissionClass,
-        AdmissionQueueFull,
-    )
-
-    async def reject(*args, **kwargs):
-        raise AdmissionQueueFull(
-            "system.observability_probe",
-            AdmissionClass.SYSTEM_PROBE,
-            "Pocket Lab is busy with another safe operation. Try again shortly.",
-        )
-
-    monkeypatch.setattr(observability_status.WORKLOAD_ADMISSION, "run", reject)
-    response = client().get("/api/observability/status?refresh=true")
-    assert response.status_code == 503
+def test_retired_observability_route_has_deterministic_rejection():
+    response = client().get("/api/observability/status")
+    assert response.status_code == 410
     payload = response.json()
-    assert payload == {
-        "status": "busy",
-        "accepted": False,
-        "reason": "control_plane_busy",
-        "retryable": True,
-        "operation": "system.observability_probe",
-        "admission_class": "system_probe",
-        "message": "Pocket Lab is busy with another safe operation. Try again shortly.",
-        "sanitized": True,
-    }
-    assert response.headers["retry-after"] == "2"
+    assert payload["reason_code"] == "legacy_observability_stack_retired"
+    assert payload["executed"] is False

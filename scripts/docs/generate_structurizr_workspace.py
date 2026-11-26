@@ -9,16 +9,14 @@ OUT = ROOT / "architecture/structurizr/workspace.dsl"
 DOCS = ROOT / "architecture/structurizr/docs"
 
 
-WORKSPACE = r'''workspace "Pocket Lab" "Edge-first self-hosted control plane for apps, fleet, GitOps, drift, releases, security, telemetry, and disaster recovery." {
+WORKSPACE = r'''workspace "Pocket Lab" "Edge-first self-hosted control plane for apps, fleet, releases, security, native telemetry, and disaster recovery." {
 
     model {
-        user = person "User / Home Lab Admin" "Uses Pocket Lab to install apps, manage devices, monitor health, run GitOps, rotate secrets, and apply releases."
+        user = person "User / Home Lab Admin" "Uses Pocket Lab to install apps, manage devices, review health, govern policy, and apply releases."
 
-        github = softwareSystem "GitHub Repository" "Source repository for Pocket Lab code, docs, releases, and GitOps state." "External"
+        github = softwareSystem "GitHub Repository" "Source repository for Pocket Lab code, docs, and supported release metadata." "External"
         tailscale = softwareSystem "Tailscale / Mesh Network" "Private mesh connectivity for fleet nodes and remote access." "External"
-        vaultExternal = softwareSystem "Vault / OpenBao Runtime" "Secrets, leases, and secret rotation backend." "External"
         opaExternal = softwareSystem "OPA Runtime" "Policy decision point for guardrails and security checks." "External"
-        gatusExternal = softwareSystem "Gatus Health Engine" "Health probing and status aggregation." "External"
         backupStore = softwareSystem "Backup Storage" "Local or remote backup destination for manifests, state snapshots, and restore material." "External"
 
         pocketlab = softwareSystem "Pocket Lab" "FastAPI + NATS/JetStream + Worker + React PWA control plane." {
@@ -27,17 +25,18 @@ WORKSPACE = r'''workspace "Pocket Lab" "Edge-first self-hosted control plane for
             nats = container "NATS / JetStream" "Durable command, event, audit, telemetry, and DLQ streams." "NATS, JetStream"
             worker = container "Pocket Lab Worker" "Consumes typed commands, executes domain handlers, emits lifecycle events, writes audit records." "Python worker"
             eventStore = container "Event Journal / Workflow Store" "Stores operation lifecycle, recovery state, workflow snapshots, and event-sourced workflow history." "SQLite / JSON journal"
-            auditTrail = container "Audit Trail / Evidence Store" "Stores auditable security, release, vault, policy, and DLQ evidence for review and recovery." "Append-only JSON / SQLite evidence"
+            auditTrail = container "Audit Trail / Evidence Store" "Stores auditable security, release, policy, recovery, and DLQ evidence for review and recovery." "Append-only JSON / SQLite evidence"
             dlqSubjects = container "DLQ / Retry Subjects" "Represents JetStream retry exhaustion and dead-letter subjects for failed commands and events." "NATS JetStream DLQ subjects"
             operationRegistry = container "Typed Operations Catalog" "Backstage-style operation metadata source and generated typed operation catalog." "operations/*.yaml, JSON contract"
             docsPortal = container "MkDocs Documentation Portal" "Generated documentation for OpenAPI, AsyncAPI, Typed Operations, Structurizr, runbooks, architecture, and readiness." "MkDocs Material"
-            gitops = container "GitOps / Source Adapter" "Pulls and validates desired state using typed operations and Git abstraction." "Dulwich / Git abstraction"
+            sourceAdapter = container "Release / Source Adapter" "Reads supported GitHub and local source metadata for release and consistency workflows." "Git abstraction / release metadata"
             blueprint = container "Blueprint / App Catalog Engine" "App catalog refresh, blueprint deploy, package metadata, app source modes." "Catalog metadata, ORAS/go-getter concepts"
             drift = container "Drift Engine" "Scans desired vs actual state and manages preview, approve, apply, ignore workflows." "Python domain service"
             fleet = container "Fleet Agent Control" "Fleet join, node health, telemetry, heartbeat, and mesh onboarding workflows." "NATS-backed fleet workflow"
-            vault = container "Identity Vault Adapter" "Secret rotation and dynamic secret lease workflows." "Vault/OpenBao client"
+            identity = container "Native Identity & Access" "SQLite-backed human identity, passkeys, sessions, recovery, and enterprise role readiness." "FastAPI, SQLite, WebAuthn"
             security = container "Security / Policy Guardrails" "Security scans, OPA configuration, policy checks, secret redaction validation." "OPA / policy integration"
-            telemetry = container "NOC Telemetry Adapter" "CPU, memory, disk, health, worker, NATS, and live status telemetry." "Python telemetry service"
+            health = container "Prepared Health Projection" "Worker-owned native health, readiness, runtime observations, and freshness classification." "SQLite prepared projections"
+            telemetry = container "Native Telemetry / Diagnostics" "Host telemetry, device heartbeats, runtime diagnostics, and sanitized resource observations." "Python telemetry services"
             release = container "Release Workflow Orchestrator" "Self-update check/apply workflow with backup, sync, deploy, verify, and catalog refresh stages." "Python release orchestrator"
             backup = container "Backup / Disaster Recovery Engine" "Backup, verify, restore preview, restore execution, manifest validation." "Python DR service"
         }
@@ -49,7 +48,7 @@ WORKSPACE = r'''workspace "Pocket Lab" "Edge-first self-hosted control plane for
         worker -> nats "Consumes commands and publishes events/audit/DLQ" "NATS"
         nats -> worker "Delivers durable commands to the worker" "NATS / JetStream"
         worker -> eventStore "Records operation lifecycle and workflow state"
-        worker -> auditTrail "Writes auditable operation, policy, vault, release, and recovery evidence"
+        worker -> auditTrail "Writes auditable operation, policy, release, and recovery evidence"
         nats -> dlqSubjects "Routes retry-exhausted messages to dead-letter subjects" "JetStream DLQ"
         dlqSubjects -> auditTrail "Preserves failed command/event evidence for audit and recovery"
         api -> eventStore "Reads operation status, events, and workflow state"
@@ -60,10 +59,12 @@ WORKSPACE = r'''workspace "Pocket Lab" "Edge-first self-hosted control plane for
         docsPortal -> nats "Documents AsyncAPI event contract"
 
         api -> operationRegistry "Validates typed operation metadata"
+        api -> sourceAdapter "Reads supported release and source metadata"
+        api -> identity "Reads native Identity & Access readiness"
+        api -> health "Reads prepared health and readiness projections"
         api -> release "Starts release check/apply"
         api -> drift "Starts drift workflows"
         api -> fleet "Starts fleet onboarding"
-        api -> vault "Starts secret operations"
         api -> security "Starts security operations"
         api -> telemetry "Reads telemetry and live status"
         api -> blueprint "Refreshes catalog and starts deploy workflows"
@@ -72,22 +73,18 @@ WORKSPACE = r'''workspace "Pocket Lab" "Edge-first self-hosted control plane for
         worker -> release "Executes release workflow stages"
         worker -> drift "Executes drift domain commands"
         worker -> fleet "Executes fleet domain commands"
-        worker -> vault "Executes secret rotation/dynamic lease commands"
         worker -> security "Executes security scans and OPA configuration"
         worker -> dlqSubjects "Publishes failure outcomes when commands cannot be recovered" "NATS / JetStream"
         worker -> blueprint "Executes catalog refresh and blueprint deployment"
         worker -> backup "Executes backup and restore workflows"
-        worker -> telemetry "Publishes health and telemetry events"
+        worker -> health "Publishes prepared health and readiness observations"
+        worker -> telemetry "Publishes native telemetry and diagnostics"
 
-        gitops -> github "Reads desired state and release source"
+        sourceAdapter -> github "Reads supported release and source metadata"
         release -> github "Checks and applies releases"
         fleet -> tailscale "Uses mesh connectivity and join material"
-        vault -> vaultExternal "Rotates and reads dynamic secrets"
         security -> opaExternal "Evaluates and updates policy guardrails"
         api -> opaExternal "Requests policy decisions before sensitive control-plane actions" "OPA query"
-        api -> vaultExternal "Coordinates secret operations through the vault adapter" "Vault/OpenBao API"
-        worker -> vaultExternal "Uses secret leases during execution when required" "Vault/OpenBao API"
-        telemetry -> gatusExternal "Reads health status"
         backup -> backupStore "Writes and restores backups"
 
         deploymentEnvironment "Android / Termux Edge Device" {
@@ -122,7 +119,7 @@ WORKSPACE = r'''workspace "Pocket Lab" "Edge-first self-hosted control plane for
             include *
             autolayout lr
             title "Pocket Lab - System Context"
-            description "Pocket Lab as an edge-first self-hosted control plane interacting with GitHub, mesh networking, Vault/OpenBao, OPA, Gatus, and backup storage."
+            description "Pocket Lab as an edge-first self-hosted control plane interacting with supported GitHub release/source metadata, mesh networking, OPA, and backup storage."
         }
 
         container pocketlab "container-view" {
@@ -140,28 +137,28 @@ WORKSPACE = r'''workspace "Pocket Lab" "Edge-first self-hosted control plane for
         }
 
         container pocketlab "domain-services" {
-            include api nats worker blueprint gitops drift fleet vault security telemetry release backup eventStore auditTrail dlqSubjects
+            include api nats worker blueprint sourceAdapter drift fleet identity security health telemetry release backup eventStore auditTrail dlqSubjects
             autolayout tb
             title "Pocket Lab - Domain Services"
-            description "Domain services behind App Catalog, GitOps, Drift, Fleet, Vault, Security, Telemetry, Release, and Disaster Recovery."
+            description "Domain services behind App Catalog, supported release/source workflows, Drift, Fleet, native Identity & Access, Security, prepared Health, Telemetry, Release, and Disaster Recovery."
         }
 
         container pocketlab "security-review" {
-            include user pwa api worker vault security vaultExternal opaExternal operationRegistry auditTrail eventStore
+            include user pwa api worker identity security opaExternal operationRegistry auditTrail eventStore health
             autolayout lr
-            title "Pocket Lab - Security / Policy / Vault / OPA Relationships"
-            description "Security review view showing policy checks, vault operations, typed operation validation, audit evidence, and UI/API boundaries."
+            title "Pocket Lab - Security / Policy / Identity / OPA Relationships"
+            description "Security review view showing policy checks, native identity readiness, typed operation validation, audit evidence, and UI/API boundaries."
         }
 
         container pocketlab "nats-command-event-boundaries" {
-            include pwa api nats worker operationRegistry eventStore auditTrail dlqSubjects telemetry
+            include pwa api nats worker operationRegistry eventStore auditTrail dlqSubjects health telemetry
             autolayout lr
             title "Pocket Lab - NATS Command and Event Boundaries"
             description "Event-driven boundary view showing frontend-to-API control, API-to-NATS command publishing, worker command consumption, event emission, and status reconstruction."
         }
 
         container pocketlab "audit-and-dlq-paths" {
-            include api nats worker eventStore auditTrail dlqSubjects release security vault backup
+            include api nats worker eventStore auditTrail dlqSubjects release security health backup
             autolayout lr
             title "Pocket Lab - Audit and DLQ Paths"
             description "Operational resilience view showing audit evidence, retry exhaustion, dead-letter routing, and recovery state."
@@ -182,7 +179,7 @@ WORKSPACE = r'''workspace "Pocket Lab" "Edge-first self-hosted control plane for
         }
 
         dynamic pocketlab "typed-operation-flow" {
-            user -> pwa "Clicks Install / Update / Rotate Secret / Run Scan"
+            user -> pwa "Clicks Install / Update / Apply Release / Run Scan"
             pwa -> api "POST typed operation"
             api -> operationRegistry "Validate operation metadata"
             api -> nats "Publish command"
@@ -237,7 +234,7 @@ WORKSPACE = r'''workspace "Pocket Lab" "Edge-first self-hosted control plane for
 DOC_FILES = {
     "01-context.md": """# Pocket Lab Architecture Context
 
-Pocket Lab is an edge-first self-hosted control plane for app deployment, GitOps, fleet management, drift detection, security posture, NOC telemetry, release orchestration, and disaster recovery.
+Pocket Lab is an edge-first self-hosted control plane for app deployment, fleet management, drift detection, security posture, native telemetry, release orchestration, and disaster recovery.
 
 It is designed around a modern control-plane pattern:
 
@@ -260,7 +257,7 @@ Pocket Lab's primary containers are:
 - Event Journal / Workflow Store
 - Typed Operations Catalog
 - MkDocs Documentation Portal
-- Domain services for Catalog, GitOps, Drift, Fleet, Vault, Security, Telemetry, Release, and Disaster Recovery
+- Domain services for Catalog, supported release/source workflows, Drift, Fleet, native Identity & Access, Security, prepared Health, Telemetry, Release, and Disaster Recovery
 
 ![](embed:container-view)
 """,
@@ -300,11 +297,11 @@ enterprise security-review adds dedicated Structurizr views for security and ope
 
 These views make the most sensitive runtime boundaries explicit:
 
-- Security, policy, Vault/OpenBao, and OPA relationships.
+- Security, policy, native Identity & Access, and OPA relationships.
 - NATS command and event boundaries.
 - Audit evidence and DLQ paths.
 
-## Security / Policy / Vault / OPA Relationships
+## Security / Policy / Identity / OPA Relationships
 
 ![](embed:security-review)
 

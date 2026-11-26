@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check observability evidence observability evidence manifest integrity and freshness."""
+"""Check the Lite-native health and telemetry evidence manifest."""
 from __future__ import annotations
 
 import hashlib
@@ -21,14 +21,13 @@ GENERATED_DOCS = [
     Path("docs/observability/generated/observability-runtime-map.md"),
 ]
 REQUIRED_GROUPS = [
-    "ansible_observability_role",
-    "ansible_inventory_vars",
-    "caddy_routes",
+    "native_health_authority",
+    "native_telemetry",
     "fastapi_runtime_observability",
-    "frontend_observability_consumers",
+    "frontend_active_lite",
     "runtime_contracts",
-    "observability_human_docs",
-    "bootstrap_observability_scripts",
+    "bootstrap_native",
+    "retirement_documentation",
 ]
 GENERATED_PREFIX = "docs/observability/generated/"
 
@@ -83,18 +82,18 @@ def main() -> int:
 
     if not m.get("observability_components"):
         errors.append("observability_components is empty")
-    if not m.get("ports"):
-        errors.append("ports inventory is empty")
-    if not m.get("prometheus_jobs"):
-        errors.append("prometheus_jobs is empty")
-    if not m.get("loki_pipeline", {}).get("loki"):
-        errors.append("loki pipeline summary is missing")
-    if not m.get("gatus_endpoints"):
-        errors.append("gatus_endpoints is empty")
     if not m.get("fastapi_observability_routes"):
         errors.append("fastapi_observability_routes is empty")
     if not m.get("frontend_observability_consumers"):
         errors.append("frontend_observability_consumers is empty")
+    authority = m.get("native_health_authority", {})
+    if authority.get("source") != "prepared-lite-native":
+        errors.append("native health authority is not prepared-lite-native")
+    if authority.get("request_side_effects") is not False:
+        errors.append("native health reads must declare request_side_effects=false")
+    legacy = m.get("legacy_components", [])
+    if not legacy or any(item.get("disposition") != "retired" for item in legacy):
+        errors.append("legacy component inventory is incomplete or not fully retired")
 
     for path in GENERATED_DOCS:
         full = ROOT / path
@@ -112,7 +111,8 @@ def main() -> int:
     print("Observability evidence check passed")
     print(
         f"Sources={len(source_files)} components={len(m.get('observability_components', []))} "
-        f"prometheus_jobs={len(m.get('prometheus_jobs', []))} gatus_endpoints={len(m.get('gatus_endpoints', []))}"
+        f"native_health_sources={len(groups.get('native_health_authority', []))} "
+        f"retired_components={len(m.get('legacy_components', []))}"
     )
     return 0
 

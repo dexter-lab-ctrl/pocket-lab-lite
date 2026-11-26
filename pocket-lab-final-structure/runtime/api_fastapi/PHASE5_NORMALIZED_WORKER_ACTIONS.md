@@ -4,12 +4,15 @@ This archive has removed the legacy `retired update compatibility endpoint` comp
 
 Examples:
 
-- GitOps sync: `operation=git_sync`
+- Supported release/source sync: `operation=git_sync`
 - Blueprint deploy: `operation=deploy_blueprint`
 - Drift scan: `operation=drift_scan`
 - Fleet join: `operation=fleet_join`
-- Vault rotation: `operation=rotate_secret`
-- Dynamic secret read: `operation=secret_read_dynamic`
 - Policy deployment: `operation=policy_deploy`
+
+`rotate_secret` and `secret_read_dynamic` are retired compatibility names. They
+return a deterministic `410` rejection with `accepted=false` and
+`executed=false`; they cannot reach generic operation dispatch, domain command
+handlers, or the worker.
 
 All write paths require FastAPI + NATS/JetStream + worker execution in production mode.

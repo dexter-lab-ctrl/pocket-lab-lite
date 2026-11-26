@@ -5,11 +5,11 @@ export const ENTERPRISE_OPERATION_LABELS = {
   restore_backup: 'Restore from Backup',
   backup_now: 'Create Backup',
   backup_verify: 'Verify Backup',
-  rotate_secret: 'Rotate Credential',
+  rotate_secret: 'Retired Credential Action',
   release_sync: 'Apply Release',
   drift_scan: 'Check Configuration Health',
   policy_deploy: 'Apply Policy Bundle',
-  secret_read_dynamic: 'Generate Temporary Access',
+  secret_read_dynamic: 'Retired Temporary-Access Action',
 };
 
 export const ENTERPRISE_STATUS_LABELS = {

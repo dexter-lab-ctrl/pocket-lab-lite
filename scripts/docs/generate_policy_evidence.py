@@ -15,7 +15,7 @@ BUNDLE_GLOBS = ["security/policies/*.yaml", "policy/**/*.yaml", "policies/**/*.y
 REGO_GLOBS = ["security/**/*.rego", "policy/**/*.rego", "policies/**/*.rego", "opa/**/*.rego"]
 SOURCE_GLOBS = [
     "security/policies/*.yaml",
-    "src/tabs/PolicyGuardrailsTab.jsx",
+    "src/lite/LiteRules.jsx",
     "pocket-lab-final-structure/runtime/api_fastapi/services/approval_policy.py",
     "pocket-lab-final-structure/runtime/api_fastapi/services/governance_settings.py",
     "operations/*.yaml",
@@ -129,7 +129,7 @@ def load_contract_operations() -> list[str]:
 
 
 def extract_embedded_policy_ids() -> list[str]:
-    path = ROOT / "src/tabs/PolicyGuardrailsTab.jsx"
+    path = ROOT / "src/lite/LiteRules.jsx"
     if not path.exists():
         return []
     text = path.read_text(encoding="utf-8", errors="ignore")

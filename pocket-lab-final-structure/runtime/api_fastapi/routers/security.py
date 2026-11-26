@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, BackgroundTasks, Request, Response
+from fastapi.responses import JSONResponse
 
 from .. import deps
 from ..services.nats_bus import BUS
@@ -31,9 +32,7 @@ def opa_interceptor(request: Request):
 
 
 @router.get("/api/logs/query")
-@router.get("/loki/api/v1/query")
-@router.get("/api/v1/query")
-def loki_query(
+def operational_evidence_query(
     background_tasks: BackgroundTasks,
     request: Request,
     query: str = "",
@@ -41,7 +40,7 @@ def loki_query(
 ) -> dict:
     deps.require_auth(request)
     safe_limit = max(1, min(100, int(limit or 20)))
-    result = deps.core.search_loki(query, limit=safe_limit)
+    result = deps.core.search_operational_evidence(query, limit=safe_limit)
     background_tasks.add_task(
         BUS.publish_json,
         "pocketlab.events.security.log_query",
@@ -57,6 +56,24 @@ def loki_query(
         },
     )
     return result
+
+
+@router.get("/loki/api/v1/query", include_in_schema=False)
+@router.get("/api/v1/query", include_in_schema=False)
+def retired_loki_query(request: Request) -> JSONResponse:
+    deps.require_auth(request)
+    return JSONResponse(
+        {
+            "status": "retired",
+            "accepted": False,
+            "executed": False,
+            "reason_code": "legacy_observability_stack_retired",
+            "replacement": "/api/logs/query",
+            "historical_record_preserved": True,
+            "sanitized": True,
+        },
+        status_code=410,
+    )
 
 
 @router.post("/api/security/scan", status_code=202)

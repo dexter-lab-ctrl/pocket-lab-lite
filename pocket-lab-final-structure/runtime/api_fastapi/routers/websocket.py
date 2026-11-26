@@ -6,6 +6,7 @@ import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from .. import deps
+from ..services import lite_phase3b_projections as phase3b
 from ..services.nats_bus import BUS
 
 router = APIRouter(tags=["websocket"])
@@ -38,9 +39,10 @@ async def events_socket(websocket: WebSocket):
                             "subject": "pocketlab.events.websocket.heartbeat",
                             "time": deps.now_utc_iso(),
                             "data": {
-                                "health": deps.core.build_health_engine_snapshot().get(
-                                    "status"
-                                ),
+                                "health": (
+                                    phase3b.snapshot("system.health", ensure_schema=False)
+                                    or {}
+                                ).get("status", "starting"),
                                 "bus": BUS.status(),
                             },
                         },

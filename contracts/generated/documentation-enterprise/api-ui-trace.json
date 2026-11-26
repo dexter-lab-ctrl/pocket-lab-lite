@@ -833,6 +833,7 @@
       ],
       "error_reason_codes": "contracts/generated/reason-codes.json",
       "events": [
+        "pocketlab.events.command.retired",
         "pocketlab.events.fleet.device_removed"
       ],
       "evidence": "backend-owned sanitized evidence/projection",
@@ -852,6 +853,7 @@
       "frontend_projection": "FastAPI/TanStack safe read projection",
       "implementation_status": "implemented",
       "nats_or_event": [
+        "pocketlab.events.command.retired",
         "pocketlab.events.fleet.device_removed"
       ],
       "related_reason_codes": "contracts/generated/reason-codes.json",

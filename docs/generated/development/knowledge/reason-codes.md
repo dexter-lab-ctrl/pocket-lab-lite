@@ -149,7 +149,9 @@ generator_version: 3
 | `invite_identity_mismatch` | devices | The invite identity does not match the enrolled device. | high | no | yes | The invite identity does not match the enrolled device. |
 | `invite_role_set_mismatch` | devices | The roles reported while consuming an invite do not match the server-owned invite role set. | warning | no | yes | The invited device roles do not match the invite. |
 | `lease_active` | projections | Another bounded owner currently holds the lease. | warning | yes | no | Another bounded owner currently holds the lease. |
+| `legacy_gitops_api_retired` | release | The legacy GitOps and pipeline compatibility endpoints are retired and do not execute infrastructure work. | info | no | yes | Use the native release, drift and System Health controls instead. |
 | `legacy_multiple_active_runs` | system | Legacy state contains multiple active runs. | warning | yes | no | Legacy state contains multiple active runs. |
+| `legacy_observability_stack_retired` | telemetry | The legacy observability service-management and Loki compatibility endpoints are retired and do not start or query legacy services. | info | no | yes | Use native System Health, runtime diagnostics and operational evidence instead. |
 | `legacy_secret_rotation_retired` | identity | The legacy generic secret-rotation endpoint is retired and is not a human password operation. | info | no | yes | Use the Identity password controls instead. |
 | `legacy_telemetry_value` | devices | A sanitized compatibility telemetry field was normalized into the canonical Device Facts resource contract while older agent payloads are still supported. | info | no | no | Pocket Lab is using a compatible device telemetry value. |
 | `local_owner_required` | identity | Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message. | warning | yes | no | The requested Identity or Rules action could not continue. |

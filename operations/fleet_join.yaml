@@ -46,7 +46,7 @@ security:
   - api_endpoint
   - nats_subject
   - worker_handler
-  - vault_or_policy_adapter
+  - native_policy_adapter
   - audit_event_payload
   mitigations:
   - typed_operation_schema
@@ -55,7 +55,7 @@ security:
   - operation_audit_events
   - opa_policy_decision
   - secret_redaction
-  - vault_or_openbao_leases
+  - native_policy_revision
   residual_risks:
   - Authorized operators can still trigger high-impact changes if policy or approval controls are incomplete.
   - New secret or policy fields may require manual redaction review.

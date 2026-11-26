@@ -12,7 +12,7 @@ spec:
   professionalLabel: Preview remediation
   simpleLabel: Preview fix
   uiEntrypoints:
-  - Drift Center
+  - System Health
   apiEntrypoints:
   - /api/operations/preview
   - /api/operations/execute

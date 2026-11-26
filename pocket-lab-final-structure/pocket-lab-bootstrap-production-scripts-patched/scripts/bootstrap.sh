@@ -17,7 +17,7 @@ LITE_STAGE_HEALTH="$SCRIPT_DIR/lite/bootstrap-stage-health.sh"
 # shellcheck disable=SC1090
 source "$LITE_STAGE_HEALTH"
 
-BOOTSTRAP_VERSION="2026-08-18-lite-capability-reconciliation"
+BOOTSTRAP_VERSION="2026-11-25-lite-native-control-plane"
 BOOTSTRAP_DRY_RUN="${POCKETLAB_BOOTSTRAP_DRY_RUN:-0}"
 BOOTSTRAP_PROFILE="$(normalize_profile "${POCKETLAB_PROFILE:-full}")"
 FORCE_STAGE="0"
@@ -32,19 +32,15 @@ CURRENT_STAGE_NAME=""
 #   index|id|script|description
 # Keep this order aligned with the Day-0 dependency graph.
 BOOTSTRAP_STAGES=(
-  "1|install_termux_packages|install-termux-packages.sh|Install Termux packages, base CLI tools, Node, PM2, MariaDB, Gitea, Caddy, and build dependencies"
+  "1|install_termux_packages|install-termux-packages.sh|Install Termux packages, base CLI tools, Node, PM2, Caddy, and build dependencies"
   "2|install_proot_ubuntu|install-proot-ubuntu.sh|Install and prepare the proot Ubuntu compatibility layer"
-  "3|install_binaries|install-binaries.sh|Install Vault, act_runner, Python runtime packages, NATS tooling, and profile-selected optional binaries"
-  "4|init_vault|init-vault.sh|Start and initialize Vault, unseal it, enable engines, and seed initial platform secrets"
-  "5|init_mariadb|init-mariadb.sh|Initialize MariaDB, create Pocket Lab service users, and register Vault database integration"
-  "6|start_gitea|start-gitea.sh|Start Gitea and act_runner, create the admin user, and prepare GitOps repositories"
-  "7|seed_gitops_repo|seed-gitops-repo.sh|Seed or refresh the GitOps/IaC repository in local Gitea"
-  "8|install_tailscale|install-tailscale.sh|Install or prepare Tailscale connectivity for fleet access"
-  "9|install_pwa_ui|install-pwa-ui.sh|Install the production React/Vite PWA assets"
-  "10|start_dashboard|start-dashboard.sh|Start NATS/JetStream, FastAPI, worker, node agent, Caddy, and profile-selected services"
-  "11|install_fleet_agent|install-fleet-agent.sh|Install the local NATS-backed fleet agent wrapper using generated NATS credentials"
-  "12|smoke_test|smoke-test.sh|Run profile-aware Day-0 smoke tests"
-  "13|install_lite_boot_recovery|lite/install-boot-recovery.sh|Install Pocket Lab Lite Android boot recovery and external PM2 guardian"
+  "3|install_binaries|install-binaries.sh|Install Python runtime packages, NATS tooling, security tools, OPA, and profile-selected native binaries"
+  "4|install_tailscale|install-tailscale.sh|Install or prepare Tailscale connectivity for fleet access"
+  "5|install_pwa_ui|install-pwa-ui.sh|Install the production React/Vite PWA assets"
+  "6|start_dashboard|start-dashboard.sh|Start NATS/JetStream, FastAPI, worker, node agent, Caddy, and native Lite services"
+  "7|install_fleet_agent|install-fleet-agent.sh|Install the local NATS-backed fleet agent wrapper using generated NATS credentials"
+  "8|smoke_test|smoke-test.sh|Run profile-aware Day-0 smoke tests"
+  "9|install_lite_boot_recovery|lite/install-boot-recovery.sh|Install Pocket Lab Lite Android boot recovery and external PM2 guardian"
 )
 
 usage() {
@@ -77,7 +73,7 @@ Examples:
   ./bootstrap.sh --profile lite
   ./bootstrap.sh --lite
   ./bootstrap.sh --from-stage start_dashboard
-  ./bootstrap.sh --stage init_vault --force-stage
+  ./bootstrap.sh --stage install_binaries --force-stage
 EOF_USAGE
 }
 
@@ -103,10 +99,6 @@ stage_should_skip() {
   case "$id" in
     install_proot_ubuntu)
       [[ "$BOOTSTRAP_PROFILE" == "lite" && "${POCKETLAB_LITE_ENABLE_PROOT:-0}" != "1" ]]
-      ;;
-    init_vault|init_mariadb|start_gitea|seed_gitops_repo)
-      # These are legacy Pocket Lab services and are not part of Pocket Lab Lite.
-      [[ "$BOOTSTRAP_PROFILE" == "lite" ]]
       ;;
     install_lite_boot_recovery)
       [[ "$BOOTSTRAP_PROFILE" != "lite" ]]

@@ -12,7 +12,7 @@ spec:
   professionalLabel: Ignore finding
   simpleLabel: Ignore this change
   uiEntrypoints:
-  - Drift Center
+  - System Health
   apiEntrypoints:
   - /api/operations/execute
   natsSubject: pocketlab.commands.drift.ignore

@@ -193,55 +193,6 @@
         "rollback"
       ],
       "type": "runbook"
-    },
-    {
-      "confidence": "source-derived",
-      "description": "Rotate a managed secret with policy approval, audit evidence, and post-change verification.",
-      "domain": "security",
-      "evidence": [
-        "audit_events",
-        "operation_events",
-        "policy_decision",
-        "redaction_check",
-        "workflow_journal"
-      ],
-      "id": "runbook:rotate_secret_with_audit",
-      "name": "Rotate Secret with Audit Evidence",
-      "owner": "security-operations",
-      "requires_approval": true,
-      "severity": "critical",
-      "source_refs": [
-        "runbooks/rotate_secret_with_audit.yaml"
-      ],
-      "steps": [
-        {
-          "name": "pre_rotation_health",
-          "operation": "health_check",
-          "requires_approval": false
-        },
-        {
-          "name": "rotate_secret",
-          "operation": "rotate_secret",
-          "requires_approval": true
-        },
-        {
-          "name": "verify_secret_read",
-          "operation": "secret_read_dynamic",
-          "requires_approval": false
-        },
-        {
-          "name": "post_rotation_health",
-          "operation": "health_check",
-          "requires_approval": false
-        }
-      ],
-      "tags": [
-        "audit",
-        "secrets",
-        "security",
-        "vault"
-      ],
-      "type": "runbook"
     }
   ],
   "metadata": {
@@ -250,6 +201,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e320261c60545eb0180949f076f03001445ac0c1febb46eeeb9fdaf647f43f5f"
+    "source_fingerprint": "54e0e736fc1a97541d826775ffffda546b9c541a1aa4dd29ca255a44d7a1d8d6"
   }
 }

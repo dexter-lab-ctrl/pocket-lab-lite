@@ -155,7 +155,7 @@ def _selected(profile: str, path: str, method: str, operation: dict[str, Any]) -
         return False
     if profile == "focused":
         return bool(FOCUSED_PATH.match(path)) and "/maintenance" not in path
-    return path.startswith("/api/") or path.startswith("/loki/") or path in {"/health", "/ready"}
+    return path.startswith("/api/") or path in {"/health", "/ready"}
 
 
 def _inject_examples(operation: dict[str, Any], examples: dict[str, str]) -> None:

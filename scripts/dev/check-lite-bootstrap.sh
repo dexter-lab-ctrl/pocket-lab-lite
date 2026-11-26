@@ -38,8 +38,8 @@ if ! grep -Eq 'install_proot_ubuntu.*\[skipped\]|\[skipped\].*install_proot_ubun
 fi
 
 for legacy_stage in init_vault init_mariadb start_gitea seed_gitops_repo; do
-  if ! grep -Eq "${legacy_stage}.*\\[skipped\\]|\\[skipped\\].*${legacy_stage}" <<<"$list_output"; then
-    echo "ERROR: Lite profile did not skip legacy stage: $legacy_stage" >&2
+  if grep -q "$legacy_stage" <<<"$list_output"; then
+    echo "ERROR: retired legacy stage remains in Lite bootstrap: $legacy_stage" >&2
     exit 1
   fi
 done
@@ -62,14 +62,14 @@ if ! grep -q 'Lite profile: skipping stage 2/install_proot_ubuntu' <<<"$dry_outp
   exit 1
 fi
 
-for legacy_stage in "4/init_vault" "5/init_mariadb" "6/start_gitea" "7/seed_gitops_repo"; do
-  if ! grep -q "Lite profile: skipping stage $legacy_stage" <<<"$dry_output"; then
-    echo "ERROR: Lite dry-run did not skip legacy stage $legacy_stage" >&2
+for legacy_stage in init_vault init_mariadb start_gitea seed_gitops_repo; do
+  if grep -q "$legacy_stage" <<<"$dry_output"; then
+    echo "ERROR: retired legacy stage remains in Lite dry-run: $legacy_stage" >&2
     exit 1
   fi
 done
 
-if ! grep -q 'Dry-run: would execute stage 13/install_lite_boot_recovery' <<<"$dry_output"; then
+if ! grep -q 'Dry-run: would execute stage 9/install_lite_boot_recovery' <<<"$dry_output"; then
   echo "ERROR: Lite dry-run did not include Android boot recovery stage" >&2
   exit 1
 fi

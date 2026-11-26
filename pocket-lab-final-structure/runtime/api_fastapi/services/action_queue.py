@@ -201,6 +201,15 @@ async def submit_operation_command(
     command.  The worker owns execution.  Production mode fails closed when
     NATS/JetStream is unavailable.
     """
+    from operations.registry import is_retired_operation, retired_operation_payload
+
+    if is_retired_operation(getattr(op_request, "operation", "")):
+        raise HTTPException(
+            status_code=410,
+            detail=retired_operation_payload(
+                operation=str(getattr(op_request, "operation", ""))
+            ),
+        )
     await ensure_worker_execution_ready()
     submitted = deps.operation_service().submit_queued(op_request)
     command = operation_command_payload(submitted, raw)
@@ -320,6 +329,14 @@ async def submit_domain_command(
     timing_sink: dict[str, float] | None = None,
 ) -> Dict[str, Any]:
     """Submit a non-operation domain command through durable NATS/JetStream only."""
+    from operations.registry import is_retired_command_subject, retired_operation_payload
+
+    if is_retired_command_subject(subject):
+        operation = "rotate_secret" if subject.endswith(".rotate") else "secret_read_dynamic"
+        raise HTTPException(
+            status_code=410,
+            detail=retired_operation_payload(operation=operation, subject=subject),
+        )
     native_publish = (
         getattr(BUS.publish_json, "__func__", None) is PocketLabEventBus.publish_json
     )

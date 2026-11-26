@@ -17,36 +17,34 @@ export const telemetryLowDisk = {
   issues: ['low_disk'],
 };
 
-export const healthAllGreen = {
+export const healthNativeHealthy = {
   overall: 'healthy',
-  summary: { status: 'healthy', healthy: 6, degraded: 0, warning: 0 },
+  source: 'prepared-lite-native',
+  summary: { status: 'healthy', healthy: 7, degraded: 0, warning: 0 },
   services: {
-    fastapi: 'healthy',
-    nats: 'healthy',
-    worker: 'healthy',
-    vault: 'healthy',
-    gitea: 'healthy',
-    gatus: 'healthy',
+    api: { status: 'healthy' },
+    identity: { status: 'healthy' },
+    nats: { status: 'healthy' },
+    worker: { status: 'healthy' },
+    processes: { status: 'healthy' },
+    sqlite: { status: 'healthy' },
+    storage: { status: 'healthy' },
   },
-  checks: [
-    { name: 'FastAPI ready', group: 'api', status: 'healthy', response_time_ms: 12, results_count: 3 },
-    { name: 'NATS JetStream', group: 'events', status: 'healthy', response_time_ms: 8, results_count: 3 },
-  ],
+  components: { api: 'healthy', identity: 'healthy', nats: 'healthy', worker: 'healthy', sqlite: 'healthy', storage: 'healthy', remote_access: 'not_configured' },
 };
 
-export const healthVaultSealed = {
+export const healthNativeDegraded = {
   overall: 'degraded',
+  source: 'prepared-lite-native',
   summary: { status: 'degraded', healthy: 4, degraded: 1, warning: 0 },
   services: {
-    fastapi: 'healthy',
-    nats: 'healthy',
-    worker: 'healthy',
-    vault: { status: 'sealed', message: 'Vault is sealed' },
-    gitea: 'healthy',
+    api: { status: 'healthy' },
+    identity: { status: 'healthy' },
+    nats: { status: 'degraded', summary: 'NATS/JetStream is unavailable.' },
+    worker: { status: 'starting' },
+    remote_access: { status: 'unavailable', optional: true },
   },
-  checks: [
-    { name: 'Vault seal status', group: 'vault', status: 'degraded', response_time_ms: 25, summary: 'Vault is sealed' },
-  ],
+  components: { api: 'healthy', identity: 'healthy', nats: 'degraded', worker: 'starting', sqlite: 'healthy', storage: 'healthy', remote_access: 'unavailable' },
 };
 
 export const fleetAgents = {
@@ -79,38 +77,4 @@ export const recentEvents = {
     { id: 'evt-1', subject: 'pocketlab.events.operation.accepted', operation: 'catalog_refresh', status: 'accepted', time: new Date().toISOString(), message: 'Catalog refresh accepted' },
     { id: 'evt-2', subject: 'pocketlab.events.health.ok', status: 'healthy', time: new Date().toISOString(), message: 'Control plane healthy' },
   ],
-};
-
-export const observabilityRuntimeHealthy = {
-  status: 'healthy',
-  checked_at: '2026-06-14T10:00:00Z',
-  cached: false,
-  cache_ttl_seconds: 30,
-  services: {
-    prometheus: { status: 'healthy', ready: true, latency_ms: 12, reason: 'Prometheus ready endpoint returned 200' },
-    loki: { status: 'healthy', ready: true, latency_ms: 9, reason: 'Loki ready endpoint returned 200' },
-    grafana: { status: 'healthy', healthy: true, latency_ms: 14, reason: 'Grafana health endpoint returned ok' },
-    gatus: { status: 'healthy', reachable: true, latency_ms: 7, reason: 'Gatus health endpoint returned 200' },
-    promtail: { status: 'healthy', shipping_logs: true, inferred: true, recent_log_count: 5, reason: 'Recent pm2_logs entries found in Loki' },
-  },
-  prometheus_targets: { status: 'healthy', up: 3, down: 0, total: 3, down_targets: [] },
-  warnings: ['Promtail shipping status is inferred from recent Loki pm2_logs entries.'],
-};
-
-export const observabilityRuntimeDegraded = {
-  ...observabilityRuntimeHealthy,
-  status: 'degraded',
-  checked_at: '2026-06-14T10:05:00Z',
-  services: {
-    ...observabilityRuntimeHealthy.services,
-    loki: { status: 'unavailable', ready: false, latency_ms: 1500, reason: 'connection refused' },
-    promtail: { status: 'unknown', shipping_logs: false, inferred: true, recent_log_count: 0, reason: 'Loki log query returned no response' },
-  },
-  prometheus_targets: {
-    status: 'degraded',
-    up: 2,
-    down: 1,
-    total: 3,
-    down_targets: [{ job: 'worker', instance: '127.0.0.1:9000', health: 'down', last_error: 'scrape failed' }],
-  },
 };

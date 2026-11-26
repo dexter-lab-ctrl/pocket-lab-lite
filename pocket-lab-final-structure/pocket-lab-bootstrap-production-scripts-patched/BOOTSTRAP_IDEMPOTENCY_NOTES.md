@@ -1,4 +1,9 @@
-# Day-0 bootstrap hardening notes
+# Historical Day-0 bootstrap hardening notes
+
+> Historical evidence. The current Lite-native bootstrap no longer initializes
+> Vault/OpenBao, MariaDB, Gitea, Gitea Runner, or a local GitOps repository.
+> See `scripts/bootstrap.sh` and `docs/operations/bootstrap-lite.md` for the
+> supported topology.
 
 The scripts in `scripts/` have been hardened for Android/Termux reruns.
 
@@ -20,10 +25,9 @@ The scripts in `scripts/` have been hardened for Android/Termux reruns.
 - Package installation checks existing packages before install and avoids repeating upgrades.
 - PRoot Ubuntu setup is rerunnable and recreates Ansible wrappers safely.
 - Binary installation skips already-installed tools and stages guest tools only when PRoot is available.
-- Vault initialization refuses to overwrite existing root artifacts and safely reuses initialized/unsealed state.
-- MariaDB initialization reuses existing datadirs, sockets, users, and grants.
-- Gitea/act_runner use PM2 start-or-restart and idempotent repo/admin bootstrap behavior.
-- GitOps seeding refreshes local IaC content safely and commits only when changes exist.
+- The retired Vault, MariaDB, Gitea, Runner, and GitOps initialization stages are
+  retained here only as historical evidence; they are not current bootstrap
+  dependencies.
 - Tailscale setup preserves installer state and supports optional `TAILSCALE_AUTHKEY`.
 - PWA UI install stages downloads before replacing the active UI and backs up existing assets.
 - Dashboard startup regenerates configs deterministically and restarts PM2 services safely.

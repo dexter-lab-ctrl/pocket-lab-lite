@@ -148,7 +148,6 @@
         "domain:telemetry",
         "domain:testing",
         "domain:unknown",
-        "domain:vault",
         "domain:vocabulary",
         "domain:websocket",
         "domain:worker",
@@ -212,8 +211,6 @@
         "subject:pocketlab.commands.security.configure_opa",
         "subject:pocketlab.commands.security.scan",
         "subject:pocketlab.commands.unknown",
-        "subject:pocketlab.commands.vault.dynamic_secret",
-        "subject:pocketlab.commands.vault.rotate",
         "subject:pocketlab.events",
         "subject:pocketlab.events.api.started",
         "subject:pocketlab.events.api.stopped",
@@ -224,6 +221,7 @@
         "subject:pocketlab.events.command.failed",
         "subject:pocketlab.events.command.queued",
         "subject:pocketlab.events.command.received",
+        "subject:pocketlab.events.command.retired",
         "subject:pocketlab.events.command.retry_scheduled",
         "subject:pocketlab.events.command.running",
         "subject:pocketlab.events.command.succeeded",
@@ -363,8 +361,6 @@
         "subject:pocketlab.events.telemetry",
         "subject:pocketlab.events.telemetry.changed",
         "subject:pocketlab.events.telemetry.sampled",
-        "subject:pocketlab.events.vault.lease_created",
-        "subject:pocketlab.events.vault.secret_rotated",
         "subject:pocketlab.events.websocket.heartbeat",
         "subject:pocketlab.events.worker.error",
         "subject:pocketlab.events.worker.heartbeat",
@@ -695,7 +691,6 @@
         "domain:telemetry",
         "domain:testing",
         "domain:unknown",
-        "domain:vault",
         "domain:vocabulary",
         "domain:websocket",
         "domain:worker",
@@ -741,7 +736,6 @@
         "domain:telemetry",
         "domain:testing",
         "domain:unknown",
-        "domain:vault",
         "domain:vocabulary",
         "domain:websocket",
         "domain:worker",
@@ -1016,7 +1010,9 @@
         "reason:invite_identity_mismatch",
         "reason:invite_role_set_mismatch",
         "reason:lease_active",
+        "reason:legacy_gitops_api_retired",
         "reason:legacy_multiple_active_runs",
+        "reason:legacy_observability_stack_retired",
         "reason:legacy_secret_rotation_retired",
         "reason:legacy_telemetry_value",
         "reason:local_owner_required",
@@ -1399,7 +1395,9 @@
         "reason:invite_identity_mismatch",
         "reason:invite_role_set_mismatch",
         "reason:lease_active",
+        "reason:legacy_gitops_api_retired",
         "reason:legacy_multiple_active_runs",
+        "reason:legacy_observability_stack_retired",
         "reason:legacy_secret_rotation_retired",
         "reason:legacy_telemetry_value",
         "reason:local_owner_required",
@@ -2329,8 +2327,6 @@
       "entities": [
         "subject:pocketlab.commands.drift.scan",
         "subject:pocketlab.commands.fleet.join",
-        "subject:pocketlab.commands.vault.dynamic_secret",
-        "subject:pocketlab.commands.vault.rotate",
         "subject:pocketlab.events.operation.previewed"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py"
@@ -2421,8 +2417,6 @@
         "subject:pocketlab.commands.release.check",
         "subject:pocketlab.commands.security.configure_opa",
         "subject:pocketlab.commands.security.scan",
-        "subject:pocketlab.commands.vault.dynamic_secret",
-        "subject:pocketlab.commands.vault.rotate",
         "subject:pocketlab.events.catalog.refresh_started",
         "subject:pocketlab.events.catalog.refreshed",
         "subject:pocketlab.events.drift.detected",
@@ -2492,9 +2486,7 @@
         "subject:pocketlab.events.security.finding",
         "subject:pocketlab.events.security.policy_updated",
         "subject:pocketlab.events.security.scan_completed",
-        "subject:pocketlab.events.security.scan_started",
-        "subject:pocketlab.events.vault.lease_created",
-        "subject:pocketlab.events.vault.secret_rotated"
+        "subject:pocketlab.events.security.scan_started"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py"
     },
@@ -2836,6 +2828,12 @@
     },
     {
       "entities": [
+        "subject:pocketlab.events.command.retired"
+      ],
+      "source": "pocket-lab-final-structure/runtime/tests/test_workflows.py"
+    },
+    {
+      "entities": [
         "component:app-lifecycle-worker",
         "component:worker",
         "subject:pocketlab.commands",
@@ -2850,6 +2848,7 @@
         "subject:pocketlab.events.command.deferred",
         "subject:pocketlab.events.command.failed",
         "subject:pocketlab.events.command.received",
+        "subject:pocketlab.events.command.retired",
         "subject:pocketlab.events.command.retry_scheduled",
         "subject:pocketlab.events.command.running",
         "subject:pocketlab.events.command.succeeded",
@@ -2894,12 +2893,6 @@
         "runbook:release_rollback"
       ],
       "source": "runbooks/release_rollback.yaml"
-    },
-    {
-      "entities": [
-        "runbook:rotate_secret_with_audit"
-      ],
-      "source": "runbooks/rotate_secret_with_audit.yaml"
     },
     {
       "entities": [
@@ -2956,12 +2949,6 @@
         "test:src/__tests__/liteLifecycleDiagnostics.test.js"
       ],
       "source": "src/__tests__/liteLifecycleDiagnostics.test.js"
-    },
-    {
-      "entities": [
-        "test:src/__tests__/simpleLabels.test.js"
-      ],
-      "source": "src/__tests__/simpleLabels.test.js"
     },
     {
       "entities": [
@@ -3584,6 +3571,12 @@
         "test:tests/backend/test_lite_n6b_install_surface.py"
       ],
       "source": "tests/backend/test_lite_n6b_install_surface.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_native_control_plane_retirement.py"
+      ],
+      "source": "tests/backend/test_lite_native_control_plane_retirement.py"
     },
     {
       "entities": [
@@ -5140,6 +5133,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "e320261c60545eb0180949f076f03001445ac0c1febb46eeeb9fdaf647f43f5f"
+    "source_fingerprint": "54e0e736fc1a97541d826775ffffda546b9c541a1aa4dd29ca255a44d7a1d8d6"
   }
 }
