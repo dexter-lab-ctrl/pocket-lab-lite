@@ -67,7 +67,14 @@ def _workspace(conn):
 
 
 def _trust(conn):
-    return conn.execute("SELECT metadata_version,root_version FROM lite_release_trust_floor WHERE singleton_id=1").fetchone()
+    # A failed latest observation or expired receipt cannot support new consent.
+    row = conn.execute("""SELECT f.metadata_version,f.root_version,r.receipt_json
+        FROM lite_release_trust_floor f JOIN lite_release_trust_receipts r ON r.metadata_version=f.metadata_version
+        JOIN lite_release_trust_observation o ON o.singleton_id=1 AND o.release_tag=f.release_tag
+        WHERE f.singleton_id=1 AND o.state=\'historical_evidence\'""").fetchone()
+    if not row or not authority._future(json.loads(row["receipt_json"])["expires"]):
+        return None
+    return {"metadata_version": row["metadata_version"], "root_version": row["root_version"]}
 
 
 def _policy(conn):

@@ -828,3 +828,13 @@ tasks:
     desc: Fault tailscaled only with declared out-of-band SSH; requires two explicit safety gates
     cmds:
       - bash scripts/dev/check-lite-runtime-resilience-server-phone.sh --remote-access-fault
+
+  lite:lifecycle:backend:
+    desc: Focused non-production trusted lifecycle contract and cryptographic fixtures
+    cmds:
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_trusted_lifecycle.py'
+
+  lite:lifecycle:ui:
+    desc: Focused Trusted Lifecycle frontend component qualification
+    cmds:
+      - npm exec vitest run src/lite/components/TrustedLifecyclePanel.test.jsx

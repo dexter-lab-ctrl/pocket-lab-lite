@@ -21,7 +21,7 @@ export function ReleaseTrustSummary({ trust }) {
     <h4><ShieldCheck size={18} aria-hidden="true" /> Release trust</h4>
     <LiteActionRow label="Installed release" value={trust?.installed_tag || 'Not confirmed'}
       summary={trust?.historical_identity_verified ? 'Verified under the existing release identity contract. This is not publisher authentication.' : 'Installed identity is not confirmed.'} />
-    <LiteActionRow label="Publisher trust" value={receipt ? 'Historical evidence' : 'Trust setup required'}
+    <LiteActionRow label="Publisher trust" value={({historical_evidence: 'Historical evidence', verification_failed: 'Verification failed', metadata_unavailable: 'Trusted metadata unavailable', trust_setup_required: 'Trust setup required'})[trust?.state] || 'Not confirmed'}
       summary="A checksum alone does not establish publisher trust. No fresh verification is claimed here." />
     <details>
       <summary>View verification details</summary>
@@ -58,7 +58,7 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
   const prefs = data?.preferences;
   const managed = data?.enterprise_managed === true;
   const blocked = readOnly || busy || !prefs;
-  const canGrant = !managed && prefs?.profile === 'recommended' && data?.release_trust?.receipt != null;
+  const canGrant = !managed && prefs?.profile === 'recommended' && data?.release_trust?.state === 'historical_evidence' && data?.release_trust?.receipt != null;
   const grants = Array.isArray(data?.grants) ? data.grants : [];
   return <section className="lite-system-health-manage-section" aria-label="Updates & protection">
     <div className="lite-system-health-manage-intro"><h3>Updates &amp; protection</h3>
