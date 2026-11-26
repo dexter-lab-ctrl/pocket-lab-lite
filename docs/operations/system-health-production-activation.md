@@ -142,8 +142,9 @@ policy, and this candidate does not perform that action.
 
 ## Candidate qualification evidence
 
-The following evidence is `VERIFIED` on this Dev-PC candidate and is bounded to
-disposable fixtures or repository-owned mocked surfaces:
+The following evidence is `VERIFIED` for this exact candidate and is bounded to
+disposable fixtures, the isolated Android/Termux candidate lane, or
+repository-owned mocked surfaces:
 
 - `tests/backend/test_lite_system_health.py`: 50 passed, including the
   source-qualified maintenance adapters through the existing worker command
@@ -152,6 +153,14 @@ disposable fixtures or repository-owned mocked surfaces:
 - `tests/backend/test_lite_system_health_semantic_revision.py` and
   `tests/backend/test_lite_system_health_android_qualification.py` plus the
   UI-candidate contracts: 33 qualification-contract tests passed.
+- The exact-SHA Android/Termux backend lane passed with the candidate API and
+  worker owned in a run-owned Termux root, disposable NATS/JetStream, exact
+  candidate OPA, and a qualification-owner recovery lifecycle of
+  `executing` → `verified` for `runtime.consumer.reconnect`. It also proved
+  idempotent replay, stale-generation rejection, unauthorized-write rejection,
+  SQLite schema 42 → 55 integrity/concurrency checks, and run-root cleanup;
+  the active Server Phone remained at `main` SHA
+  `58219b2aa92364447a65b9aa55276250b3bdfbbc`.
 - The focused API slice passed 171 tests with Node 24 available; targeted
   frontend unit tests passed 22 tests; the mocked System Health desktop/mobile
   browser lane passed 52 tests; and `npm run build` passed.
@@ -160,12 +169,15 @@ disposable fixtures or repository-owned mocked surfaces:
   SchemaSpy, architecture, MkDocs and runtime-network checks.
 
 This evidence does not claim a live production action, physical Android UI
-qualification, or a production NATS/SQLite execution. The physical Android
-runner was not invoked because no device serial was selected and physical UI
-qualification is not mandatory for this initiative. The required full
-`task lite:check` remains `BLOCKED` by the repository's exact Java guard:
-`17.0.20.1` is required while this host exposes `17.0.21.1`; the guard was not
-weakened.
+qualification, or a production NATS/SQLite execution. The backend Android
+lane used only a temporary run-owned Termux root and disposable broker/database
+state; its production-activation result remained `BLOCKED` by design. The
+physical Android UI runner was not invoked because no device serial was
+selected and physical UI qualification is not mandatory for this initiative.
+The required full
+`task lite:check` passed with the repository-compatible JDK
+`/home/dj/.cache/pocketlab-java/jdk-exact-17.0.20.1`; the exact Java guard was
+not weakened.
 
 ## Future authorized rollout procedure
 
