@@ -9,6 +9,7 @@ import { LiteDetailsPanel } from './LiteOverlay.jsx';
 import { useDesktopManageGeometry } from './components/useDesktopManageGeometry.js';
 import { useLitePanelSectionNavigation } from './hooks/useLitePanelSectionNavigation.js';
 import SystemHealthOwnerControls from './components/SystemHealthOwnerControls.jsx';
+import TrustedLifecyclePanel from './components/TrustedLifecyclePanel.jsx';
 import HomeGroupedSections from './components/HomeGroupedSections.jsx';
 import './components/azureHome.css';
 import './components/homeCommand.css';
@@ -73,6 +74,9 @@ const SECTIONS = Object.freeze([
     { id: 'history', label: 'Recovery & History', description: 'Observed outcomes and recorded attempts', icon: Clock3 },
     { id: 'repairs', label: 'Recovery options', description: 'Existing, controlled recovery paths', icon: Wrench },
     { id: 'backup', label: 'Backup and restore readiness', description: 'Protection and compatibility evidence', icon: ShieldCheck },
+  ] },
+  { label: 'Updates & protection', items: [
+    { id: 'updates-protection', label: 'Updates & protection', description: 'Release trust, update preferences and your permissions', icon: ShieldCheck },
   ] },
   { label: 'Advanced Diagnostics', items: [
     { id: 'dependencies', label: 'Dependencies', description: 'Documented service relationships', icon: GitBranch },
@@ -489,6 +493,7 @@ export default function LiteSystemHealth({ onNavigate }) {
           decisions={decisions.data} readOnly={readOnly} onOpenArea={onNavigate ? (destination) => { close(); onNavigate(destination); } : null} /> : null}
         {Object.hasOwn(INFRASTRUCTURE_SECTIONS, section) && <InfrastructureSection section={section} query={infrastructure} readOnly={readOnly}
           onOpenArea={onNavigate ? destination => { close(); onNavigate(destination); } : null} />}
+        {section === 'updates-protection' && <TrustedLifecyclePanel readOnly={readOnly} />}
         {section === 'repairs' ? <section className="lite-system-health-manage-section">
           <p className="lite-system-health-muted">Existing supervisors, the worker recovery watchdog and the projection scheduler remain the execution owners. Source qualification never bypasses runtime, Owner or Safety Rules gates.</p>
           {(policies.data?.repair_catalog || []).map((item) => <LiteActionRow key={item.operation_id}
