@@ -1,10 +1,9 @@
 """Review-only adapter for the existing release worker and subprocess.
 
-Local operator staging is intentionally bounded to one fixed candidate directory.
-No network access, extraction, install, activation or arbitrary metadata paths.
+Acquisition uses fixed GitHub release assets or an explicit local review directory.
+No extraction, install, activation or arbitrary metadata paths.
 A local administrator must independently provision the root SHA-256 and clock
-anchor; the candidate itself cannot supply either. This is not TUF rotation or
-independently verified build provenance.
+anchor; the candidate itself cannot supply either. This is not full TUF.
 """
 from __future__ import annotations
 
@@ -153,7 +152,26 @@ def inspect_candidate(request):
                 raise TrustError("metadata_version_conflict")
             from .lite_release_provenance import provenance
             disposition, reason = provenance(candidate, root_dir, commit=receipt["source_commit"], tag=tag)
-            receipt.update(provenance=disposition, provenance_reason=reason, **rotation)
+            from .lite_release_trust import CapabilityManifest
+            from .lite_lifecycle_contract import CAPABILITIES, assess, canonical_bytes
+            source = Path(__file__).resolve().parents[4]
+            def source_digest(paths):
+                items = [{"path": path.relative_to(source).as_posix(),
+                          "sha256": hashlib.sha256(path.read_bytes()).hexdigest()} for path in sorted(paths)]
+                return hashlib.sha256(canonical_bytes(items)).hexdigest() if items else None
+            policy = source_digest((source / "security/policies/opa").rglob("*.rego"))
+            migrations = source_digest((source / "pocket-lab-final-structure/runtime/api_fastapi/db/schema").glob("*.sql"))
+            candidate_caps = _parse(CapabilityManifest, manifest)
+            assessment = assess(CAPABILITIES, tuple(candidate_caps.capabilities),
+                policy_changed=policy != receipt["policy_sha256"],
+                migration_changed=migrations != receipt["migration_inventory_sha256"],
+                root_changed=bool(rotation))
+            current_schema = int(request.get("current_schema") or 0)
+            schema_match = receipt["schema_min"] <= current_schema <= receipt["schema_max"]
+            receipt.update(provenance=disposition, provenance_reason=reason, **rotation,
+                impact=assessment.impact.value, assessment=assessment.model_dump(mode="json"),
+                schema_range_matches=schema_match,
+                compatibility="unknown" if schema_match else "incompatible")
             return {"state": "historical_evidence" if disposition != "failed" else "verification_failed",
                     "reason_code": reason, "root_sha256": pin, "receipt": receipt if disposition != "failed" else None}
     except FileNotFoundError:
@@ -195,6 +213,7 @@ def persist(tx, observation, tag):
                 or (version == old["highest_version"] and receipt["metadata_sha256"] != old["highest_digest"])
                 or (old["highest_tag"] and parse_lite_tag(tag) < parse_lite_tag(old["highest_tag"]))):
             state, reason = "verification_failed", "durable_trust_floor_conflict"
+            receipt = None
         elif version > old["highest_version"]:
             tx.execute("""INSERT INTO lite_release_trust_pin VALUES (1,?,?)
                        ON CONFLICT(singleton_id) DO UPDATE SET root_sha256=excluded.root_sha256,root_version=excluded.root_version""",
@@ -208,7 +227,9 @@ def persist(tx, observation, tag):
             tx.execute("INSERT INTO lite_release_trust_receipts VALUES (?,?,?,?,?,?)",
                        (correlation, version, receipt["root_version"], tag, receipt["checked_at"],
                         json.dumps({**receipt, "correlation_id": correlation}, sort_keys=True, separators=(",", ":"))))
-    tx.execute("""INSERT INTO lite_release_trust_observation VALUES (1,?,?,?,?)
-               ON CONFLICT(singleton_id) DO UPDATE SET state=excluded.state,
-               reason_code=excluded.reason_code,checked_at=excluded.checked_at,release_tag=excluded.release_tag""",
-               (state, reason, stamp, tag))
+    tx.execute("""INSERT INTO lite_release_trust_observation(singleton_id,state,reason_code,checked_at,release_tag,review_json)
+               VALUES (1,?,?,?,?,?) ON CONFLICT(singleton_id) DO UPDATE SET state=excluded.state,
+               reason_code=excluded.reason_code,checked_at=excluded.checked_at,release_tag=excluded.release_tag,
+               review_json=excluded.review_json""",
+               (state, reason, stamp, tag, json.dumps(receipt or {}, sort_keys=True, separators=(",", ":"))))
+    tx.execute("DELETE FROM lite_release_trust_receipts WHERE metadata_version NOT IN (SELECT metadata_version FROM lite_release_trust_receipts ORDER BY metadata_version DESC LIMIT 100)")

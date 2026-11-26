@@ -1749,11 +1749,12 @@ async def run_release_check(
             from .lite_release_trust_runtime import floor_request
             with connection() as conn:
                 floor = floor_request(conn)
+                schema = conn.execute("SELECT COALESCE(MAX(version),0) FROM schema_migrations").fetchone()[0]
             if os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256") or floor["pinned_root_sha256"]:
                 latest = result.get("latest_release") or {}
                 manifest = latest.get("manifest") or {}
                 observation, _ = await execute_release_subprocess("verify_trust", {
-                    **floor, "repository": request.get("verified_repository"), "release_tag": result.get("latest_tag"),
+                    **floor, "current_schema": schema, "repository": request.get("verified_repository"), "release_tag": result.get("latest_tag"),
                     "source_commit": manifest.get("source_commit"),
                     "artifact_sha256": manifest.get("artifact_sha256"),
                     "channel": "preview" if latest.get("prerelease") else "stable",
