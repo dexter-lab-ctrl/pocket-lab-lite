@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "c8c6e1c5f2fbbb20eee713e54b4f1cb5b14123deb2cb13a97758d7e3047a1ff7",
+    "aggregate_fingerprint": "0ae8e6e1ee0db03459343410eca9853f2573bdeb411b85807c4d0c4872860790",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -26,7 +26,7 @@
       "src/lite/LiteSecurity.stories.jsx": "447e7d25c5669fa9b1af095afc6bc75bf70c1461bc37b3df9ccc23ac24fd29d0",
       "src/lite/LiteSystemHealth.stories.jsx": "87996d03b6b9cdc7f9473c6739a56b13b14057a3721f105fb8681e251469f097",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "c588e7eeeb61c7dc787ca2a3ae817d3d20610175783cb528474d16d5f7ff3595"
+      "src/mocks/handlers.js": "5502c5538b32e312620da7f7ab8b80b176f440e4fc06a0d2656679604e50c821"
     },
     "validation_state": "generated"
   },

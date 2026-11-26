@@ -17,7 +17,14 @@ def _future(value: Any) -> bool:
 
 def preferences() -> dict:
     rows = health._read("SELECT revision,recovery_mode,resource_mode,updated_at FROM lite_system_health_preferences WHERE singleton_id=1")
-    return rows[0] if rows else {"revision": 0, "recovery_mode": "monitor", "resource_mode": "balanced", "updated_at": None}
+    result = rows[0] if rows else {"revision": 0, "recovery_mode": "monitor", "resource_mode": "balanced", "updated_at": None}
+    from . import lite_infrastructure_operations as operations
+    fence = operations.activation_fence_status("assisted")
+    result["activation_confirmation"] = {
+        key: fence[key]
+        for key in ("valid", "required", "runtime_revision", "reason_codes", "sanitized")
+    }
+    return result
 
 
 def _human_authority(conn, actor_id: str, session_id: str) -> dict | None:
@@ -69,10 +76,21 @@ def save_preferences(context: dict, *, expected_revision: int, recovery_mode: st
             current = int(row["revision"]) if row else 0
             if current != expected_revision:
                 raise ValueError("preference_revision_changed")
-            conn.execute("""INSERT INTO lite_system_health_preferences VALUES (1,?,?,?,?)
+            next_revision = current + 1
+            conn.execute("""INSERT INTO lite_system_health_preferences
+                            (singleton_id,revision,recovery_mode,resource_mode,updated_at)
+                            VALUES (1,?,?,?,?)
                             ON CONFLICT(singleton_id) DO UPDATE SET revision=excluded.revision,
                             recovery_mode=excluded.recovery_mode,resource_mode=excluded.resource_mode,updated_at=excluded.updated_at""",
-                         (current+1, recovery_mode, resource_mode, health._now()))
+                         (next_revision, recovery_mode, resource_mode, health._now()))
+            from . import lite_infrastructure_operations as operations
+            operations.write_activation_fence(
+                conn,
+                "assisted",
+                confirmed=recovery_mode == "assisted",
+                reference_revision=next_revision,
+                now=health._now(),
+            )
             audit(conn, actor, "preferences_changed")
     return preferences()
 

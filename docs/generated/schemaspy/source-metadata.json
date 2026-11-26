@@ -2,7 +2,7 @@
   "database": "temporary data-free SQLite generated from repository migrations",
   "generated_at": "uncommitted",
   "generator": "scripts/docs/sqlite/generate_schemaspy.py",
-  "migration_count": 54,
+  "migration_count": 55,
   "migration_fingerprints": {
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
@@ -57,7 +57,8 @@
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0051_system_health_service_owner_evidence.sql": "dbc9edd93448656afe994ffa1a643c95a43b722f7ba18b9aeb8b2c3623797af1",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql": "b638b291b99780032fa71a1077a77c44bda39f9cbba55caf567785ffa12d75f1",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql": "cdcad7a2e9379023be73e79eeab7ee1497cbf6a41e90ecd0e6291c2fa4de4a5c",
-    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql": "df830f0948f0b6fc689cb7a65e835d1039f35bf0fe42a7cca73309a12005f6c5"
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql": "df830f0948f0b6fc689cb7a65e835d1039f35bf0fe42a7cca73309a12005f6c5",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql": "23b6206035eb9310e019b4eef28c9e23d1044a985a6d236745f06d0fa63edbae"
   },
   "migrations": [
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql",
@@ -113,7 +114,8 @@
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0051_system_health_service_owner_evidence.sql",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql",
     "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql",
-    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql"
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql",
+    "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql"
   ],
   "row_count_enforced": 0,
   "schema_revision": 1,

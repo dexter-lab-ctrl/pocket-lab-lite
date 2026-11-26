@@ -230,11 +230,13 @@ def _execute(command_id: str) -> dict:
         if operation=="projection.reconcile":
             from . import lite_phase3c_projections
             # Record the dispatch boundary before requesting existing owner work.
+            dispatch_at=health._now()
+            trigger_reason=f"reconcile_system_health:{command_id}"
             with connection() as conn:
                 with begin_immediate(conn):
                     conn.execute("UPDATE lite_system_health_maintenance_admissions SET evidence_json=? WHERE command_id=? AND status='executing'",
-                        (json.dumps({"dispatch_at":health._now(),"domain":"system.activity_history"}),command_id))
-            lite_phase3c_projections.mark_dirty("system.activity_history",reason="reconcile_system_health")
+                        (json.dumps({"dispatch_at":dispatch_at,"domain":"system.activity_history","trigger_reason":trigger_reason}),command_id))
+            lite_phase3c_projections.mark_dirty("system.activity_history",reason=trigger_reason)
             return {"status":"executing","command_id":command_id,"sanitized":True}
         if operation=="storage.evidence.preview":
             with connection() as conn:
@@ -278,8 +280,11 @@ def _reconcile() -> None:
     rows = health._read("SELECT command_id,evidence_json FROM lite_system_health_maintenance_admissions WHERE status='executing' AND operation_id='projection.reconcile' LIMIT 1")
     for row in rows:
         evidence=json.loads(row["evidence_json"])
-        completed=health._read("SELECT last_completed_at,last_error_type FROM projection_refresh_state WHERE domain='system.activity_history'")
-        if evidence.get("dispatch_at") and completed and not completed[0]["last_error_type"] and str(completed[0]["last_completed_at"] or "")>evidence["dispatch_at"]:
+        completed=health._read("SELECT last_completed_at,last_error_type,last_trigger_reason,execution_owner FROM projection_refresh_state WHERE domain='system.activity_history'")
+        if (evidence.get("dispatch_at") and completed and not completed[0]["last_error_type"]
+                and str(completed[0]["last_completed_at"] or "")>evidence["dispatch_at"]
+                and completed[0]["last_trigger_reason"]==evidence.get("trigger_reason")
+                and completed[0]["execution_owner"]=="worker"):
             _finish(row["command_id"],"verified",{"fresh_projection_completed":True})
     rows = health._read("SELECT command_id,status FROM lite_system_health_maintenance_admissions WHERE status IN ('queued','executing') AND expires_at<=? LIMIT 20",(health._now(),))
     if not rows:

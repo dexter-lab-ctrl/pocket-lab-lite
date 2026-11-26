@@ -14,7 +14,7 @@
     "scenario": "recovery-no-backups",
     "schema_revision": 1,
     "source_commit": "uncommitted",
-    "source_fingerprint": "2a7763f74d199035718b5b37954eed521a5818dc65df5dd03d3386318cea633a",
+    "source_fingerprint": "97bb0b376a45ad6f45c60c2fb14f537c0786a54e149d8f46e22f74cf458746af",
     "validation_status": "generated"
   }
 }

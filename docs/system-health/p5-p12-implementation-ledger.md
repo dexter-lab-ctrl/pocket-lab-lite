@@ -1,6 +1,22 @@
 # P5–P12 infrastructure operations implementation ledger
 
-## Current reconciliation — 2026-11-25
+## Current reconciliation — 2026-11-26
+
+The governed production-activation candidate is documented in
+[`docs/operations/system-health-production-activation.md`](../operations/system-health-production-activation.md).
+It promotes only the six reviewed Risk A assisted operations
+(`runtime.consumer.reconnect`, the three storage previews,
+`sqlite.checkpoint.passive` and `projection.reconcile`) and source-qualifies
+only fixed `system.activity_history` reconciliation for separate automatic
+activation. Both modes remain default-off and require current runtime fences,
+Owner confirmation, active/known-good OPA authority and the existing execution
+owners. Cleanup, service recovery, configuration restoration, database
+rehearsal, Risk B/C operations and arbitrary execution remain disabled.
+
+The previous empty-allowlist disposition below is retained as historical
+qualification provenance for the pre-activation source state.
+
+## Previous reconciliation snapshot — 2026-11-25
 
 This section is the current disposition of the ledger. The historical sections below are retained as provenance and are superseded where they conflict with this section. The final code-bearing candidate is `1ca4ac753e57a0af90efac76c4c00fd631f7987d`; the exact physical System Tab artifact is `pr657-system-health-android-ui-final-1ca4ac753e57.json` under `.pocketlab-dev/validation/pr658-system-health-android-ui-1ca4ac75/pr657-system-health-android-ui-1ca4ac753e57/`. These sanitized local artifacts are not generated documentation and are not committed.
 

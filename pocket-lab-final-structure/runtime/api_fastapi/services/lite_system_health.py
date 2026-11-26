@@ -481,7 +481,7 @@ def knowledge() -> dict[str, Any]:
 
 
 def policy() -> dict[str, Any]:
-    return {"automatic_execution": "existing_independent_guardians_only", "engine_auto_repair": False,
+    return {"automatic_execution": "existing_independent_guardians_and_one_selective_candidate", "engine_auto_repair": False,
             "mode": "fail_closed", "repair_catalog": infrastructure_ops.operation_catalog(),
             "activation_policy": infrastructure_ops.activation_policy(),
             "cooldown": "owned_by_existing_executor", "resource_budget": "owned_by_existing_executor",
@@ -494,7 +494,18 @@ def policy() -> dict[str, Any]:
                 "verification": "fresh_consumer_generation_and_health",
                 "activation_scope": "source_qualified_assisted_only" if CONTROLLED_RECOVERY_OPERATION in infrastructure_ops.PRODUCTION_QUALIFIED_OPERATIONS else "qualification_only",
             },
-            "explanation": "The allowlisted recovery adapter is isolated-qualification only and disabled by default; existing guardians remain authoritative."}
+            "selective_automatic_recovery": {
+                "implemented": True,
+                "operation_id": "projection.reconcile",
+                "domain": "system.activity_history",
+                "execution_owner": "projection_scheduler",
+                "risk_class": "A",
+                "default_enabled": False,
+                "automatic_scope": "fixed_domain_only",
+                "verification": "attempt_bound_scheduler_trigger_and_fresh_completion",
+                "risk_b_limits": "No Risk B/C automatic operations are admitted.",
+            },
+            "explanation": "Only the reviewed Risk A assisted adapters are source-qualified. Runtime flags, current Owner confirmation fences and fail-closed OPA authorization remain required; existing guardians remain authoritative."}
 
 
 def diagnose(incident_id: str) -> dict[str, Any] | None:

@@ -4699,7 +4699,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 546,
+  "page_count": 547,
   "page_types": [
     "overview",
     "guide",
@@ -17422,6 +17422,30 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "operations/system-health-production-activation.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "documentation",
+      "generated": false,
+      "id": "page:operations/system-health-production-activation",
+      "intents": [
+        "operate",
+        "diagnose"
+      ],
+      "page_type": "reference",
+      "path": "operations/system-health-production-activation.md",
+      "primary_audience": "operator",
+      "primary_navigation_owner": "operate",
+      "related_pages": [],
+      "source_or_generator": "operations/system-health-production-activation.md",
+      "title": "Governed System Health production activation",
+      "url": "/operations/system-health-production-activation/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "recovery/backup-restore.md"
       ],
       "confidence": "source-derived",
@@ -18926,7 +18950,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "5daf484169df5c7a789156ea86a349cf0ec529f184fca4cff05fbf7f98018615",
+  "source_fingerprint": "778c10c5935d7c1c3f302a76caa2440b94118447ffc5c00b6f972809e8c0388d",
   "top_level": [
     "start-here",
     "use",

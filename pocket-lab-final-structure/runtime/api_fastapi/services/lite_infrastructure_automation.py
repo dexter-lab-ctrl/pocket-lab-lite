@@ -1,6 +1,7 @@
 """One selective Risk A candidate: refresh optional activity history.
-The existing worker/scheduler remains the execution owner. No new production
-operation is qualified here, no automatic cleanup/restart/restore is admitted.
+The existing worker/scheduler remains the execution owner. Only the fixed
+activity-history projection is source-qualified; no automatic cleanup,
+restart, restore or arbitrary command is admitted.
 """
 from __future__ import annotations
 from datetime import datetime, timezone
@@ -15,6 +16,7 @@ from . import lite_policy_opa as opa
 OP="projection.reconcile"
 ACTION="system_health.automatic"
 DOMAIN="system.activity_history"
+TRIGGER_PREFIX="reconcile_system_health_automatic"
 
 
 def _owner_versions(conn,owner_id: str) -> tuple | None:
@@ -39,19 +41,38 @@ def _stored() -> dict:
 
 
 def _gate() -> bool:
-    if os.environ.get("POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE","0")!="0":
-        return False
-    if os.environ.get("POCKETLAB_ENVIRONMENT","").casefold()=="qualification":
-        return os.environ.get("POCKETLAB_SYSTEM_HEALTH_AUTOMATIC_ADAPTER")=="1"
-    return OP in ops.PRODUCTION_QUALIFIED_AUTOMATIC_OPERATIONS and os.environ.get("POCKETLAB_SYSTEM_HEALTH_PRODUCTION_AUTOMATIC")=="1"
+    return ops.automatic_gate_open()
+
+
+def _trigger_reason(attempt_id: str) -> str:
+    # The scheduler sanitizes this bounded identifier without removing the
+    # separator, so a later read can prove which durable attempt requested the
+    # observed refresh instead of accepting an unrelated scheduled refresh.
+    return f"{TRIGGER_PREFIX}:{attempt_id}"
 
 
 def public() -> dict:
     row=_stored()
-    return {"revision":row.get("revision",0),"preference_enabled":bool(row.get("enabled")),
+    recent=health._read("SELECT attempt_id,operation_id,status,requested_at,completed_at FROM lite_system_health_automation_attempts ORDER BY requested_at DESC LIMIT 20")
+    gate_open = _gate()
+    preference_enabled = bool(row.get("enabled"))
+    latest = recent[0] if recent else {}
+    fence = ops.activation_fence_status("automatic")
+    reasons = [] if gate_open else list(fence.get("reason_codes") or [])
+    if not gate_open and os.environ.get("POCKETLAB_ENVIRONMENT","").casefold() != "qualification" and os.environ.get("POCKETLAB_SYSTEM_HEALTH_PRODUCTION_AUTOMATIC") != "1":
+        reasons.append("automatic_runtime_opt_in_required")
+    if not preference_enabled:
+        reasons.append("owner_preference_required")
+    return {"revision":row.get("revision",0),"preference_enabled":preference_enabled,
         "operation_id":OP,"source_qualified":OP in ops.PRODUCTION_QUALIFIED_AUTOMATIC_OPERATIONS,
-        "activation_gate_open":_gate(),"effective_execution_confirmed":False,
-        "recent":health._read("SELECT operation_id,status,requested_at,completed_at FROM lite_system_health_automation_attempts ORDER BY requested_at DESC LIMIT 20"),
+        "activation_gate_open":gate_open,"runtime_enabled":bool(gate_open and preference_enabled),
+        "owner_preferred":preference_enabled,"activation_confirmation":{
+            key:fence[key] for key in ("valid","required","runtime_revision","reason_codes","sanitized")
+        },
+        "effective_execution_confirmed":bool(latest and latest.get("status")=="verified"),
+        "execution_state":latest.get("status") if latest else "idle",
+        "reason_codes":list(dict.fromkeys(reasons)),
+        "recent":recent,
         "sanitized":True}
 
 
@@ -76,19 +97,44 @@ def save(context: dict, *, expected_revision: int, enabled: bool, confirm: bool)
             rev=current["revision"] if current else 0
             if rev!=expected_revision:
                 raise ValueError("preference_revision_changed")
-            conn.execute("""INSERT INTO lite_system_health_automation_policy VALUES(1,?,?,?,?,?,?,?,?,?)
+            next_revision = rev + 1
+            conn.execute("""INSERT INTO lite_system_health_automation_policy
+                (singleton_id,revision,enabled,owner_id,owner_auth_version,membership_version,
+                 configuration_version,policy_revision,decision_id,updated_at)
+                VALUES(1,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(singleton_id) DO UPDATE SET revision=excluded.revision,enabled=excluded.enabled,
                 owner_id=excluded.owner_id,owner_auth_version=excluded.owner_auth_version,membership_version=excluded.membership_version,
                 configuration_version=excluded.configuration_version,policy_revision=excluded.policy_revision,
                 decision_id=excluded.decision_id,updated_at=excluded.updated_at""",
-                (rev+1,int(enabled),owner,*versions,decision["policy_revision"],decision["decision_id"],health._now()))
+                (next_revision,int(enabled),owner,*versions,decision["policy_revision"],decision["decision_id"],health._now()))
+            ops.write_activation_fence(
+                conn,
+                "automatic",
+                confirmed=bool(enabled),
+                reference_revision=next_revision,
+                now=health._now(),
+            )
             authority.audit(conn,owner,"preferences_changed","automatic_projection_reconciliation")
     return public()
 
 
 def _projection() -> dict:
-    rows=health._read("SELECT last_completed_at,last_error_type FROM projection_refresh_state WHERE domain=?",(DOMAIN,))
+    rows=health._read("SELECT last_completed_at,last_error_type,last_trigger_reason,execution_owner FROM projection_refresh_state WHERE domain=?",(DOMAIN,))
     return rows[0] if rows else {}
+
+
+def _projection_evidence(attempt: dict, projection: dict | None = None) -> bool:
+    """Accept completion only from this attempt's scheduler dispatch."""
+    projection = projection if projection is not None else _projection()
+    completed = projection.get("last_completed_at")
+    if not completed or completed <= str(attempt.get("requested_at") or "") or projection.get("last_error_type"):
+        return False
+    if projection.get("last_trigger_reason") != _trigger_reason(str(attempt.get("attempt_id") or "")):
+        return False
+    owner = str(projection.get("execution_owner") or "")
+    if os.environ.get("POCKETLAB_ENVIRONMENT","").casefold() == "qualification":
+        return owner in {"worker", "unknown", "test", "direct", "oneshot"}
+    return owner == "worker"
 
 
 def _elapsed(stamp: str | None) -> float | None:
@@ -112,7 +158,7 @@ def tick() -> None:
         projection=_projection()
         completed=projection.get("last_completed_at")
         duration=_elapsed(row["requested_at"])
-        verified=bool(completed and completed>row["requested_at"] and not projection.get("last_error_type"))
+        verified=_projection_evidence(row, projection)
         if verified or (duration is not None and duration>=300):
             with connection() as conn:
                 with begin_immediate(conn):
@@ -168,12 +214,20 @@ def tick() -> None:
                     if conn.execute("SELECT 1 FROM lite_system_health_maintenance_admissions WHERE status IN ('queued','executing') LIMIT 1").fetchone():
                         return
                     current=conn.execute("SELECT * FROM lite_system_health_automation_policy WHERE singleton_id=1").fetchone()
-                    if not current or dict(current)!=row or _owner_versions(conn,row["owner_id"])!=(row["owner_auth_version"],row["membership_version"],row["configuration_version"]):
+                    if (not current or dict(current)!=row
+                            or _owner_versions(conn,row["owner_id"])!=(row["owner_auth_version"],row["membership_version"],row["configuration_version"])
+                            or not _gate()):
                         return
+                    attempt_id = uuid.uuid4().hex
+                    requested_at = health._now()
                     conn.execute("INSERT INTO lite_system_health_automation_attempts VALUES(?,?,?,'pending',?,NULL,?)",
-                        (uuid.uuid4().hex,row["revision"],OP,health._now(),decision["decision_id"]))
+                        (attempt_id,row["revision"],OP,requested_at,decision["decision_id"]))
                     conn.execute("""DELETE FROM lite_system_health_automation_attempts WHERE status!='pending'
                         AND attempt_id NOT IN (SELECT attempt_id FROM lite_system_health_automation_attempts ORDER BY requested_at DESC LIMIT 200)""")
-            prepared.mark_dirty(DOMAIN,reason="reconcile_system_health_automatic")
+            # Do not dispatch work that was admitted just before an emergency
+            # disable or activation-fence change became visible.
+            if not _gate():
+                return
+            prepared.mark_dirty(DOMAIN,reason=_trigger_reason(attempt_id))
     except (BlockingIOError,opa.PolicyDecisionError):
         return

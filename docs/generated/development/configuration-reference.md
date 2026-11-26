@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: dd55fa065e69ce4d8d45c8502c0e05a85ec941079f43da4377cf8c1b3a769cba
+source_fingerprint: 8ca05a7d63b642ac5d0a3ec2508572568f31ccbb3d6267ad0ff78e9b40fcc8a0
 schema_revision: 1
 validation_status: generated
 ---
@@ -936,13 +936,15 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_SUPPLY_CHAIN_MIN_SWAP_FREE_MIB_SCANCODE` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
 | `POCKETLAB_SUPPLY_CHAIN_PROGRESS_SECONDS` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
 | `POCKETLAB_SUPPLY_CHAIN_TIMEOUT_` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/enterprise/supply_chain_automation.py |
-| `POCKETLAB_SYSTEM_HEALTH_AUTOMATIC_ADAPTER` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_automation.py |
+| `POCKETLAB_SYSTEM_HEALTH_AUTOMATIC_ADAPTER` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py |
 | `POCKETLAB_SYSTEM_HEALTH_MAINTENANCE_ADAPTER` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py |
 | `POCKETLAB_SYSTEM_HEALTH_PRODUCTION_ASSISTED` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_authority.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py |
-| `POCKETLAB_SYSTEM_HEALTH_PRODUCTION_AUTOMATIC` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_automation.py |
+| `POCKETLAB_SYSTEM_HEALTH_PRODUCTION_ASSISTED_REVISION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py |
+| `POCKETLAB_SYSTEM_HEALTH_PRODUCTION_AUTOMATIC` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_automation.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py |
+| `POCKETLAB_SYSTEM_HEALTH_PRODUCTION_AUTOMATIC_REVISION` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py |
 | `POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py, scripts/dev/lite/run-system-health-android-qualification.py |
 | `POCKETLAB_SYSTEM_HEALTH_RECOVERY_COOLDOWN_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_system_health.py |
-| `POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_authority.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_automation.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py |
+| `POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_authority.py, pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py |
 | `POCKETLAB_SYSTEM_HEALTH_RESOURCE_ADAPTER` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_authority.py |
 | `POCKETLAB_TAILNET_IP` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh |
 | `POCKETLAB_TAILSCALED_START` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh |

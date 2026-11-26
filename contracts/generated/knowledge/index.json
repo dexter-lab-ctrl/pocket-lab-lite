@@ -28596,6 +28596,28 @@
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "control_plane",
+      "id": "table:lite_system_health_activation_fence",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql"
+      ],
+      "name": "lite_system_health_activation_fence",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
       "id": "table:lite_system_health_automation_attempts",
       "indexes": [
         "lite_system_health_auto_recent",
@@ -35867,6 +35889,7 @@
         "table:identity_audit_events",
         "table:lite_home_activity_read_cursors",
         "table:lite_revision_events",
+        "table:lite_system_health_activation_fence",
         "table:lite_system_health_automation_attempts",
         "table:lite_system_health_automation_policy",
         "table:lite_system_health_availability_samples",
@@ -38406,6 +38429,7 @@
         "table:lite_home_activity_read_cursors",
         "table:lite_installed_release_identity",
         "table:lite_revision_events",
+        "table:lite_system_health_activation_fence",
         "table:lite_system_health_automation_attempts",
         "table:lite_system_health_automation_policy",
         "table:lite_system_health_availability_samples",
@@ -47139,6 +47163,12 @@
         }
       ],
       "table:lite_revision_events": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_system_health_activation_fence": [
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -66283,6 +66313,10 @@
         },
         {
           "target": "table:lite_revision_events",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_system_health_activation_fence",
           "type": "owns"
         },
         {
@@ -88686,6 +88720,15 @@
       "source": "api:post:/api/lite/owner-operations/client-pairings/{pairing_id}/cancel",
       "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:4602bd88b30c0f58",
+      "source": "domain:control_plane",
+      "target": "table:lite_system_health_activation_fence",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -116553,9 +116596,9 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "54e0e736fc1a97541d826775ffffda546b9c541a1aa4dd29ca255a44d7a1d8d6",
+  "source_fingerprint": "5a99f823b944ae3642b2f914852c337292611ac685c249568797580d6c5109e3",
   "statistics": {
-    "entity_count": 1546,
+    "entity_count": 1547,
     "entity_type_counts": {
       "adr": 6,
       "api": 280,
@@ -116571,7 +116614,7 @@
       "runbook": 4,
       "runtime-topology": 9,
       "subject": 219,
-      "table": 107,
+      "table": 108,
       "test": 340,
       "threat-boundary": 9,
       "threat-model": 9,
@@ -116579,7 +116622,7 @@
       "ui": 12,
       "vocabulary": 39
     },
-    "relation_count": 4315,
+    "relation_count": 4316,
     "source_count": 376
   }
 }

@@ -674,6 +674,21 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | Indexes | idx_lite_revision_events_retention, idx_lite_revision_events_replay, idx_lite_revision_events_domain_revision |
 | Confidence | inferred |
 
+## `lite_system_health_activation_fence`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Field | Value |
+| --- | --- |
+| Domain | control_plane |
+| Owner | not a prepared projection |
+| Writer | source-defined control-plane service |
+| Readers | — |
+| Retention | domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance |
+| Classification | internal operational metadata |
+| Indexes | — |
+| Confidence | inferred |
+
 ## `lite_system_health_automation_attempts`
 
 Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.

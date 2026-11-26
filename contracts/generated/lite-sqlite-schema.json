@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 54,
+    "migration_count": 55,
     "objects": [
       {
         "checks": [],
@@ -7465,6 +7465,88 @@
         "semantic_status": "inferred",
         "sensitive_fields": [],
         "sql": "CREATE TABLE lite_revision_events (\n    event_id INTEGER PRIMARY KEY AUTOINCREMENT,\n    database_instance TEXT NOT NULL,\n    domain TEXT NOT NULL CHECK (domain IN (\n        'security', 'fleet', 'apps', 'recovery', 'commands', 'storage', 'audit'\n    )),\n    revision INTEGER NOT NULL CHECK (revision >= 0),\n    changed_ids_json TEXT NOT NULL DEFAULT '[]',\n    reason TEXT NOT NULL DEFAULT 'domain_state_changed',\n    projection_version INTEGER NOT NULL DEFAULT 1 CHECK (projection_version > 0),\n    occurred_at TEXT NOT NULL,\n    occurred_at_epoch_ms INTEGER NOT NULL,\n    sanitized INTEGER NOT NULL DEFAULT 1 CHECK (sanitized IN (0, 1))\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "singleton_id=1",
+          "assisted_preference_revision>=0",
+          "automatic_policy_revision>=0"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "singleton_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "assisted_source_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "assisted_runtime_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "assisted_preference_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "automatic_source_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "automatic_runtime_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": "0",
+            "name": "automatic_policy_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql"
+        ],
+        "name": "lite_system_health_activation_fence",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE lite_system_health_activation_fence (\n    singleton_id INTEGER PRIMARY KEY CHECK(singleton_id=1),\n    assisted_source_revision TEXT NOT NULL DEFAULT '',\n    assisted_runtime_revision TEXT NOT NULL DEFAULT '',\n    assisted_preference_revision INTEGER NOT NULL DEFAULT 0 CHECK(assisted_preference_revision>=0),\n    automatic_source_revision TEXT NOT NULL DEFAULT '',\n    automatic_runtime_revision TEXT NOT NULL DEFAULT '',\n    automatic_policy_revision INTEGER NOT NULL DEFAULT 0 CHECK(automatic_policy_revision>=0),\n    updated_at TEXT NOT NULL\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -16674,7 +16756,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "b061b9385912605e01708a55ae3fcbe6b2ac5a641eceba164da013b6339832ec",
+    "aggregate_fingerprint": "a961d5760655a33e05f21410a9552e43f1010445ed714545b60e69fcef616369",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -16740,6 +16822,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql": "b638b291b99780032fa71a1077a77c44bda39f9cbba55caf567785ffa12d75f1",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0053_system_health_host_protection.sql": "cdcad7a2e9379023be73e79eeab7ee1497cbf6a41e90ecd0e6291c2fa4de4a5c",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql": "df830f0948f0b6fc689cb7a65e835d1039f35bf0fe42a7cca73309a12005f6c5",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql": "23b6206035eb9310e019b4eef28c9e23d1044a985a6d236745f06d0fa63edbae",
       "scripts/docs/lite/generate_platform_catalogs.py": "03d45e1757f6eff0622b0bac8d53108a7229b00c2c746bf158a746224499fd08"
     },
     "validation_state": "generated"

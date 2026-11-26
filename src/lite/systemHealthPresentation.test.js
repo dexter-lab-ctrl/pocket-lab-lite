@@ -5,7 +5,7 @@ import {
   recoveryLifecycleLabel, recoveryOperationLabel, systemHealthPresentation,
 } from './systemHealthPresentation.js';
 
-// Deterministic presentation contract, tests authored but NOT RUN in H0–H6.
+// Deterministic presentation contract for source-qualified and runtime-gated operations.
 describe('System Health H2 evidence-first presentation', () => {
   const current = { incident_id: 'health-current', source: 'agent', target_id: 'pocket-node',
     state: 'detected', evidence_freshness: 'current', concern_state: 'current_concern' };
@@ -47,6 +47,8 @@ describe('System Health H2 evidence-first presentation', () => {
     expect(recoveryAvailabilityLabel('externally_managed')).toMatch(/existing recovery service/i);
     expect(recoveryAvailabilityLabel('never_automatic')).toMatch(/manual confirmation/i);
     expect(recoveryAvailabilityLabel('not_enabled')).toBe('Not available');
+    expect(recoveryAvailabilityLabel('not_enabled', { source_qualified: true })).toMatch(/source-qualified/i);
+    expect(recoveryAvailabilityLabel('not_enabled', { system_health_requestable: true })).toMatch(/owner-assisted/i);
   });
 
   it('maps durable recovery lifecycle states without treating admission as success', () => {

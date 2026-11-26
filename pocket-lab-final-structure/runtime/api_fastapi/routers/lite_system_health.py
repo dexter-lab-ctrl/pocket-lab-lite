@@ -109,6 +109,27 @@ def system_health_policies(request: Request):
     from ..services import lite_infrastructure_automation as automation
     result["selective_automation"] = automation.public()
     try:
+        policy_status = lite_policy_opa.policy_status()
+        result["policy_authority"] = {
+            "status": policy_status.get("status"),
+            "ready": policy_status.get("status") == "ready",
+            "reason_code": str(policy_status.get("degraded_reason") or "")[:80],
+            "summary": str(policy_status.get("summary") or "")[:240],
+            "source_update_required": bool((policy_status.get("active_policy") or {}).get("source_update_required")),
+            "activation_in_progress": bool((policy_status.get("active_policy") or {}).get("activation_in_progress")),
+            "sanitized": True,
+        }
+    except Exception:
+        result["policy_authority"] = {
+            "status": "unavailable",
+            "ready": False,
+            "reason_code": "policy_unavailable",
+            "summary": "Current Safety Rules authority could not be confirmed.",
+            "source_update_required": False,
+            "activation_in_progress": False,
+            "sanitized": True,
+        }
+    try:
         with connection() as conn:
             authority.require_owner(conn, context)
         result["owner_controls_available"] = True
