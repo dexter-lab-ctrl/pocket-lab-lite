@@ -1298,9 +1298,21 @@ export const handlers = [
     evidence: 'sanitized_summary_only',
   })),
   http.get('/api/lite/system-health/policies', () => HttpResponse.json({
-    automatic_execution: 'existing_independent_guardians_only', engine_auto_repair: false, mode: 'fail_closed',
+    automatic_execution: 'existing_independent_guardians_and_one_selective_candidate', engine_auto_repair: false, mode: 'fail_closed',
+    activation_policy: {
+      production_assisted_enabled: false, production_automatic_enabled: false, production_automatic_gate_open: false,
+      default_off: true, qualified_operations: ['runtime.consumer.reconnect', 'storage.logs.preview', 'storage.temp.preview', 'storage.evidence.preview', 'sqlite.checkpoint.passive', 'projection.reconcile'],
+      qualified_automatic_operations: ['projection.reconcile'],
+      preferences: { revision: 1, recovery_mode: 'monitor', resource_mode: 'balanced', activation_confirmation: { valid: false, required: true, reason_codes: ['owner_preference_required'], sanitized: true } },
+      activation_confirmation: { assisted: { valid: false, required: true, reason_codes: ['runtime_opt_in_required'], sanitized: true }, automatic: { valid: false, required: true, reason_codes: ['automatic_runtime_opt_in_required'], sanitized: true } },
+    },
+    policy_authority: { status: 'ready', ready: true, reason_code: '', summary: 'Safety Rules are active and ready for protected changes.', source_update_required: false, activation_in_progress: false, sanitized: true },
+    selective_automation: { revision: 0, preference_enabled: false, source_qualified: true, activation_gate_open: false, runtime_enabled: false, owner_preferred: false, reason_codes: ['automatic_runtime_opt_in_required'], effective_execution_confirmed: false, execution_state: 'idle', recent: [], sanitized: true },
     controlled_recovery_adapter: { implemented: true, enabled: false, default_enabled: false, operation_id: 'runtime.consumer.reconnect', execution_owner: 'worker_recovery_watchdog' },
-    repair_catalog: [{ operation_id: 'runtime.consumer.reconnect', risk_class: 'A', availability: 'externally_managed', summary: 'Worker watchdog owns durable-consumer recovery.' }],
+    repair_catalog: [
+      { operation_id: 'runtime.consumer.reconnect', risk_class: 'A', availability: 'externally_managed', source_qualified: true, system_health_requestable: false, effective_availability: 'source_qualified_monitor_only', summary: 'Worker watchdog owns durable-consumer recovery.' },
+      ...['storage.logs.preview', 'storage.temp.preview', 'storage.evidence.preview', 'sqlite.checkpoint.passive', 'projection.reconcile'].map(operation_id => ({ operation_id, risk_class: 'A', availability: 'not_enabled', source_qualified: true, system_health_requestable: false, effective_availability: 'source_qualified_monitor_only', summary: 'Reviewed operation; runtime and Owner gates remain closed.' })),
+    ],
   })),
   http.get('/api/lite/system-health/repairs', () => HttpResponse.json({
     operations: [], new_executor_enabled: false,

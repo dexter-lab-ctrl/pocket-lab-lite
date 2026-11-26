@@ -490,10 +490,10 @@ export default function LiteSystemHealth({ onNavigate }) {
         {Object.hasOwn(INFRASTRUCTURE_SECTIONS, section) && <InfrastructureSection section={section} query={infrastructure} readOnly={readOnly}
           onOpenArea={onNavigate ? destination => { close(); onNavigate(destination); } : null} />}
         {section === 'repairs' ? <section className="lite-system-health-manage-section">
-          <p className="lite-system-health-muted">Existing supervisors and the worker recovery watchdog own execution. The qualified System Health adapter is candidate-only and remains disabled by default; no button can bypass backend authorization.</p>
+          <p className="lite-system-health-muted">Existing supervisors, the worker recovery watchdog and the projection scheduler remain the execution owners. Source qualification never bypasses runtime, Owner or Safety Rules gates.</p>
           {(policies.data?.repair_catalog || []).map((item) => <LiteActionRow key={item.operation_id}
             label={item.title || recoveryOperationLabel(item.operation_id)}
-            value={recoveryAvailabilityLabel(item.availability)}
+            value={recoveryAvailabilityLabel(item.availability, item)}
             action={!readOnly && onNavigate && item.availability === 'guided_existing_flow' && ['devices', 'catalog', 'recovery', 'security', 'rules'].includes(item.destination) ?
               { label: 'Open controls', haptic: true, onClick: () => { close(); onNavigate(item.destination); } } : undefined}
             summary={item.availability === 'guided_existing_flow' ? 'Review the existing controls and their current eligibility.' :
@@ -535,11 +535,12 @@ export default function LiteSystemHealth({ onNavigate }) {
           <EvidenceRows rows={resources.data?.signals || []} />
         </section> : null}
         {section === 'policies' ? <section className="lite-system-health-manage-section">
-          <LiteActionRow label="Automatic recovery" value="Existing guardians only" summary="No new System Health automatic operation is enabled." />
-          <LiteActionRow label="New production recovery" value="Disabled" summary="Qualification and governed activation are required." />
+          <LiteActionRow label="Automatic recovery" value={policies.data?.activation_policy?.production_automatic_enabled ? 'Activity history only' : policies.data?.selective_automation?.source_qualified ? 'Qualified · opt-in required' : 'Existing guardians only'} summary={policies.data?.selective_automation?.reason_codes?.[0] || 'The fixed Risk A operation remains default-off until current runtime and Owner gates are satisfied.'} />
+          <LiteActionRow label="New production recovery" value={policies.data?.activation_policy?.production_assisted_enabled ? 'Owner-assisted enabled' : 'Default-off'} summary="Source qualification, runtime opt-in, current Owner confirmation and Safety Rules authorization are separate gates." />
+          <LiteActionRow label="Safety Rules authority" value={policies.data?.policy_authority?.ready ? 'Current' : 'Pending confirmation'} summary={policies.data?.policy_authority?.summary || 'Current authorization is checked at admission and fails closed when unavailable.'} />
           <LiteActionRow label="Sensitive operations" value="Protected" summary="Data restoration and identity changes require governed steps." />
           {(policies.data?.repair_catalog || []).map(item => <LiteActionRow key={item.operation_id}
-            label={item.title || recoveryOperationLabel(item.operation_id)} value={recoveryAvailabilityLabel(item.availability)} />)}
+            label={item.title || recoveryOperationLabel(item.operation_id)} value={recoveryAvailabilityLabel(item.availability, item)} />)}
         </section> : null}
         {section === 'drift' ? <section className="lite-system-health-manage-section">
           <p className="lite-system-health-muted">A mismatch in observed process state does not prove configuration drift or authorize changing settings.</p>

@@ -567,8 +567,8 @@
     },
     {
       "path": "columns.html",
-      "sha256": "5530cc95c5198846de95ba663c4e75e4e2f9312e054aa772a710cb4a52570f4f",
-      "size_bytes": 607445
+      "sha256": "57719fa367a2db687223b2c2c036642fb15a71db42e0f2081fc952041e3f6e6a",
+      "size_bytes": 610862
     },
     {
       "path": "constraint.js",
@@ -582,18 +582,18 @@
     },
     {
       "path": "deletionOrder.txt",
-      "sha256": "8e0ea0e5cd3a4a0fe58890d15d8cec54e70d08f97b7b20d31410e014d468568a",
-      "size_bytes": 2707
+      "sha256": "34ea7fc01ce43d8a210e85f74b3cec026caab964c3d983982d27c72981f1d602",
+      "size_bytes": 2743
     },
     {
       "path": "diagrams/orphans/orphans.dot",
-      "sha256": "67ebf069c6946919b43dfcb685b6af913a2fa24405dca45d400c29d07611732a",
-      "size_bytes": 223139
+      "sha256": "b2f9903a022bcf4637ac460eb36c5e6991bdf6ed5de6e698b6e3fb89e43b674f",
+      "size_bytes": 226866
     },
     {
       "path": "diagrams/orphans/orphans.png",
-      "sha256": "c5af54ea02f97a36717642a5b5af6b14a329b85a5a63bbdecf33c99080095980",
-      "size_bytes": 1960251
+      "sha256": "4320fc57cc7f310b819d6c3692940d786fa931f5c7bb4ab3299ec193bec63f33",
+      "size_bytes": 1995209
     },
     {
       "path": "diagrams/summary/relationships.implied.compact.dot",
@@ -1904,6 +1904,16 @@
       "path": "diagrams/tables/lite_revision_events.implied2degrees.png",
       "sha256": "58353a83b0995a1c668b4841224bfe1a20aa61607614315484fafd4181f81c46",
       "size_bytes": 232140
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_activation_fence.1degree.dot",
+      "sha256": "902c702c55f623ff88b741890e397ba76ba645659f43b03422e5924b19150f0e",
+      "size_bytes": 4071
+    },
+    {
+      "path": "diagrams/tables/lite_system_health_activation_fence.1degree.png",
+      "sha256": "0a1c9fe14c46c3962b826ed512dae14fea68b306860bd18017f8beffa681e607",
+      "size_bytes": 36657
     },
     {
       "path": "diagrams/tables/lite_system_health_automation_attempts.1degree.dot",
@@ -3937,8 +3947,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "d2ec36dbce71ae594686757c1b506ad8fc40d5c1cc1ee67e72291ce1354b7cf8",
-      "size_bytes": 87643
+      "sha256": "576229f817955364c982c10e07b27b2c2f7f642ceb354ee79c8981989d5d7595",
+      "size_bytes": 88344
     },
     {
       "path": "info-html.txt",
@@ -3947,8 +3957,8 @@
     },
     {
       "path": "insertionOrder.txt",
-      "sha256": "59568b3fecb66ab7de450e24ac4aedcbe6cf2635777af056f2c450a6c6aa7263",
-      "size_bytes": 2707
+      "sha256": "16b36aee1d8adc80787c0a20a82d82573f21801e5f84a0ca6ad94c0863910e6d",
+      "size_bytes": 2743
     },
     {
       "path": "main.js",
@@ -3957,13 +3967,13 @@
     },
     {
       "path": "orphans.html",
-      "sha256": "d9cb9860bcc07922d4ff7664dd1c9eb8e6b7773eca234433237e3faf798dc757",
-      "size_bytes": 15709
+      "sha256": "bf19948667d8568592f21731a858cdc7463e91d05452aca50324e72ccac1f913",
+      "size_bytes": 15889
     },
     {
       "path": "pocketlab-lite-schema.sqlite3.main.xml",
-      "sha256": "8eb83639a1274f72248ff31102d9d20e52c2321c7fc53670f42ea7fe8e5f2f6f",
-      "size_bytes": 371665
+      "sha256": "7540a03d213fbb5d6471283faa91c35d091a5ab963801f2f22e35e5323390b08",
+      "size_bytes": 373407
     },
     {
       "path": "relationships.html",
@@ -4002,8 +4012,8 @@
     },
     {
       "path": "source-metadata.json",
-      "sha256": "6abc462b2615c8ae71c170ef81839606670657bb086c319d0a2c1c2b5c1314ee",
-      "size_bytes": 15240
+      "sha256": "890735539832edb13623324198699543a6eb238c4619241c6c66dacea5600a1d",
+      "size_bytes": 15516
     },
     {
       "path": "tables/app_action_lifecycle.html",
@@ -4224,6 +4234,11 @@
       "path": "tables/lite_revision_events.html",
       "sha256": "d3379aa389b0804a5c63284f4911a6629d6ec91fdf044d5c38c10b2aa3085683",
       "size_bytes": 30613
+    },
+    {
+      "path": "tables/lite_system_health_activation_fence.html",
+      "sha256": "c95e2cb30aee6e81dae00a68c1436c5fcf30b8139d37f891f5df90a67c3d064f",
+      "size_bytes": 21854
     },
     {
       "path": "tables/lite_system_health_automation_attempts.html",

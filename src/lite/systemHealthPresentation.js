@@ -164,7 +164,10 @@ export function recoveryOperationLabel(operationId) {
   return RECOVERY_ACTION_LABELS[operationId] || 'Existing recovery option';
 }
 
-export function recoveryAvailabilityLabel(value) {
+export function recoveryAvailabilityLabel(value, operation = null) {
+  if (operation?.automatic_admission_enabled) return 'Selective automatic · enabled';
+  if (operation?.system_health_requestable) return 'Owner-assisted · available';
+  if (operation?.source_qualified || operation?.automatic_source_qualified) return 'Source-qualified · monitor-only';
   return RECOVERY_AVAILABILITY_LABELS[value] || 'Availability not confirmed';
 }
 

@@ -784,6 +784,7 @@
         "table:lite_home_activity_read_cursors",
         "table:lite_installed_release_identity",
         "table:lite_revision_events",
+        "table:lite_system_health_activation_fence",
         "table:lite_system_health_automation_attempts",
         "table:lite_system_health_automation_policy",
         "table:lite_system_health_availability_samples",
@@ -2240,6 +2241,12 @@
         "table:lite_system_health_automation_policy"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql"
+    },
+    {
+      "entities": [
+        "table:lite_system_health_activation_fence"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql"
     },
     {
       "entities": [
@@ -5133,6 +5140,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "54e0e736fc1a97541d826775ffffda546b9c541a1aa4dd29ca255a44d7a1d8d6"
+    "source_fingerprint": "5a99f823b944ae3642b2f914852c337292611ac685c249568797580d6c5109e3"
   }
 }

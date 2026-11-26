@@ -1618,6 +1618,20 @@
             <column ascending="true" name="event_id"/>
          </index>
       </table>
+      <table name="lite_system_health_activation_fence" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="singleton_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="1" name="assisted_source_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="2" name="assisted_runtime_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="3" name="assisted_preference_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="4" name="automatic_source_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="5" name="automatic_runtime_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="automatic_policy_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="singleton_id" sequenceNumberInPK="1"/>
+         <index name="lite_system_health_activation_fence_s_pk" unique="true">
+            <column ascending="true" name="singleton_id"/>
+         </index>
+      </table>
       <table name="lite_system_health_automation_attempts" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="attempt_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="policy_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">

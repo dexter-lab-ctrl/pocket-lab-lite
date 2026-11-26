@@ -33,6 +33,11 @@ export default function SystemHealthOwnerControls({ section, policy, history, re
   if (!allowed) return null;
   const available = maintenance.data?.available_operations || [];
   const rows = maintenance.data?.items || [];
+  const catalog = Array.isArray(policy?.repair_catalog) ? policy.repair_catalog : [];
+  const qualified = catalog.filter(item => item?.source_qualified);
+  const activation = policy?.activation_policy || {};
+  const assistedFence = activation.activation_confirmation?.assisted;
+  const policyAuthority = policy?.policy_authority;
   const used = new Set(rows.filter(row => ['queued','executing','verified','uncertain'].includes(row.status)).map(row => row.preview_id));
   const previewFor = operation => rows.find(row => row.operation_id === operation && row.status === 'verified' &&
     row.evidence?.candidate_count > 0 && Date.parse(row.expires_at) > Date.now() && !used.has(row.command_id));
@@ -87,11 +92,15 @@ export default function SystemHealthOwnerControls({ section, policy, history, re
   return <section className="lite-system-health-manage-section" aria-label="Owner controls">
     <h3>Owner controls</h3>
     {section === 'policies' && prefs && <>
+      <LiteActionRow label="Built-in protection" value="Always on" summary="System Health remains fail-closed; the browser is not an execution or authorization authority." />
       <LiteActionRow label="Recovery preference" value={prefs.recovery_mode === 'assisted' ? 'Assisted' : 'Monitor'} />
+      <LiteActionRow label="Assisted production activation" value={activation.production_assisted_enabled ? 'Enabled' : 'Default-off'} summary={assistedFence?.valid ? 'The current Owner confirmation fence matches this runtime.' : (assistedFence?.reason_codes?.[0] || 'A current Owner confirmation is required after promotion or runtime revision changes.')} />
+      <LiteActionRow label="Current Safety Rules" value={policyAuthority?.ready ? 'Authorized' : 'Pending authorization'} summary={policyAuthority?.summary || 'Protected recovery fails closed until the active known-good revision is confirmed.'} />
+      <LiteActionRow label="Source-qualified assisted operations" value={qualified.length ? `${qualified.length} reviewed` : 'None'} summary={qualified.length ? qualified.map(item => item.operation_id).join(', ') : 'No operation is available from source qualification alone.'} />
       <LiteButton haptic tone="secondary" disabled={busy} onClick={() => preference('recovery_mode', prefs.recovery_mode === 'assisted' ? 'monitor' : 'assisted')}> {prefs.recovery_mode === 'assisted' ? 'Prefer monitoring' : 'Prefer assisted recovery'} </LiteButton>
     </>}
     {section === 'policies' && automatic && <>
-      <LiteActionRow label="Selective history reconciliation" value={automatic.preference_enabled ? 'Preferred' : 'Off'} summary={automatic.source_qualified ? 'Activation requires current policy and runtime readiness.' : 'Production qualification pending.'} />
+      <LiteActionRow label="Selective history reconciliation" value={automatic.runtime_enabled ? 'Enabled' : automatic.preference_enabled ? 'Preferred · gated' : 'Off'} summary={automatic.reason_codes?.[0] || (automatic.source_qualified ? 'Activation requires current policy and runtime readiness.' : 'Production qualification pending.')} />
       <LiteButton haptic tone="secondary" disabled={busy} onClick={changeAutomatic}>{automatic.preference_enabled ? 'Disable automatic preference' : 'Prefer automatic history reconciliation'}</LiteButton>
     </>}
     {section === 'protection' && prefs && <>

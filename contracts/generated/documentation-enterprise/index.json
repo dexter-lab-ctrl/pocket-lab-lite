@@ -28158,7 +28158,8 @@
       },
       {
         "affected_components": [
-          "FastAPI"
+          "FastAPI",
+          "repository tooling"
         ],
         "affects_release": true,
         "affects_runtime": true,
@@ -28175,7 +28176,8 @@
         "runtime_scope": "runtime or development depending on source",
         "secret": false,
         "source": [
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_automation.py"
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py",
+          "tests/backend/test_lite_system_health.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -28238,6 +28240,31 @@
         "affects_release": true,
         "affects_runtime": true,
         "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SYSTEM_HEALTH_PRODUCTION_ASSISTED_REVISION",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py",
+          "tests/backend/test_lite_system_health.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI",
+          "repository tooling"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
         "name": "POCKETLAB_SYSTEM_HEALTH_PRODUCTION_AUTOMATIC",
         "owner": "FastAPI/runtime",
         "purpose": "Pocket Lab runtime/development configuration discovered from source",
@@ -28251,7 +28278,31 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_automation.py",
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py",
           "tests/backend/test_lite_system_health.py"
+        ],
+        "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
+      },
+      {
+        "affected_components": [
+          "FastAPI"
+        ],
+        "affects_release": true,
+        "affects_runtime": true,
+        "default": "source-defined/unvalidated",
+        "name": "POCKETLAB_SYSTEM_HEALTH_PRODUCTION_AUTOMATIC_REVISION",
+        "owner": "FastAPI/runtime",
+        "purpose": "Pocket Lab runtime/development configuration discovered from source",
+        "related_troubleshooting": [
+          "Development Troubleshooting",
+          "Production Troubleshooting"
+        ],
+        "required": "source-required where fail-closed code validates presence; otherwise optional/unvalidated",
+        "restart_required": "likely-runtime-restart",
+        "runtime_scope": "runtime or development depending on source",
+        "secret": false,
+        "source": [
+          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py"
         ],
         "validation": "source-discovery + secret-value redaction; actual runtime value is never rendered"
       },
@@ -28326,7 +28377,6 @@
         "secret": false,
         "source": [
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_authority.py",
-          "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_automation.py",
           "pocket-lab-final-structure/runtime/api_fastapi/services/lite_infrastructure_operations.py",
           "tests/backend/test_lite_system_health.py"
         ],
@@ -41458,7 +41508,7 @@
       "feature_journey_count": 8,
       "implementation_status": "implemented",
       "live_runtime": false,
-      "page_count": 546,
+      "page_count": 547,
       "top_level": [
         "start-here",
         "use",
@@ -49342,9 +49392,9 @@
       "fingerprints": {
         "architecture": "2515274074f9a748d09b3cee932f49188122cff8f0964dee1647c20ea57b7444",
         "asyncapi": "6bdbcb7f3b8587784a349d6ccf2057eefe4ca0ad2ab6a935e98ade9a68d955e1",
-        "documentation": "567dd39b3fd4c0a0c99b95c4d7e6ea9bb620868e24fab371529e92c51ee710e2",
+        "documentation": "efcf862956a68cca9918e4f6323501aa7ca21e5eb2bb1e39c1c018a25edd08bc",
         "openapi": "541b9b956549a22a8300753ef4216ccbedb997decda0710ca60dadc271158cb5",
-        "operational_health": "f9008a7ea538d2cf691f4539ed40704776884ffb4d8173a2c2415268158ba24f"
+        "operational_health": "869b7888fd1b40157da5ba95e8ae389d8763f9b8985745b6aac1d22e28e4ef02"
       },
       "frontend_version": "1.0.0",
       "implementation_status": "implemented",
@@ -125002,5 +125052,5 @@
   },
   "schema_version": "2.0.0",
   "source_commit": "uncommitted",
-  "source_fingerprint": "ec3a4d40036371a0a2647c7231d4a541a44a83f5c68b78c35343ba1bdde3c646"
+  "source_fingerprint": "72fc7b525408cb8785f7cba8c87233ec9e02f30d78a0d9d43d020ba998d7476b"
 }

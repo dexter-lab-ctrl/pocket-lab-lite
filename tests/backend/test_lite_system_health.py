@@ -26,7 +26,7 @@ def health(tmp_path, monkeypatch):
         conn.executescript((schema_root / "0045_system_health_enrollment_generation.sql").read_text(encoding="utf-8"))
         conn.executescript((schema_root / "0046_system_health_recovery_requests.sql").read_text(encoding="utf-8"))
         conn.executescript((schema_root / "0048_system_health_owner_recovery_evidence.sql").read_text(encoding="utf-8"))
-        for migration in ("0049_system_health_control_authority.sql", "0050_system_health_maintenance_admission.sql", "0051_system_health_service_owner_evidence.sql", "0052_system_health_resolution_and_samples.sql", "0053_system_health_host_protection.sql", "0054_system_health_selective_automation.sql"):
+        for migration in ("0049_system_health_control_authority.sql", "0050_system_health_maintenance_admission.sql", "0051_system_health_service_owner_evidence.sql", "0052_system_health_resolution_and_samples.sql", "0053_system_health_host_protection.sql", "0054_system_health_selective_automation.sql", "0055_system_health_activation_fence.sql"):
             conn.executescript((schema_root / migration).read_text(encoding="utf-8"))
 
     def connect():
@@ -545,6 +545,11 @@ def test_infrastructure_registry_cannot_enable_production_or_generic_execution(h
     monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_ADAPTER", "1")
     assert not ops.controlled_recovery_enabled()
     assert not ops.activation_policy()["production_automatic_enabled"]
+    assert ops.activation_policy()["qualified_operations"] == sorted({
+        "runtime.consumer.reconnect", "storage.logs.preview", "storage.temp.preview",
+        "storage.evidence.preview", "sqlite.checkpoint.passive", "projection.reconcile",
+    })
+    assert ops.activation_policy()["qualified_automatic_operations"] == ["projection.reconcile"]
     assert not any(row["system_health_requestable"] for row in ops.operation_catalog())
     monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
     monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE", "0")
@@ -636,6 +641,73 @@ def test_new_maintenance_cannot_be_activated_by_production_environment_alone(hea
     assert all(not maintenance.enabled(op) for op in maintenance.OPERATIONS)
 
 
+def test_source_qualified_maintenance_adapters_execute_through_existing_worker_owner(health, monkeypatch, tmp_path):
+    """Exercise each promoted maintenance adapter through the worker handler.
+
+    The fixture is disposable and uses the repository's command handler; no
+    production broker, database or process owner is reachable from this test.
+    Projection completion remains separately correlation-gated below.
+    """
+    import asyncio
+    import json
+    from api_fastapi.services import domain_commands
+    from api_fastapi.services import lite_infrastructure_cleanup as cleanup
+    from api_fastapi.services import lite_infrastructure_maintenance as maintenance
+    from api_fastapi.services import lite_phase3c_projections as prepared
+
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_MAINTENANCE_ADAPTER", "1")
+    monkeypatch.setattr(maintenance, "connection", health.connection)
+    monkeypatch.setattr(maintenance, "_prepared_guard", lambda operation: True)
+    auth = {"role": "Owner", "owner_authority": True, "authorization_version": 1, "enterprise_enabled": False, "membership_active": True}
+    monkeypatch.setattr(maintenance.authority, "_human_authority", lambda conn, actor, session: auth)
+    monkeypatch.setattr(maintenance, "_policy", lambda *args, **kwargs: {"policy_revision": "isolated-policy", "decision_id": "isolated-decision"})
+    monkeypatch.setattr(maintenance.maintenance, "maintenance_state", lambda: {"active": False})
+    monkeypatch.setattr(maintenance.maintenance, "active_security_scan", lambda: False)
+
+    @contextmanager
+    def no_lock(*_args, **_kwargs):
+        yield
+
+    monkeypatch.setattr(maintenance, "_owner_lock", no_lock)
+    monkeypatch.setattr(cleanup, "_scope_lock", no_lock)
+    log_candidate = {"name": "pocket-worker-out__2020-01-01_000000.log", "dev": 1, "ino": 1, "size": 8, "mtime_ns": 1, "ctime_ns": 1, "allocated": 8}
+    temp_candidate = {"folder": "database-rehearsal-abcd1234", "name": "fixture.db", "dev": 1, "ino": 2, "size": 8, "mtime_ns": 1, "ctime_ns": 1, "allocated": 8}
+    monkeypatch.setattr(cleanup, "_log_plan", lambda: (tmp_path, [log_candidate]))
+    monkeypatch.setattr(cleanup, "_temp_plan", lambda: (tmp_path, [temp_candidate]))
+    monkeypatch.setattr(maintenance.maintenance, "reviewed_retention_plan", lambda conn: [])
+    monkeypatch.setattr(maintenance.maintenance, "run_wal_checkpoint", lambda **kwargs: {
+        "quick_check": "ok", "checkpoint_busy": 0, "checkpoint_log_frames": 0, "checkpointed_frames": 0,
+    })
+    marks = []
+    monkeypatch.setattr(prepared, "mark_dirty", lambda *domains, **kwargs: marks.append((domains, kwargs.get("reason"))))
+
+    async def no_publish(*_args, **_kwargs):
+        return None
+
+    monkeypatch.setattr(domain_commands, "_publish", no_publish)
+
+    def run(operation, candidate):
+        command_id = f"isolated-{operation.replace('.', '-')}-{len(marks)}"
+        with health.connection() as conn:
+            conn.execute("""INSERT INTO lite_system_health_maintenance_admissions
+                (command_id,operation_id,actor_id,session_id,policy_revision,decision_id,idempotency_digest,
+                 preview_id,status,requested_at,expires_at,candidate_json)
+                    VALUES(?,?,?,?,?,?,?,?,'queued',?,?,?)""", (
+                    command_id, operation, "owner", "session", "isolated-policy", "isolated-decision",
+                    command_id, "", health._now(), "2999-01-01T00:00:00Z", json.dumps(candidate),
+                ))
+        return asyncio.run(domain_commands.handle_system_health_maintenance({"command_id": command_id}))
+
+    assert run("storage.logs.preview", []) ["status"] == "verified"
+    assert run("storage.temp.preview", []) ["status"] == "verified"
+    assert run("storage.evidence.preview", []) ["status"] == "verified"
+    assert run("sqlite.checkpoint.passive", []) ["status"] == "verified"
+    projection = run("projection.reconcile", [])
+    assert projection["status"] == "executing"
+    assert marks[-1][1].startswith("reconcile_system_health:")
+
+
 def test_system_health_frontend_recovery_cancel_path_is_contract_discoverable():
     api = Path("src/lib/liteApi.js").read_text(encoding="utf-8")
     assert "postJson(`/api/lite/system-health/recovery-requests/${encodeURIComponent(id)}/cancel`, {})" in api
@@ -651,6 +723,99 @@ def test_preferences_are_revision_bound_and_audited(health, monkeypatch):
     with pytest.raises(ValueError, match="preference_revision_changed"):
         authority.save_preferences({}, expected_revision=0, recovery_mode="monitor", resource_mode="balanced")
     assert health._read("SELECT event_type FROM lite_system_health_control_audit")[0]["event_type"] == "preferences_changed"
+
+
+def test_production_owner_preference_requires_current_runtime_activation_fence(health, monkeypatch):
+    from api_fastapi.services import lite_infrastructure_authority as authority
+    from api_fastapi.services import lite_infrastructure_operations as ops
+    monkeypatch.setattr(authority, "connection", health.connection)
+    monkeypatch.setattr(authority, "require_owner", lambda conn, context: "test-owner")
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "production")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_PRODUCTION_ASSISTED", "1")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_PRODUCTION_ASSISTED_REVISION", "rollout-a1")
+    saved = authority.save_preferences({}, expected_revision=0, recovery_mode="assisted", resource_mode="balanced")
+    assert saved["activation_confirmation"]["valid"] is True
+    assert ops.maintenance_enabled("storage.logs.preview") is True
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_PRODUCTION_ASSISTED_REVISION", "rollout-a2")
+    assert ops.maintenance_enabled("storage.logs.preview") is False
+    assert "activation_fence_stale" in ops.activation_fence_status("assisted")["reason_codes"]
+
+
+def test_automatic_completion_requires_its_own_scheduler_trigger(health, monkeypatch):
+    from api_fastapi.services import lite_infrastructure_automation as automation
+    attempt = {"attempt_id": "attempt-123", "requested_at": "2026-11-26T10:00:00Z"}
+    base = {"last_completed_at": "2026-11-26T10:00:01Z", "last_error_type": "", "execution_owner": "worker"}
+    assert not automation._projection_evidence(attempt, base | {"last_trigger_reason": "ordinary_scheduled_refresh"})
+    assert automation._projection_evidence(attempt, base | {"last_trigger_reason": automation._trigger_reason("attempt-123")})
+    assert not automation._projection_evidence(attempt, base | {"last_trigger_reason": automation._trigger_reason("attempt-123"), "execution_owner": "api"})
+
+
+def test_selective_automatic_lifecycle_is_attempt_bound_and_fail_closed(health, monkeypatch):
+    from datetime import datetime, timedelta, timezone
+    from api_fastapi.services import lite_infrastructure_automation as automation
+    from api_fastapi.services import lite_infrastructure_maintenance as maintenance
+    from api_fastapi.services import lite_infrastructure_read_model as model
+    from api_fastapi.services import lite_infrastructure_host_protection as host
+    from api_fastapi.services import lite_phase3c_projections as prepared
+    from api_fastapi.services import lite_security_maintenance as safety
+    from api_fastapi.services import lite_policy_opa as opa
+
+    monkeypatch.setenv("POCKETLAB_ENVIRONMENT", "qualification")
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_AUTOMATIC_ADAPTER", "1")
+    monkeypatch.setattr(automation, "connection", health.connection)
+    monkeypatch.setattr(automation, "_owner_versions", lambda *_args: (1, 1, 1))
+    @contextmanager
+    def no_lock():
+        yield
+
+    monkeypatch.setattr(maintenance, "_owner_lock", no_lock)
+    now = datetime.now(timezone.utc)
+    stamp = (now - timedelta(seconds=30)).isoformat(timespec="seconds").replace("+00:00", "Z")
+    old = (now - timedelta(seconds=900)).isoformat(timespec="seconds").replace("+00:00", "Z")
+    monkeypatch.setattr(model, "_snapshots", lambda: {
+        "system.storage_pressure": {"updated_at": stamp, "status": "normal"},
+        "system.sqlite_health": {"updated_at": stamp, "status": "healthy", "quick_check": "ok"},
+    })
+    monkeypatch.setattr(host, "snapshot", lambda: {
+        "observed_at": stamp, "effective_resource_mode": "balanced", "automatic_pressure": False,
+    })
+    monkeypatch.setattr(safety, "maintenance_state", lambda: {"active": False})
+    monkeypatch.setattr(safety, "active_security_scan", lambda: False)
+    monkeypatch.setattr(opa, "evaluate_authorization", lambda **_kwargs: {
+        "allow": True, "policy_revision": "qualification-policy", "decision_id": "automatic-decision",
+    })
+    marked: list[str] = []
+    monkeypatch.setattr(prepared, "mark_dirty", lambda _domain, *, reason: marked.append(reason))
+
+    with health.connection() as conn:
+        conn.execute("""CREATE TABLE policy_runtime_state (
+            state_id INTEGER PRIMARY KEY, active_revision_id TEXT, known_good_revision_id TEXT
+        )""")
+        conn.execute("INSERT INTO policy_runtime_state VALUES(1,?,?)", ("qualification-policy", "qualification-policy"))
+        conn.execute("""CREATE TABLE projection_refresh_state (
+            domain TEXT PRIMARY KEY, last_completed_at TEXT, last_error_type TEXT NOT NULL DEFAULT '',
+            last_trigger_reason TEXT NOT NULL DEFAULT '', execution_owner TEXT NOT NULL DEFAULT 'unknown'
+        )""")
+        conn.execute("INSERT INTO projection_refresh_state VALUES(?,?,?,?,?)", ("system.activity_history", old, "", "ordinary_refresh", "worker"))
+        conn.execute("""INSERT INTO lite_system_health_automation_policy
+            VALUES(1,1,1,'owner',1,1,1,'qualification-policy','saved-decision',?)""", (old,))
+
+    automation.tick()
+    attempts = health._read("SELECT * FROM lite_system_health_automation_attempts")
+    assert len(attempts) == 1
+    assert len(marked) == 1
+    attempt_id = attempts[0]["attempt_id"]
+    assert marked[0] == automation._trigger_reason(attempt_id)
+
+    with health.connection() as conn:
+        conn.execute("UPDATE projection_refresh_state SET last_completed_at=?,last_trigger_reason=?,execution_owner=? WHERE domain=?",
+                     ((now + timedelta(seconds=2)).isoformat(timespec="seconds").replace("+00:00", "Z"), marked[0], "worker", "system.activity_history"))
+    automation.tick()
+    assert health._read("SELECT status FROM lite_system_health_automation_attempts WHERE attempt_id=?", (attempt_id,))[0]["status"] == "verified"
+
+    monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_RECOVERY_EMERGENCY_DISABLE", "1")
+    automation.tick()
+    assert len(health._read("SELECT * FROM lite_system_health_automation_attempts")) == 1
 
 
 def test_service_evidence_requires_later_same_instance_readiness(health, monkeypatch):
@@ -717,7 +882,8 @@ def test_automatic_preference_cannot_qualify_production(health,monkeypatch):
     monkeypatch.setenv("POCKETLAB_ENVIRONMENT","production")
     monkeypatch.setenv("POCKETLAB_SYSTEM_HEALTH_PRODUCTION_AUTOMATIC","1")
     assert automation._gate() is False
-    assert automation.public()["source_qualified"] is False
+    assert automation.public()["source_qualified"] is True
+    assert automation.public()["activation_gate_open"] is False
 
 
 def test_cleanup_rejects_symlink_and_hardlink(health,tmp_path):

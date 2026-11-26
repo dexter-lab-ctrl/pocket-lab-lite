@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 90cfbc45790a1a06628aa36587e840a7cf820b29fb7359e82ee84a1c545f44be
+source_fingerprint: 9246634c5e447c177b011d09ee8d8dc9d7bf3fa0ec8e85b5625df07c6c269199
 schema_revision: 1
 validation_status: generated
 ---
@@ -72,6 +72,7 @@ Semantic rows marked **inferred** are conservative source-derived ownership hint
 | `lite_home_activity_read_cursors` | table | 3 | 0 | 1 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0040_home_activity_read_cursors.sql |
 | `lite_installed_release_identity` | table | 18 | 0 | 2 | release | release runtime and identity services | restricted operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql |
 | `lite_revision_events` | table | 10 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql |
+| `lite_system_health_activation_fence` | table | 8 | 0 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0055_system_health_activation_fence.sql |
 | `lite_system_health_automation_attempts` | table | 7 | 0 | 3 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql |
 | `lite_system_health_automation_policy` | table | 10 | 0 | 0 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0054_system_health_selective_automation.sql |
 | `lite_system_health_availability_samples` | table | 3 | 0 | 2 | control_plane | source-defined control-plane service | internal operational metadata | inferred | pocket-lab-final-structure/runtime/api_fastapi/db/schema/0052_system_health_resolution_and_samples.sql |
@@ -1133,6 +1134,22 @@ Source-derived control plane persistence object; detailed ownership is conservat
 | `occurred_at` | TEXT | no | — | 0 |
 | `occurred_at_epoch_ms` | INTEGER | no | — | 0 |
 | `sanitized` | INTEGER | no | 1 | 0 |
+
+<a id="lite-system-health-activation-fence"></a>
+## `lite_system_health_activation_fence`
+
+Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.
+
+| Column | Type | Nullable | Default | Primary key |
+| --- | --- | --- | --- | --- |
+| `singleton_id` | INTEGER | yes | — | 1 |
+| `assisted_source_revision` | TEXT | no | '' | 0 |
+| `assisted_runtime_revision` | TEXT | no | '' | 0 |
+| `assisted_preference_revision` | INTEGER | no | 0 | 0 |
+| `automatic_source_revision` | TEXT | no | '' | 0 |
+| `automatic_runtime_revision` | TEXT | no | '' | 0 |
+| `automatic_policy_revision` | INTEGER | no | 0 | 0 |
+| `updated_at` | TEXT | no | — | 0 |
 
 <a id="lite-system-health-automation-attempts"></a>
 ## `lite_system_health_automation_attempts`
