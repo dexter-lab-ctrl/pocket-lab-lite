@@ -1792,6 +1792,17 @@ def _parser() -> argparse.ArgumentParser:
     isolated.add_argument("--artifact", required=True); isolated.add_argument("--manifest", required=True); isolated.add_argument("--checksums", required=True); isolated.add_argument("--workspace", required=True); isolated.add_argument("--device-id", default="pocket-lab-lite-server"); isolated.add_argument("--failure-mode", choices=("none", "health-failure", "writes-observed"), default="none"); isolated.set_defaults(handler="isolated")
     activate = commands.add_parser("activate")
     activate.add_argument("--artifact", required=True); activate.add_argument("--manifest", required=True); activate.add_argument("--checksums", required=True); activate.add_argument("--release-root", required=True); activate.add_argument("--state-root", required=True); activate.add_argument("--database", required=True); activate.add_argument("--source-checkout", default=str(ROOT)); activate.add_argument("--current-sha", required=True); activate.add_argument("--device-id", required=True); activate.add_argument("--backup-receipt", required=True); activate.add_argument("--restore-receipt", required=True); activate.add_argument("--migration-receipt", required=True); activate.add_argument("--preflight", required=True); activate.add_argument("--authorization", required=True); activate.add_argument("--promotion-public-key", required=True); activate.add_argument("--recovery-authorization"); activate.add_argument("--recovery-public-key"); activate.add_argument("--confirm-cutover", action="store_true"); activate.add_argument("--isolated", action="store_true"); activate.add_argument("--simulation-health-failure", action="store_true"); activate.add_argument("--simulation-writes-observed", action="store_true"); activate.set_defaults(handler="activate")
+    coordinated_prepare = commands.add_parser("prepare-coordinated")
+    coordinated_prepare.add_argument("--grant-id", required=True)
+    coordinated_prepare.set_defaults(handler="coordinated_prepare")
+    coordinated = commands.add_parser("activate-coordinated")
+    coordinated.add_argument("--grant-id", required=True)
+    coordinated.add_argument("--authorization", required=True)
+    coordinated.add_argument("--promotion-public-key", required=True)
+    coordinated.add_argument("--recovery-authorization", required=True)
+    coordinated.add_argument("--recovery-public-key", required=True)
+    coordinated.add_argument("--confirm-cutover", action="store_true")
+    coordinated.set_defaults(handler="coordinated_activate")
     reconcile = commands.add_parser("reconcile")
     reconcile.add_argument("--state-root", required=True); reconcile.set_defaults(handler="reconcile")
     return parser
@@ -1825,6 +1836,16 @@ def main(argv: list[str] | None = None) -> int:
             result = qualify_isolated(artifact=Path(args.artifact), manifest_path=Path(args.manifest), checksums_path=Path(args.checksums), workspace=Path(args.workspace), device_id=args.device_id, failure_mode=args.failure_mode)
         elif args.handler == "activate":
             result = _activate_from_cli(args)
+        elif args.handler in {"coordinated_prepare", "coordinated_activate"}:
+            if str(ROOT) not in sys.path:
+                sys.path.insert(0,str(ROOT))
+            from scripts.dev.lite import coordinated_runtime_promotion as coordinated
+            if args.handler == "coordinated_prepare":
+                result = coordinated.prepare(args.grant_id)
+            else:
+                result = coordinated.activate(args.grant_id,authorization=Path(args.authorization),
+                    promotion_public_key=Path(args.promotion_public_key),recovery_authorization=Path(args.recovery_authorization),
+                    recovery_public_key=Path(args.recovery_public_key),confirm_cutover=args.confirm_cutover)
         elif args.handler == "reconcile":
             result = reconcile_promotions(Path(args.state_root))
         else:

@@ -396,3 +396,53 @@ def read_handoff(grant_id,expected_sha256):
 
 def fail_claim(tx,lease):
     finish(tx,lease,{})
+
+
+def claim_cutover(grant_id,handoff_sha256,authorization_sha256):
+    """External owner only, after independent promotion/recovery verification.
+
+    A successful claim consumes the preparation grant; it is not a production
+    execution permit. Qualification uses a distinct offline database copy.
+    """
+    import re
+    if os.environ.get("POCKETLAB_PROCESS_ROLE") != "coordinated-promotion-controller":
+        raise PermissionError("external_promotion_controller_required")
+    if not re.fullmatch(r"[a-f0-9]{64}",authorization_sha256):
+        raise ValueError("promotion_authorization_invalid")
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            row,scope = current(tx,grant_id,states=("prepared",))
+            if row["handoff_sha256"] != handoff_sha256:
+                raise PermissionError("handoff_binding_changed")
+            # Independently inspect persisted service and Owner decisions.
+            for decision_id,action,actor_type,actor_id in (
+                    (row["decision_id"],ACTION,"human",row["owner_id"]),
+                    (row["claim_decision_id"],CLAIM,"service",EXECUTOR)):
+                evidence = tx.execute("""SELECT actor_type,actor_id,action_id,target_revision,allow,policy_revision
+                    FROM policy_decisions WHERE decision_id=?""",(decision_id,)).fetchone()
+                if (not evidence or evidence["actor_type"]!=actor_type or evidence["actor_id"]!=actor_id
+                        or evidence["action_id"]!=action or not evidence["allow"]
+                        or evidence["policy_revision"]!=scope["policy_baseline"]
+                        or evidence["target_revision"]!=row["binding_sha256"]):
+                    raise PermissionError("promotion_decision_binding_changed")
+            tx.execute("""UPDATE lite_lifecycle_release_execution SET state='cutover_claimed',
+                cutover_authorization_sha256=?,updated_at=? WHERE grant_id=? AND state='prepared'""",
+                (authorization_sha256,authority._iso(),grant_id))
+            authority._audit(tx,row["owner_id"],"release_cutover_rehearsal_claimed",
+                authority._workspace(tx)["boundary_revision"],grant_id=grant_id)
+            return scope
+
+
+def finish_cutover(grant_id,authorization_sha256,*,rehearsed):
+    if os.environ.get("POCKETLAB_PROCESS_ROLE") != "coordinated-promotion-controller" or not gate():
+        raise PermissionError("external_promotion_controller_required")
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            row = tx.execute("SELECT * FROM lite_lifecycle_release_execution WHERE grant_id=?",(grant_id,)).fetchone()
+            if not row or row["state"]!="cutover_claimed" or row["cutover_authorization_sha256"]!=authorization_sha256:
+                raise PermissionError("cutover_claim_changed")
+            state = "rehearsed" if rehearsed and not row["revoked_at"] else "failed"
+            tx.execute("UPDATE lite_lifecycle_release_execution SET state=?,updated_at=?,reason_code=? WHERE grant_id=?",
+                (state,authority._iso(),"" if state=="rehearsed" else "coordinated_rehearsal_failed",grant_id))
+            authority._audit(tx,row["owner_id"],"release_cutover_"+state,
+                authority._workspace(tx)["boundary_revision"],grant_id=grant_id)

@@ -10,7 +10,7 @@ CREATE TABLE lite_lifecycle_release_execution (
     decision_id TEXT NOT NULL,
     issued_at TEXT NOT NULL,
     expires_at TEXT NOT NULL,
-    state TEXT NOT NULL CHECK(state IN ('pending','claimed','prepared','cutover_claimed','failed','revoked')),
+    state TEXT NOT NULL CHECK(state IN ('pending','claimed','prepared','cutover_claimed','rehearsed','failed','revoked')),
     command_id TEXT,
     lease_generation INTEGER,
     worker_generation TEXT,
