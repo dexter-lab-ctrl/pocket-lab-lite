@@ -124,6 +124,7 @@ def _invalidate(conn, workspace):
     conn.execute("UPDATE lite_lifecycle_workspace SET authority_epoch=authority_epoch+1 WHERE singleton_id=1")
     conn.execute("UPDATE lite_lifecycle_grants SET revoked_at=? WHERE revoked_at IS NULL", (_iso(),))
     conn.execute("DELETE FROM lite_lifecycle_boundary_scopes")
+    conn.execute("UPDATE lite_lifecycle_candidate_consent SET revoked_at=? WHERE revoked_at IS NULL", (_iso(),))
     return rev
 
 
@@ -141,6 +142,9 @@ def _change(conn, context, action, payload):
                "delegation_revision": ws["delegation_revision"], "owner": owner, "versions": versions,
                "profile_revision": _prefs(conn)["revision"], "registry_revision": registry_revision(),
                "trust": dict(trust) if trust else None, "policy_revision": policy}
+    from .lite_lifecycle_candidate_consent import CandidateConsentRequest, binding_fields
+    if isinstance(payload, CandidateConsentRequest):
+        binding["candidate"] = binding_fields(conn, payload)
     return owner, binding, digest(binding)
 
 
@@ -198,7 +202,9 @@ def _consume(conn, context, action, payload, authorized):
             or decision.get("observed_policy_revision") != binding["policy_revision"]):
         raise PermissionError("policy_decision_binding_changed")
     session = context["session"]["session_id"]
-    if isinstance(payload, GrantRequest):
+    from .lite_lifecycle_candidate_consent import CandidateConsentRequest
+    trusted_consent = isinstance(payload, (GrantRequest, CandidateConsentRequest))
+    if trusted_consent:
         now = _trusted_now(conn)
         current_session = conn.execute("SELECT idle_expires_at,absolute_expires_at FROM auth_sessions WHERE session_id=?", (session,)).fetchone()
         if not current_session or not all(trust_config.future(current_session[key], now) for key in ("idle_expires_at","absolute_expires_at")):
@@ -210,7 +216,7 @@ def _consume(conn, context, action, payload, authorized):
         ORDER BY a.satisfied_at DESC LIMIT 1""",
         (session, "lifecycle:" + fingerprint, owner)).fetchone()
     if (not row or not authority._future(row["expires_at"])
-            or (isinstance(payload, GrantRequest) and not trust_config.future(row["expires_at"], _trusted_now(conn)))):
+            or (trusted_consent and not trust_config.future(row["expires_at"], _trusted_now(conn)))):
         raise PermissionError("exact_passkey_confirmation_required")
     conn.execute("DELETE FROM auth_session_assurance WHERE assurance_id=?", (row["assurance_id"],))
     return owner, binding, decision
@@ -388,12 +394,15 @@ def summary(context):
             raise PermissionError("human_required")
         is_owner = current["role"] == "Owner"
         enterprise = current["enterprise_enabled"]
-        versions = _owner(conn, context)[1] if is_owner else (None, None, None)
+        owner, versions, _ = _owner(conn, context) if is_owner else (None, (None, None, None), enterprise)
         ws = _workspace(conn)
         prefs = _prefs(conn)
         receipt = conn.execute("SELECT receipt_id,release_tag,checked_at,receipt_json FROM lite_release_trust_receipts ORDER BY metadata_version DESC LIMIT 1").fetchone()
         trust_observation = conn.execute("SELECT state,reason_code,review_json FROM lite_release_trust_observation WHERE singleton_id=1").fetchone()
         evaluation = (ws, prefs, _trust(conn), _trusted_now(conn), _policy(conn))
+        from .lite_lifecycle_candidate_consent import summary as candidate_summary
+        candidate_consents = candidate_summary(conn, ws=ws, prefs=prefs, trust=evaluation[2], now=evaluation[3],
+            policy=evaluation[4], owner=owner, versions=versions, enterprise=enterprise) if is_owner else []
         rows = conn.execute("""SELECT g.*,d.delegation_id FROM lite_lifecycle_grants g LEFT JOIN lite_lifecycle_service_delegations d ON d.grant_id=g.grant_id ORDER BY (g.revoked_at IS NULL) DESC,boundary_revision DESC LIMIT 20""").fetchall() if is_owner else []
         grants = [{"grant_id": row["grant_id"], "purpose": row["purpose"], "capability_id": row["capability_id"],
                    "capability_version": row["capability_version"], "expires_at": row["expires_at"],
@@ -453,8 +462,9 @@ def summary(context):
             "revisions": revisions.model_dump() if is_owner else {},
             "historical_loaded_policy": dict(observed_policy) if observed_policy and is_owner else None,
             "assessment": latest.get("assessment"),
+            "candidate_consents": candidate_consents,
             "candidate_review": ({key: latest.get(key) for key in
-                ("release_tag", "checked_at", "source_package", "policy_review", "policy_runtime_observation", "migration_review", "capability_review")}
+                ("release_tag", "checked_at", "metadata_sha256", "source_package", "policy_review", "policy_runtime_observation", "migration_review", "capability_review")}
                 if is_owner and latest.get("provenance") == "verified" else None),
             "services": [{"purpose": item.purpose,"category": item.category,"grantable": item.grantable,
                           "version": item.version,"execution_eligible": False} for item in SERVICES],
