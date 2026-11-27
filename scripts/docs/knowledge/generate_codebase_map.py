@@ -89,7 +89,7 @@ MAX_SYMBOLS_PER_FILE = 200
 # emitted before this bounded search-only tail.
 # Keep additional headroom for generated schema/documentation artifacts that
 # are intentionally present in the canonical map but add little search value.
-MAX_BROWSER_SEARCH_CHARS = 112
+MAX_BROWSER_SEARCH_CHARS = 104
 MAX_BROWSER_SYMBOLS_PER_FILE = 70
 
 

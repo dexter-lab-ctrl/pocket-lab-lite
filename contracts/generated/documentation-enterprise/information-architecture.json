@@ -4699,7 +4699,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 552,
+  "page_count": 553,
   "page_types": [
     "overview",
     "guide",
@@ -17648,6 +17648,30 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "security/evidence/trusted-lifecycle-t3-t5/1c9ee06818fb/README.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:security/evidence/trusted-lifecycle-t3-t5/1c9ee06818fb/README",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "evidence",
+      "path": "security/evidence/trusted-lifecycle-t3-t5/1c9ee06818fb/README.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "security/evidence/trusted-lifecycle-t3-t5/1c9ee06818fb/README.md",
+      "title": "Trusted Lifecycle T3–T5 physical System evidence",
+      "url": "/security/evidence/trusted-lifecycle-t3-t5/1c9ee06818fb/README/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "security/lite-security-model.md"
       ],
       "confidence": "source-derived",
@@ -19070,7 +19094,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "83cbc028ef29370b0d9dee887325f1b521d75ce6333535d982c994292c3b8a03",
+  "source_fingerprint": "9de43952292d9b9620f316cfc2298ebebea88627de594faaf72d7d15f48f3ca5",
   "top_level": [
     "start-here",
     "use",

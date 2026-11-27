@@ -222,7 +222,7 @@ production activation shortcut was introduced.
   supervisor/NATS/SQLite/auth/recovery and cleanup PASS. This is isolated
   qualification evidence, not ordinary Server Phone production convergence.
 - Physical System-only Android evidence:
-  [`docs/security/evidence/trusted-lifecycle-t3-t5/1c9ee06818fb/`](evidence/trusted-lifecycle-t3-t5/1c9ee06818fb/).
+  [`docs/security/evidence/trusted-lifecycle-t3-t5/1c9ee06818fb/`](evidence/trusted-lifecycle-t3-t5/1c9ee06818fb/README.md).
   Candidate markers matched `1c9ee...`; 13 safe UI interactions passed,
   SQLite fixture 42→69 passed integrity checks, and cleanup passed. The
   backend was an isolated candidate UI fixture (`live_backend_summary=false`).
@@ -244,8 +244,8 @@ production activation shortcut was introduced.
 | Q5 | PASS — isolated | DEV-PC NATS/worker/agent/supervisor/security runtime checks passed; physical live coordinated runtime was not exercised. |
 | Q6 | RESIDUAL | Standard-user Android CDP and System-only UI collection passed; all nine performance interactions missed absolute target and hard gate, and full ARM64 Termux resource qualification is not claimed. |
 | Q7 | PASS | Canonical generation, docs check and exact-toolchain repository gate passed. |
-| Q8 | NOT RUN | Final documentation/evidence candidate must be pushed before exact-head CI is inspected. |
-| Q9 | NOT RUN | Final CI, phone restoration and PR reconciliation are pending final push. |
+| Q8 | GATE MISS / EXTERNAL BLOCKER | First exact-head run `45980122454` passed isolated qualification, but Codebase Map drift and a hosted-runner APT 403 failed the other jobs; the corrected head requires re-inspection. |
+| Q9 | PARTIAL | Server Phone restoration is verified; corrected-head CI, final PR presentation and final remote-head recording remain pending. |
 
 ### Safety and remaining limitations
 
@@ -256,3 +256,36 @@ misses remain visible. Unknown policy semantics remain fail-closed. The
 physical Android UI evidence is isolated-candidate presentation evidence, not
 production backend convergence. The Server Phone must finish the session on
 the intended remote `main` SHA with its normal runtime independently checked.
+
+### Exact-head CI and final restoration update
+
+The first documentation/evidence candidate was
+`60633ad80e92e6ef2d89fb561111bfb600e1fd33` and its workflow was
+[45980122454](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45980122454).
+The isolated DEV-PC job passed. `quick-and-docs` exposed a reproducibility
+defect: CI regenerated the Codebase Map after the new SchemaSpy files were
+tracked, producing 10,043,106 bytes against the existing 10,000,000-byte
+contract. The canonical generator now uses a 104-character bounded search
+tail and the regenerated 5,801-file map is 9,994,340 bytes; the focused map
+tests and full strict docs check pass locally.
+
+The separate UI-performance job failed before its performance step because
+the hosted runner's Playwright dependency installation received HTTP 403 from
+the configured `packages.microsoft.com` APT repository. No UI assertion ran;
+this remains an external CI image/repository blocker and the dependency gate
+was not weakened.
+
+The Server Phone is restored to remote `main`
+`9bc53ce047c800be71cd76f1a37e79659af1ca4d`, with a clean worktree and no
+qualification source/database mutation. Guardian-led resilience passed; after
+stabilization all ten observed PM2 services were online, Caddy health/readiness
+and catalog routes returned 200, NATS/recovery/remote-access checks passed, and
+the prepared runtime projection reported stable/ready with no reason codes.
+The separate prepared status projection remains `degraded` with an empty
+degraded reason and two unknown device-summary rows, which is retained as a
+runtime residual rather than hidden.
+
+The correction is documentation-only. It does not invalidate the physically
+qualified code-bearing candidate `1c9ee06818fb396e56ccd86ecfd99bab85c32a4d`;
+the corrected final remote head and exact-head CI result must be recorded after
+the follow-up push.

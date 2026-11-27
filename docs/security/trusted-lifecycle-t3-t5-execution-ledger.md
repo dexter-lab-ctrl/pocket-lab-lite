@@ -175,3 +175,48 @@ Q0–Q6 therefore do not receive an undifferentiated overall PASS. The active
 qualification disposition is **PARTIAL with explicit residuals**: source and
 isolated validation are strong, while live coordinated cutover and absolute
 physical performance compliance remain unproven or failed.
+
+### Exact-head CI and restoration update
+
+The first documentation/evidence push was
+`60633ad80e92e6ef2d89fb561111bfb600e1fd33` and triggered workflow run
+[45980122454](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45980122454).
+Its isolated DEV-PC job passed. Two failures were diagnosed precisely:
+
+- `quick-and-docs` failed because the newly tracked SchemaSpy files expanded
+  the CI-generated Codebase Map to 10,043,106 bytes, exceeding the existing
+  10,000,000-byte contract. The local pre-push check had used the map before
+  those generated files were tracked.
+- `ui-performance-qualification` failed before qualification because
+  Playwright dependency installation ran `apt` and the hosted runner received
+  HTTP 403 from `packages.microsoft.com`; no repository test or performance
+  assertion ran. This is an external CI image/repository availability
+  blocker, not a source result and not a reason to weaken the dependency gate.
+
+The Codebase Map generator was corrected from a 112-character bounded search
+tail to 104 characters and regenerated against the now-tracked 5,801-file
+tree. The map is now 9,994,340 bytes; its 12 focused tests and the full
+`task lite:docs:check` pass locally. The correction is documentation-only and
+does not alter the code-bearing candidate or physical evidence.
+
+The Server Phone restoration then completed without source or ordinary
+database edits:
+
+- branch `main`, checkout and remote `main` both
+  `9bc53ce047c800be71cd76f1a37e79659af1ca4d`, worktree status count `0`;
+- guardian-led `task lite:runtime:resilience:phone:check` passed all topology,
+  health, convergence, NATS, remote-access and recovery checks;
+- after stabilization, all ten observed PM2 services were online with zero
+  restarts in the snapshot; Caddy `/health`, `/ready` and
+  `/api/lite/catalog` returned HTTP 200;
+- the prepared runtime projection reported `state=stable`, `stable=true`,
+  `summary=System running normally`, all services ready, remote access ready,
+  and no runtime reason codes. The separate prepared `/api/lite/status`
+  projection remained `degraded` with an empty degraded reason and two
+  unknown device-summary rows; this pre-existing projection state is retained
+  rather than relabeled as healthy.
+
+Q8 is therefore `GATE MISS / EXTERNAL BLOCKER` for the first pushed SHA and
+must be re-inspected on the corrected exact head. Q9 is `PARTIAL`: the phone
+restoration is verified, while final corrected-head CI and PR presentation
+remain pending.
