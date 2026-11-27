@@ -2,7 +2,14 @@
 
 The SC1–SC7 continuation ledger at the end of this document supersedes earlier progress descriptions. Earlier sections remain as historical implementation context.
 
-**Disposition: SOURCE INCOMPLETE / UNVALIDATED.** Draft PR #663. No tests, checks, builds, scans, qualification, canonical generation, CI inspection/remediation, production provisioning, release, deployment, merge or Server Phone actions were performed in the implementation session. GitHub may independently trigger its configured workflows; no results are claimed. Do not transfer baseline qualification to these changes.
+**Current disposition: PARTIAL / VALIDATED — ISOLATED.** Draft PR #663. The
+current source implementation, isolated DEV-PC qualification, physical
+System-only evidence, canonical documentation, exact-head CI and Server Phone
+restoration are recorded in the superseding section at the end of this file.
+Live human WebAuthn, independent trusted-time service E2E, live coordinated
+cutover/recovery, full ARM64/Termux installation/resource assurance and live
+backend-projected physical System evidence remain incomplete. Historical
+continuation labels below are retained for provenance only.
 
 ## Baseline and ownership
 
@@ -100,7 +107,10 @@ The new migrations, API/worker/supervisor integration, exact grant lifecycle, di
 
 ## Source closure continuation — independent follow-up (2026-11-27)
 
-**SOURCE INCOMPLETE / UNVALIDATED.** This section supersedes the earlier ledger where indicated. Draft PR #663 remains the only target. No test, build, check, qualification, performance run, generated-doc regeneration, deployment, release, merge, Server Phone access or production activation was performed by this follow-up. GitHub may independently trigger configured workflows on commits.
+**Historical disposition — SOURCE INCOMPLETE / UNVALIDATED.** This section is
+preserved as the 2026-11-27 source-only continuation record. Its no-execution
+statement applies to that earlier follow-up, not to the current consolidated
+qualification recorded at the end of this handover.
 
 Starting remote head: `c5969b82bf89cc240de5a23fb5d8cf3eee3ae752`.
 
@@ -367,3 +377,57 @@ Q2 `PARTIAL`, Q3 `PASS — isolated`, Q4 `PARTIAL`, Q5 `PASS — isolated`, Q6
 `RESIDUAL`, Q7 `PASS`, Q8 `PASS` for exact-head CI, and Q9 `PARTIAL` pending
 any separately authorized live cutover/recovery qualification and resolution
 of the retained physical performance target/gate residual.
+
+## Consolidated T0–T5 qualification handover — 2026-11-27
+
+This section is the current active handover for PR #663 and supersedes the
+stale opening `SOURCE INCOMPLETE / UNVALIDATED` label. Historical sections
+remain intact as implementation provenance. The current candidate is source
+implemented and strongly validated in isolated lanes, but it is not a live
+cutover, human-authentication, ARM64-install or production-activation signoff.
+
+### Exact identity
+
+| Item | Value / disposition |
+|---|---|
+| Base/main | `9bc53ce047c800be71cd76f1a37e79659af1ca4d` |
+| Starting feature reference | `a87a82cf619f390c5a22ac63e421416944b47165` |
+| Physically qualified code-bearing candidate | `1c9ee06818fb396e56ccd86ecfd99bab85c32a4d` |
+| Current documentation/evidence candidate | `e6e24fbb6876261fb0d251bbc7be75693acd5d25` |
+| Exact-head CI | [46002533515](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/46002533515), all required jobs PASS |
+| Server Phone | Restored to remote `main` at the main SHA; normal runtime resilience PASS |
+| Production state | Release, activation, merge and auto-merge disabled/not authorized |
+
+### C01–C11 closure
+
+| Package | Current implementation / owner | Evidence | Status |
+|---|---|---|---|
+| C01 runtime identity | `lite_runtime_identity`, migration 0067 and runtime reconciler | Isolated identity and fail-closed fixtures; ordinary installed backend identity remains unproven | VALIDATED — ISOLATED |
+| C02 human Owner WebAuthn | Existing human-only authority boundary preserved | No human ceremony performed; synthetic authority is not a substitute | BLOCKED pending explicit operator ceremony |
+| C03 trusted time | Signed challenge verifier and independent-source configuration | Nonce/pin/monotonic/expiry/replay fixtures; no disposable HTTPS service E2E | PARTIAL |
+| C04 runtime package | `runtime-install-v1`, release/package verifier and exact inventory | Deterministic archive, scope, tamper, provenance and bounds fixtures | VALIDATED — ISOLATED |
+| C05 coordinated cutover | Default-disabled live owner delegates to native/PWA/OPA/SQLite/supervisor owners | Offline rehearsal and controller tests only; live cutover not run | NOT RUN — LIVE CUTOVER |
+| C06 reconciliation/recovery | Bounded journal reconciliation, checkpoint and separate recovery authority | Source/fixture fences pass; live interruption, restart and recovery not run | NOT RUN — LIVE RECOVERY |
+| C07 capability enforcement | `lite_lifecycle_capability_activation` and existing scheduler owner | Isolated scope/claim/epoch/lease/revoke/expiry/replay fixtures | VALIDATED — ISOLATED |
+| C08 ARM64/Termux | Existing physical consumer/runtime resilience path | Phone restoration passed; full install/resource/battery/thermal matrix not run | PARTIAL |
+| C09 System projections | `TrustedLifecyclePanel` and prepared backend contracts | Mocked/fixture and safe physical UI evidence; actual candidate backend projection not driven | PARTIAL |
+| C10 performance | PR #588/#589 System-only contract retained | 0/9 absolute-target and 0/9 hard-gate passes; 8 MIXED, 1 PLATFORM_DOMINATED | RESIDUAL |
+| C11 finalization | Existing lifecycle tasks, docs/gates, exact-head CI and PR report | Current recorded workflow green; unresolved C02/C03/C05/C06/C08/C09/C10 remain | PARTIAL |
+
+### Qualification truth boundary
+
+- `Q0` PARTIAL; `Q1` PASS — ISOLATED; `Q2` PARTIAL; `Q3` PASS — ISOLATED;
+  `Q4` PARTIAL; `Q5` PASS — ISOLATED; `Q6` RESIDUAL; `Q7` PASS; `Q8` PASS for
+  workflow `46002533515`; `Q9` PARTIAL.
+- Physical System screenshots and interaction evidence are isolated-candidate
+  presentation evidence, not proof of ordinary backend/runtime convergence.
+- The trusted-time verifier is not a TUF, NTS or Roughtime implementation;
+  production trusted-time provisioning remains a separate prerequisite.
+- The physical performance target/gate misses remain visible. No threshold,
+  attribution rule, screen scope or assertion was weakened.
+- No raw Android device serial, credential, session token, private key or
+  secret is included in this handover or the PR report.
+
+The PR remains draft and is not merge-ready until the unresolved mandatory
+packages are either executed with evidence or separately dispositioned by the
+authorized reviewers. T6/T7 and production activation remain deferred.

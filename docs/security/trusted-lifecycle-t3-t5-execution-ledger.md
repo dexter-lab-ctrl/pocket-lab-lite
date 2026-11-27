@@ -294,3 +294,61 @@ into compliance. No performance threshold, attribution rule, or assertion was
 changed. Q8 is therefore `PASS` for exact-head CI, while Q9 remains `PARTIAL`
 because live coordinated cutover/recovery and production activation were not
 performed, and the physical performance residual remains disclosed.
+
+### Consolidated T0–T5 qualification ledger — 2026-11-27
+
+This section supersedes stale active dispositions above for the current PR
+presentation. Historical entries remain preserved for provenance. It records
+the consolidated work packages from the user-provided T0–T5 qualification
+contract without treating source inspection or an offline rehearsal as live
+runtime proof.
+
+| Package | Original scope / owner | Existing evidence | Missing or limiting evidence | Status |
+|---|---|---|---|---|
+| C01 | TL-T0-006 / SC-R02; runtime reconciler, FastAPI identity projection, OPA observation | `lite_runtime_identity`, migration 0067, reconciler publication, isolated runtime and fail-closed identity fixtures | Ordinary installed backend artifact/process identity and same-UID observation limits are not independently established on the physical runtime | VALIDATED — ISOLATED |
+| C02 | TL-T2 / SC-R01; human Owner WebAuthn and exact authority | Synthetic Owner boundary and rejection paths retained; no human ceremony or candidate-specific secure HTTPS ceremony was performed | Requires explicit human intervention and backend-confirmed human Owner state | BLOCKED |
+| C03 | TL-T1 / trusted-time; independent signed-time owner | Signed nonce, pin, timestamp, monotonic RTT, expiry, replay and source-revision fixtures passed | No independently keyed disposable HTTPS service was exercised end to end; no production trust material provisioned | PARTIAL |
+| C04 | TL-T1-003..005 / SC-R01, SC-R07; release/package owner | `runtime-install-v1` declaration, deterministic exact-commit archive, inventory, bounds, tamper and provenance fixtures passed | No real release publication or ARM64/Termux install was performed | VALIDATED — ISOLATED |
+| C05 | SC-R01; coordinated promotion, native owner, release worker, PWA, OPA and SQLite | Default-disabled live-owner code path, offline rehearsal, focused controller tests and isolated runtime services | Actual multi-process backend/PWA/OPA/SQLite cutover and independently observed convergence were not run | NOT RUN — LIVE CUTOVER |
+| C06 | PR #661 recovery / SC-R03; journal, supervisor and recovery owners | Bounded reconciliation, interruption dispositions, checkpoint and newer-write fences are covered by source and isolated fixtures | Live fault injection at cutover boundaries, restart ownership and separately authorized recovery were not run | NOT RUN — LIVE RECOVERY |
+| C07 | SC-R04; registered capability owners and scheduler | Review-versus-activation, exact scope, owner, epoch, policy, lease, claim, expiry, revoke and replay fixtures passed | No production capability activation; broad T6 domains remain out of scope | VALIDATED — ISOLATED |
+| C08 | SC-R07 / physical ARM64 and Termux; package/runtime owners | Server Phone consumer-only restoration and normal resilience checks passed; no source or ordinary DB mutation | Full exact-package install, ARM64 dependency closure, resource, battery and thermal matrix not run | PARTIAL |
+| C09 | SC-R06; System Manage and prepared API projections | Desktop/mobile mocked UI, Storybook, accessibility and safe physical System interactions passed | Physical UI used an isolated fixture; actual candidate backend projections were not exercised | PARTIAL |
+| C10 | PR #588/#589 / physical System performance | Three repetitions across nine System interactions; 0 absolute-target passes, 0 hard-gate passes, 8 MIXED, 1 PLATFORM_DOMINATED | Retained target/gate residual; no attributable PR #663 application regression established | RESIDUAL |
+| C11 | SC-R05/SC7 / final regression, docs, CI and PR readiness | Existing focused suites, canonical docs/gates, phone restoration, and exact-head workflow 46002533515 passed | Consolidated live/human/device gates remain open; PR remains draft | PARTIAL |
+
+#### Consolidated provenance
+
+- Main/base: `9bc53ce047c800be71cd76f1a37e79659af1ca4d`.
+- Starting feature reference: `a87a82cf619f390c5a22ac63e421416944b47165`.
+- Physically qualified code-bearing candidate:
+  `1c9ee06818fb396e56ccd86ecfd99bab85c32a4d`.
+- Current documentation/evidence candidate at the time of this ledger:
+  `e6e24fbb6876261fb0d251bbc7be75693acd5d25`.
+- Exact-head workflow for the current candidate:
+  [46002533515](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/46002533515);
+  isolated DEV-PC, UI-performance and quick/docs jobs all passed.
+- Server Phone was restored to remote `main` at the main SHA, with normal
+  runtime resilience verified; no raw device serial is retained here.
+- Production release, production activation, merge and auto-merge remain
+  disabled and unauthorized.
+
+#### Q0–Q9 consolidated disposition
+
+| Phase | Disposition | Reason |
+|---|---|---|
+| Q0 | PARTIAL | Exact candidate, isolation and synthetic authority passed; human WebAuthn and independent trusted-time service were not run. |
+| Q1 | PASS — ISOLATED | Policy differential, loaded isolated OPA identity and fail-closed cases passed. |
+| Q2 | PARTIAL | Package, migration, journal and isolated runtime passed; live cutover was not run. |
+| Q3 | PASS — ISOLATED | Capability consent/activation and claim fencing passed in isolated fixtures. |
+| Q4 | PARTIAL | Mocked and safe physical System UI passed; live backend-projected visual evidence is incomplete. |
+| Q5 | PASS — ISOLATED | Disposable FastAPI/worker/agent/supervisor/NATS/security checks passed. |
+| Q6 | RESIDUAL | System-only Android execution completed; performance target/gate misses and full ARM64/resource coverage remain. |
+| Q7 | PASS | Previously executed canonical generation, docs check and repository gate passed; no new generation is claimed for this incomplete consolidated run. |
+| Q8 | PASS — CURRENT RECORDED HEAD | Workflow 46002533515 passed all required jobs for `e6e24fbb…`. |
+| Q9 | PARTIAL | Evidence, PR presentation and phone restoration are recorded; mandatory live/human/device closures remain open. |
+
+The consolidated session must not be marked merge-ready until C02, C03,
+C05, C06, C08 and C09 are either executed successfully or explicitly
+resolved by a separately authorized decision. The retained C10 performance
+misses remain visible and are not relabeled as compliance.
