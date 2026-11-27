@@ -1682,33 +1682,78 @@ def _contract_from_manifest(path: Path) -> list[dict[str, Any]]:
 
 
 def reconcile_promotions(state_root: Path) -> dict[str, Any]:
-    """Reconcile durable journals without repeating a destructive operation.
+    """Read-only restart reconciliation; never replay a partially completed mutation.
 
-    A restart never guesses whether a service or database write completed.  A
-    non-terminal journal is therefore surfaced as a recovery decision.  An
-    operator can inspect the checkpoint and issue the separately bound
-    recovery authorization; this command itself performs no service, pointer,
-    or database mutation.
+    A terminal phase alone cannot establish stability. Missing, malformed,
+    oversized and inconsistent journals require an explicit recovery decision.
+    An offline rehearsal is terminal only as a rehearsal, not as live proof.
     """
     root = state_root.expanduser().resolve() / "backend-runtime" / "promotions"
     journals: list[dict[str, Any]] = []
-    if root.is_dir():
-        for path in sorted(root.glob("*/journal.json")):
-            try:
-                payload = _read_json(path, label="promotion journal")
-            except PromotionError:
-                journals.append({"status": "blocked", "reason_code": "journal_unreadable", "sanitized": True})
-                continue
-            phase = str(payload.get("phase") or "unknown")
-            terminal = phase in {"committed", "rolled_back", "aborted_before_checkpoint"}
-            journals.append({
-                "promotion_id": path.parent.name[:120],
-                "phase": phase,
-                "status": "stable" if terminal else "recovery_required",
-                "destructive_action": "none",
-                "sanitized": True,
-            })
-    return {"status": "stable" if all(item.get("status") == "stable" for item in journals) else "recovery_required", "journal_count": len(journals), "journals": journals, "destructive_action": "none", "sanitized": True}
+
+    def blocked(code: str) -> dict[str, Any]:
+        return {"status": "blocked", "reason_code": code,
+                "destructive_action": "none", "sanitized": True}
+
+    def read_journal(path: Path) -> dict[str, Any]:
+        # No symlink-following or unbounded JSON reads in the startup owner.
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+        with os.fdopen(os.open(path, flags), "rb") as handle:
+            info = os.fstat(handle.fileno())
+            if not stat.S_ISREG(info.st_mode) or info.st_size > 256 * 1024:
+                raise ValueError("journal_size_or_type")
+            raw = handle.read(256 * 1024 + 1)
+        if len(raw) > 256 * 1024:
+            raise ValueError("journal_size_limit")
+        payload = json.loads(raw)
+        if (not isinstance(payload, dict) or payload.get("schema") != JOURNAL_SCHEMA
+                or type(payload.get("sequence")) is not int or payload["sequence"] < 1
+                or payload.get("sanitized") is not True
+                or not isinstance(payload.get("phase"), str)):
+            raise ValueError("journal_schema_invalid")
+        return payload
+
+    try:
+        if root.is_symlink() or (root.exists() and not root.is_dir()):
+            journals.append(blocked("journal_root_unsafe"))
+        elif root.is_dir():
+            # A crash before atomic publication may leave a directory with no
+            # journal. Preserve it and require reconciliation, never guess.
+            from itertools import islice
+            entries = list(islice(root.iterdir(), 513))
+            if len(entries) > 512:
+                journals.append(blocked("journal_inventory_limit"))
+            else:
+                for directory in sorted(entries):
+                    try:
+                        if directory.is_symlink() or not directory.is_dir():
+                            raise ValueError("journal_directory_unsafe")
+                        payload = read_journal(directory / "journal.json")
+                    except (OSError, ValueError, RecursionError):
+                        journals.append(blocked("journal_unreadable"))
+                        continue
+                    phase, status = payload["phase"], payload.get("status")
+                    offline = payload.get("mode") == "offline_qualification"
+                    if offline:
+                        terminal = (phase == "committed" and status == "rehearsed"
+                                    and payload.get("runtime_convergence") == "not_exercised")
+                    else:
+                        terminal = ((phase, status) in {
+                            ("committed", "committed"), ("rolled_back", "rolled_back"),
+                            ("aborted_before_checkpoint", "aborted"),
+                            ("aborted_before_checkpoint", "aborted_before_checkpoint"),
+                        })
+                    journals.append({
+                        "promotion_id": directory.name[:120], "phase": phase[:80],
+                        "status": "stable" if terminal else "recovery_required",
+                        "runtime_convergence": "not_exercised" if offline else "not_established_by_journal",
+                        "destructive_action": "none", "sanitized": True,
+                    })
+    except OSError:
+        journals.append(blocked("journal_inventory_unavailable"))
+    return {"status": "stable" if all(item.get("status") == "stable" for item in journals) else "recovery_required",
+            "journal_count": len(journals), "journals": journals,
+            "destructive_action": "none", "sanitized": True}
 
 
 def _activate_from_cli(args: argparse.Namespace) -> dict[str, Any]:

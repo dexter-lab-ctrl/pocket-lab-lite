@@ -241,3 +241,45 @@ def test_promotion_journal_preserves_checkpoint_and_prior_identity(tmp_path):
     assert result["previous_pointer"]["source_commit"] == "b"*40
     assert result["sequence"] == 2
     assert promotion.reconcile_promotions(inputs.state_root)["status"] == "recovery_required"
+
+
+
+@pytest.mark.parametrize("mode,phase,status,convergence,expected", [
+    ("offline_qualification", "committed", "rehearsed", "not_exercised", "stable"),
+    ("offline_qualification", "committed", "rehearsed", "confirmed", "recovery_required"),
+    ("offline_qualification", "committed", "failed", "not_exercised", "recovery_required"),
+    (None, "committed", "running", None, "recovery_required"),
+    (None, "rolled_back", "rolled_back", None, "stable"),
+    (None, "cutover_started", "running", None, "recovery_required"),
+])
+def test_reconciliation_distinguishes_terminal_rehearsal_and_live_proof(
+        tmp_path, mode, phase, status, convergence, expected):
+    root = tmp_path / "backend-runtime" / "promotions" / "promotion-fixture"
+    path = root / "journal.json"
+    payload = {"schema": promotion.JOURNAL_SCHEMA, "sequence": 2, "sanitized": True,
+               "phase": phase, "status": status}
+    if mode is not None:
+        payload.update(mode=mode, runtime_convergence=convergence)
+    promotion._atomic_json(path, payload)
+    original = path.read_bytes()
+    result = promotion.reconcile_promotions(tmp_path)
+    assert result["status"] == expected
+    assert result["destructive_action"] == "none"
+    assert path.read_bytes() == original
+    if mode:
+        assert result["journals"][0]["runtime_convergence"] == "not_exercised"
+
+
+def test_reconciliation_blocks_missing_malformed_and_linked_journals(tmp_path):
+    root = tmp_path / "backend-runtime" / "promotions"
+    (root / "missing").mkdir(parents=True)
+    (root / "malformed").mkdir()
+    (root / "malformed" / "journal.json").write_text('{"phase":"committed"}')
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (root / "linked").symlink_to(outside, target_is_directory=True)
+    result = promotion.reconcile_promotions(tmp_path)
+    assert result["status"] == "recovery_required"
+    assert result["journal_count"] == 3
+    assert all(item["status"] == "blocked" for item in result["journals"])
+    assert not (outside / "journal.json").exists()
