@@ -143,8 +143,11 @@ def assess(candidate, receipt, *, declaration, policy_document, migration_docume
             with _open_controlled(candidate, "dist.zip", MAX_ARTIFACT) as (frontend_stream, _):
                 frontend = _frontend(frontend_stream, root / "frontend", receipt, deadline_ns)
             checkpoint = _checkpoint(root / "checkpoint.sqlite", expected_schema=receipt["current_schema"], deadline_ns=deadline_ns)
+            from .lite_release_migration_rehearsal import assess as rehearse_migrations
+            rehearsal = rehearse_migrations(root / "source", migration_document,
+                current_schema=receipt["current_schema"], deadline_ns=deadline_ns)
             return {"state": "isolated_preflight_checked", **source_result, **frontend, **checkpoint,
-                    "migration_execution": "not_attempted", "promotion_eligible": False,
+                    "migration_execution": rehearsal, "promotion_eligible": False,
                     "rollback_eligible": False}
     except (TrustError, OSError, sqlite3.Error, ValueError, KeyError, zipfile.BadZipFile) as exc:
         return {"state": "blocked", "reason_code": str(exc) if isinstance(exc, TrustError) else "coordinated_preflight_failed",

@@ -75,3 +75,13 @@ it('does not expose owner candidate detail in a non-Owner view', () => {
   render(<LifecycleContent data={{ ...data, owner_authority: false, candidate_review: { release_tag: 'fixture' } }} />);
   expect(screen.queryByText('Candidate evidence')).toBeNull();
 });
+
+it('keeps isolated policy execution distinct from standing review consent', () => {
+  const onReview = vi.fn();
+  const metadata = 'a'.repeat(64);
+  render(<LifecycleContent data={{ ...data, policy_execution_qualification_enabled: true,
+    policy_execution_review_available: true, candidate_review: { metadata_sha256: metadata } }} onReview={onReview} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Review isolated policy activation' }));
+  expect(onReview).toHaveBeenCalledWith({ kind: 'policy-execution', value: metadata, label: 'Review isolated policy activation' });
+  expect(screen.getByText(/Production activation remains disabled/)).toBeTruthy();
+});
