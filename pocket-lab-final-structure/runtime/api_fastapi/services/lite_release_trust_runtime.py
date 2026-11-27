@@ -1,7 +1,7 @@
 """Review-only adapter for the existing release worker and subprocess.
 
 Acquisition uses fixed GitHub release assets or an explicit local review directory.
-No extraction, install, activation or arbitrary metadata paths.
+Optional isolated preflight extracts inert files; no install, activation or arbitrary metadata paths.
 A local administrator must independently provision the root SHA-256 and clock
 anchor; the candidate itself cannot supply either. This is not full TUF.
 """
@@ -347,6 +347,17 @@ def inspect_candidate(request):
                 if local_migrations is not None:
                     receipt["migration_review"]["applied_ledger"] = source_package.observe_applied_migrations(
                         local_migrations, migration_document, current_schema=current_schema)
+            if (package_review["state"] == "verified_for_review"
+                    and request.get("coordinated_preflight") is True
+                    and os.environ.get("POCKETLAB_RELEASE_COORDINATED_PREFLIGHT") == "1"):
+                from .lite_release_coordinated_preflight import assess as preflight
+                receipt["current_schema"] = current_schema
+                declaration = source_package.source_declaration(
+                    _read(candidate, FILES["release_manifest_sha256"], MAX_BYTES),
+                    source_commit=receipt["source_commit"], release_tag=receipt["release_tag"])
+                receipt["coordinated_preflight"] = preflight(candidate, receipt, declaration=declaration,
+                    policy_document=policy_document, migration_document=migration_document,
+                    deadline_ns=int(request.get("deadline_ns") or time.monotonic_ns()))
             schema_match = receipt["schema_min"] <= current_schema <= receipt["schema_max"]
             receipt.update(provenance=disposition, provenance_reason=reason, **rotation, **clock_fields,
                 root_sha256=pin, attestation_root_sha256=config.configured()[1],

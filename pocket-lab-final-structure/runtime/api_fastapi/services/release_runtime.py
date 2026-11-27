@@ -1802,6 +1802,7 @@ async def run_release_check(
                     "source_commit": manifest.get("source_commit"),
                     "artifact_sha256": manifest.get("artifact_sha256"),
                     "channel": "preview" if latest.get("prerelease") else "stable",
+                    "coordinated_preflight": source == "manual",
                 }
                 with connection() as conn:
                     reuse = source == "automatic" and cached_review(conn, trust_request)

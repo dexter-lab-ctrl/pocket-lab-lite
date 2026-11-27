@@ -466,7 +466,7 @@ def summary(context):
             "assessment": latest.get("assessment"),
             "candidate_consents": candidate_consents,
             "candidate_review": ({key: latest.get(key) for key in
-                ("release_tag", "checked_at", "metadata_sha256", "source_package", "policy_review", "policy_runtime_observation", "migration_review")} | {"capability_review": candidate_review}
+                ("release_tag", "checked_at", "metadata_sha256", "source_package", "policy_review", "policy_runtime_observation", "migration_review", "coordinated_preflight")} | {"capability_review": candidate_review}
                 if is_owner and latest.get("provenance") == "verified" else None),
             "services": [{"purpose": item.purpose,"category": item.category,"grantable": item.grantable,
                           "version": item.version,"execution_eligible": False} for item in SERVICES],
