@@ -6,6 +6,7 @@ policy decision record. A finite corpus is evidence, not general equivalence.
 """
 from __future__ import annotations
 
+import base64
 import copy
 import hashlib
 import json
@@ -249,6 +250,8 @@ def assess(stream, local_document, candidate_document, *, parent: Path, deadline
         return {**result, "state": "differences_observed" if changed else "sample_equal",
                 "case_count": len(cases), "changed_count": len(changed), "corpus_sha256": digest(cases),
                 "before_sha256": digest(a), "after_sha256": digest(b), "baseline_revision": revision,
-                "semantic_equivalence_proved": False}
+                "semantic_equivalence_proved": False,
+                "note_suffixes": {name.rsplit("/", 1)[-1]: base64.b64encode(after[name][len(before[name]):]).decode("ascii")
+                                  for name in before if after[name] != before[name]} if not changed else {}}
     except Exception:
         return {"state": "unavailable", "execution_eligible": False}

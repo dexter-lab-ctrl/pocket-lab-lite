@@ -85,3 +85,21 @@ def record_candidate_consent(payload: candidate.CandidateConsentRequest, request
 @router.post("/candidate/consent/revoke")
 def revoke_candidate_consent(payload: candidate.CandidateRevokeRequest, request: Request, response: Response):
     return _call(request, response, candidate.revoke, payload, write=True)
+
+
+from ..services import lite_lifecycle_policy_execution as execution
+
+
+@router.post("/policy/execution/review")
+def review_policy_execution(payload: execution.PolicyExecutionRequest, request: Request, response: Response):
+    return _call(request, response, execution.preview, payload, write=True)
+
+
+@router.post("/policy/execution")
+def admit_policy_execution(payload: execution.PolicyExecutionRequest, request: Request, response: Response):
+    return _call(request, response, execution.admit, payload, write=True)
+
+
+@router.post("/policy/execution/revoke")
+def revoke_policy_execution(payload: execution.PolicyExecutionRevoke, request: Request, response: Response):
+    return _call(request, response, execution.revoke, payload, write=True)

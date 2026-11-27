@@ -132,8 +132,12 @@ def source_state() -> dict[str, Any]:
     candidate = _repository_candidate(revision)
     active = str(state.get("active_revision_id") or "")
     known_good = str(state.get("known_good_revision_id") or "")
+    from .lite_lifecycle_policy_execution import active_compatible
+    with connection() as conn:
+        compatible = active != candidate["revision_id"] and active_compatible(conn, state, revision, candidate)
     return {
         "durable": True,
+        "compatible_trusted_revision": compatible,
         "active_revision": active,
         "known_good_revision": known_good,
         "repository_revision": candidate["revision_id"],

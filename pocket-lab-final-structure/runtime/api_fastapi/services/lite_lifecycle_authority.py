@@ -125,6 +125,7 @@ def _invalidate(conn, workspace):
     conn.execute("UPDATE lite_lifecycle_grants SET revoked_at=? WHERE revoked_at IS NULL", (_iso(),))
     conn.execute("DELETE FROM lite_lifecycle_boundary_scopes")
     conn.execute("UPDATE lite_lifecycle_candidate_consent SET revoked_at=? WHERE revoked_at IS NULL", (_iso(),))
+    conn.execute("UPDATE lite_lifecycle_policy_execution SET revoked_at=? WHERE revoked_at IS NULL AND proof_sha256 IS NULL", (_iso(),))
     return rev
 
 
@@ -145,6 +146,9 @@ def _change(conn, context, action, payload):
     from .lite_lifecycle_candidate_consent import CandidateConsentRequest, binding_fields
     if isinstance(payload, CandidateConsentRequest):
         binding["candidate"] = binding_fields(conn, payload)
+    from .lite_lifecycle_policy_execution import PolicyExecutionRequest, binding_fields as execution_binding
+    if isinstance(payload, PolicyExecutionRequest):
+        binding["policy_execution"] = execution_binding(conn, payload)
     return owner, binding, digest(binding)
 
 
@@ -170,10 +174,12 @@ def preview(context, action, payload):
 def _authorize(context, action, payload):
     with read_connection() as conn:
         owner, binding, fingerprint = _change(conn, context, action, payload)
+    execution = "policy_execution" in binding
     decision = opa.evaluate_authorization(
-        auth_context=context, action_id=action, target_type="lifecycle_consent",
+        auth_context=context, action_id=action, target_type="lifecycle_policy_execution" if execution else "lifecycle_consent",
         target_id="local_workspace", target_revision=fingerprint,
-        target={"change_digest": fingerprint, "contract_version": 1, "execution_enabled": False},
+        target={"change_digest": fingerprint, "contract_version": 1, "execution_enabled": execution,
+                **({"purpose": "policy-reconciler"} if execution else {})},
         request_context={"confirmation_present": True},
     )
     if not decision.get("allow") or decision.get("policy_revision") != binding["policy_revision"]:
@@ -203,7 +209,8 @@ def _consume(conn, context, action, payload, authorized):
         raise PermissionError("policy_decision_binding_changed")
     session = context["session"]["session_id"]
     from .lite_lifecycle_candidate_consent import CandidateConsentRequest
-    trusted_consent = isinstance(payload, (GrantRequest, CandidateConsentRequest))
+    from .lite_lifecycle_policy_execution import PolicyExecutionRequest
+    trusted_consent = isinstance(payload, (GrantRequest, CandidateConsentRequest, PolicyExecutionRequest))
     if trusted_consent:
         now = _trusted_now(conn)
         current_session = conn.execute("SELECT idle_expires_at,absolute_expires_at FROM auth_sessions WHERE session_id=?", (session,)).fetchone()
@@ -401,6 +408,8 @@ def summary(context):
         trust_observation = conn.execute("SELECT state,reason_code,review_json FROM lite_release_trust_observation WHERE singleton_id=1").fetchone()
         evaluation = (ws, prefs, _trust(conn), _trusted_now(conn), _policy(conn))
         from .lite_lifecycle_candidate_consent import summary as candidate_summary
+        from .lite_lifecycle_policy_execution import summary as policy_execution_summary, gate as policy_execution_gate
+        policy_executions = policy_execution_summary(conn) if is_owner else []
         candidate_consents = candidate_summary(conn, ws=ws, prefs=prefs, trust=evaluation[2], now=evaluation[3],
             policy=evaluation[4], owner=owner, versions=versions, enterprise=enterprise) if is_owner else []
         rows = conn.execute("""SELECT g.*,d.delegation_id FROM lite_lifecycle_grants g LEFT JOIN lite_lifecycle_service_delegations d ON d.grant_id=g.grant_id ORDER BY (g.revoked_at IS NULL) DESC,boundary_revision DESC LIMIT 20""").fetchall() if is_owner else []
@@ -465,6 +474,8 @@ def summary(context):
             "historical_loaded_policy": dict(observed_policy) if observed_policy and is_owner else None,
             "assessment": latest.get("assessment"),
             "candidate_consents": candidate_consents,
+            "policy_executions": policy_executions,
+            "policy_execution_qualification_enabled": bool(is_owner and policy_execution_gate()),
             "candidate_review": ({key: latest.get(key) for key in
                 ("release_tag", "checked_at", "metadata_sha256", "source_package", "policy_review", "policy_runtime_observation", "migration_review", "coordinated_preflight")} | {"capability_review": candidate_review}
                 if is_owner and latest.get("provenance") == "verified" else None),
