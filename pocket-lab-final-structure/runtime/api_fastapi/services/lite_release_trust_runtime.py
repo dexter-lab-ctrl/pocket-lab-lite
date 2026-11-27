@@ -367,6 +367,13 @@ def inspect_candidate(request):
                 schema_range_matches=schema_match, current_schema=current_schema,
                 registry_revision=registry_revision(),
                 compatibility="unknown" if schema_match else "incompatible")
+            if request.get("preparation") and disposition == "verified":
+                from .lite_lifecycle_release_execution import prepare_handoff
+                try:
+                    receipt["coordinated_handoff"] = prepare_handoff(candidate, receipt, request["preparation"],
+                        deadline_ns=int(request["deadline_ns"]))
+                except (OSError, ValueError, PermissionError, TrustError):
+                    receipt["coordinated_handoff"] = {"state": "blocked", "reason_code": "coordinated_handoff_unproved"}
             return {"state": "historical_evidence" if disposition == "verified" else
                     ("verification_failed" if disposition == "failed" else "metadata_unavailable"),
                     "reason_code": reason, "root_sha256": pin, "receipt": receipt if disposition == "verified" else None,

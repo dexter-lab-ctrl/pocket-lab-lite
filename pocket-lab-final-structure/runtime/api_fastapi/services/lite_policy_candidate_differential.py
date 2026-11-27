@@ -24,7 +24,7 @@ from .lite_release_package import POLICY_PREFIX, _inventory
 
 MAX_MEMBER = 256 * 1024
 MAX_RESULT = 2 * 1024 * 1024
-MAX_CASES = 512
+MAX_CASES = 768
 # The existing repository modules require these builtins. No HTTP, DNS,
 # environment, filesystem, runtime inspection, graph or custom builtins.
 ALLOWED_BUILTINS = frozenset({"object.get", "object.union", "concat", "lower",
@@ -187,6 +187,11 @@ def _target(action):
         revision = "a" * 64
         return "lifecycle_policy_execution", ("local_workspace" if action.endswith("activate") else "synthetic-operation"), revision, {
             "change_digest": revision, "contract_version": 1, "purpose": "policy-reconciler",
+            "execution_enabled": True, "grant_current": True}
+    if action in {"lifecycle.release.prepare", "lifecycle.release.claim"}:
+        revision = "a" * 64
+        return "lifecycle_release_preparation", ("local_workspace" if action.endswith("prepare") else "synthetic-operation"), revision, {
+            "change_digest": revision, "contract_version": 1, "purpose": "release-reconciler",
             "execution_enabled": True, "grant_current": True}
     if action.startswith("lifecycle."):
         revision = "a" * 64

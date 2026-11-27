@@ -272,3 +272,127 @@ def finish(tx, lease, observation):
 def summary(conn):
     return [dict(row) for row in conn.execute("""SELECT grant_id,metadata_sha256,state,expires_at,
         revoked_at,reason_code,handoff_sha256 FROM lite_lifecycle_release_execution ORDER BY issued_at DESC LIMIT 20""")]
+
+
+def handoff_directory(grant_id):
+    import re
+    from . import qualification_context as q
+    if not isinstance(grant_id,str) or not re.fullmatch(r"[a-f0-9]{32}",grant_id):
+        raise ValueError("invalid_release_grant")
+    parent = state_root() / "backend-runtime" / "coordinated"
+    q._resolved_without_symlink_escape(parent, q.root())
+    return parent / grant_id
+
+
+def _asset_limits():
+    from .lite_release_trust_runtime import FILES, MAX_ARTIFACT, MAX_BYTES
+    from .lite_release_package import SOURCE_ASSET, MAX_SOURCE_BYTES
+    return {**{name: MAX_ARTIFACT if name == "dist.zip" else MAX_BYTES for name in FILES.values()},
+            SOURCE_ASSET:MAX_SOURCE_BYTES,"pocketlab-lite-capabilities.json":MAX_BYTES,
+            "pocketlab-lite-trust.dsse.json":MAX_BYTES,"pocketlab-lite-provenance.jsonl":2*1024*1024}
+
+
+def _sync_directory(path):
+    fd = os.open(path,os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+def prepare_handoff(candidate,receipt,preparation,*,deadline_ns):
+    """Only the verification child can materialize a claimed, exact handoff."""
+    import hashlib
+    import shutil
+    import tempfile
+    import time
+    from .lite_release_trust_runtime import _open_controlled
+    if os.environ.get("POCKETLAB_PROCESS_ROLE") != "release-subprocess":
+        raise PermissionError("release_child_required")
+    grant_id = preparation["grant_id"]
+    with read_connection() as conn:
+        row,scope = current(conn,grant_id,lease=preparation["lease"],states=("claimed",))
+        if _scope(receipt,scope["baseline_commit"]) != scope:
+            raise PermissionError("fresh_release_scope_changed")
+    final = handoff_directory(grant_id)
+    final.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
+    if final.parent.stat().st_mode & 0o077 or final.exists() or final.is_symlink():
+        raise PermissionError("unsafe_or_existing_handoff")
+    with tempfile.TemporaryDirectory(prefix=".prepare-",dir=final.parent) as tmp:
+        stage = Path(tmp)/"handoff"
+        stage.mkdir(mode=0o700)
+        assets = []
+        for name,limit in sorted(_asset_limits().items()):
+            with _open_controlled(candidate,name,limit) as (src,info):
+                if shutil.disk_usage(stage).free < info.st_size+32*1024*1024:
+                    raise OSError("handoff_disk_pressure")
+                sha = hashlib.sha256()
+                total = 0
+                with (stage/name).open("xb") as dst:
+                    while chunk := src.read(1024*1024):
+                        if time.monotonic_ns() >= deadline_ns:
+                            raise ValueError("handoff_deadline")
+                        total += len(chunk)
+                        if total > limit:
+                            raise ValueError("handoff_asset_limit")
+                        sha.update(chunk)
+                        dst.write(chunk)
+                    dst.flush()
+                    os.fsync(dst.fileno())
+                if total != info.st_size:
+                    raise ValueError("handoff_asset_changed")
+                (stage/name).chmod(0o400)
+                assets.append({"name":name,"size_bytes":total,"sha256":sha.hexdigest()})
+        manifest = {"schema_version":1,"grant_id":grant_id,"binding_sha256":row["binding_sha256"],
+                    "scope":scope,"assets":assets}
+        _verify_asset_binding(manifest,receipt)
+        with (stage/"handoff.json").open("xb") as out:
+            out.write(canonical_bytes(manifest))
+            out.flush()
+            os.fsync(out.fileno())
+        (stage/"handoff.json").chmod(0o400)
+        _sync_directory(stage)
+        with read_connection() as conn:
+            again,latest = current(conn,grant_id,lease=preparation["lease"],states=("claimed",))
+            if again["binding_sha256"] != row["binding_sha256"] or latest != scope:
+                raise PermissionError("handoff_authority_changed")
+        if final.exists() or final.is_symlink():
+            raise PermissionError("handoff_already_exists")
+        stage.rename(final)
+        _sync_directory(final.parent)
+    return {"state":"prepared","grant_id":grant_id,"handoff_sha256":digest(manifest)}
+
+
+def _verify_asset_binding(manifest,receipt):
+    from .lite_release_trust_runtime import FILES
+    from .lite_release_package import SOURCE_ASSET
+    expected = {name:receipt[key] for key,name in FILES.items()}
+    expected[SOURCE_ASSET] = receipt["source_package"]["sha256"]
+    assets = {row["name"]:row["sha256"] for row in manifest["assets"]}
+    if len(assets)!=len(manifest["assets"]) or set(assets)!=set(_asset_limits()):
+        raise ValueError("handoff_asset_set_changed")
+    if any(assets.get(name)!=sha for name,sha in expected.items()):
+        raise ValueError("handoff_signed_asset_changed")
+
+
+def read_handoff(grant_id,expected_sha256):
+    """External controller uses fixed directory and authenticates every asset."""
+    from .lite_release_trust_runtime import _read
+    from .lite_release_trust import strict_json
+    directory = handoff_directory(grant_id)
+    raw = _read(directory,"handoff.json",64*1024)
+    doc = strict_json(raw)
+    if digest(doc)!=expected_sha256 or doc.get("grant_id")!=grant_id or doc.get("schema_version")!=1:
+        raise PermissionError("handoff_digest_changed")
+    assets = doc.get("assets",[])
+    limits = _asset_limits()
+    if len(assets)!=len(limits) or {a["name"] for a in assets}!=set(limits):
+        raise ValueError("handoff_asset_set_changed")
+    for asset in assets:
+        if _read(directory,asset["name"],limits[asset["name"]],hash_only=True)!=asset["sha256"]:
+            raise PermissionError("handoff_asset_changed")
+    return directory,doc
+
+
+def fail_claim(tx,lease):
+    finish(tx,lease,{})

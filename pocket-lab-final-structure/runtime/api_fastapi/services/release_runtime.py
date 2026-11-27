@@ -990,6 +990,8 @@ def commit_release_result(
                 if payload.get("_trust_observation") is not None:
                     from .lite_release_trust_runtime import persist
                     persist(tx, payload["_trust_observation"], str(payload.get("latest_tag") or ""))
+                from .lite_lifecycle_release_execution import finish
+                finish(tx, lease, payload.get("_trust_observation") or {})
                 changed = str(row["canonical_hash"] or "") != digest
                 phase = str(canonical.get("phase") or "current")
                 current_tag = str(canonical.get("current_tag") or "unknown")
@@ -1190,6 +1192,9 @@ def fail_release_operation(
                 tuple(values + [now_ms]),
             )
             stale = cursor.rowcount != 1
+            if not stale:
+                from .lite_lifecycle_release_execution import finish
+                finish(tx, lease, {})
     if stale:
         _record_stale_rejection()
         raise ReleaseStaleResult("release_generation_fence_rejected_failure")
@@ -1804,6 +1809,11 @@ async def run_release_check(
                     "channel": "preview" if latest.get("prerelease") else "stable",
                     "coordinated_preflight": source == "manual",
                 }
+                if source == "manual":
+                    from .lite_lifecycle_release_execution import claim
+                    preparation = claim(lease)
+                    if preparation:
+                        trust_request["preparation"] = preparation
                 with connection() as conn:
                     reuse = source == "automatic" and cached_review(conn, trust_request)
                 if not reuse:
