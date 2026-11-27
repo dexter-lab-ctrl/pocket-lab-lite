@@ -289,3 +289,28 @@ The correction is documentation-only. It does not invalidate the physically
 qualified code-bearing candidate `1c9ee06818fb396e56ccd86ecfd99bab85c32a4d`;
 the corrected final remote head and exact-head CI result must be recorded after
 the follow-up push.
+
+### Corrected exact-head CI diagnosis and OpenAPI promotion — 2026-11-27
+
+The corrected documentation head `39b5e9911e4e2ce30adf1e7fcc0787a0b7de71f2`
+was inspected in [workflow 45988547157](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45988547157).
+The isolated qualification job and the UI-performance job passed. The
+`quick-and-docs` job failed in
+`tests/parity/test_api_contract_fences.py::test_openapi_baseline_promotion_is_explicit_and_hash_matched`:
+the generated T3–T5 OpenAPI SHA was
+`582181f99288a3870935f77fa0289bf1a5cd6b91f63d92a8fc03f617ef6a6cf3`, but the
+explicitly promoted baseline still recorded
+`836ffc0f09712aede0ff821c8f18e47c6da3a03acd3e1bf2f2d05061045266e2`.
+
+The required DEV-PC contract promotion is now prepared: the baseline exactly
+matches the generated contract; the promotion manifest records the previous
+and promoted hashes, exact source revision
+`feat/trusted-lifecycle-t3-t5@1c9ee06818fb396e56ccd86ecfd99bab85c32a4d`, and
+the T3–T5 rationale. `oasdiff` returned no unapproved breaking changes,
+`tests/parity/test_api_contract_fences.py` passed 16 tests, and
+`task lite:api:breaking-changes` passed. Canonical generation was rerun.
+
+This is a source/contract correction, not a runtime-bearing change, but it
+requires a new commit/push and exact-head CI recheck. Until that recheck,
+the active disposition is Q8 `GATE MISS / CORRECTIVE PUSH PENDING` and Q9
+`PARTIAL`.

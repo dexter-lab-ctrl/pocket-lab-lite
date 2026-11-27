@@ -220,3 +220,26 @@ Q8 is therefore `GATE MISS / EXTERNAL BLOCKER` for the first pushed SHA and
 must be re-inspected on the corrected exact head. Q9 is `PARTIAL`: the phone
 restoration is verified, while final corrected-head CI and PR presentation
 remain pending.
+
+### Corrected exact-head CI diagnosis and OpenAPI promotion — 2026-11-27
+
+The corrected documentation head `39b5e9911e4e2ce30adf1e7fcc0787a0b7de71f2`
+was inspected in [workflow 45988547157](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45988547157):
+
+- [isolated-devpc-qualification](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45988547157/job/140470238651): PASS;
+- [ui-performance-qualification](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45988547157/job/140470238016): PASS;
+- [quick-and-docs](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45988547157/job/140470238396): GATE MISS in `tests/parity/test_api_contract_fences.py::test_openapi_baseline_promotion_is_explicit_and_hash_matched`.
+
+The failure was a real explicit-promotion drift: the generated T3–T5 OpenAPI
+contract had SHA-256 `582181f99288a3870935f77fa0289bf1a5cd6b91f63d92a8fc03f617ef6a6cf3`,
+while the promoted baseline remained at `836ffc0f09712aede0ff821c8f18e47c6da3a03acd3e1bf2f2d05061045266e2`.
+The required promotion was applied on DEV-PC: the baseline now exactly matches
+the generated contract, the manifest records the old hash as `previous_sha256`,
+the new hash as `promoted_sha256`, the exact `1c9ee068…` source revision, and
+the T3–T5 rationale. `oasdiff` produced an empty breaking-change report;
+`tests/parity/test_api_contract_fences.py` passed 16 tests and
+`task lite:api:breaking-changes` passed. Canonical generation was rerun.
+
+This corrective promotion is source/contract work and must be committed and
+rechecked at a new exact head. Until that run completes, Q8 remains
+`GATE MISS / CORRECTIVE PUSH PENDING` and Q9 remains `PARTIAL`.

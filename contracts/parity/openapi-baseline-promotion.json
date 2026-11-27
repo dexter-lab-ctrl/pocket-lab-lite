@@ -13,12 +13,13 @@
     "add a protected Owner-facing Trusted automation clients pairing surface; pending pairing grants no operation authority and the fixed photo_backup.bounded_acceptance.v1 capability remains the only production capability",
     "add read-only System Health summary, incident history, diagnostics, diagnosis, preflight and generation-fenced repair-denial contracts with sanitized evidence",
     "promote the exact generated PR #658 P5-P12 System Health contract, including governed recovery, maintenance preview/cancel/resolve, diagnostic export, durable preferences and automatic-policy projections, after focused/full gates, Synthetic Owner qualification, isolated exact-candidate execution and verification, and physical System Tab qualification; production activation remains disabled",
-    "promote the exact generated PR #662 Trusted Lifecycle T0-T2 contract, including prepared summary, review-only lifecycle preferences, boundary review/revocation and bounded request schemas, after focused/full gates, isolated exact-candidate qualification and physical System Tab qualification; unattended lifecycle activation remains disabled"
+    "promote the exact generated PR #662 Trusted Lifecycle T0-T2 contract, including prepared summary, review-only lifecycle preferences, boundary review/revocation and bounded request schemas, after focused/full gates, isolated exact-candidate qualification and physical System Tab qualification; unattended lifecycle activation remains disabled",
+    "promote the exact generated PR #663 Trusted Lifecycle T3-T5 contract, including coordinated preparation and runtime identity schemas, policy compatibility evidence, capability review/activation fences, and recovery evidence after oasdiff found no unapproved breaking changes; live production activation remains disabled"
   ],
   "baseline": "contracts/parity/openapi-baseline.json",
   "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "541b9b956549a22a8300753ef4216ccbedb997decda0710ca60dadc271158cb5",
-  "promoted_sha256": "836ffc0f09712aede0ff821c8f18e47c6da3a03acd3e1bf2f2d05061045266e2",
+  "previous_sha256": "836ffc0f09712aede0ff821c8f18e47c6da3a03acd3e1bf2f2d05061045266e2",
+  "promoted_sha256": "582181f99288a3870935f77fa0289bf1a5cd6b91f63d92a8fc03f617ef6a6cf3",
   "sanitized": true,
   "schema_version": "1.0.0",
   "security_review": {
@@ -27,7 +28,7 @@
     "runtime_routes_removed": false,
     "write_operations_added": true
   },
-  "source_revision": "feat/trusted-lifecycle-governance@eea0d2fa5d81affc120a14459673b1b74db60f88",
+  "source_revision": "feat/trusted-lifecycle-t3-t5@1c9ee06818fb396e56ccd86ecfd99bab85c32a4d",
   "status": "promoted",
-  "validation_status": "dev-pc-focused-and-full-gates-passed; exact-candidate-isolated-trusted-lifecycle-execution-and-verification-validated; physical-android-system-ui-and-system-only-performance-qualified-against-exact-candidate; installed-phone-backend-remains-main-and-does-not-expose-trusted-lifecycle; canonical-docs-and-final-local-repository-gates-passed; exact-head-ci-openapi-promotion-remediation-complete; live-production-transfer-pending-reviewed-release"
+  "validation_status": "dev-pc-focused-and-full-gates-passed; oasdiff-found-no-unapproved-breaking-changes; exact-candidate-isolated-trusted-lifecycle-execution-and-verification-validated; physical-android-system-ui-and-system-only-performance-qualified-against-exact-candidate; installed-phone-backend-remains-main-and-does-not-expose-trusted-lifecycle; canonical-docs-and-final-local-repository-gates-passed; exact-head-ci-recheck-pending; live-production-transfer-pending-reviewed-release"
 }
