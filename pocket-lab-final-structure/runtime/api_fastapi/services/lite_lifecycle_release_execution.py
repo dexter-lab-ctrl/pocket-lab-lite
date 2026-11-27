@@ -17,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from ..db.connection import connection, read_connection, begin_immediate, database_path
 from . import lite_lifecycle_authority as authority, lite_infrastructure_automation as automation
 from . import lite_release_trust_configuration as trust_config, lite_policy_opa as opa
-from .lite_lifecycle_contract import canonical_bytes, digest, registry_revision
+from .lite_lifecycle_contract import canonical_bytes, digest, registry_revision, execution_capability_binding
 
 ACTION = "lifecycle.release.prepare"
 CLAIM = "lifecycle.release.claim"
@@ -44,6 +44,14 @@ def gate():
     try:
         from . import qualification_context as q, release_runtime
         if not q.enabled() or not os.environ.get("POCKETLAB_STATE_DIR"):
+            return False
+        from urllib.parse import urlsplit
+        endpoint = urlsplit(opa.OPA_BASE_URL)
+        if (os.environ.get("POCKETLAB_OPA_URL", "").rstrip("/") != opa.OPA_BASE_URL
+                or endpoint.scheme != "http" or endpoint.hostname != "127.0.0.1"
+                or endpoint.port is None or endpoint.port == 8181
+                or not 1024 <= endpoint.port <= 65535
+                or endpoint.username or endpoint.password or endpoint.path or endpoint.query or endpoint.fragment):
             return False
         root = q.root()
         state = Path(os.environ["POCKETLAB_STATE_DIR"])
@@ -96,7 +104,7 @@ def _scope(receipt, baseline):
             or not isinstance(baseline,str) or not re.fullmatch(r"[a-f0-9]{40}", baseline)
             or not re.fullmatch(r"[a-f0-9]{40}", receipt["source_commit"])):
         raise ValueError("coordinated_identity_unproved")
-    return {**hashes, "source_commit": receipt["source_commit"], "baseline_commit": baseline,
+    return {**hashes, **execution_capability_binding(ACTION), "source_commit": receipt["source_commit"], "baseline_commit": baseline,
             "release_tag": receipt["release_tag"], "current_schema": receipt["current_schema"],
             "target_schema": receipt["migration_review"]["target_schema"],
             "policy_baseline": observation["observed_revision"], "purpose": EXECUTOR}

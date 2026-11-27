@@ -26,7 +26,7 @@ from . import lite_infrastructure_automation as automation
 from . import lite_policy_lifecycle as lifecycle
 from . import lite_policy_opa as opa
 from . import lite_release_trust_configuration as trust_config
-from .lite_lifecycle_contract import canonical_bytes, digest, registry_revision
+from .lite_lifecycle_contract import canonical_bytes, digest, registry_revision, execution_capability_binding
 from .lite_policy_candidate_differential import locally_supported_evolution, restrictive_candidate, supported_differential
 from .lite_policy_compatibility import REGISTERED_MODULES
 
@@ -153,7 +153,7 @@ def binding_fields(conn, payload):
     local, revision, _, _, content_hash = _render(template, suffixes, receipt["policy_sha256"], restrictive_edit)
     if local != current["revision_id"] or revision == local:
         raise ValueError("policy_baseline_changed")
-    return {"purpose": EXECUTOR, "metadata_sha256": payload.metadata_sha256,
+    return {**execution_capability_binding(ACTION), "purpose": EXECUTOR, "metadata_sha256": payload.metadata_sha256,
             "policy_sha256": receipt["policy_sha256"], "baseline_revision": local,
             "candidate_revision": revision, "content_hash": content_hash,
             "corpus_sha256": differential["corpus_sha256"], "template": template,
@@ -247,6 +247,7 @@ def current(conn, operation, *, require_claim=False):
     managed = conn.execute("SELECT enabled FROM enterprise_configuration WHERE configuration_id=1").fetchone()
     if (digest(binding) != row["binding_sha256"] or row["executor_principal"] != EXECUTOR
             or not versions or list(versions) != binding["versions"] or bool(managed and managed["enabled"])
+            or any(scope.get(key) != value for key, value in execution_capability_binding(ACTION).items())
             or ws["workspace_id"] != binding["workspace"] or ws["authority_epoch"] != binding["authority_epoch"]
             or prefs["profile"] != "recommended" or prefs["revision"] != binding["profile_revision"]
             or registry_revision() != binding["registry_revision"] or authority._trust(conn) != binding["trust"]

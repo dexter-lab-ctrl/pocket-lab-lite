@@ -136,7 +136,30 @@ def _protected_references():
                 standing_authorization_supported=False)
 
 
+# Explicit executable contracts are locally owned and default disabled.
+# They describe only the isolated one-shot paths; never grant production rights.
+EXECUTION_CAPABILITIES = (
+    Capability(id="lifecycle.release.prepare", version=1, domain="release", owner="release_runtime",
+        action="lifecycle.release.prepare", targets=("exact_candidate",), data=("authenticated_release",),
+        access="write", risk="B", mutation=True, network=True, secret_access=False, unattended=False,
+        constraints=("current_authority","exact_candidate","isolated_qualification","no_live_cutover"), optional=True),
+    Capability(id="lifecycle.policy.activate", version=1, domain="rules", owner="lite_policy_lifecycle",
+        action="lifecycle.policy.activate", targets=("exact_policy_revision",), data=("authenticated_policy",),
+        access="write", risk="C", mutation=True, network=False, secret_access=False, unattended=False,
+        constraints=("current_authority","exact_candidate","isolated_qualification","local_supervisor"), optional=True),
+)
+
+
+def execution_capability_binding(action):
+    cap = next((item for item in EXECUTION_CAPABILITIES if item.action == action), None)
+    if cap is None:
+        raise PermissionError("execution_capability_not_registered")
+    return {"capability_id":cap.id,"capability_version":cap.version,
+            "capability_sha256":digest(cap.model_dump(mode="json"))}
+
+
 CAPABILITIES = (
+    *EXECUTION_CAPABILITIES,
     _cap("lifecycle.release.inspect", "release", "release_runtime", "lifecycle.release.inspect", "release_metadata", "public_release_metadata", network=True),
     _cap("lifecycle.release.verify", "release", "release_runtime", "lifecycle.release.verify", "staged_release", "release_evidence", standing=True),
     _cap("lifecycle.preferences.manage", "lifecycle", "fastapi", "lifecycle.preferences.manage", "local_workspace", "update_preferences", read=False),
