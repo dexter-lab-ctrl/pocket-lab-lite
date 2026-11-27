@@ -449,8 +449,18 @@ def finish_cutover(grant_id,authorization_sha256,*,rehearsed):
             row = tx.execute("SELECT * FROM lite_lifecycle_release_execution WHERE grant_id=?",(grant_id,)).fetchone()
             if not row or row["state"]!="cutover_claimed" or row["cutover_authorization_sha256"]!=authorization_sha256:
                 raise PermissionError("cutover_claim_changed")
-            state = "rehearsed" if rehearsed and not row["revoked_at"] else "failed"
+            # Recheck current authority in the same write transaction as
+            # terminal disposition; a stale controller read cannot prove success.
+            state = "failed"
+            if rehearsed:
+                try:
+                    current(tx, grant_id, states=("cutover_claimed",))
+                except (PermissionError, ValueError, KeyError):
+                    pass
+                else:
+                    state = "rehearsed"
             tx.execute("UPDATE lite_lifecycle_release_execution SET state=?,updated_at=?,reason_code=? WHERE grant_id=?",
                 (state,authority._iso(),"" if state=="rehearsed" else "coordinated_rehearsal_failed",grant_id))
             authority._audit(tx,row["owner_id"],"release_cutover_"+state,
                 authority._workspace(tx)["boundary_revision"],grant_id=grant_id)
+            return state

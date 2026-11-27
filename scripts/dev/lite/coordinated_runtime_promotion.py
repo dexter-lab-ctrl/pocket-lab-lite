@@ -188,9 +188,12 @@ def activate(grant_id,*,authorization,promotion_public_key,recovery_authorizatio
             "grant_id":grant_id,"handoff_sha256":row["handoff_sha256"],"checkpoint_sha256":doc["checkpoint_sha256"],
             "authorization_digest":auth["authorization_digest"],"recovery_authorization_digest":recovery_digest,
             "candidate_sha":scope["source_commit"],"current_production_sha":scope["baseline_commit"]})
-        controller._consume_once("promotion",auth["authorization_digest"])
-        execution.claim_cutover(grant_id,row["handoff_sha256"],auth["authorization_digest"])
+        claimed = False
+        finalized = False
         try:
+            controller._consume_once("promotion",auth["authorization_digest"])
+            execution.claim_cutover(grant_id,row["handoff_sha256"],auth["authorization_digest"])
+            claimed = True
             from api_fastapi.db.migrations import discover_migrations
             contract = [{"version":m.version,"name":m.name,"checksum":m.checksum}
                         for m in discover_migrations(root/"source"/package.MIGRATION_PREFIX)]
@@ -217,7 +220,10 @@ def activate(grant_id,*,authorization,promotion_public_key,recovery_authorizatio
             native._atomic_json(root/"active-generation.json",generation,redact=False)
             if native._read_json(root/"active-generation.json",label="offline generation")!=generation:
                 raise PermissionError("coordinated_generation_unproved")
-            execution.finish_cutover(grant_id,auth["authorization_digest"],rehearsed=True)
+            disposition = execution.finish_cutover(grant_id,auth["authorization_digest"],rehearsed=True)
+            finalized = True
+            if disposition != "rehearsed":
+                raise PermissionError("cutover_authority_changed_at_completion")
             controller._journal({"phase":"committed","status":"rehearsed","runtime_convergence":"not_exercised"})
             return {"status":"rehearsed","generation":generation,"production_execution":False}
         except Exception:
@@ -225,5 +231,11 @@ def activate(grant_id,*,authorization,promotion_public_key,recovery_authorizatio
             # checkpoint and partial generation for explicit reconciliation.
             controller._journal({"phase":"manual_recovery_required","status":"blocked",
                 "failure_code":"coordinated_offline_cutover_failed"})
-            execution.finish_cutover(grant_id,auth["authorization_digest"],rehearsed=False)
+            if claimed and not finalized:
+                # Keep the original failure and durable blocked journal even
+                # if concurrent authority or database changes prevent recording.
+                try:
+                    execution.finish_cutover(grant_id,auth["authorization_digest"],rehearsed=False)
+                except Exception:
+                    controller._journal({"grant_finalization":"reconciliation_required"})
             raise

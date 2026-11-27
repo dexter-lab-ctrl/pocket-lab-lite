@@ -62,6 +62,7 @@ def _stage_source(stream, destination, *, declaration, policy_document, migratio
                 if written != item.file_size:
                     raise TrustError("coordinated_stage_size_mismatch")
                 output.flush()
+                os.fsync(output.fileno())
             path.chmod(0o400)
             entries.append({"path": name, "sha256": h.hexdigest()})
     if total != evidence["expanded_bytes"] or len(entries) != evidence["file_count"]:

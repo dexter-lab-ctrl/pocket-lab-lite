@@ -85,3 +85,42 @@ def test_external_claim_rejects_unowned_caller(monkeypatch):
     monkeypatch.setenv("POCKETLAB_PROCESS_ROLE","api")
     with pytest.raises(PermissionError):
         execution.claim_cutover("1"*32,"2"*64,"3"*64)
+
+
+def test_cutover_finalization_is_fenced_by_current_authority(monkeypatch):
+    """Exercise the terminal transaction without a live device or real grant."""
+    from contextlib import contextmanager
+
+    class Transaction:
+        updates = []
+        def execute(self, sql, params=()):
+            if sql.startswith("SELECT *"):
+                return self
+            self.updates.append((sql, params))
+            return self
+        def fetchone(self):
+            return {"state": "cutover_claimed", "cutover_authorization_sha256": "3"*64,
+                    "owner_id": "fixture-owner", "revoked_at": None}
+
+    tx = Transaction()
+
+    @contextmanager
+    def context(*args):
+        yield tx
+
+    monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "coordinated-promotion-controller")
+    monkeypatch.setattr(execution, "gate", lambda: True)
+    monkeypatch.setattr(execution, "connection", context)
+    monkeypatch.setattr(execution, "begin_immediate", context)
+    monkeypatch.setattr(execution.authority, "_workspace", lambda conn: {"boundary_revision": 1})
+    monkeypatch.setattr(execution.authority, "_audit", lambda *args, **kwargs: None)
+
+    def stale(*args, **kwargs):
+        raise PermissionError("release_preparation_binding_changed")
+
+    monkeypatch.setattr(execution, "current", stale)
+    assert execution.finish_cutover("1"*32, "3"*64, rehearsed=True) == "failed"
+    assert tx.updates[-1][1][0] == "failed"
+    monkeypatch.setattr(execution, "current", lambda *args, **kwargs: ({}, {}))
+    assert execution.finish_cutover("1"*32, "3"*64, rehearsed=True) == "rehearsed"
+    assert tx.updates[-1][1][0] == "rehearsed"
