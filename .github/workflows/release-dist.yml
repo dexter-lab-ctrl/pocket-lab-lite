@@ -264,10 +264,11 @@ jobs:
           # Use the same registered profile as the signature-bound verifier.
           # Exact Git objects only; no generated build, checkout changes or user data.
           python3 - <<'PY'
-          import hashlib, json, os, subprocess, sys
+          import hashlib, json, os, subprocess, runpy
           from pathlib import Path
-          sys.path.insert(0, str(Path("pocket-lab-final-structure/runtime").resolve()))
-          from api_fastapi.services.lite_release_package import RUNTIME_PROFILE, RUNTIME_PROFILE_ROOTS
+          # Build job intentionally has no FastAPI/cryptography dependencies.
+          profile = runpy.run_path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_release_package_profile.py")
+          RUNTIME_PROFILE, RUNTIME_PROFILE_ROOTS = profile["RUNTIME_PROFILE"], profile["RUNTIME_PROFILE_ROOTS"]
           source = Path("pocketlab-lite-source.zip")
           subprocess.run(["git", "archive", "--format=zip", "--output=" + str(source),
                           os.environ["GITHUB_SHA"], "--", *RUNTIME_PROFILE_ROOTS], check=True)

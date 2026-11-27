@@ -21,10 +21,9 @@ MAX_SOURCE_BYTES = 256 * 1024 * 1024
 MAX_EXPANDED_BYTES = 512 * 1024 * 1024
 MAX_ENTRIES = 12000
 MAX_MEMBER_BYTES = 64 * 1024 * 1024
-POLICY_PREFIX = "security/policies/opa/"
-MIGRATION_PREFIX = "pocket-lab-final-structure/runtime/api_fastapi/db/schema/"
-RUNTIME = "pocket-lab-final-structure/runtime/"
-BOOTSTRAP = "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/"
+from .lite_release_package_profile import (
+    POLICY_PREFIX, MIGRATION_PREFIX, RUNTIME, BOOTSTRAP, RUNTIME_PROFILE, RUNTIME_PROFILE_ROOTS,
+)
 REQUIRED = frozenset({
     RUNTIME + "requirements.txt",
     RUNTIME + "api_fastapi/services/lite_policy_opa.py",
@@ -35,15 +34,6 @@ REQUIRED = frozenset({
     POLICY_PREFIX + "pocketlab/pocketlab.rego",
     "package.json", "package-lock.json",
 })
-RUNTIME_PROFILE = "runtime-review-v1"
-# This is a review/staging package, not an installable runtime image.
-# Keep dependencies used by the native owner, contracts and policy inventory;
-# omit the frontend source, docs, test suites and unrelated repository trees.
-RUNTIME_PROFILE_ROOTS = (
-    RUNTIME.rstrip("/"), BOOTSTRAP.rstrip("/"), POLICY_PREFIX.rstrip("/"),
-    "scripts/dev/lite", "contracts", "schemas", "operations", "runbooks",
-    "package.json", "package-lock.json",
-)
 RUNTIME_PROFILE_REQUIRED = REQUIRED | {
     "scripts/dev/lite/backend_runtime_promotion.py",
     "scripts/dev/lite/coordinated_runtime_promotion.py",
