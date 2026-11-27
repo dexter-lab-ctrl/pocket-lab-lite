@@ -1,7 +1,7 @@
 """Read-only per-capability change review using the existing T0 ceiling model."""
 from __future__ import annotations
 
-from .lite_lifecycle_contract import Capability, Impact, _expands, inventory, canonical_bytes, digest
+from .lite_lifecycle_contract import CAPABILITIES, Capability, Impact, _expands, inventory, canonical_bytes, digest
 
 MAX_REVIEW_ROWS = 20
 
@@ -56,3 +56,50 @@ def compare_capabilities(old: tuple[Capability, ...], new: tuple[Capability, ...
             "exact_scopes": exact,
             "truncated": len(rows) > MAX_REVIEW_ROWS or len(exact) < min(len(rows), MAX_REVIEW_ROWS),
             "execution_eligible": False}
+
+
+def exact_scopes_for_transport(review):
+    """Reconstruct only strict typed capability data after generic redaction.
+
+    The bounded trust child already checked the signed manifest. Generic
+    release transport truncates nested objects and cannot preserve an exact
+    scope digest. No other fields bypass the normal sanitizer.
+    """
+    if not isinstance(review, dict):
+        return []
+    rows = review.get("changes") or []
+    scopes = review.get("exact_scopes") or []
+    if not isinstance(rows, list) or not isinstance(scopes, list) or len(rows) > MAX_REVIEW_ROWS or len(scopes) > MAX_REVIEW_ROWS:
+        raise ValueError("candidate_scope_transport_invalid")
+    expected = {row["id"]: row["scope_sha256"] for row in rows}
+    local = {cap.id: cap.model_dump(mode="json") for cap in CAPABILITIES}
+    verified = []
+    seen = set()
+    for scope in scopes:
+        if not isinstance(scope, dict) or set(scope) != {"id", "impact", "before", "after"}:
+            raise ValueError("candidate_scope_transport_invalid")
+        key = scope["id"]
+        if key in seen or key not in expected or scope["before"] != local.get(key):
+            raise ValueError("candidate_scope_transport_invalid")
+        seen.add(key)
+        for field in ("before", "after"):
+            if scope[field] is not None:
+                cap = Capability.model_validate_json(canonical_bytes(scope[field]))
+                if cap.id != key or cap.model_dump(mode="json") != scope[field]:
+                    raise ValueError("candidate_scope_transport_invalid")
+        if scope["before"] == scope["after"] or scope["impact"] not in {"U2", "U4", "U5", "UX"} or digest(scope) != expected[key]:
+            raise ValueError("candidate_scope_transport_invalid")
+        verified.append(scope)
+    if len(canonical_bytes(verified)) > 49 * 1024:
+        raise ValueError("candidate_scope_transport_invalid")
+    return verified
+
+
+def public_review(review):
+    if not isinstance(review, dict):
+        return None
+    scopes = {scope["id"]: digest(scope) for scope in review.get("exact_scopes", [])}
+    return {"total": review.get("total"), "truncated": bool(review.get("truncated")),
+            "execution_eligible": False,
+            "changes": [{**row, "exact_scope_available": scopes.get(row["id"]) == row.get("scope_sha256") and row["id"] in scopes}
+                        for row in review.get("changes", [])]}

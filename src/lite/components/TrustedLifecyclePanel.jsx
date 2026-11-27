@@ -93,7 +93,6 @@ export function CandidateReview({ review, consents = [], canDecide = false, onRe
   if (!review) return null;
   const capabilities = review.capability_review;
   const rows = Array.isArray(capabilities?.changes) ? capabilities.changes : [];
-  const scopes = new Map((capabilities?.exact_scopes || []).map(scope => [scope.id, scope]));
   return <div className="lite-system-health-detail-block">
     <h4>Candidate evidence</h4>
     <p>Recorded review evidence only. No installation, Safety Rules activation or additional permissions are authorized here.</p>
@@ -110,8 +109,7 @@ export function CandidateReview({ review, consents = [], canDecide = false, onRe
       <LiteActionRow label="Recorded changes" value={String(capabilities?.total ?? 'Not confirmed')} />
       {rows.map(row => {
         const current = consents.find(item => item.metadata_sha256 === review.metadata_sha256 && item.scope_sha256 === row.scope_sha256 && item.capability_id === row.id && item.status !== 'revoked');
-        const scope = scopes.get(row.id);
-        const enabled = canDecide && Boolean(scope && row.scope_sha256 && review.metadata_sha256);
+        const enabled = canDecide && Boolean(row.exact_scope_available && row.scope_sha256 && review.metadata_sha256);
         const decide = disposition => onReview({ kind: 'candidate', label: 'Review ' + row.id,
           value: { metadata_sha256: review.metadata_sha256, scope_sha256: row.scope_sha256, capability_id: row.id, disposition } });
         return <div key={row.id} className="lite-system-health-detail-block">
@@ -119,7 +117,6 @@ export function CandidateReview({ review, consents = [], canDecide = false, onRe
             summary={typeof row.changed_fields === 'string' ? row.changed_fields : 'No detailed evidence available'} />
           {current && <LiteActionRow label="Recorded decision" value={candidateDecisionNames[current.status] || 'Review required'}
             action={{ label: 'Revoke', haptic: true, disabled: !canDecide, onClick: () => onReview({ kind: 'candidate-revoke', value: current.consent_id, label: 'Revoke ' + row.id }) }} />}
-          {scope && <LiteTechnicalDetails summary="Exact capability scope" haptic><CapabilityScope scope={scope} /></LiteTechnicalDetails>}
           {enabled && <>
             <LiteButton haptic tone="secondary" onClick={() => decide('accepted_for_review')}>Accept for review</LiteButton>
             <LiteButton haptic tone="secondary" onClick={() => decide('declined')}>Decline</LiteButton>

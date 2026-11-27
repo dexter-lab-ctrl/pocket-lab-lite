@@ -448,6 +448,8 @@ def summary(context):
             history.append({"receipt_id": item["receipt_id"], **{key: raw.get(key) for key in
                 ("release_tag","checked_at","expires","authenticity","integrity","provenance","compatibility","impact")}})
     latest = json.loads(trust_observation["review_json"]) if trust_observation else {}
+    from .lite_capability_review import public_review
+    candidate_review = public_review(latest.get("capability_review")) if is_owner else None
     raw = latest or (json.loads(receipt["receipt_json"]) if receipt else {})
     historical = {key: raw.get(key) for key in ("release_tag","checked_at","expires","root_expires","authenticity","integrity","provenance","compatibility","impact","reason_code")} if raw else None
     state = trust_observation["state"] if trust_observation else "trust_setup_required"
@@ -464,7 +466,7 @@ def summary(context):
             "assessment": latest.get("assessment"),
             "candidate_consents": candidate_consents,
             "candidate_review": ({key: latest.get(key) for key in
-                ("release_tag", "checked_at", "metadata_sha256", "source_package", "policy_review", "policy_runtime_observation", "migration_review", "capability_review")}
+                ("release_tag", "checked_at", "metadata_sha256", "source_package", "policy_review", "policy_runtime_observation", "migration_review")} | {"capability_review": candidate_review}
                 if is_owner and latest.get("provenance") == "verified" else None),
             "services": [{"purpose": item.purpose,"category": item.category,"grantable": item.grantable,
                           "version": item.version,"execution_eligible": False} for item in SERVICES],

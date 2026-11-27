@@ -1476,7 +1476,16 @@ async def execute_release_subprocess(
         raise ReleaseSubprocessError(
             "release_subprocess_missing_result", metrics=metrics
         )
-    return _sanitize(result), metrics
+    sanitized = _sanitize(result)
+    if operation == "verify_trust" and isinstance(result.get("receipt"), dict):
+        from .lite_capability_review import exact_scopes_for_transport
+        raw_review = result["receipt"].get("capability_review")
+        if isinstance(raw_review, dict):
+            try:
+                sanitized["receipt"]["capability_review"]["exact_scopes"] = exact_scopes_for_transport(raw_review)
+            except (ValueError, KeyError, TypeError) as exc:
+                raise ReleaseSubprocessError("candidate_scope_transport_invalid", metrics=metrics) from exc
+    return sanitized, metrics
 
 
 async def recover_abandoned_release_operation() -> dict[str, Any]:

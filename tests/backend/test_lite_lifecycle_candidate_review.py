@@ -81,3 +81,16 @@ def test_candidate_consent_request_cannot_smuggle_execution_scope():
         CandidateConsentRequest(**body, execution_enabled=True)
     with pytest.raises(ValidationError):
         CandidateConsentRequest(**{**body, "disposition": "enabled"})
+
+
+def test_exact_scope_transport_restores_only_strict_capability_objects():
+    from api_fastapi.services.lite_capability_review import exact_scopes_for_transport, public_review
+    cap = CAPABILITIES[0]
+    changed = cap.model_copy(update={"version": cap.version + 1})
+    review = compare_capabilities((cap,), (changed,))
+    assert exact_scopes_for_transport(review) == review["exact_scopes"]
+    assert "exact_scopes" not in public_review(review)
+    assert public_review(review)["changes"][0]["exact_scope_available"] is True
+    review["exact_scopes"][0]["after"]["network"] = not changed.network
+    with pytest.raises(ValueError):
+        exact_scopes_for_transport(review)
