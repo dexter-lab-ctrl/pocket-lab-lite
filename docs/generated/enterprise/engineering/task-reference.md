@@ -20,7 +20,7 @@ Tasks remain source-derived; commands are documented but never executed by this 
 | API-validation loop | 12 |
 | Runtime-evidence loop | 41 |
 | Security-analysis loop | 34 |
-| Release loop | 21 |
+| Release loop | 22 |
 | Recovery-diagnostics loop | 28 |
 
 ## `default`
@@ -4539,6 +4539,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Commands:**
 
 - `task lite:lifecycle:backend`
+- `task lite:lifecycle:t3-t5-package`
 - `task lite:lifecycle:ui`
 - `task lite:lifecycle:mocked`
 
@@ -4554,7 +4555,7 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 
 **Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
 
-**Related tasks:** lite:lifecycle:backend, lite:lifecycle:mocked, lite:lifecycle:ui
+**Related tasks:** lite:lifecycle:backend, lite:lifecycle:mocked, lite:lifecycle:t3-t5-package, lite:lifecycle:ui
 
 **Failure modes:** dependency task failure, missing required local tool or evidence, command failure
 
@@ -4595,6 +4596,40 @@ printf 'Local diagnostic supply-chain evidence promoted from %s; this is not can
 **Validation outcome:** not-a-validation-task
 
 **Example:** `task lite:lifecycle:regression`
+
+## `lite:lifecycle:t3-t5-package`
+
+**Purpose:** Authenticated coordinated source and migration inventory fixtures (qualification only)
+
+**Audience:** developer
+
+**Dependencies:** None
+
+**Aliases:** None
+
+**Commands:**
+
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_coordinated_release_package.py tests/backend/test_lite_release_trusted_time.py tests/backend/test_lite_lifecycle_candidate_review.py tests/backend/test_lite_lifecycle_policy_execution.py tests/backend/test_lite_lifecycle_release_execution.py tests/backend/test_lite_backend_runtime_promotion.py`
+
+**Environment:** None source-discovered
+
+**Inputs:** tests/backend/test_lite_backend_runtime_promotion.py, tests/backend/test_lite_coordinated_release_package.py, tests/backend/test_lite_lifecycle_candidate_review.py, tests/backend/test_lite_lifecycle_policy_execution.py, tests/backend/test_lite_lifecycle_release_execution.py, tests/backend/test_lite_release_trusted_time.py
+
+**Outputs:** No explicit file outputs discovered
+
+**Generated artifacts:** None discovered
+
+**Side effects:** repository mutation=True; runtime mutation=False; captures runtime=False; promotes evidence=False
+
+**Runtime:** requires Termux=False; requires WSL2=False; safe local=True; class=bounded
+
+**Related tasks:** None
+
+**Failure modes:** dependency task failure, missing required local tool or evidence, command failure
+
+**Validation outcome:** not-a-validation-task
+
+**Example:** `task lite:lifecycle:t3-t5-package`
 
 ## `lite:lifecycle:ui`
 

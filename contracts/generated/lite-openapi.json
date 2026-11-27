@@ -203,6 +203,148 @@
         "title": "BootstrapGrantRequest",
         "type": "object"
       },
+      "CandidateConsentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "capability_id": {
+            "pattern": "^[a-z][a-z0-9_.-]{2,79}$",
+            "title": "Capability Id",
+            "type": "string"
+          },
+          "confirm": {
+            "const": true,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "disposition": {
+            "enum": [
+              "accepted_for_review",
+              "declined",
+              "deferred"
+            ],
+            "title": "Disposition",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "metadata_sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Metadata Sha256",
+            "type": "string"
+          },
+          "scope_sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Scope Sha256",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "metadata_sha256",
+          "capability_id",
+          "scope_sha256",
+          "disposition",
+          "confirm"
+        ],
+        "title": "CandidateConsentRequest",
+        "type": "object"
+      },
+      "CandidateRevokeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "const": true,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "consent_id": {
+            "pattern": "^[a-f0-9]{32}$",
+            "title": "Consent Id",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "consent_id",
+          "confirm"
+        ],
+        "title": "CandidateRevokeRequest",
+        "type": "object"
+      },
+      "CapabilityActivationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "capability_id": {
+            "const": "system.activity_history.reconcile.activate",
+            "title": "Capability Id",
+            "type": "string"
+          },
+          "confirm": {
+            "const": true,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "metadata_sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Metadata Sha256",
+            "type": "string"
+          },
+          "scope_sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Scope Sha256",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "metadata_sha256",
+          "capability_id",
+          "scope_sha256",
+          "confirm"
+        ],
+        "title": "CapabilityActivationRequest",
+        "type": "object"
+      },
+      "CapabilityActivationRevoke": {
+        "additionalProperties": false,
+        "properties": {
+          "activation_id": {
+            "pattern": "^[a-f0-9]{32}$",
+            "title": "Activation Id",
+            "type": "string"
+          },
+          "confirm": {
+            "const": true,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "activation_id",
+          "confirm"
+        ],
+        "title": "CapabilityActivationRevoke",
+        "type": "object"
+      },
       "ChallengeRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2079,6 +2221,60 @@
         },
         "type": "object"
       },
+      "PolicyExecutionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "const": true,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "metadata_sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Metadata Sha256",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "metadata_sha256",
+          "confirm"
+        ],
+        "title": "PolicyExecutionRequest",
+        "type": "object"
+      },
+      "PolicyExecutionRevoke": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "const": true,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "grant_id": {
+            "pattern": "^[a-f0-9]{32}$",
+            "title": "Grant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "grant_id",
+          "confirm"
+        ],
+        "title": "PolicyExecutionRevoke",
+        "type": "object"
+      },
       "PolicySyncRequest": {
         "additionalProperties": false,
         "description": "The qualification policy-sync request intentionally has no inputs.",
@@ -2247,6 +2443,60 @@
           }
         },
         "title": "RejectOperationRequest",
+        "type": "object"
+      },
+      "ReleasePreparationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "const": true,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "metadata_sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Metadata Sha256",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "metadata_sha256",
+          "confirm"
+        ],
+        "title": "ReleasePreparationRequest",
+        "type": "object"
+      },
+      "ReleasePreparationRevoke": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm": {
+            "const": true,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "grant_id": {
+            "pattern": "^[a-f0-9]{32}$",
+            "title": "Grant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "grant_id",
+          "confirm"
+        ],
+        "title": "ReleasePreparationRevoke",
         "type": "object"
       },
       "RepairRequest": {
@@ -14024,6 +14274,627 @@
         ]
       }
     },
+    "/api/lite/lifecycle/candidate/consent": {
+      "post": {
+        "operationId": "record_candidate_consent_api_lite_lifecycle_candidate_consent_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateConsentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Record Candidate Consent",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/candidate/consent/review": {
+      "post": {
+        "operationId": "review_candidate_consent_api_lite_lifecycle_candidate_consent_review_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateConsentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Review Candidate Consent",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/candidate/consent/revoke": {
+      "post": {
+        "operationId": "revoke_candidate_consent_api_lite_lifecycle_candidate_consent_revoke_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateRevokeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revoke Candidate Consent",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/capability/activation": {
+      "post": {
+        "operationId": "activate_capability_api_lite_lifecycle_capability_activation_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityActivationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Activate Capability",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/capability/activation/review": {
+      "post": {
+        "operationId": "review_capability_activation_api_lite_lifecycle_capability_activation_review_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityActivationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Review Capability Activation",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/capability/activation/revoke": {
+      "post": {
+        "operationId": "revoke_capability_api_lite_lifecycle_capability_activation_revoke_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityActivationRevoke"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revoke Capability",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/policy/execution": {
+      "post": {
+        "operationId": "admit_policy_execution_api_lite_lifecycle_policy_execution_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyExecutionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Admit Policy Execution",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/policy/execution/review": {
+      "post": {
+        "operationId": "review_policy_execution_api_lite_lifecycle_policy_execution_review_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyExecutionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Review Policy Execution",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/policy/execution/revoke": {
+      "post": {
+        "operationId": "revoke_policy_execution_api_lite_lifecycle_policy_execution_revoke_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyExecutionRevoke"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revoke Policy Execution",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
     "/api/lite/lifecycle/preferences": {
       "put": {
         "operationId": "preferences_api_lite_lifecycle_preferences_put",
@@ -14157,6 +15028,213 @@
           }
         },
         "summary": "Review Preferences",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/release/preparation": {
+      "post": {
+        "operationId": "admit_release_preparation_api_lite_lifecycle_release_preparation_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReleasePreparationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Admit Release Preparation",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/release/preparation/review": {
+      "post": {
+        "operationId": "review_release_preparation_api_lite_lifecycle_release_preparation_review_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReleasePreparationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Review Release Preparation",
+        "tags": [
+          "lite-trusted-lifecycle"
+        ]
+      }
+    },
+    "/api/lite/lifecycle/release/preparation/revoke": {
+      "post": {
+        "operationId": "revoke_release_preparation_api_lite_lifecycle_release_preparation_revoke_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReleasePreparationRevoke"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "The requested state transition conflicts with current durable state."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PocketLabApiError"
+                }
+              }
+            },
+            "description": "Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency.",
+            "headers": {
+              "Retry-After": {
+                "description": "Bounded delay in seconds before a safe retry.",
+                "schema": {
+                  "maximum": 300,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revoke Release Preparation",
         "tags": [
           "lite-trusted-lifecycle"
         ]

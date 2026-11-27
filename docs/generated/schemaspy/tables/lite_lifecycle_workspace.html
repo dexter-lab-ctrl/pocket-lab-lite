@@ -135,6 +135,16 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="lite_lifecycle_candidate_consent.[owner_id, workspace_id] references lite_lifecycle_workspace.[human_id, workspace_id] via "><a href='lite_lifecycle_candidate_consent.html'>lite_lifecycle_candidate_consent</a><span class='relatedKey'>.workspace_id</span></td>
+                                                <td class="constraint detail"></td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="lite_lifecycle_capability_activation.[owner_id, workspace_id] references lite_lifecycle_workspace.[human_id, workspace_id] via "><a href='lite_lifecycle_capability_activation.html'>lite_lifecycle_capability_activation</a><span class='relatedKey'>.workspace_id</span></td>
+                                                <td class="constraint detail"></td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="lite_lifecycle_grants.[owner_id, workspace_id] references lite_lifecycle_workspace.[human_id, workspace_id] via "><a href='lite_lifecycle_grants.html'>lite_lifecycle_grants</a><span class='relatedKey'>.workspace_id</span></td>
                                                 <td class="constraint detail"></td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -265,37 +275,45 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="514,7,817,541">
-<area shape="rect" id="node2" href="lite_lifecycle_workspace.html" target="_top" title="lite_lifecycle_workspace" alt="" coords="5,5,470,225">
+<area shape="rect" id="node1" href="lite_lifecycle_candidate_consent.html" target="_top" title="lite_lifecycle_candidate_consent" alt="" coords="523,5,894,305">
+<area shape="rect" id="node2" href="lite_lifecycle_workspace.html" target="_top" title="lite_lifecycle_workspace" alt="" coords="5,321,470,541">
+<area shape="rect" id="node3" href="lite_lifecycle_capability_activation.html" target="_top" title="lite_lifecycle_capability_activation" alt="" coords="514,323,903,681">
+<area shape="rect" id="node4" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="557,699,860,1233">
 </map>
                                         <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/lite_lifecycle_workspace.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="514,80,817,614">
-<area shape="rect" id="node2" href="human_identities.html" target="_top" title="human_identities" alt="" coords="119,243,357,337">
-<area shape="rect" id="node3" href="lite_lifecycle_workspace.html" target="_top" title="lite_lifecycle_workspace" alt="" coords="5,5,470,225">
-<area shape="rect" id="node4" href="lite_lifecycle_service_delegations.html" target="_top" title="lite_lifecycle_service_delegations" alt="" coords="861,83,1242,177">
+<area shape="rect" id="node1" href="lite_lifecycle_candidate_consent.html" target="_top" title="lite_lifecycle_candidate_consent" alt="" coords="523,5,894,305">
+<area shape="rect" id="node2" href="human_identities.html" target="_top" title="human_identities" alt="" coords="119,472,357,566">
+<area shape="rect" id="node3" href="lite_lifecycle_workspace.html" target="_top" title="lite_lifecycle_workspace" alt="" coords="5,234,470,454">
+<area shape="rect" id="node4" href="lite_lifecycle_capability_activation.html" target="_top" title="lite_lifecycle_capability_activation" alt="" coords="514,323,903,681">
+<area shape="rect" id="node5" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="557,699,860,1233">
+<area shape="rect" id="node6" href="lite_lifecycle_service_delegations.html" target="_top" title="lite_lifecycle_service_delegations" alt="" coords="947,701,1328,795">
 </map>
                                         <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/lite_lifecycle_workspace.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="514,7,817,541">
-<area shape="rect" id="node2" href="lite_lifecycle_workspace.html" target="_top" title="lite_lifecycle_workspace" alt="" coords="5,5,470,225">
+<area shape="rect" id="node1" href="lite_lifecycle_candidate_consent.html" target="_top" title="lite_lifecycle_candidate_consent" alt="" coords="523,5,894,305">
+<area shape="rect" id="node2" href="lite_lifecycle_workspace.html" target="_top" title="lite_lifecycle_workspace" alt="" coords="5,321,470,541">
+<area shape="rect" id="node3" href="lite_lifecycle_capability_activation.html" target="_top" title="lite_lifecycle_capability_activation" alt="" coords="514,323,903,681">
+<area shape="rect" id="node4" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="557,699,860,1233">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/lite_lifecycle_workspace.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="human_identities.html" target="_top" title="human_identities" alt="" coords="331,396,569,490">
-<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,358,262,452">
-<area shape="rect" id="node3" href="lite_lifecycle_audit.html" target="_top" title="lite_lifecycle_audit" alt="" coords="1559,469,1809,563">
-<area shape="rect" id="node4" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="306,649,594,743">
-<area shape="rect" id="node5" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="1147,138,1450,672">
-<area shape="rect" id="node6" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="691,578,1050,672">
-<area shape="rect" id="node7" href="lite_lifecycle_workspace.html" target="_top" title="lite_lifecycle_workspace" alt="" coords="638,50,1103,270">
-<area shape="rect" id="node8" href="lite_lifecycle_service_delegations.html" target="_top" title="lite_lifecycle_service_delegations" alt="" coords="1494,141,1874,235">
+<area shape="rect" id="node1" href="human_identities.html" target="_top" title="human_identities" alt="" coords="450,428,689,522">
+<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="21,928,278,1022">
+<area shape="rect" id="node3" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="861,5,1220,99">
+<area shape="rect" id="node4" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="5,656,293,750">
+<area shape="rect" id="node5" href="lite_lifecycle_candidate_consent.html" target="_top" title="lite_lifecycle_candidate_consent" alt="" coords="854,152,1226,451">
+<area shape="rect" id="node6" href="lite_lifecycle_workspace.html" target="_top" title="lite_lifecycle_workspace" alt="" coords="337,150,802,370">
+<area shape="rect" id="node7" href="lite_lifecycle_capability_activation.html" target="_top" title="lite_lifecycle_capability_activation" alt="" coords="846,504,1235,862">
+<area shape="rect" id="node8" href="lite_system_health_automation_attempts.html" target="_top" title="lite_system_health_automation_attempts" alt="" coords="343,768,796,862">
+<area shape="rect" id="node9" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="1279,649,1582,1183">
+<area shape="rect" id="node10" href="lite_lifecycle_service_delegations.html" target="_top" title="lite_lifecycle_service_delegations" alt="" coords="1626,652,2006,746">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/lite_lifecycle_workspace.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

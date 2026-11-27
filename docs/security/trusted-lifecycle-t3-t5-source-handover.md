@@ -144,3 +144,115 @@ Every phase is NOT RUN. Do not convert a fixture into a passing result, and do n
 ### Specific residual risks and decisions
 
 The runtime-review archive deliberately excludes unrelated roots, uses Git archive of an exact commit and declares a new signed profile. It is not a complete native installer; v1 full-tree declarations remain reviewable, while clients without schema v2 support must fail closed. Archive contents, dependencies, byte reproducibility and budgets are unvalidated. The read-only restart journal inspector cannot independently establish runtime health, nor authorize recovery. Restrictive policy changes still use the pre-existing exact locally registered backup-location transformation; no speculative additional semantic rule was enabled. The failure UI is based only on recorded disposition and is not a live runtime recovery control. Do not treat any of these source edits as formal qualification.
+
+## Final implementation and qualification disposition — 2026-11-27
+
+This section supersedes stale active dispositions above. The historical
+continuation sections remain for provenance; they must not be read as the
+current execution result.
+
+### Provenance
+
+- Repository: `dexter-lab-ctrl/pocket-lab-lite`
+- PR: [#663](https://github.com/dexter-lab-ctrl/pocket-lab-lite/pull/663)
+- Branch: `feat/trusted-lifecycle-t3-t5`
+- Base/main at session start: `9bc53ce047c800be71cd76f1a37e79659af1ca4d`
+- Feature at session start: `a87a82cf619f390c5a22ac63e421416944b47165`
+- Final code-bearing candidate used for isolated and physical qualification:
+  `1c9ee06818fb396e56ccd86ecfd99bab85c32a4d`
+- Final documentation/evidence head: recorded in the final commit and PR
+  update after this section is committed.
+- Production release, production activation, merge and auto-merge: not
+  performed or authorized.
+
+### SC1–SC7 closure
+
+| Requirement | Current implementation and owner | Evidence | Disposition |
+|---|---|---|---|
+| SC1 T3 policy lifecycle | `lite_policy_candidate_differential`, policy execution owner, OPA loaded-module/data identity | Full decision-envelope differential and adversarial fixtures; isolated OPA/runtime checks | IMPLEMENTED — NOT YET VALIDATED for ordinary production activation |
+| SC2 trusted candidate/package | Release trust, `runtime-install-v1`, dependency-complete profile and archive verifier | Package/profile tests, deterministic source inventory and bounded archive checks | IMPLEMENTED — NOT YET VALIDATED for a published production installation |
+| SC3 coordinated runtime | `coordinated_runtime_promotion` delegates to native promotion, PWA, OPA, SQLite, supervisor and reconciler owners | Focused tests and isolated candidate runner; no ordinary runtime cutover | IMPLEMENTED — NOT YET VALIDATED |
+| SC4 capability authority | Candidate review remains separate from activation; capability service and scheduler enforce exact owner/scope/claim/revoke fences | Focused capability, policy and replay/expiry tests | IMPLEMENTED — NOT YET VALIDATED for real human-authorized production execution |
+| SC5 recovery | Journal reconciliation and explicit recovery authorization preserve checkpoint identity and newer-write fences | Interruption/recovery fixtures and isolated runtime evidence | IMPLEMENTED — NOT YET VALIDATED in a live coordinated restart |
+| SC6 System Manage | Prepared backend states and truthful lifecycle, convergence, recovery and capability presentation | Desktop/mobile mocked E2E, Storybook, accessibility and safe physical Android System UI | IMPLEMENTED — NOT YET VALIDATED against a live production projection |
+| SC7 evidence/docs | Canonical contracts/docs regenerated after Q0–Q6 work; evidence provenance and claim categories retained | `task lite:docs:generate`, `task lite:docs:check`, `task lite:check` passed | IMPLEMENTED |
+
+### Source owners and files
+
+The implementation is owned by the existing FastAPI/lite API, native
+promotion controller, release/package verifier, OPA policy lifecycle,
+SQLite migration/recovery, worker/scheduler, runtime reconciler/core
+supervisor and shared System Manage UI paths. The material additions are:
+
+- `pocket-lab-final-structure/runtime/api_fastapi/services/lite_runtime_identity.py`
+  and migration `0067_runtime_identity_projection.sql` for independently
+  projected identity and convergence evidence.
+- `lite_release_package_profile.py`, `lite_release_package.py` and
+  `runtime/runtime-dependencies.json` for the versioned dependency-complete
+  runtime package contract.
+- `coordinated_runtime_promotion.py`, the native promotion integration and
+  migration `0069_lifecycle_release_execution_committed.sql` for the gated
+  coordinated owner path.
+- `lite_lifecycle_capability_activation.py`, the lifecycle routes/scheduler
+  integration and migration `0068_lifecycle_capability_activation.sql` for
+  review-versus-activation separation and exact claim fencing.
+- `lite_policy_candidate_differential.py`, OPA policy/data identity handling
+  and the expanded registered restrictive differential corpus.
+- `TrustedLifecyclePanel.jsx`, `liteApi.js` and the repository-owned
+  lifecycle/Android qualification runners for operational presentation and
+  evidence collection.
+
+All production execution gates remain default-disabled. No generic capability
+dispatcher, browser-held backend secret, direct frontend NATS connection or
+production activation shortcut was introduced.
+
+### Executed qualification evidence
+
+- Focused lifecycle promotion, release-execution and coordinated-owner tests:
+  36 passed. Lifecycle aggregate qualification passed with 21 backend, 81
+  package, 14 Vitest and 10 mocked Playwright checks; lifecycle regression
+  passed 56 checks.
+- Exact-toolchain `task lite:check` passed after selecting the existing JDK
+  17.0.20.1 cache. It covered the repository runtime, backend, frontend,
+  Storybook, mocked browser, accessibility, docs-browser, redaction, Allure,
+  contracts and strict docs checks.
+- Isolated candidate runtime manifest:
+  `.pocketlab-dev/validation/` run
+  `324e811a3a6744d4921f56d6`, candidate-bound FastAPI/worker/node-agent/
+  supervisor/NATS/SQLite/auth/recovery and cleanup PASS. This is isolated
+  qualification evidence, not ordinary Server Phone production convergence.
+- Physical System-only Android evidence:
+  [`docs/security/evidence/trusted-lifecycle-t3-t5/1c9ee06818fb/`](evidence/trusted-lifecycle-t3-t5/1c9ee06818fb/).
+  Candidate markers matched `1c9ee...`; 13 safe UI interactions passed,
+  SQLite fixture 42→69 passed integrity checks, and cleanup passed. The
+  backend was an isolated candidate UI fixture (`live_backend_summary=false`).
+- Physical performance collection executed three repetitions over nine System
+  interactions. It retained zero absolute-target passes and zero hard-gate
+  passes, with eight `MIXED`, one `PLATFORM_DOMINATED`, and zero
+  `APP_INCREMENTAL_COST`. These are explicit `TARGET MISS`/`GATE MISS`
+  residuals, not a green performance claim.
+
+### Q0–Q9 disposition
+
+| Phase | Result | Current evidence / limitation |
+|---|---|---|
+| Q0 | PARTIAL | Exact candidate, package isolation and synthetic authority passed; independent human passkey/trusted-time service proof remains outside the run. |
+| Q1 | PASS — isolated | Policy differential, full envelope comparisons and isolated loaded OPA identity passed; production policy activation not run. |
+| Q2 | PARTIAL | Package, migration, checkpoint, journal and isolated runtime checks passed; live backend/PWA/OPA/SQLite cutover not run. |
+| Q3 | PASS — isolated | Consent/activation separation, claim fencing, revoke/expiry and replay cases passed; no production capability was activated. |
+| Q4 | PARTIAL | Mocked desktop/mobile, Storybook, accessibility and safe physical System UI passed; complete live visual matrix is not claimed. |
+| Q5 | PASS — isolated | DEV-PC NATS/worker/agent/supervisor/security runtime checks passed; physical live coordinated runtime was not exercised. |
+| Q6 | RESIDUAL | Standard-user Android CDP and System-only UI collection passed; all nine performance interactions missed absolute target and hard gate, and full ARM64 Termux resource qualification is not claimed. |
+| Q7 | PASS | Canonical generation, docs check and exact-toolchain repository gate passed. |
+| Q8 | NOT RUN | Final documentation/evidence candidate must be pushed before exact-head CI is inspected. |
+| Q9 | NOT RUN | Final CI, phone restoration and PR reconciliation are pending final push. |
+
+### Safety and remaining limitations
+
+The candidate is not production-ready or merge-ready on the evidence above.
+The live coordinated multi-process cutover and live separately authorized
+recovery path remain unvalidated. Physical performance target and hard-gate
+misses remain visible. Unknown policy semantics remain fail-closed. The
+physical Android UI evidence is isolated-candidate presentation evidence, not
+production backend convergence. The Server Phone must finish the session on
+the intended remote `main` SHA with its normal runtime independently checked.

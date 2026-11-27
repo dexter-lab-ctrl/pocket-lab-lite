@@ -5402,6 +5402,7 @@
       "captures_runtime": false,
       "commands": [
         "task lite:lifecycle:backend",
+        "task lite:lifecycle:t3-t5-package",
         "task lite:lifecycle:ui",
         "task lite:lifecycle:mocked"
       ],
@@ -5424,6 +5425,7 @@
       "related_tasks": [
         "lite:lifecycle:backend",
         "lite:lifecycle:mocked",
+        "lite:lifecycle:t3-t5-package",
         "lite:lifecycle:ui"
       ],
       "repository_mutation": false,
@@ -5479,6 +5481,51 @@
         "network_or_external_tools": false,
         "repository_mutation": true,
         "runtime_mutation": true
+      },
+      "source": "tasks/Taskfile.lite.yml",
+      "validation_outcome": "not-a-validation-task",
+      "workflow_group": "Release loop"
+    },
+    {
+      "aliases": [],
+      "audience": "developer",
+      "captures_runtime": false,
+      "commands": [
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_coordinated_release_package.py tests/backend/test_lite_release_trusted_time.py tests/backend/test_lite_lifecycle_candidate_review.py tests/backend/test_lite_lifecycle_policy_execution.py tests/backend/test_lite_lifecycle_release_execution.py tests/backend/test_lite_backend_runtime_promotion.py"
+      ],
+      "dependencies": [],
+      "environment": [],
+      "example_invocation": "task lite:lifecycle:t3-t5-package",
+      "expected_runtime_class": "bounded",
+      "failure_modes": [
+        "dependency task failure",
+        "missing required local tool or evidence",
+        "command failure"
+      ],
+      "generated_artifacts": [],
+      "implementation_status": "implemented",
+      "inputs": [
+        "tests/backend/test_lite_backend_runtime_promotion.py",
+        "tests/backend/test_lite_coordinated_release_package.py",
+        "tests/backend/test_lite_lifecycle_candidate_review.py",
+        "tests/backend/test_lite_lifecycle_policy_execution.py",
+        "tests/backend/test_lite_lifecycle_release_execution.py",
+        "tests/backend/test_lite_release_trusted_time.py"
+      ],
+      "name": "lite:lifecycle:t3-t5-package",
+      "outputs": [],
+      "promotes_evidence": false,
+      "purpose": "Authenticated coordinated source and migration inventory fixtures (qualification only)",
+      "related_tasks": [],
+      "repository_mutation": true,
+      "requires_termux": false,
+      "requires_wsl2": false,
+      "runtime_mutation": false,
+      "safe_local": true,
+      "side_effects": {
+        "network_or_external_tools": false,
+        "repository_mutation": true,
+        "runtime_mutation": false
       },
       "source": "tasks/Taskfile.lite.yml",
       "validation_outcome": "not-a-validation-task",

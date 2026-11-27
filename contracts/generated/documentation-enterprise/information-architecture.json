@@ -4699,7 +4699,7 @@
     "audit",
     "reference"
   ],
-  "page_count": 550,
+  "page_count": 552,
   "page_types": [
     "overview",
     "guide",
@@ -17719,6 +17719,54 @@
       "additional_audiences": [],
       "authority": "canonical-source",
       "canonical_source_references": [
+        "security/trusted-lifecycle-t3-t5-execution-ledger.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:security/trusted-lifecycle-t3-t5-execution-ledger",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "reference",
+      "path": "security/trusted-lifecycle-t3-t5-execution-ledger.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "security/trusted-lifecycle-t3-t5-execution-ledger.md",
+      "title": "Trusted Lifecycle T3–T5 execution ledger",
+      "url": "/security/trusted-lifecycle-t3-t5-execution-ledger/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
+        "security/trusted-lifecycle-t3-t5-source-handover.md"
+      ],
+      "confidence": "source-derived",
+      "contextual_navigation_owners": [],
+      "domain": "security",
+      "generated": false,
+      "id": "page:security/trusted-lifecycle-t3-t5-source-handover",
+      "intents": [
+        "diagnose",
+        "audit"
+      ],
+      "page_type": "reference",
+      "path": "security/trusted-lifecycle-t3-t5-source-handover.md",
+      "primary_audience": "security-reviewer",
+      "primary_navigation_owner": "security-assurance",
+      "related_pages": [],
+      "source_or_generator": "security/trusted-lifecycle-t3-t5-source-handover.md",
+      "title": "Trusted Lifecycle T3–T5 — source closure continuation",
+      "url": "/security/trusted-lifecycle-t3-t5-source-handover/"
+    },
+    {
+      "additional_audiences": [],
+      "authority": "canonical-source",
+      "canonical_source_references": [
         "security/trusted-release-publishing.md"
       ],
       "confidence": "source-derived",
@@ -19022,7 +19070,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "5edfd0470a20f484b1459850ef751f8ec066ad74fd314d404541a39990f9f145",
+  "source_fingerprint": "83cbc028ef29370b0d9dee887325f1b521d75ce6333535d982c994292c3b8a03",
   "top_level": [
     "start-here",
     "use",

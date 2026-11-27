@@ -2609,10 +2609,142 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Record Candidate Consent",
+      "domain": "lifecycle",
+      "id": "api:post:/api/lite/lifecycle/candidate/consent",
+      "name": "POST /api/lite/lifecycle/candidate/consent",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Candidate Consent",
+      "domain": "lifecycle",
+      "id": "api:post:/api/lite/lifecycle/candidate/consent/review",
+      "name": "POST /api/lite/lifecycle/candidate/consent/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Candidate Consent",
+      "domain": "lifecycle",
+      "id": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+      "name": "POST /api/lite/lifecycle/candidate/consent/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Activate Capability",
+      "domain": "lifecycle",
+      "id": "api:post:/api/lite/lifecycle/capability/activation",
+      "name": "POST /api/lite/lifecycle/capability/activation",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Capability Activation",
+      "domain": "lifecycle",
+      "id": "api:post:/api/lite/lifecycle/capability/activation/review",
+      "name": "POST /api/lite/lifecycle/capability/activation/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Capability",
+      "domain": "lifecycle",
+      "id": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+      "name": "POST /api/lite/lifecycle/capability/activation/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Admit Policy Execution",
+      "domain": "lifecycle",
+      "id": "api:post:/api/lite/lifecycle/policy/execution",
+      "name": "POST /api/lite/lifecycle/policy/execution",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Policy Execution",
+      "domain": "lifecycle",
+      "id": "api:post:/api/lite/lifecycle/policy/execution/review",
+      "name": "POST /api/lite/lifecycle/policy/execution/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Policy Execution",
+      "domain": "lifecycle",
+      "id": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+      "name": "POST /api/lite/lifecycle/policy/execution/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Review Preferences",
       "domain": "lifecycle",
       "id": "api:post:/api/lite/lifecycle/preferences/review",
       "name": "POST /api/lite/lifecycle/preferences/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Admit Release Preparation",
+      "domain": "lifecycle",
+      "id": "api:post:/api/lite/lifecycle/release/preparation",
+      "name": "POST /api/lite/lifecycle/release/preparation",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Release Preparation",
+      "domain": "lifecycle",
+      "id": "api:post:/api/lite/lifecycle/release/preparation/review",
+      "name": "POST /api/lite/lifecycle/release/preparation/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Release Preparation",
+      "domain": "lifecycle",
+      "id": "api:post:/api/lite/lifecycle/release/preparation/revoke",
+      "name": "POST /api/lite/lifecycle/release/preparation/revoke",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -5434,6 +5566,66 @@
     },
     {
       "confidence": "source-derived",
+      "description": "An already-applied migration differs from the authenticated candidate, so the candidate is incompatible and cannot be admitted.",
+      "domain": "runtime",
+      "id": "reason:applied_migration_changed",
+      "name": "applied_migration_changed",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The installed SQLite schema ledger is incomplete, so the candidate cannot establish a trustworthy migration baseline.",
+      "domain": "runtime",
+      "id": "reason:applied_schema_ledger_incomplete",
+      "name": "applied_schema_ledger_incomplete",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The installed SQLite schema ledger is invalid, so migration compatibility cannot be established safely.",
+      "domain": "runtime",
+      "id": "reason:applied_schema_ledger_invalid",
+      "name": "applied_schema_ledger_invalid",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The installed SQLite schema ledger could not be read, so migration compatibility is not verifiable.",
+      "domain": "runtime",
+      "id": "reason:applied_schema_ledger_unavailable",
+      "name": "applied_schema_ledger_unavailable",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The installed SQLite schema generation is not independently confirmed, so admission remains blocked.",
+      "domain": "runtime",
+      "id": "reason:applied_schema_unconfirmed",
+      "name": "applied_schema_unconfirmed",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "rules",
       "id": "reason:approval_approver_role_required",
@@ -5770,6 +5962,18 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The candidate migration checksum does not match the recorded applied checksum, so the candidate is rejected.",
+      "domain": "runtime",
+      "id": "reason:candidate_applied_migration_checksum_mismatch",
+      "name": "candidate_applied_migration_checksum_mismatch",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "The candidate did not satisfy the bounded trusted lifecycle contract, so it cannot advance review or recovery state.",
       "domain": "release-trust",
       "id": "reason:candidate_invalid",
@@ -5858,6 +6062,18 @@
       "domain": "validation",
       "id": "reason:connection_failed",
       "name": "connection_failed",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The authenticated candidate could not prove a durable handoff to the coordinated runtime execution owner.",
+      "domain": "runtime",
+      "id": "reason:coordinated_handoff_unproved",
+      "name": "coordinated_handoff_unproved",
       "source_refs": [
         "contracts/generated/reason-codes.json",
         "contracts/metadata/documentation-platform.json"
@@ -6970,6 +7186,18 @@
     },
     {
       "confidence": "source-derived",
+      "description": "An installed migration checksum differs from the recorded ledger, so runtime admission fails closed.",
+      "domain": "runtime",
+      "id": "reason:installed_migration_checksum_mismatch",
+      "name": "installed_migration_checksum_mismatch",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "There is not enough safe storage for the operation.",
       "domain": "system",
       "id": "reason:insufficient_storage",
@@ -7150,6 +7378,18 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The local repository policy source needed to verify compatibility is unavailable, so policy admission is blocked.",
+      "domain": "rules",
+      "id": "reason:local_policy_source_unavailable",
+      "name": "local_policy_source_unavailable",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "A restore point refers to a backup location that is not currently registered on the protected Server Phone.",
       "domain": "recovery",
       "id": "reason:location_not_registered",
@@ -7190,6 +7430,42 @@
       "domain": "validation",
       "id": "reason:metadata_only",
       "name": "metadata_only",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The installed migration baseline is not independently confirmed, so the candidate remains ineligible.",
+      "domain": "runtime",
+      "id": "reason:migration_baseline_unconfirmed",
+      "name": "migration_baseline_unconfirmed",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The candidate requires the repository migration qualification contract before it can be considered for promotion.",
+      "domain": "runtime",
+      "id": "reason:migration_qualification_required",
+      "name": "migration_qualification_required",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The authenticated candidate does not have independently verified migration rehearsal evidence.",
+      "domain": "runtime",
+      "id": "reason:migration_rehearsal_unproved",
+      "name": "migration_rehearsal_unproved",
       "source_refs": [
         "contracts/generated/reason-codes.json",
         "contracts/metadata/documentation-platform.json"
@@ -7858,6 +8134,18 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The loaded OPA module set is not independently known, so policy compatibility cannot be established.",
+      "domain": "rules",
+      "id": "reason:policy_module_set_unknown",
+      "name": "policy_module_set_unknown",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "rules",
       "id": "reason:policy_parameter_invalid",
@@ -8422,6 +8710,18 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The prepared runtime identity is stale or cannot be bound to the currently observed execution owners.",
+      "domain": "runtime",
+      "id": "reason:runtime_identity_stale",
+      "name": "runtime_identity_stale",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
       "description": "Managed Trivy intelligence exceeded its bounded freshness policy and a bounded refresh did not restore a valid revision.",
       "domain": "security",
       "id": "reason:scanner_intelligence_hard_expired",
@@ -8714,6 +9014,66 @@
       "domain": "identity",
       "id": "reason:trusted_local_admin",
       "name": "trusted_local_admin",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The trusted policy candidate did not satisfy independent admission authority or compatibility checks.",
+      "domain": "rules",
+      "id": "reason:trusted_policy_admission_denied",
+      "name": "trusted_policy_admission_denied",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The candidate requires its exact trusted policy activation authorization before protected execution can continue.",
+      "domain": "rules",
+      "id": "reason:trusted_policy_execution_required",
+      "name": "trusted_policy_execution_required",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Trusted policy activation was interrupted before the runtime switch, so the operation remains fail-closed for reconciliation.",
+      "domain": "rules",
+      "id": "reason:trusted_policy_interrupted_before_switch",
+      "name": "trusted_policy_interrupted_before_switch",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The trusted policy operation cannot prove its isolated execution owner or qualification boundary, so it is blocked.",
+      "domain": "rules",
+      "id": "reason:trusted_policy_isolation_unproved",
+      "name": "trusted_policy_isolation_unproved",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "type": "reason-code"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Trusted policy rollback did not produce independently verified known-good runtime evidence, so the runtime remains uncertain.",
+      "domain": "rules",
+      "id": "reason:trusted_policy_rollback_unproved",
+      "name": "trusted_policy_rollback_unproved",
       "source_refs": [
         "contracts/generated/reason-codes.json",
         "contracts/metadata/documentation-platform.json"
@@ -12672,7 +13032,10 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
       ],
       "type": "table"
     },
@@ -12741,6 +13104,30 @@
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "control_plane",
+      "id": "table:lite_lifecycle_candidate_consent",
+      "name": "lite_lifecycle_candidate_consent",
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql"
+      ],
+      "type": "table"
+    },
+    {
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_lifecycle_capability_activation",
+      "name": "lite_lifecycle_capability_activation",
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
+      ],
+      "type": "table"
+    },
+    {
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
       "id": "table:lite_lifecycle_grants",
       "name": "lite_lifecycle_grants",
       "source_refs": [
@@ -12755,11 +13142,36 @@
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "control_plane",
+      "id": "table:lite_lifecycle_policy_execution",
+      "name": "lite_lifecycle_policy_execution",
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql"
+      ],
+      "type": "table"
+    },
+    {
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
       "id": "table:lite_lifecycle_preferences",
       "name": "lite_lifecycle_preferences",
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql"
+      ],
+      "type": "table"
+    },
+    {
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_lifecycle_release_execution",
+      "name": "lite_lifecycle_release_execution",
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0066_lifecycle_release_execution.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0069_lifecycle_release_execution_committed.sql"
       ],
       "type": "table"
     },
@@ -12785,7 +13197,9 @@
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
       ],
       "type": "table"
     },
@@ -12883,6 +13297,18 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql"
+      ],
+      "type": "table"
+    },
+    {
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_runtime_identity_projection",
+      "name": "lite_runtime_identity_projection",
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0067_runtime_identity_projection.sql"
       ],
       "type": "table"
     },
@@ -13239,7 +13665,8 @@
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql"
       ],
       "type": "table"
     },
@@ -14060,6 +14487,28 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_coordinated_release_package.py",
+      "name": "tests/backend/test_lite_coordinated_release_package.py",
+      "source_refs": [
+        "tests/backend/test_lite_coordinated_release_package.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_coordinated_runtime_promotion.py",
+      "name": "tests/backend/test_lite_coordinated_runtime_promotion.py",
+      "source_refs": [
+        "tests/backend/test_lite_coordinated_runtime_promotion.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_core_supervisor.py",
       "name": "tests/backend/test_lite_core_supervisor.py",
       "source_refs": [
@@ -14383,6 +14832,39 @@
       "name": "tests/backend/test_lite_isolated_qualification_lane.py",
       "source_refs": [
         "tests/backend/test_lite_isolated_qualification_lane.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_lifecycle_candidate_review.py",
+      "name": "tests/backend/test_lite_lifecycle_candidate_review.py",
+      "source_refs": [
+        "tests/backend/test_lite_lifecycle_candidate_review.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_lifecycle_policy_execution.py",
+      "name": "tests/backend/test_lite_lifecycle_policy_execution.py",
+      "source_refs": [
+        "tests/backend/test_lite_lifecycle_policy_execution.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_lifecycle_release_execution.py",
+      "name": "tests/backend/test_lite_lifecycle_release_execution.py",
+      "source_refs": [
+        "tests/backend/test_lite_lifecycle_release_execution.py"
       ],
       "type": "test"
     },
@@ -14962,10 +15444,32 @@
       "confidence": "source-derived",
       "description": "",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_release_trusted_time.py",
+      "name": "tests/backend/test_lite_release_trusted_time.py",
+      "source_refs": [
+        "tests/backend/test_lite_release_trusted_time.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_revision_sync_n4_n5.py",
       "name": "tests/backend/test_lite_revision_sync_n4_n5.py",
       "source_refs": [
         "tests/backend/test_lite_revision_sync_n4_n5.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "description": "",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_runtime_identity.py",
+      "name": "tests/backend/test_lite_runtime_identity.py",
+      "source_refs": [
+        "tests/backend/test_lite_runtime_identity.py"
       ],
       "type": "test"
     },
@@ -18503,6 +19007,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:006d26e7397354bb",
+      "source": "domain:rules",
+      "target": "reason:trusted_policy_interrupted_before_switch",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:00957ba631ead242",
@@ -19077,6 +19595,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:021e91fd26418307",
+      "source": "api:post:/api/lite/lifecycle/policy/execution/review",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:022fbe9b33e1dbfc",
@@ -19126,6 +19658,20 @@
       "source": "api:get:/api/lite/security/summary",
       "target": "table:security_maintenance_runs",
       "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:02d208009ebacf2d",
+      "source": "api:post:/api/lite/lifecycle/release/preparation",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -20215,6 +20761,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:06ef72bdc3191f9e",
+      "source": "domain:runtime",
+      "target": "reason:migration_rehearsal_unproved",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:071629345a2151bd",
@@ -20552,6 +21112,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:08474f3477ebc204",
+      "source": "reason:trusted_policy_rollback_unproved",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "src/lite/LiteCatalog.jsx"
       ],
       "id": "rel:08677d17344daaef",
@@ -20874,6 +21448,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:09f1186a6abd42de",
+      "source": "reason:trusted_policy_rollback_unproved",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_system_health.py"
       ],
       "id": "rel:09f607789aa209a8",
@@ -21140,6 +21728,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:0b52e5cfbf84675a",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/capability/activation/review",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_photo_backup.py"
       ],
       "id": "rel:0b595539db754517",
@@ -21369,6 +21971,20 @@
       "id": "rel:0c49d9e97df84e0c",
       "source": "requirement:architecture-06",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:0c578f56513808ef",
+      "source": "api:post:/api/lite/lifecycle/candidate/consent",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -21756,6 +22372,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:0d5fb3e971130fc4",
+      "source": "reason:applied_migration_changed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:0d6937ad729c47e8",
@@ -22082,6 +22712,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:0ec1cfb95224d752",
+      "source": "domain:rules",
+      "target": "reason:trusted_policy_rollback_unproved",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:0ec468a0f78d7a29",
@@ -22306,6 +22950,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:0fcef9efa3e1b4be",
+      "source": "reason:trusted_policy_admission_denied",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:0fde6f79546f9996",
@@ -22480,6 +23138,20 @@
       "source": "requirement:architecture-09",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:10aca20a396f7d17",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_candidate_consent",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -22940,6 +23612,20 @@
       ],
       "id": "rel:1219c56d9d2f8943",
       "source": "reason:legacy_gitops_api_retired",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:1250f3b02d4f464e",
+      "source": "reason:trusted_policy_interrupted_before_switch",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
@@ -24030,6 +24716,20 @@
       "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
+      "id": "rel:164b1a9b221ffd11",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/policy/execution",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
       "id": "rel:164f6f36483dbeb7",
       "source": "domain:harness",
       "target": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/events",
@@ -24062,6 +24762,20 @@
       "source": "domain:validation",
       "target": "reason:run_not_found",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:16723ae9fee52fc2",
+      "source": "reason:installed_migration_checksum_mismatch",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -24316,6 +25030,20 @@
       "id": "rel:17ae19930a796af5",
       "source": "component:recovery-state",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:17b86de2af913aee",
+      "source": "reason:trusted_policy_admission_denied",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -25322,6 +26050,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:1b663033fcebd611",
+      "source": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:1b76666321faa396",
@@ -25658,6 +26400,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:1ce0cebc595fc407",
+      "source": "reason:applied_migration_changed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_identity_rules_authorization.py"
       ],
       "id": "rel:1d0413c3a89cd015",
@@ -25873,6 +26629,20 @@
       "id": "rel:1db783b8d64273be",
       "source": "reason:fault_recovery_timeout",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:1dba4f1e4287243a",
+      "source": "reason:applied_schema_unconfirmed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -26503,11 +27273,39 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:20928ff03d9f4657",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_policy_source_reconciliation.py"
       ],
       "id": "rel:209e1296c3d8abc2",
       "source": "reason:owner_approval_policy_inconsistent",
       "target": "test:tests/backend/test_policy_source_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:20c9bb97b0d0141c",
+      "source": "reason:migration_baseline_unconfirmed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -28281,6 +29079,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:279da79f653ed13e",
+      "source": "reason:migration_qualification_required",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:27a42c50eab1e51f",
@@ -28729,6 +29541,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:28fe32835ac24a7b",
+      "source": "domain:runtime",
+      "target": "reason:applied_schema_ledger_unavailable",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_security_assurance_controls.py"
       ],
       "id": "rel:29430c1376adfa90",
@@ -28790,6 +29616,20 @@
       "id": "rel:295b22cb2869f396",
       "source": "reason:policy_simulation_invalid",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:2965f90ba07122d0",
+      "source": "reason:installed_migration_checksum_mismatch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -29584,6 +30424,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:2cf53c3043002d4c",
+      "source": "reason:policy_module_set_unknown",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "runbooks/backup_restore_verify.yaml",
         "src/lite/LiteRecovery.jsx"
       ],
@@ -29689,6 +30543,20 @@
       "source": "domain:devices",
       "target": "reason:device_role_assignment_unauthorized",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:2db7d056d98ecebe",
+      "source": "reason:runtime_identity_stale",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -30721,6 +31589,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_runtime_identity.py"
+      ],
+      "id": "rel:326251c3e52768ce",
+      "source": "reason:runtime_identity_stale",
+      "target": "test:tests/backend/test_lite_runtime_identity.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:32675e26fe51bc7d",
@@ -31183,6 +32065,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:34611e6cdde49cda",
+      "source": "api:post:/api/lite/lifecycle/candidate/consent",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/parity/accepted-limitations.json"
       ],
       "id": "rel:3471d1cd2bba9174",
@@ -31442,6 +32338,20 @@
       "source": "ui:literules",
       "target": "api:get:/api/lite/policy",
       "type": "calls"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:35dd940181b7e451",
+      "source": "reason:applied_schema_ledger_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -31903,6 +32813,20 @@
       "id": "rel:37332896b249ad06",
       "source": "component:caddy",
       "target": "test:tests/backend/test_lite_qualification_owner.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:37390b7abcf75822",
+      "source": "reason:candidate_applied_migration_checksum_mismatch",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -32576,6 +33500,20 @@
       "id": "rel:392e4658e82a943e",
       "source": "domain:devices",
       "target": "reason:device_role_not_joinable",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:392ee71786024e52",
+      "source": "domain:rules",
+      "target": "reason:policy_module_set_unknown",
       "type": "owns"
     },
     {
@@ -33941,6 +34879,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:3e480bd578a47a6a",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/release/preparation",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_policy_analysis_p2_3.py"
       ],
       "id": "rel:3e65938cefa54af7",
@@ -34942,6 +35894,20 @@
       "source": "reason:pm2_worker_missing",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:41c8c9bb9b84d0b9",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/candidate/consent",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -36254,6 +37220,20 @@
       "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
+      "id": "rel:46cfb6062849115b",
+      "source": "reason:migration_rehearsal_unproved",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
       "id": "rel:46e1ae9674d21ddd",
       "source": "reason:backup_binding_invalid",
       "target": "test:tests/docs/test_operational_health_bridge.py",
@@ -36412,6 +37392,20 @@
       "source": "domain:apps",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:47a24f5f34175eb6",
+      "source": "domain:rules",
+      "target": "reason:local_policy_source_unavailable",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -36719,6 +37713,20 @@
       "id": "rel:49005d1db9d3ff66",
       "source": "api:post:/api/lite/enterprise/rules/exceptions",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:4906798ecde09fc8",
+      "source": "reason:local_policy_source_unavailable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -37092,6 +38100,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:4a079fe15cceec71",
+      "source": "domain:runtime",
+      "target": "reason:applied_schema_unconfirmed",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:4a47092c6fe7c592",
@@ -37279,6 +38301,20 @@
       "id": "rel:4b1dc28a3cc9d5b4",
       "source": "reason:authentication_required",
       "target": "test:tests/backend/test_lite_qualification_owner.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:4b226c026fb823dd",
+      "source": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -38231,6 +39267,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:4f08ecc1a4059b29",
+      "source": "reason:trusted_policy_rollback_unproved",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:4f1c8ce605b6918a",
@@ -38559,6 +39609,20 @@
       "id": "rel:500fade5ee4ad394",
       "source": "component:app-catalog",
       "target": "test:tests/e2e/lite-content-stress.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:5024438e9f66baf7",
+      "source": "reason:installed_migration_checksum_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -39241,6 +40305,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:5376ef00a35964fa",
+      "source": "domain:rules",
+      "target": "reason:trusted_policy_isolation_unproved",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:53840ce6fda08c6a",
@@ -39373,6 +40451,20 @@
       "source": "reason:nats_fault_requires_active_assurance_run",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:543dad5c09d46ee6",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_release_execution",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -39619,6 +40711,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:554bc44c9bfa1d87",
+      "source": "api:post:/api/lite/lifecycle/release/preparation/revoke",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:5556b8199f2d3e58",
@@ -39783,6 +40889,20 @@
       "id": "rel:55cfee3ffb3045ea",
       "source": "reason:webauthn_credential_mismatch",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:55e60ddddf64adfe",
+      "source": "reason:trusted_policy_admission_denied",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -39966,6 +41086,20 @@
       "source": "domain:platform",
       "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:568cd1fa3f594a6e",
+      "source": "domain:runtime",
+      "target": "reason:runtime_identity_stale",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -40679,6 +41813,20 @@
       "id": "rel:5967892c1666290c",
       "source": "api:get:/api/lite/devices/{node_id}/photo-backup",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_coordinated_runtime_promotion.py"
+      ],
+      "id": "rel:59690bbce4a26356",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_coordinated_runtime_promotion.py",
       "type": "verified_by"
     },
     {
@@ -42627,6 +43775,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:61cf3974d8424e39",
+      "source": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py"
       ],
       "id": "rel:61d084825a51886d",
@@ -42815,6 +43977,20 @@
       "source": "domain:identity",
       "target": "limitation:identity:gap-2",
       "type": "affected_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:62de871cfb70abfa",
+      "source": "reason:trusted_policy_interrupted_before_switch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -44312,6 +45488,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:68b90c95a96fa8bd",
+      "source": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:68e9090e4074a038",
@@ -44434,6 +45624,34 @@
       "source": "domain:owner-operations",
       "target": "api:post:/api/lite/owner-operations/client-pairings/challenge",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:69ca98b96c4a53ab",
+      "source": "reason:applied_schema_ledger_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:69d1c5b22a43e56f",
+      "source": "reason:applied_schema_ledger_unavailable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -44602,6 +45820,20 @@
       "source": "journey:app-installation",
       "target": "component:app-catalog",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:6a4bb01f56e878ff",
+      "source": "reason:trusted_policy_execution_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -45175,6 +46407,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:6c57c8e6cfd3062e",
+      "source": "reason:candidate_applied_migration_checksum_mismatch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:6c5b0c06f986cf21",
@@ -45513,10 +46759,38 @@
       "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
+      "id": "rel:6d7f678f76222c5f",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/release/preparation/review",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
       "id": "rel:6d7f77f3c67c0aa3",
       "source": "domain:identity",
       "target": "api:post:/api/lite/identity/owner-claim/passkey/options",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:6d96029380c57342",
+      "source": "reason:policy_module_set_unknown",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -45530,6 +46804,20 @@
       "id": "rel:6daf3f265ab2b30a",
       "source": "journey:device-reconnect",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:6db75d8db109d29d",
+      "source": "reason:applied_migration_changed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -46232,6 +47520,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:7048d97ef8ad74c8",
+      "source": "reason:runtime_identity_stale",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/e2e/lite-identity-premium-refinement.spec.ts"
       ],
       "id": "rel:7054298be55eac6c",
@@ -46559,6 +47861,20 @@
       "id": "rel:7117c76a16cfe6cb",
       "source": "reason:source_fixture_invalid",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:7119df5f096d7a88",
+      "source": "api:post:/api/lite/lifecycle/policy/execution/review",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -48178,6 +49494,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:77f0e26c46126c95",
+      "source": "reason:applied_schema_ledger_incomplete",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:77f64e55d1ff8c2e",
@@ -48254,6 +49584,20 @@
       "source": "component:device-state",
       "target": "table:device_health_current",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:7866ace59d0cd00c",
+      "source": "domain:runtime",
+      "target": "reason:migration_baseline_unconfirmed",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -48528,6 +49872,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:79b7720dff6231cd",
+      "source": "reason:trusted_policy_execution_required",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:79c94995e8f042e1",
@@ -48738,6 +50096,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:7a9c5c8746d41e40",
+      "source": "reason:local_policy_source_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:7aadb841db92411a",
@@ -48856,6 +50228,20 @@
       "source": "api:get:/api/lite/enterprise/rules/source-sync/status",
       "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:7bb768159b5a421d",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/capability/activation",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -50534,6 +51920,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:82b0265e53acaa01",
+      "source": "api:post:/api/lite/lifecycle/candidate/consent/review",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_enterprise_identity_p2.py"
       ],
       "id": "rel:82d5150d2857ac85",
@@ -50819,6 +52219,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:846600452315b984",
+      "source": "reason:coordinated_handoff_unproved",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_phase4_phase5_adaptive_runtime.py"
       ],
       "id": "rel:846b73456121be02",
@@ -50923,6 +52337,20 @@
       "source": "component:invite-state",
       "target": "table:device_identity_guards",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:84b33509ae31742c",
+      "source": "api:post:/api/lite/lifecycle/policy/execution",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -51367,6 +52795,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:86d04b6d4528eb42",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:86d18beae72e7027",
@@ -51484,6 +52926,20 @@
       "id": "rel:874ad259084cfd68",
       "source": "reason:device_role_change_blocked_by_dependency",
       "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:876f037b14f7e1ba",
+      "source": "reason:coordinated_handoff_unproved",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -51876,6 +53332,20 @@
       "id": "rel:891dd172e90fc372",
       "source": "reason:enterprise_final_owner_protected",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:893c935450974074",
+      "source": "reason:migration_baseline_unconfirmed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -52507,6 +53977,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:8b31c38334516fbc",
+      "source": "reason:runtime_identity_stale",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:8b32ab0d22a73088",
@@ -53040,6 +54524,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:8db8f0ef54b59103",
+      "source": "api:post:/api/lite/lifecycle/release/preparation",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:8dc83b5c725fd26c",
@@ -53404,6 +54902,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:8f2bfaf95a04c24b",
+      "source": "reason:applied_schema_ledger_incomplete",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:8f3bf264b8e64cc3",
@@ -53494,6 +55006,20 @@
       "source": "reason:exception_action_invalid",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:8f6e5a139c5acc91",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -53843,6 +55369,20 @@
       "id": "rel:90f5641ea56107bc",
       "source": "reason:request_not_found",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:910015f4d9a18fe7",
+      "source": "reason:trusted_policy_isolation_unproved",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -54394,6 +55934,20 @@
       "id": "rel:939d043bf4aba935",
       "source": "reason:webauthn_counter_replay",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:93b87db87a0235e6",
+      "source": "reason:local_policy_source_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -55042,6 +56596,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:968074591c1ba203",
+      "source": "reason:candidate_applied_migration_checksum_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/parity/parity-model.json",
         "src/lib/liteOfflineDb.js",
         "src/lib/liteQueryClient.js",
@@ -55108,6 +56676,20 @@
       "source": "domain:system-health",
       "target": "api:get:/api/lite/system-health/repairs",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:9698f1c6c23c613c",
+      "source": "reason:applied_schema_ledger_incomplete",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -55626,6 +57208,20 @@
       "id": "rel:995ee3a5e6e8d816",
       "source": "reason:approval_step_up_required",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:99658715ac4f3d34",
+      "source": "reason:trusted_policy_execution_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -56335,6 +57931,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:9c9c58b0fe546b8c",
+      "source": "api:post:/api/lite/lifecycle/capability/activation",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_workload_admission.py"
       ],
       "id": "rel:9cd2f927cc9e1384",
@@ -56843,6 +58453,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:9e7c003d63165221",
+      "source": "domain:runtime",
+      "target": "reason:candidate_applied_migration_checksum_mismatch",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:9e9513704a9df107",
@@ -57283,6 +58907,20 @@
       "source": "reason:identity_login_throttled",
       "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:a08ac2db654639d7",
+      "source": "domain:rules",
+      "target": "reason:trusted_policy_admission_denied",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -57998,6 +59636,20 @@
       "source": "domain:rules",
       "target": "reason:policy_activation_in_progress",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:a397ce4be3150310",
+      "source": "reason:trusted_policy_isolation_unproved",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -58935,6 +60587,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:a6d4d4568e5ba29e",
+      "source": "reason:migration_baseline_unconfirmed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:a6e9be3fa370adaa",
@@ -59556,6 +61222,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:a9cb4ff2ad329f76",
+      "source": "api:post:/api/lite/lifecycle/capability/activation",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:a9f290d4c35aa7ea",
@@ -59994,6 +61674,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:ab7360d8e9269a3b",
+      "source": "domain:control_plane",
+      "target": "table:lite_runtime_identity_projection",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:ab756c03ab775de1",
@@ -60232,6 +61926,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_lifecycle_release_execution.py"
+      ],
+      "id": "rel:acc9ba0c8879b4fb",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_lifecycle_release_execution.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:acdc3bff9aa988a7",
@@ -60449,6 +62157,20 @@
       "source": "component:agent-recovery",
       "target": "subject:pocketlab.events.fleet.node_telemetry",
       "type": "publishes"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:ad683dda0da62cb8",
+      "source": "reason:migration_qualification_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -60779,6 +62501,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:aea20506aa56ed08",
+      "source": "api:post:/api/lite/lifecycle/release/preparation/review",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:aeaa387313f37c31",
@@ -61036,6 +62772,20 @@
       "id": "rel:afd80fb49d515758",
       "source": "component:agent-recovery",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_lifecycle_candidate_review.py"
+      ],
+      "id": "rel:aff4138a69b84302",
+      "source": "domain:validation",
+      "target": "test:tests/backend/test_lite_lifecycle_candidate_review.py",
       "type": "verified_by"
     },
     {
@@ -61471,6 +63221,20 @@
       "id": "rel:b1a79fd8dcbe4316",
       "source": "reason:policy_source_contract_invalid",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:b1c89163553e1144",
+      "source": "reason:applied_schema_ledger_invalid",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -62009,6 +63773,20 @@
       "id": "rel:b3b8834f64b7c592",
       "source": "api:get:/api/lite/system-health/infrastructure",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:b3c592a42efee1ca",
+      "source": "reason:migration_rehearsal_unproved",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -63413,6 +65191,20 @@
       "id": "rel:ba3b29d14d291b50",
       "source": "reason:legacy_observability_stack_retired",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:ba3ed98c148e567f",
+      "source": "api:post:/api/lite/lifecycle/release/preparation/revoke",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -65022,6 +66814,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:c1371e95069dd766",
+      "source": "reason:applied_schema_ledger_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:c1374355a46644a7",
@@ -65120,6 +66926,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:c1c1d46b7ffc55d3",
+      "source": "domain:rules",
+      "target": "reason:trusted_policy_execution_required",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_system_health.py"
       ],
       "id": "rel:c1d500a83a3b8bc3",
@@ -65140,6 +66960,20 @@
       "source": "domain:security",
       "target": "api:get:/api/lite/security/summary",
       "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:c1e1d48d828db7b7",
+      "source": "reason:trusted_policy_interrupted_before_switch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -65341,6 +67175,20 @@
       "source": "component:pm2",
       "target": "test:tests/backend/test_lite_native_control_plane_retirement.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:c3016dc375c65242",
+      "source": "domain:runtime",
+      "target": "reason:migration_qualification_required",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -68115,6 +69963,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:ceab7a30fe1676fc",
+      "source": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:ceca29dba2549aaa",
@@ -68359,6 +70221,20 @@
       "source": "component:agent-signals",
       "target": "test:tests/backend/test_lite_devices_production_readiness.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:cfa6cd82580e10c9",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_capability_activation",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -69370,6 +71246,20 @@
       "id": "rel:d3c11fc6661bd4b1",
       "source": "api:post:/api/lite/harness/recovery/authorize",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:d3cbdfddc8749f46",
+      "source": "api:post:/api/lite/lifecycle/candidate/consent/review",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -70501,6 +72391,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:d836042e9735533c",
+      "source": "reason:policy_module_set_unknown",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/e2e/lite-identity-premium-refinement.spec.ts"
       ],
       "id": "rel:d846247f1589f0e6",
@@ -70915,6 +72819,20 @@
       "id": "rel:d9935a3c9a1c8f4a",
       "source": "reason:policy_recovery_not_rollback",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_runtime_identity.py"
+      ],
+      "id": "rel:d9936a88cbe02ff1",
+      "source": "reason:identity_unavailable",
+      "target": "test:tests/backend/test_lite_runtime_identity.py",
       "type": "verified_by"
     },
     {
@@ -71746,6 +73664,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:dd3c67bff5a6348c",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/candidate/consent/review",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_api.py"
       ],
       "id": "rel:dd3e440eb4a5028f",
@@ -72230,6 +74162,20 @@
       "source": "api:get:/api/lite/recovery",
       "target": "table:recovery_backup_location_events",
       "type": "reads"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:dfa8f1a5fe830cfc",
+      "source": "reason:coordinated_handoff_unproved",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -73222,6 +75168,34 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:e3fdc2d4b2a17b91",
+      "source": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:e41393da0f58081c",
+      "source": "reason:migration_rehearsal_unproved",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py",
         "src/lite/LiteDevices.jsx"
       ],
@@ -73481,6 +75455,20 @@
       "id": "rel:e5176f443f0fc902",
       "source": "api:get:/api/lite/enterprise/identity/enrollment/status",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:e52a3bca2b7a6d3f",
+      "source": "reason:applied_schema_ledger_invalid",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -74131,6 +76119,20 @@
       "source": "reason:exception_expiry_invalid",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:e75f922af9fcdf97",
+      "source": "domain:runtime",
+      "target": "reason:applied_schema_ledger_incomplete",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -75281,6 +77283,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/backend/test_lite_backend_runtime_promotion.py"
+      ],
+      "id": "rel:ec0e532ec4fe288f",
+      "source": "reason:interrupted",
+      "target": "test:tests/backend/test_lite_backend_runtime_promotion.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:ec24eafc57bc75eb",
@@ -75656,6 +77672,20 @@
       "source": "reason:shutdown",
       "target": "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:ed9974b9560fe948",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/release/preparation/revoke",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -76161,6 +78191,20 @@
       "source": "component:app-recovery-update",
       "target": "api:post:/api/lite/apps/{app_id}/backup",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:ef9500402370f154",
+      "source": "api:post:/api/lite/lifecycle/capability/activation/review",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -77916,6 +79960,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:f6e7f7028599449b",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_policy_execution",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_database_restore_reconciliation.py"
       ],
       "id": "rel:f70291a979e209ce",
@@ -78742,6 +80800,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:f9ed53e69fc7b2aa",
+      "source": "api:post:/api/lite/lifecycle/policy/execution",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:f9f66c4ff52157b4",
@@ -78883,6 +80955,48 @@
       "source": "journey:rules-authorization",
       "target": "component:api-guards",
       "type": "uses"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:fa8eb0da14421f9e",
+      "source": "reason:applied_schema_unconfirmed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:faa53204902c1eec",
+      "source": "reason:trusted_policy_isolation_unproved",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:faa63cc745860b9e",
+      "source": "api:post:/api/lite/lifecycle/capability/activation/review",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "derivation": {
@@ -79064,6 +81178,20 @@
       "id": "rel:fbab7aaf7f1a9d0b",
       "source": "reason:not_found_in_restored_snapshot",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_lifecycle_policy_execution.py"
+      ],
+      "id": "rel:fbddea765827c7bd",
+      "source": "reason:actor_not_authenticated",
+      "target": "test:tests/backend/test_lite_lifecycle_policy_execution.py",
       "type": "verified_by"
     },
     {
@@ -79353,6 +81481,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:fcaf520637d1ce7b",
+      "source": "domain:runtime",
+      "target": "reason:applied_migration_changed",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/backend/test_lite_long_gate_group2_reporting.py"
       ],
       "id": "rel:fcbdce3e9e1bddc8",
@@ -79481,6 +81623,20 @@
       "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
+      "id": "rel:fd746ac166d76da2",
+      "source": "reason:migration_qualification_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
       "id": "rel:fd7eab48d7484bf8",
       "source": "reason:historical_record",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -79513,6 +81669,20 @@
       "source": "api:get:/api/lite/enterprise/rules/analysis",
       "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:fdb898e74b49c75c",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/policy/execution/review",
+      "type": "owns"
     },
     {
       "derivation": {
@@ -79563,6 +81733,20 @@
         "method": "deterministic-canonical-correlation"
       },
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:fe01872a5eccdcc5",
+      "source": "reason:applied_schema_unconfirmed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
         "tests/docs/test_documentation_intelligence.py"
       ],
       "id": "rel:fe1b4bae4e0bd583",
@@ -79596,6 +81780,20 @@
       "id": "rel:fe3179d83d27e5fd",
       "source": "domain:rules",
       "target": "reason:approval_cancel_forbidden",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:fe3bc9337e170b97",
+      "source": "domain:runtime",
+      "target": "reason:applied_schema_ledger_invalid",
       "type": "owns"
     },
     {
@@ -79947,6 +82145,48 @@
       "source": "component:bounded-reconciliation",
       "target": "table:projection_dirty_signals",
       "type": "depends_on"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ffde4b70d6bd0290",
+      "source": "domain:runtime",
+      "target": "reason:installed_migration_checksum_mismatch",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ffe0931189a9a385",
+      "source": "domain:runtime",
+      "target": "reason:coordinated_handoff_unproved",
+      "type": "owns"
+    },
+    {
+      "derivation": {
+        "generator": "scripts/docs/knowledge/generate_knowledge.py",
+        "generator_version": 3,
+        "method": "deterministic-canonical-correlation"
+      },
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:ffe46e4178a34777",
+      "source": "api:post:/api/lite/lifecycle/release/preparation/review",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     }
   ],
   "schema_version": "1.0.0",

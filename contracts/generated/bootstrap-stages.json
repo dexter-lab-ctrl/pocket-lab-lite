@@ -104,7 +104,10 @@
         "POCKETLAB_LITE_PWA_CURRENT_LINK",
         "POCKETLAB_LITE_PWA_RELEASES_DIR",
         "POCKETLAB_LITE_RELEASE_REPO",
-        "POCKETLAB_LOCAL_DIST_ZIP"
+        "POCKETLAB_LOCAL_DIST_ZIP",
+        "POCKETLAB_LOCAL_RELEASE_CHECKSUMS",
+        "POCKETLAB_LOCAL_RELEASE_MANIFEST",
+        "POCKETLAB_LOCAL_RELEASE_TAG"
       ],
       "rollback": "stage-specific manual recovery; do not clear evidence",
       "safe_retry": true,
@@ -329,7 +332,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "2e196c81034cbbde6e31238245c83b47a565096bf3c6193d277e0834269779d0",
+    "aggregate_fingerprint": "ffa3e60c3df2b2464af0f24f807f4cc13c8618c2a526c8a80748c28efc970c38",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -343,7 +346,7 @@
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-binaries.sh": "7c5090e6c3991df9c23ff734dd7eb5b0ad4f9acc81d737da263d3e5dda15f203",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh": "a52eb72e02cbcc31f933d8e7310dbcac6e93328dd33627ece80341693e047552",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-proot-ubuntu.sh": "60baae5ced355da335e711167eb356ba930b1c339d5378d71b204d822fc0c245",
-      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh": "47581543cecc3dd0782781aa0a63a070a7d8b10093b2981ec3c0352a16b287b7",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh": "c28ceeeb0e935ef05bb77844f2d60f00858210162e4b5b9c9bd1be7148e717cd",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh": "336436a622867ea1b08b2cf7ac1207e0385d769b423706574e619739e01f400c",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-termux-packages.sh": "c0219b5c7d42d55e1c8bfd84a223b14a15f81460aae553faec79f4b815da9640",
       "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-boot-recovery.sh": "930581d9e9fe3d4359405574367bc60220c93002a99fc55f46d83f4e279045e9",

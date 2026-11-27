@@ -22,15 +22,27 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
   "human_enrollment_claims":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "human_enrollment_claims":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "human_identities":"auth_version":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_boundary_scopes":"elipses":w -> "policy_decision_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_boundary_scopes":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "lite_lifecycle_candidate_consent":"elipses":w -> "policy_decision_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_candidate_consent":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "lite_lifecycle_capability_activation":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_capability_activation":"elipses":w -> "policy_decision_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_capability_activation":"elipses":w -> "policy_decision_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_capability_activation":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "lite_lifecycle_grants":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_grants":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_grants":"elipses":w -> "policy_decision_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_grants":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_grants":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_grants":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "lite_lifecycle_grants":"elipses":w -> "lite_lifecycle_boundary_scopes":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_grants":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_grants":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_policy_execution":"claim_decision_id":w -> "policy_decision_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_policy_execution":"decision_id":w -> "policy_decision_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_policy_execution":"operation_id":w -> "policy_activation_operations":"operation_id.type":e [arrowhead=none dir=back arrowtail=teeodot];
+  "lite_lifecycle_policy_execution":"owner_id":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "owner_approved_operations":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "owner_approved_operations":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "owner_approved_operations":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
@@ -45,6 +57,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
   "policy_approvals":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "policy_approvals":"elipses":w -> "schema_migrations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "policy_approvals":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "policy_approvals":"elipses":w -> "policy_decision_details":"elipses":e [arrowhead=none dir=back arrowtail=teeodot style=dashed];
   "policy_recovery_resolutions":"operation_id":w -> "policy_activation_operations":"operation_id.type":e [arrowhead=none dir=back arrowtail=teeodot];
   "policy_recovery_resolutions":"recovered_revision_id":w -> "policy_revisions":"revision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "policy_recovery_resolutions":"requested_by_human_id":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -175,7 +188,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="116" HEIGHT="16"><B>human_identities</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">24 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">27 &gt;</TD></TR>
     </TABLE>>
     URL="human_identities.html"
     target="_top"
@@ -192,16 +205,49 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
     target="_top"
     tooltip="lite_lifecycle_boundary_scopes"
   ];
+  "lite_lifecycle_candidate_consent" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16"><B>lite_lifecycle_candidate_consent</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="lite_lifecycle_candidate_consent.html"
+    target="_top"
+    tooltip="lite_lifecycle_candidate_consent"
+  ];
+  "lite_lifecycle_capability_activation" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16"><B>lite_lifecycle_capability_activation</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="lite_lifecycle_capability_activation.html"
+    target="_top"
+    tooltip="lite_lifecycle_capability_activation"
+  ];
   "lite_lifecycle_grants" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="134" HEIGHT="16"><B>lite_lifecycle_grants</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 10</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 10</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
     </TABLE>>
     URL="lite_lifecycle_grants.html"
     target="_top"
     tooltip="lite_lifecycle_grants"
+  ];
+  "lite_lifecycle_policy_execution" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16"><B>lite_lifecycle_policy_execution</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="lite_lifecycle_policy_execution.html"
+    target="_top"
+    tooltip="lite_lifecycle_policy_execution"
   ];
   "owner_approved_operations" [
    label=<
@@ -254,7 +300,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
       <TR><TD PORT="observed_filesystem_revision" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="201" HEIGHT="16">observed_filesystem_revision</TD></TR></TABLE></TD><TD PORT="observed_filesystem_revision.type" ALIGN="LEFT">text[2000000000]</TD></TR>
       <TR><TD PORT="observed_opa_revision" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="201" HEIGHT="16">observed_opa_revision</TD></TR></TABLE></TD><TD PORT="observed_opa_revision.type" ALIGN="LEFT">text[2000000000]</TD></TR>
       <TR><TD PORT="evidence_ref" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="201" HEIGHT="16">evidence_ref</TD></TR></TABLE></TD><TD PORT="evidence_ref.type" ALIGN="LEFT">text[2000000000]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
     </TABLE>>
     URL="policy_activation_operations.html"
     target="_top"
@@ -270,6 +316,17 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
     URL="policy_approvals.html"
     target="_top"
     tooltip="policy_approvals"
+  ];
+  "policy_decision_details" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16"><B>policy_decision_details</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">16 &gt;</TD></TR>
+    </TABLE>>
+    URL="policy_decision_details.html"
+    target="_top"
+    tooltip="policy_decision_details"
   ];
   "policy_recovery_resolutions" [
    label=<
@@ -331,7 +388,7 @@ digraph "twoDegreesRelationshipsDiagramImplied" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="130" HEIGHT="16"><B>schema_migrations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">33 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">35 &gt;</TD></TR>
     </TABLE>>
     URL="schema_migrations.html"
     target="_top"

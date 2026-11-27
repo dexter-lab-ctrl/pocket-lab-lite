@@ -70,3 +70,108 @@ qualification result.
   authorized.
 - Physical evidence is kept separate from source, mocked, CI, and offline
   rehearsal evidence.
+
+## Final execution update — 2026-11-27
+
+This section is the active disposition for the current candidate and
+supersedes the earlier `NOT RUN` entries above. Historical entries are kept to
+preserve provenance.
+
+### Candidate and source closure
+
+| Item | Evidence | Status |
+|---|---|---|
+| Starting main | `9bc53ce047c800be71cd76f1a37e79659af1ca4d` | VERIFIED |
+| Starting feature head | `a87a82cf619f390c5a22ac63e421416944b47165` | VERIFIED |
+| Code-bearing candidate | `1c9ee06818fb396e56ccd86ecfd99bab85c32a4d` | VERIFIED |
+| Physical Android candidate | `1c9ee06818fb396e56ccd86ecfd99bab85c32a4d` | VERIFIED |
+| Canonical documentation input | Current checkout at the code-bearing candidate plus generated-doc fixes | VERIFIED |
+| Production activation/release/merge | Not performed or authorized | VERIFIED boundary |
+
+SC-R01 through SC-R08 source paths are present and covered by focused tests,
+but “implemented” is not promoted to “live production qualified.” The live
+coordinated owner remains explicitly gated to an isolated qualification
+environment and was not exercised against the ordinary Server Phone runtime.
+
+| Requirement | Current closure evidence | Remaining limitation | Status |
+|---|---|---|---|
+| SC-R01 coordinated activation | `coordinated_runtime_promotion.py` binds candidate, grant, checkpoint, migration, PWA/OPA owners, health observations and terminal evidence; focused promotion and isolated runtime checks pass | Actual live multi-process cutover and recovery owner execution were not run | IMPLEMENTED — NOT YET VALIDATED |
+| SC-R02 independent identity | Migration 0067, `lite_runtime_identity`, reconciler publication, process/source inventory and physical exact frontend markers | Ordinary installed backend identity was not changed; same-UID observation limits remain documented | IMPLEMENTED — NOT YET VALIDATED |
+| SC-R03 startup/recovery | Journal bounds, interruption dispositions, explicit recovery authority, checkpoint/newer-write fences and focused recovery tests | Physical live restart/recovery was not run | IMPLEMENTED — NOT YET VALIDATED |
+| SC-R04 capability activation | Migration 0068, review/activation/revoke/claim APIs, exact scope/owner/epoch/policy fencing and scheduler admission | No production capability was activated; real human Owner/passkey execution remains outside this run | IMPLEMENTED — NOT YET VALIDATED |
+| SC-R05 executable qualification | Repository-owned lifecycle tasks, focused fixtures, isolated runtime runner and System-only Android runner executed | Full original detailed Q0–Q9 inventory was not recoverable; live coordinated fault matrix remains incomplete | PARTIALLY IMPLEMENTED |
+| SC-R06 System Manage | Prepared backend state fields, truthful completed/rehearsal/recovery UI, mocked desktop/mobile, Storybook, accessibility and safe physical System interactions | Physical UI used an isolated candidate fixture, not a live production projection; full desktop/mobile visual matrix is not independently published | IMPLEMENTED — NOT YET VALIDATED |
+| SC-R07 runtime packaging | Versioned `runtime-install-v1`, dependency profile, deterministic archive bounds/exclusions and package tests | No production release was published or installed; ARM64 install execution remains unvalidated | IMPLEMENTED — NOT YET VALIDATED |
+| SC-R08 policy compatibility | Full-envelope differential comparison, registered restrictive classes, adversarial corpus and loaded module/data identity projection | Unknown semantic changes remain blocked; no production policy activation was performed | IMPLEMENTED — NOT YET VALIDATED |
+
+### DEV-PC qualification
+
+The exact-toolchain `task lite:check` completed successfully after selecting
+the repository-required JDK 17.0.20.1 from the existing local cache. The
+executed gate included: protected tool versions; Python and shell checks; 134
+runtime tests; 171 backend tests; 652 Vitest tests in 103 files; OpenAPI and
+contract checks; Storybook build with 20 representative renders; 52 mocked E2E
+tests with 10 documented skips; accessibility; 74 documentation-browser
+tests; redaction; Allure evidence generation; strict canonical documentation;
+and the final repository evidence checks. Redocly reported 100 pre-existing
+warnings while exiting successfully; they were not suppressed or relabeled.
+
+Additional executed results:
+
+- `task lite:lifecycle:qualification`: 21 backend, 81 package, 14 Vitest and
+  10 mocked Playwright checks passed.
+- `task lite:lifecycle:regression`: 56 checks passed.
+- Focused promotion, release-execution and coordinated-owner tests: 36 passed.
+- Isolated runtime candidate manifest `324e811a3a6744d4921f56d6`: PASS for
+  candidate-bound FastAPI, worker, node-agent, supervisor, NATS/JetStream,
+  synthetic auth/enrollment, SQLite, recovery and cleanup. This is isolated
+  candidate evidence, not production runtime proof.
+- `task lite:docs:generate`: PASS after physical qualification.
+- `task lite:docs:check`: PASS with generated contracts, platform catalogs,
+  runtime redaction, parity, knowledge, enterprise, architecture, SchemaSpy,
+  diagrams, backend docs tests and strict MkDocs validation.
+
+### Physical Android evidence
+
+The sanitized evidence is committed under
+`docs/security/evidence/trusted-lifecycle-t3-t5/1c9ee06818fb/`. The exact
+qualifier output is `android-system-qualification.json`, run
+`6712a817662a263ea9cfa4a9`, with three repetitions across nine System
+interactions and 13 safe Trusted Lifecycle UI interactions. Candidate
+manifest, page response and page meta source markers all matched the exact
+candidate. The backend was an isolated candidate UI fixture and
+`live_backend_summary` was false; this distinction is material.
+
+The physical SQLite fixture advanced schema 42 to 69 with migrations 43–69,
+`integrity_check=ok`, `quick_check=ok`, zero foreign-key errors, an empty
+repeat application and no production database mutation. Qualification-owned
+processes and temporary material were removed, and the synthetic session was
+revoked.
+
+The Android performance collector executed all three repetitions, but the
+underlying performance contract did not pass: zero of nine interactions met
+the absolute target or hard gate, with eight `MIXED`, one
+`PLATFORM_DOMINATED`, zero `APP_INCREMENTAL_COST`, and zero `INCONCLUSIVE`
+classifications. This is recorded as execution PASS with retained
+`TARGET MISS`/`GATE MISS` residuals, not as performance compliance. No
+unrelated screen optimization was performed.
+
+### Q0–Q9 status
+
+| Phase | Actual result | Evidence and disposition |
+|---|---|---|
+| Q0 | PARTIAL | Exact candidate, isolated artifact, synthetic authority and cleanup were exercised; independent human passkey/trusted-time service proof was not run. |
+| Q1 | PASS — isolated | Differential corpus, full decision envelopes, loaded isolated OPA identity and fail-closed cases passed; production policy activation was not run. |
+| Q2 | PARTIAL | Package, migration, checkpoint, journal and isolated runtime evidence passed; live coordinated backend/PWA/OPA/SQLite cutover was not run. |
+| Q3 | PASS — isolated | Candidate-consent versus activation, scope, claim, revoke/expiry and replay fences passed in source/fixture qualification; no production capability was activated. |
+| Q4 | PARTIAL | Mocked desktop/mobile, Storybook, accessibility and safe physical System interactions passed; complete visual matrix and live prepared projection remain limited. |
+| Q5 | PASS — isolated | DEV-PC isolated NATS/worker/agent/supervisor/auth/runtime checks passed; physical Server Phone live runtime integration was not exercised. |
+| Q6 | RESIDUAL | Standard-user Android CDP and System-only UI execution passed; performance target/gate misses remain, and full ARM64 Termux runtime/resource qualification is not claimed. |
+| Q7 | PASS | Canonical generation, documentation check and exact-toolchain repository gate passed. |
+| Q8 | NOT RUN | Requires the final pushed documentation/evidence candidate; prior run `45972277059` failed only on the then-undocumented reason-code set and is superseded. |
+| Q9 | NOT RUN | Final remote HEAD, CI, phone restoration and PR report remain to be recorded after the final push. |
+
+Q0–Q6 therefore do not receive an undifferentiated overall PASS. The active
+qualification disposition is **PARTIAL with explicit residuals**: source and
+isolated validation are strong, while live coordinated cutover and absolute
+physical performance compliance remain unproven or failed.

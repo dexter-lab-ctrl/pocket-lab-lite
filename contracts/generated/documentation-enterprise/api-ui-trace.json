@@ -1274,6 +1274,7 @@
       "backend_handler": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_lifecycle_capability_activation.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/runtime_diagnostics.py"
       ],
@@ -1290,6 +1291,7 @@
       "fastapi_handler": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_lifecycle_capability_activation.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/runtime_diagnostics.py"
       ],
@@ -1309,6 +1311,7 @@
       "source_files": [
         "pocket-lab-final-structure/runtime/api_fastapi/routers/lite_enterprise_rules.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_lifecycle_capability_activation.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_policy_lifecycle.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/runtime_diagnostics.py",
         "src/lib/liteApi.js",

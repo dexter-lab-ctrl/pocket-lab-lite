@@ -343,6 +343,26 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_coordinated_release_package.py",
+      "name": "tests/backend/test_lite_coordinated_release_package.py",
+      "source_refs": [
+        "tests/backend/test_lite_coordinated_release_package.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_coordinated_runtime_promotion.py",
+      "name": "tests/backend/test_lite_coordinated_runtime_promotion.py",
+      "source_refs": [
+        "tests/backend/test_lite_coordinated_runtime_promotion.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_core_supervisor.py",
       "name": "tests/backend/test_lite_core_supervisor.py",
       "source_refs": [
@@ -637,6 +657,36 @@
       "name": "tests/backend/test_lite_isolated_qualification_lane.py",
       "source_refs": [
         "tests/backend/test_lite_isolated_qualification_lane.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_lifecycle_candidate_review.py",
+      "name": "tests/backend/test_lite_lifecycle_candidate_review.py",
+      "source_refs": [
+        "tests/backend/test_lite_lifecycle_candidate_review.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_lifecycle_policy_execution.py",
+      "name": "tests/backend/test_lite_lifecycle_policy_execution.py",
+      "source_refs": [
+        "tests/backend/test_lite_lifecycle_policy_execution.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_lifecycle_release_execution.py",
+      "name": "tests/backend/test_lite_lifecycle_release_execution.py",
+      "source_refs": [
+        "tests/backend/test_lite_lifecycle_release_execution.py"
       ],
       "type": "test"
     },
@@ -1163,10 +1213,30 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_release_trusted_time.py",
+      "name": "tests/backend/test_lite_release_trusted_time.py",
+      "source_refs": [
+        "tests/backend/test_lite_release_trusted_time.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_revision_sync_n4_n5.py",
       "name": "tests/backend/test_lite_revision_sync_n4_n5.py",
       "source_refs": [
         "tests/backend/test_lite_revision_sync_n4_n5.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_runtime_identity.py",
+      "name": "tests/backend/test_lite_runtime_identity.py",
+      "source_refs": [
+        "tests/backend/test_lite_runtime_identity.py"
       ],
       "type": "test"
     },
@@ -3427,6 +3497,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1f30b69222bc5131517d56b80bd58de986f7f8fec42139920f80daaf5e708fef"
+    "source_fingerprint": "bf2266ffb6cbc79243fabbd151accbf28fe8f4149e9a8f975bb2fbe712f1fab9"
   }
 }

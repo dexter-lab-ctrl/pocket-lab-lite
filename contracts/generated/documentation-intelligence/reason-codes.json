@@ -25,6 +25,66 @@
       "user_message": "No additional tuning was required."
     },
     {
+      "code": "applied_migration_changed",
+      "domain": "runtime",
+      "http_status": 409,
+      "meaning": "An already-applied migration differs from the authenticated candidate, so the candidate is incompatible and cannot be admitted.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "error",
+      "terminal": true,
+      "user_message": "The candidate changes an applied migration and cannot be admitted."
+    },
+    {
+      "code": "applied_schema_ledger_incomplete",
+      "domain": "runtime",
+      "http_status": 503,
+      "meaning": "The installed SQLite schema ledger is incomplete, so the candidate cannot establish a trustworthy migration baseline.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "error",
+      "terminal": false,
+      "user_message": "The installed database ledger needs review before this candidate can continue."
+    },
+    {
+      "code": "applied_schema_ledger_invalid",
+      "domain": "runtime",
+      "http_status": 503,
+      "meaning": "The installed SQLite schema ledger is invalid, so migration compatibility cannot be established safely.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "error",
+      "terminal": true,
+      "user_message": "The installed database ledger is invalid; review the runtime before retrying."
+    },
+    {
+      "code": "applied_schema_ledger_unavailable",
+      "domain": "runtime",
+      "http_status": 503,
+      "meaning": "The installed SQLite schema ledger could not be read, so migration compatibility is not verifiable.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "error",
+      "terminal": false,
+      "user_message": "The installed database ledger could not be read safely."
+    },
+    {
+      "code": "applied_schema_unconfirmed",
+      "domain": "runtime",
+      "http_status": 503,
+      "meaning": "The installed SQLite schema generation is not independently confirmed, so admission remains blocked.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "error",
+      "terminal": false,
+      "user_message": "The installed database schema could not be independently confirmed."
+    },
+    {
       "code": "approval_approver_role_required",
       "domain": "rules",
       "http_status": 403,
@@ -361,6 +421,18 @@
       "user_message": "Runtime Security Assurance could not continue safely."
     },
     {
+      "code": "candidate_applied_migration_checksum_mismatch",
+      "domain": "runtime",
+      "http_status": 409,
+      "meaning": "The candidate migration checksum does not match the recorded applied checksum, so the candidate is rejected.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "error",
+      "terminal": true,
+      "user_message": "The candidate database migration checksum does not match the installed ledger."
+    },
+    {
       "code": "candidate_invalid",
       "domain": "release-trust",
       "http_status": 409,
@@ -455,6 +527,18 @@
       "severity": "warning",
       "terminal": false,
       "user_message": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "code": "coordinated_handoff_unproved",
+      "domain": "runtime",
+      "http_status": 503,
+      "meaning": "The authenticated candidate could not prove a durable handoff to the coordinated runtime execution owner.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "error",
+      "terminal": false,
+      "user_message": "The runtime handoff could not be verified; no cutover was declared."
     },
     {
       "code": "credential_expired",
@@ -1561,6 +1645,18 @@
       "user_message": "An independently configured trust root is required before review can continue."
     },
     {
+      "code": "installed_migration_checksum_mismatch",
+      "domain": "runtime",
+      "http_status": 409,
+      "meaning": "An installed migration checksum differs from the recorded ledger, so runtime admission fails closed.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "error",
+      "terminal": true,
+      "user_message": "The installed database migration checksum does not match its ledger."
+    },
+    {
       "code": "insufficient_storage",
       "domain": "system",
       "http_status": 200,
@@ -1741,6 +1837,18 @@
       "user_message": "The requested Identity or Rules action could not continue."
     },
     {
+      "code": "local_policy_source_unavailable",
+      "domain": "rules",
+      "http_status": 503,
+      "meaning": "The local repository policy source needed to verify compatibility is unavailable, so policy admission is blocked.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "error",
+      "terminal": false,
+      "user_message": "The local Safety Rules source is unavailable for verification."
+    },
+    {
       "code": "location_not_registered",
       "domain": "recovery",
       "http_status": 409,
@@ -1787,6 +1895,42 @@
       "severity": "warning",
       "terminal": false,
       "user_message": "Only metadata was evaluated."
+    },
+    {
+      "code": "migration_baseline_unconfirmed",
+      "domain": "runtime",
+      "http_status": 503,
+      "meaning": "The installed migration baseline is not independently confirmed, so the candidate remains ineligible.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "error",
+      "terminal": false,
+      "user_message": "The installed migration baseline needs independent verification."
+    },
+    {
+      "code": "migration_qualification_required",
+      "domain": "runtime",
+      "http_status": 409,
+      "meaning": "The candidate requires the repository migration qualification contract before it can be considered for promotion.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Run the required isolated migration qualification before continuing."
+    },
+    {
+      "code": "migration_rehearsal_unproved",
+      "domain": "runtime",
+      "http_status": 409,
+      "meaning": "The authenticated candidate does not have independently verified migration rehearsal evidence.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "error",
+      "terminal": false,
+      "user_message": "Migration rehearsal evidence is required before this candidate can continue."
     },
     {
       "code": "nats_fault_requires_active_assurance_run",
@@ -2449,6 +2593,18 @@
       "user_message": "The requested Identity or Rules action could not continue."
     },
     {
+      "code": "policy_module_set_unknown",
+      "domain": "rules",
+      "http_status": 503,
+      "meaning": "The loaded OPA module set is not independently known, so policy compatibility cannot be established.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "error",
+      "terminal": false,
+      "user_message": "The loaded Safety Rules modules could not be verified."
+    },
+    {
       "code": "policy_parameter_invalid",
       "domain": "rules",
       "http_status": 403,
@@ -3017,6 +3173,18 @@
       "user_message": "Runtime status is being checked."
     },
     {
+      "code": "runtime_identity_stale",
+      "domain": "runtime",
+      "http_status": 503,
+      "meaning": "The prepared runtime identity is stale or cannot be bound to the currently observed execution owners.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "error",
+      "terminal": false,
+      "user_message": "Runtime identity is stale; wait for fresh verification before continuing."
+    },
+    {
       "code": "scanner_intelligence_hard_expired",
       "domain": "security",
       "http_status": 200,
@@ -3315,6 +3483,66 @@
       "severity": "warning",
       "terminal": false,
       "user_message": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "code": "trusted_policy_admission_denied",
+      "domain": "rules",
+      "http_status": 403,
+      "meaning": "The trusted policy candidate did not satisfy independent admission authority or compatibility checks.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "error",
+      "terminal": true,
+      "user_message": "Trusted Safety Rules admission was denied."
+    },
+    {
+      "code": "trusted_policy_execution_required",
+      "domain": "rules",
+      "http_status": 409,
+      "meaning": "The candidate requires its exact trusted policy activation authorization before protected execution can continue.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "warning",
+      "terminal": false,
+      "user_message": "Trusted Safety Rules activation authorization is required."
+    },
+    {
+      "code": "trusted_policy_interrupted_before_switch",
+      "domain": "rules",
+      "http_status": 409,
+      "meaning": "Trusted policy activation was interrupted before the runtime switch, so the operation remains fail-closed for reconciliation.",
+      "next_action": "Correct the prerequisite and retry through the owning backend workflow.",
+      "observed_in_current_health": [],
+      "retryable": true,
+      "severity": "error",
+      "terminal": false,
+      "user_message": "Trusted Safety Rules activation was interrupted before switching. Review recovery state."
+    },
+    {
+      "code": "trusted_policy_isolation_unproved",
+      "domain": "rules",
+      "http_status": 503,
+      "meaning": "The trusted policy operation cannot prove its isolated execution owner or qualification boundary, so it is blocked.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "error",
+      "terminal": true,
+      "user_message": "The trusted Safety Rules execution boundary could not be verified."
+    },
+    {
+      "code": "trusted_policy_rollback_unproved",
+      "domain": "rules",
+      "http_status": 503,
+      "meaning": "Trusted policy rollback did not produce independently verified known-good runtime evidence, so the runtime remains uncertain.",
+      "next_action": "Review the owning evidence and operator guidance before another action.",
+      "observed_in_current_health": [],
+      "retryable": false,
+      "severity": "error",
+      "terminal": false,
+      "user_message": "Trusted Safety Rules rollback could not be verified. Review the runtime before retrying."
     },
     {
       "code": "unregistered_domain",
@@ -3690,5 +3918,5 @@
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "3057e90e3d50ec9f95a9427c75e8abaf1340f410b935b6e505ca5c853b7ffd94"
+  "source_fingerprint": "89bf53c121c0efad42db45ff6e8687b961c0f4b1e3efcf854bdf9c8e8c659a2d"
 }

@@ -244,7 +244,19 @@ generator_version: 3
 | POST /api/lite/lifecycle/boundary | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/lifecycle/boundary/review | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/lifecycle/boundary/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/lifecycle/candidate/consent | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/lifecycle/candidate/consent/review | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/lifecycle/candidate/consent/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/lifecycle/capability/activation | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/lifecycle/capability/activation/review | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/lifecycle/capability/activation/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/lifecycle/policy/execution | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/lifecycle/policy/execution/review | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/lifecycle/policy/execution/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/lifecycle/preferences/review | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/lifecycle/release/preparation | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/lifecycle/release/preparation/review | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
+| POST /api/lite/lifecycle/release/preparation/revoke | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/owner-operations/client-pairings | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/owner-operations/client-pairings/cancel-challenge | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
 | POST /api/lite/owner-operations/client-pairings/challenge | api | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/parity/test_api_contract_fences.py | test-linked |
@@ -405,7 +417,7 @@ generator_version: 3
 | Telemetry | domain | — | unvalidated |
 | Testing | domain | — | unvalidated |
 | Unknown | domain | — | unvalidated |
-| Validation | domain | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_recovery.py, test:tests/backend/test_lite_security_assurance.py, test:tests/backend/test_lite_security_assurance_controls.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_documentation_presentation_polish.py, test:tests/docs/test_enterprise_completion.py, test:tests/docs/test_living_knowledgebase.py, test:tests/e2e/lite-device-facts.spec.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
+| Validation | domain | test:tests/backend/test_lite_development_documentation_platform.py, test:tests/backend/test_lite_lifecycle_candidate_review.py, test:tests/backend/test_lite_recovery.py, test:tests/backend/test_lite_security_assurance.py, test:tests/backend/test_lite_security_assurance_controls.py, test:tests/backend/test_lite_termux_runtime_documentation.py, test:tests/docs/test_documentation_presentation_polish.py, test:tests/docs/test_enterprise_completion.py, test:tests/docs/test_living_knowledgebase.py, test:tests/e2e/lite-device-facts.spec.ts, test:tests/parity/test_intelligent_runtime_parity.py | test-linked |
 | Vocabulary | domain | — | unvalidated |
 | Websocket | domain | — | unvalidated |
 | Worker | domain | — | unvalidated |

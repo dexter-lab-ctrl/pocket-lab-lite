@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "5b0768fa294580e5dfeb6fe8dcfcbd16a683d01f618ea95742ec8cc7b1f81ffb",
+    "aggregate_fingerprint": "5aac72074ce946e1c5070bb6bb426b956f6aedd9e398c1654d373a046ddadf3a",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -11,7 +11,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/metadata/documentation-platform.json": "b8d66469fc3ab5b0b2b2ed610617a35c091810bc2d564d81075cce898682ddda",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "3b34f0debcf38e177dca50b99dea00a9b2710c4889dcb2b706d688ce0a9fcd9e",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "b7a3f249e30c6b29db8bf4b2d65e54d0b5ea15108fedf22be5f314b0fc1f486e",
       "pocket-lab-final-structure/runtime/api_fastapi/services/lite_core_projections.py": "62b30d29d5aac1071f242258592263dd195222d04d5014fd6a12d97b6b010538",
       "pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py": "d28f52760555788c05461d4725a67b89997140cf981e43eec643075b54ac3f34",
       "scripts/docs/lite/generate_platform_catalogs.py": "03d45e1757f6eff0622b0bac8d53108a7229b00c2c746bf158a746224499fd08"

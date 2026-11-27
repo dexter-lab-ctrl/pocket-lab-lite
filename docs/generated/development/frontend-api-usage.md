@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 74446271fac9e5adaa7450d55fb36fe5dac68f1298c76df39ec73de198df16ae
+source_fingerprint: 88b0c1e1441af5cbf01fd46db4a5e25fa2aa0d4e51498c2c68314cf9822ab232
 schema_revision: 1
 validation_status: generated
 ---
@@ -139,8 +139,20 @@ validation_status: generated
 | src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleIssueBoundary | POST | `/api/lite/lifecycle/boundary` | mutation | no | static |
 | src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleReviewBoundary | POST | `/api/lite/lifecycle/boundary/review` | mutation | no | static |
 | src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleRevokeBoundary | POST | `/api/lite/lifecycle/boundary/revoke` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleRecordCandidateConsent | POST | `/api/lite/lifecycle/candidate/consent` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleReviewCandidateConsent | POST | `/api/lite/lifecycle/candidate/consent/review` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleRevokeCandidateConsent | POST | `/api/lite/lifecycle/candidate/consent/revoke` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleActivateCapability | POST | `/api/lite/lifecycle/capability/activation` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleReviewCapabilityActivation | POST | `/api/lite/lifecycle/capability/activation/review` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleRevokeCapability | POST | `/api/lite/lifecycle/capability/activation/revoke` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleAdmitPolicyExecution | POST | `/api/lite/lifecycle/policy/execution` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleReviewPolicyExecution | POST | `/api/lite/lifecycle/policy/execution/review` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleRevokePolicyExecution | POST | `/api/lite/lifecycle/policy/execution/revoke` | mutation | no | static |
 | src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecyclePreference | PUT | `/api/lite/lifecycle/preferences` | mutation | no | static |
 | src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleReviewPreference | POST | `/api/lite/lifecycle/preferences/review` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleAdmitReleasePreparation | POST | `/api/lite/lifecycle/release/preparation` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleReviewReleasePreparation | POST | `/api/lite/lifecycle/release/preparation/review` | mutation | no | static |
+| src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleRevokeReleasePreparation | POST | `/api/lite/lifecycle/release/preparation/revoke` | mutation | no | static |
 | src/lite/components/TrustedLifecyclePanel.jsx | liteApi.lifecycleSummary | GET | `/api/lite/lifecycle/summary` | query | no | static |
 | src/lite/devices/DeviceDetailsLazy.jsx | liteApi.device | GET | `/api/lite/devices/{param}` | query | no | dynamic |
 | src/lite/devices/DeviceDetailsLazy.jsx | liteApi.deviceHealth | GET | `/api/lite/devices/{param}/health` | query | no | dynamic |

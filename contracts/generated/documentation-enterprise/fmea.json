@@ -45,14 +45,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "applied_migration_changed",
+        "applied_schema_ledger_incomplete",
+        "applied_schema_ledger_invalid",
+        "applied_schema_ledger_unavailable",
+        "applied_schema_unconfirmed",
         "approved_spec_changed",
         "authorization_or_readiness_unavailable",
-        "backup_binding_invalid",
-        "backup_state_missing",
-        "battery_policy_threshold",
-        "candidate_invalid",
-        "checkpoint_ineligible",
-        "configured_target_budget"
+        "backup_binding_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -137,14 +137,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "applied_migration_changed",
+        "applied_schema_ledger_incomplete",
+        "applied_schema_ledger_invalid",
+        "applied_schema_ledger_unavailable",
+        "applied_schema_unconfirmed",
         "approved_spec_changed",
         "assurance_deadline_exceeded",
-        "assurance_orphaned_child_reconciled",
-        "assurance_policy_sync_denied",
-        "assurance_policy_sync_disabled",
-        "assurance_session_binding_mismatch",
-        "authorization_or_readiness_unavailable",
-        "backup_binding_invalid"
+        "assurance_orphaned_child_reconciled"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -171,14 +171,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "applied_migration_changed",
+        "applied_schema_ledger_incomplete",
+        "applied_schema_ledger_invalid",
+        "applied_schema_ledger_unavailable",
+        "applied_schema_unconfirmed",
         "approved_spec_changed",
         "authorization_or_readiness_unavailable",
-        "backup_binding_invalid",
-        "backup_state_missing",
-        "battery_policy_threshold",
-        "candidate_invalid",
-        "checkpoint_ineligible",
-        "configured_target_budget"
+        "backup_binding_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -351,14 +351,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "applied_migration_changed",
+        "applied_schema_ledger_incomplete",
+        "applied_schema_ledger_invalid",
+        "applied_schema_ledger_unavailable",
+        "applied_schema_unconfirmed",
         "approved_spec_changed",
         "authorization_or_readiness_unavailable",
-        "backup_binding_invalid",
-        "backup_state_missing",
-        "battery_policy_threshold",
-        "candidate_invalid",
-        "checkpoint_ineligible",
-        "configured_target_budget"
+        "backup_binding_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -477,7 +477,11 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
-        "policy_source_update_pending"
+        "policy_source_update_pending",
+        "trusted_policy_admission_denied",
+        "trusted_policy_interrupted_before_switch",
+        "trusted_policy_isolation_unproved",
+        "trusted_policy_rollback_unproved"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -504,14 +508,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "applied_migration_changed",
+        "applied_schema_ledger_incomplete",
+        "applied_schema_ledger_invalid",
+        "applied_schema_ledger_unavailable",
+        "applied_schema_unconfirmed",
         "approved_spec_changed",
         "authorization_or_readiness_unavailable",
-        "backup_binding_invalid",
-        "backup_state_missing",
-        "battery_policy_threshold",
-        "candidate_invalid",
-        "checkpoint_ineligible",
-        "configured_target_budget"
+        "backup_binding_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -537,7 +541,12 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "applied_schema_ledger_incomplete",
+        "applied_schema_ledger_invalid",
+        "applied_schema_ledger_unavailable",
+        "applied_schema_unconfirmed"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
       "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -631,14 +640,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "applied_migration_changed",
+        "applied_schema_ledger_incomplete",
+        "applied_schema_ledger_invalid",
+        "applied_schema_ledger_unavailable",
+        "applied_schema_unconfirmed",
         "approved_spec_changed",
         "authorization_or_readiness_unavailable",
-        "backup_binding_invalid",
-        "backup_state_missing",
-        "battery_policy_threshold",
-        "candidate_invalid",
-        "checkpoint_ineligible",
-        "configured_target_budget"
+        "backup_binding_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -722,7 +731,12 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "applied_schema_ledger_incomplete",
+        "applied_schema_ledger_invalid",
+        "applied_schema_ledger_unavailable",
+        "applied_schema_unconfirmed"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
       "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -773,14 +787,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "applied_migration_changed",
+        "applied_schema_ledger_incomplete",
+        "applied_schema_ledger_invalid",
+        "applied_schema_ledger_unavailable",
+        "applied_schema_unconfirmed",
         "approved_spec_changed",
         "authorization_or_readiness_unavailable",
-        "backup_binding_invalid",
-        "backup_state_missing",
-        "battery_policy_threshold",
-        "candidate_invalid",
-        "checkpoint_ineligible",
-        "configured_target_budget"
+        "backup_binding_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
@@ -806,7 +820,12 @@
       ],
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
-      "reason_codes": [],
+      "reason_codes": [
+        "applied_schema_ledger_incomplete",
+        "applied_schema_ledger_invalid",
+        "applied_schema_ledger_unavailable",
+        "applied_schema_unconfirmed"
+      ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
       "severity_definition": "a primary user capability can be blocked or materially degraded until recovery succeeds",
@@ -900,14 +919,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "applied_schema_unconfirmed",
         "device_role_change_requires_approval",
         "independent_approval_satisfied",
         "independent_provenance_and_qualification_required",
         "independent_root_required",
-        "owner_approval_policy_inconsistent",
-        "owner_outcome_not_verified",
-        "owner_reconciliation_not_verified",
-        "owner_restart_not_verified"
+        "migration_baseline_unconfirmed",
+        "migration_rehearsal_unproved",
+        "owner_approval_policy_inconsistent"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "moderate",
@@ -966,14 +985,14 @@
       "manual_recovery": "follow the matching production incident runbook; do not infer destructive commands",
       "occurrence": "not numerically scored without canonical incident frequency evidence",
       "reason_codes": [
+        "applied_migration_changed",
+        "applied_schema_ledger_incomplete",
+        "applied_schema_ledger_invalid",
+        "applied_schema_ledger_unavailable",
+        "applied_schema_unconfirmed",
         "approved_spec_changed",
         "authorization_or_readiness_unavailable",
-        "backup_binding_invalid",
-        "backup_state_missing",
-        "battery_policy_threshold",
-        "candidate_invalid",
-        "checkpoint_ineligible",
-        "configured_target_budget"
+        "backup_binding_invalid"
       ],
       "residual_risk": "human review; no arbitrary RPN",
       "severity": "high",
