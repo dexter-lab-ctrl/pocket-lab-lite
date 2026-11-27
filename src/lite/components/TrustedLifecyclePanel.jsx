@@ -177,6 +177,17 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
     <ChangeImpactReview assessment={data?.assessment} />
     <CandidateReview review={data?.owner_authority === true ? data.candidate_review : null}
       consents={data?.candidate_consents || []} canDecide={!blocked && !managed && !pending && data?.release_trust?.current_review_eligible === true} onReview={onReview} />
+    {data?.policy_execution_qualification_enabled && <div className="lite-system-health-detail-block">
+      <h4>Isolated policy activation</h4>
+      <p>Qualification environment only. Production activation remains disabled. Exact Owner confirmation and independent loaded-policy proof are required.</p>
+      {data?.policy_execution_review_available && <LiteButton haptic tone="secondary" disabled={blocked || Boolean(pending) || managed}
+        onClick={() => onReview({ kind: 'policy-execution', value: data.candidate_review.metadata_sha256, label: 'Review isolated policy activation' })}>Review isolated policy activation</LiteButton>}
+      {(data?.policy_executions || []).map(item => <LiteActionRow key={item.grant_id} label="Policy operation"
+        value={item.revoked_at ? 'Permission revoked' : String(item.state || 'Unknown').replaceAll('_', ' ')}
+        summary={item.reason_code ? String(item.reason_code).replaceAll('_', ' ') : item.candidate_revision_id}
+        action={item.revoked_at || item.proof_sha256 ? undefined : { label: 'Revoke execution permission', haptic: true,
+          disabled: blocked || Boolean(pending), onClick: () => onReview({ kind: 'policy-execution-revoke', value: item.grant_id, label: 'Revoke execution permission' }) }} />)}
+    </div>}
     <LiteTechnicalDetails summary="Candidate decision history" haptic>
       {(data?.candidate_consents || []).map(item => <LiteActionRow key={item.consent_id} label={item.capability_id}
         value={candidateDecisionNames[item.status] || 'Review required'} summary={'Review only · expires ' + (item.expires_at || 'not confirmed')}
@@ -196,11 +207,19 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
     </LiteTechnicalDetails>
     {pending && <div className="lite-system-health-detail-block" role="group" aria-label="Review proposed change">
       <h4>{pending.label}</h4>
-      <p>{pending.kind === 'candidate' ? 'Record ' + candidateDecisionNames[pending.value.disposition].toLowerCase() + ' for this exact signed candidate scope. This does not activate a capability or authorize execution.'
+      <p>{pending.kind === 'policy-execution' ? 'Authorize one exact, isolated policy operation. This is not a standing permission or a production update.'
+        : pending.kind === 'policy-execution-revoke' ? 'Revoke this execution permission. In-flight work must be reconciled by the supervisor; cancellation is not guaranteed.'
+        : pending.kind === 'candidate' ? 'Record ' + candidateDecisionNames[pending.value.disposition].toLowerCase() + ' for this exact signed candidate scope. This does not activate a capability or authorize execution.'
         : pending.kind === 'candidate-revoke' ? 'Revoke this recorded candidate decision. No active operation is claimed cancelled.'
         : pending.kind === 'grant' ? 'Record a limited, revocable review permission for 30 days. Only a previous permission for the same purpose is replaced; other permissions stay independent. It cannot start a service or install anything.'
         : pending.kind === 'revoke' ? 'Prevent new use of ' + (pending.value ? 'this recorded permission' : 'all recorded permissions') + '. This does not claim to cancel existing work.'
         : 'Save this preference and revoke previous standing consent. Existing release and recovery settings are not changed.'}</p>
+      {pending.kind === 'policy-execution' && pending.review?.scope && <LiteTechnicalDetails summary="Exact activation scope" haptic>
+        <LiteActionRow label="Prior policy" value={pending.review.scope.baseline_revision} />
+        <LiteActionRow label="Candidate policy" value={pending.review.scope.candidate_revision} />
+        <LiteActionRow label="Executor" value={pending.review.scope.purpose} />
+        <LiteActionRow label="Signed metadata digest" value={pending.review.scope.metadata_sha256} />
+      </LiteTechnicalDetails>}
       {pending.kind === 'candidate' && pending.review?.scope && <LiteTechnicalDetails summary="Exact reviewed scope" haptic><CapabilityScope scope={pending.review.scope} /></LiteTechnicalDetails>}
       {pending.kind === 'grant' && pending.review?.scope && <>
         <LiteActionRow label="Exact reviewed scope" value={purposes[pending.review.scope.purpose] || 'Review permission'} summary={pending.review.scope.channel + " channel · risk " + pending.review.scope.max_risk + " · no execution or secret access"} />
@@ -245,6 +264,11 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
         const body = { expected_revision: pending.boundary, expected_profile_revision: pending.revision, purpose: pending.value, confirm: true };
         await exactPasskey(pending.review);
         await liteApi.lifecycleIssueBoundary(body);
+      } else if (pending.kind === 'policy-execution') {
+        await exactPasskey(pending.review);
+        await liteApi.lifecycleAdmitPolicyExecution({ expected_revision: pending.boundary, metadata_sha256: pending.value, confirm: true });
+      } else if (pending.kind === 'policy-execution-revoke') {
+        await liteApi.lifecycleRevokePolicyExecution({ expected_revision: pending.boundary, grant_id: pending.value, confirm: true });
       } else if (pending.kind === 'candidate') {
         await exactPasskey(pending.review);
         await liteApi.lifecycleRecordCandidateConsent({ expected_revision: pending.boundary, ...pending.value, confirm: true });
@@ -253,7 +277,9 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
       } else if (pending.kind === 'revoke') {
         await liteApi.lifecycleRevokeBoundary({ expected_revision: pending.boundary, ...(pending.value ? { grant_id: pending.value } : {}), confirm: true });
       }
-      setMessage('Change recorded. Unattended execution remains disabled in this foundation.');
+      setMessage(pending.kind === 'policy-execution'
+        ? 'Operation admitted for isolated supervisor reconciliation. Activation is not yet confirmed.'
+        : 'Change recorded. Production unattended execution remains disabled.');
       await query.refresh();
     } catch {
       setMessage('The change was not confirmed. Review current information before trying again.');
@@ -270,6 +296,7 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
       inFlight.current = true; setBusy(true); setMessage('');
       try {
         const next = { ...change, revision: data.preferences.revision, boundary: data.boundary_revision };
+        if (change.kind === 'policy-execution') next.review = await liteApi.lifecycleReviewPolicyExecution({ expected_revision: next.boundary, metadata_sha256: change.value, confirm: true });
         if (change.kind === 'candidate') next.review = await liteApi.lifecycleReviewCandidateConsent({ expected_revision: next.boundary, ...change.value, confirm: true });
         if (change.kind === 'grant') next.review = await liteApi.lifecycleReviewBoundary({
           expected_revision: next.boundary, expected_profile_revision: next.revision, purpose: change.value, confirm: true });

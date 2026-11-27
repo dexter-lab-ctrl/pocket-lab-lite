@@ -141,7 +141,7 @@ def source_state() -> dict[str, Any]:
         "active_revision": active,
         "known_good_revision": known_good,
         "repository_revision": candidate["revision_id"],
-        "source_update_required": bool(candidate["revision_id"] != active),
+        "source_update_required": bool(candidate["revision_id"] != active and not compatible),
         "activation_in_progress": bool(operation),
         "activation_operation": dict(operation) if operation else None,
         "candidate": candidate,

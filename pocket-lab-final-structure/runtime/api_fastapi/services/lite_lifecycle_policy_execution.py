@@ -50,8 +50,19 @@ class PolicyExecutionRevoke(BaseModel):
 
 def gate():
     # Separate qualification is required before authoring a production gate.
-    return (os.environ.get("POCKETLAB_RELEASE_POLICY_EXECUTION") == "1"
-            and os.environ.get("POCKETLAB_ENVIRONMENT") == "qualification")
+    if os.environ.get("POCKETLAB_RELEASE_POLICY_EXECUTION") != "1":
+        return False
+    try:
+        from . import qualification_context as qualification
+        from ..db.connection import database_path
+        if not qualification.enabled() or not os.environ.get("PM2_HOME"):
+            return False
+        root = qualification.root()
+        paths = (lifecycle._state_root(), database_path(), Path(os.environ["PM2_HOME"]))
+        return all(qualification._resolved_without_symlink_escape(path, root) != root
+                   for path in paths)
+    except Exception:
+        return False
 
 
 def _receipt(conn):
@@ -108,7 +119,8 @@ def binding_fields(conn, payload):
             or observation.get("data_identity") != "registered_template_matches"
             or observation.get("observed_revision") != authority._policy(conn)
             or (receipt.get("capability_review") or {}).get("total") != 0
-            or (receipt.get("migration_review") or {}).get("state") != "unchanged"):
+            or (receipt.get("migration_review") or {}).get("state") != "unchanged"
+            or ((receipt.get("migration_review") or {}).get("applied_ledger") or {}).get("state") != "ledger_matches"):
         raise PermissionError("policy_execution_candidate_unproved")
     current = conn.execute("SELECT * FROM policy_revisions WHERE revision_id=?", (authority._policy(conn),)).fetchone()
     template = {"template_id": current["template_id"], "template_version": current["template_version"],
@@ -136,6 +148,8 @@ def preview(context, payload):
 
 def admit(context, payload):
     authorized = authority._authorize(context, ACTION, payload)
+    if authorized[3].get("reason_code") != "lifecycle_policy_activation_allowed":
+        raise PermissionError("policy_execution_admission_denied")
     if not prove_loaded(authorized[1]["policy_revision"]):
         raise PermissionError("loaded_policy_identity_unproved")
     with connection() as conn:
@@ -220,6 +234,9 @@ def current(conn, operation, *, require_claim=False):
             or operation["prior_known_good_revision_id"] != scope["baseline_revision"]
             or (require_claim and (not row["claimed_at"] or not row["claim_decision_id"]))):
         raise PermissionError("policy_execution_binding_changed")
+    local, candidate, _, _, content_hash = _render(scope["template"], scope["suffixes"], scope["policy_sha256"])
+    if (local, candidate, content_hash) != (scope["baseline_revision"], scope["candidate_revision"], scope["content_hash"]):
+        raise PermissionError("policy_execution_source_changed")
     return row, scope
 
 

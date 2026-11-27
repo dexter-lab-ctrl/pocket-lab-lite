@@ -7,6 +7,7 @@ executed. A checkpoint is not a rollback authorization or a runtime identity.
 from __future__ import annotations
 
 import hashlib
+from contextlib import closing
 import json
 import os
 from pathlib import Path
@@ -71,12 +72,20 @@ def _stage_source(stream, destination, *, declaration, policy_document, migratio
             "source_expanded_bytes": total}
 
 
-def _frontend(path, destination, receipt, deadline_ns):
+def _frontend(stream, destination, receipt, deadline_ns):
     _deadline(deadline_ns)
-    info = inspect_pwa_archive(path)
+    h = hashlib.sha256()
+    while chunk := stream.read(1024 * 1024):
+        _deadline(deadline_ns)
+        h.update(chunk)
+    if h.hexdigest() != receipt["artifact_sha256"]:
+        raise TrustError("coordinated_frontend_changed")
+    stream.seek(0)
+    info = inspect_pwa_archive(stream)
     if shutil.disk_usage(destination.parent).free < info["expanded_bytes"] + RESERVE:
         raise TrustError("coordinated_stage_disk_pressure")
-    with zipfile.ZipFile(path) as archive:
+    stream.seek(0)
+    with zipfile.ZipFile(stream) as archive:
         item = archive.getinfo(BUILD_IDENTITY_NAME)
         if item.file_size > 16384:
             raise TrustError("frontend_identity_limit")
@@ -84,7 +93,8 @@ def _frontend(path, destination, receipt, deadline_ns):
     if (identity.get("release_tag") != receipt["release_tag"]
             or identity.get("source_commit") != receipt["source_commit"]):
         raise TrustError("coordinated_frontend_identity_mismatch")
-    safe_extract_zip(path, destination)
+    stream.seek(0)
+    safe_extract_zip(stream, destination)
     _deadline(deadline_ns)
     return {"frontend_files": info["entry_count"], "frontend_expanded_bytes": info["expanded_bytes"],
             "frontend_identity_sha256": digest(identity)}
@@ -107,7 +117,7 @@ def _checkpoint(destination, *, expected_schema, deadline_ns):
             raise TrustError("coordinated_checkpoint_limit")
 
     online_backup(destination, pages=64, sleep=0.025, progress=progress)
-    with sqlite3.connect(destination.as_uri() + "?mode=ro", uri=True) as snapshot:
+    with closing(sqlite3.connect(destination.as_uri() + "?mode=ro", uri=True)) as snapshot:
         snapshot.set_progress_handler(lambda: int(time.monotonic_ns() >= deadline_ns), 1000)
         if snapshot.execute("PRAGMA quick_check(1)").fetchone()[0] != "ok":
             raise TrustError("coordinated_checkpoint_integrity_failed")
@@ -130,9 +140,8 @@ def assess(candidate, receipt, *, declaration, policy_document, migration_docume
             with _open_controlled(candidate, package.SOURCE_ASSET, package.MAX_SOURCE_BYTES) as (source, _):
                 source_result = _stage_source(source, root / "source", declaration=declaration,
                     policy_document=policy_document, migration_document=migration_document, deadline_ns=deadline_ns)
-            if _read(candidate, "dist.zip", MAX_ARTIFACT, hash_only=True) != receipt["artifact_sha256"]:
-                raise TrustError("coordinated_frontend_changed")
-            frontend = _frontend(candidate / "dist.zip", root / "frontend", receipt, deadline_ns)
+            with _open_controlled(candidate, "dist.zip", MAX_ARTIFACT) as (frontend_stream, _):
+                frontend = _frontend(frontend_stream, root / "frontend", receipt, deadline_ns)
             checkpoint = _checkpoint(root / "checkpoint.sqlite", expected_schema=receipt["current_schema"], deadline_ns=deadline_ns)
             return {"state": "isolated_preflight_checked", **source_result, **frontend, **checkpoint,
                     "migration_execution": "not_attempted", "promotion_eligible": False,

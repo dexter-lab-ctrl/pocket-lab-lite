@@ -459,6 +459,10 @@ def summary(context):
     latest = json.loads(trust_observation["review_json"]) if trust_observation else {}
     from .lite_capability_review import public_review
     candidate_review = public_review(latest.get("capability_review")) if is_owner else None
+    policy_review = dict(latest.get("policy_review") or {})
+    if isinstance(policy_review.get("differential"), dict):
+        policy_review["differential"] = {key: val for key, val in policy_review["differential"].items()
+                                         if key != "note_suffixes"}
     raw = latest or (json.loads(receipt["receipt_json"]) if receipt else {})
     historical = {key: raw.get(key) for key in ("release_tag","checked_at","expires","root_expires","authenticity","integrity","provenance","compatibility","impact","reason_code")} if raw else None
     state = trust_observation["state"] if trust_observation else "trust_setup_required"
@@ -476,8 +480,13 @@ def summary(context):
             "candidate_consents": candidate_consents,
             "policy_executions": policy_executions,
             "policy_execution_qualification_enabled": bool(is_owner and policy_execution_gate()),
+            "policy_execution_review_available": bool(eligible_to_record and policy_execution_gate()
+                and latest.get("provenance") == "verified"
+                and (policy_review.get("differential") or {}).get("state") == "sample_equal"
+                and (policy_review.get("differential") or {}).get("local_contract") == "locally_supported_note_evolution"
+                and (latest.get("capability_review") or {}).get("total") == 0),
             "candidate_review": ({key: latest.get(key) for key in
-                ("release_tag", "checked_at", "metadata_sha256", "source_package", "policy_review", "policy_runtime_observation", "migration_review", "coordinated_preflight")} | {"capability_review": candidate_review}
+                ("release_tag", "checked_at", "metadata_sha256", "source_package", "policy_review", "policy_runtime_observation", "migration_review", "coordinated_preflight")} | {"capability_review": candidate_review, "policy_review": policy_review}
                 if is_owner and latest.get("provenance") == "verified" else None),
             "services": [{"purpose": item.purpose,"category": item.category,"grantable": item.grantable,
                           "version": item.version,"execution_eligible": False} for item in SERVICES],
