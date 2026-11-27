@@ -1,96 +1,65 @@
-# Trusted Lifecycle T3–T5: partial implementation and completion handover
+# Trusted Lifecycle T3–T5 — continuation handover
 
-**Disposition: SOURCE IMPLEMENTATION INCOMPLETE / UNVALIDATED.** This is a draft source increment, not end-to-end T3–T5, not a qualified update mechanism, and not a production activation request. No qualification commands, CI remediation, publisher credential setup, signed release, deployment, or merge have been performed by this implementation session.
+**Disposition: SOURCE INCOMPLETE / UNVALIDATED.** Draft PR #663. No tests, checks, builds, scans, qualification, canonical generation, CI inspection/remediation, production provisioning, release, deployment, merge or Server Phone actions were performed in the implementation session. GitHub may independently trigger its configured workflows; no results are claimed. Do not transfer baseline qualification to these changes.
 
-## Source baseline
+## Baseline and ownership
 
 - Repository: dexter-lab-ctrl/pocket-lab-lite
-- Base main / PR #662 merge: `9bc53ce047c800be71cd76f1a37e79659af1ca4d`
-- PR #662 qualified feature head: `e47d03d7fa57337048f8981d162e47f47bb6d86c`
-- PR #662 code-bearing candidate: `eea0d2fa5d81affc120a14459673b1b74db60f88`
-- Feature branch: `feat/trusted-lifecycle-t3-t5`
-- Current baseline schema: migration 0063; this increment adds no migration.
+- Base: PR #662 merge, main 9bc53ce047c800be71cd76f1a37e79659af1ca4d
+- Branch: feat/trusted-lifecycle-t3-t5
+- Prior implementation head: f97b5fa70655c8870b62dc0ec2a842a382af5438
+- Continuation source head before this handover: 2e46489d9f31ca51e221659238eb485f88bd6ff6
+- Baseline migration 0063; new migrations 0064 and 0065 are authored, not applied.
+- Existing release worker, FastAPI authorization, OPA, policy lifecycle and core supervisor remain owners. PR #661 recovery authority and PR #662 review-only standing grants must remain distinct from execution.
+- T6/T7 remain deferred.
 
-The existing foundation, source-closure, trusted publishing and production activation documents remain authoritative for their respective claims. Do not transfer earlier qualification evidence to this candidate.
+## Implemented source (not runtime-validated)
 
-## Implemented source increment
+| Area | Source | Status and limit |
+|---|---|---|
+| Authenticated coordinated package | lite_release_package, release publishing workflow, release trust runtime/provenance | Optional exact signed manifest-bound source archive and independent attestation; no production installation. |
+| Independent trusted time | lite_release_trusted_time | Pinned Ed25519 signed challenge client, monotonic RTT/uncertainty, durable floor; independent endpoint not implemented/provisioned; not NTS or Roughtime compliance. |
+| T3 compatibility | lite_policy_compatibility, lite_policy_candidate_differential | Locally recognized unchanged bytes or strictly appended ASCII note-comment lines; bounded synthetic offline decision corpus. Arbitrary semantic changes remain unknown. |
+| T3 runtime observation | lite_policy_runtime_evidence | Independent OPA raw module hashes, revision, registered template data and parameters; not independent native backend identity or proof of all loaded data. |
+| T3 exact activation | lite_lifecycle_policy_execution, policy rules, policy source sync, core supervisor | Separate one-shot Owner passkey authorization, fixed local policy-reconciler service decision, exact candidate/source/revision/expiry/epoch binding, claim/recheck, stage/prove/switch/restart/finalize or rollback. Only the narrow note-evolution class and isolated qualification lane; production remains disabled. |
+| T4 coordinated preflight | lite_release_coordinated_preflight | Authenticated source and dist.zip staged in private temporary location; rehash open descriptors, size limits, source/native/frontend digests; temporary online SQLite checkpoint and quick_check. Neither a durable recovery checkpoint nor a promotion authorization. |
+| T4 migration ledger | lite_release_package | Recorded applied names/version/checksums compared against local and candidate inventories, append-only checks. |
+| T4 synthetic rehearsal | lite_release_migration_rehearsal | Isolated in-memory schema construction and restricted candidate SQL with bounded pages/statements/deadline, integrity and ledger checks; no user data and no production compatibility claim. |
+| T5 candidate review/consent | lite_capability_review, lite_lifecycle_candidate_consent, lifecycle authority, migration 0064 | Exact typed scope, signed metadata, accept-for-review/decline/defer/revoke, Owner passkey, expiry and scope/epoch fences. No executable rights from candidate review. |
+| T5 specific execution authority | migration 0065, policy execution service | Independent one-shot policy operation grant, service claim and revocation. Not a general app/recovery/maintenance/software execution grant. |
+| UI | TrustedLifecyclePanel, liteApi | Existing System Manage components, haptics and exact passkey workflow; distinct recorded evidence, candidate consent, isolated operation and revocation. No production activation button. |
 
-### T3 — policy candidate review
+## Explicit opt-ins
 
-- `lite_release_package.inspect_source` binds exact policy module and migration bytes to signed inventories and the archive hash bound by the signed release-manifest digest. Non-Rego policy data in the source package is rejected because no authenticated data inventory exists yet.
-- `lite_policy_compatibility.compare_source` uses the existing four registered repository modules. Identical inventory is only source equality. Changed bytes or unknown module sets require review.
-- `differential_evidence` compares complete supplied decision objects; equality of finite samples is not arbitrary Rego equivalence. A real differential corpus/runner is not implemented.
-- `lite_policy_runtime_evidence.observe` samples existing durable active/known-good revision, pointers and OPA's loopback metadata and policy list. It compares exact raw Rego hashes as a multiset, checks the durable snapshot again, and reports only historical module evidence. Loaded data, backend identity, race-free activation and runtime generation are not proved. A malformed, oversized or unavailable response is unknown.
-- Existing policy-source guard, OPA authorization path, policy lifecycle and core supervisor activation ownership are unchanged.
+- GitHub variable POCKETLAB_COORDINATED_RELEASE_PUBLISHING=1 for optional coordinated source publishing.
+- POCKETLAB_RELEASE_POLICY_DIFFERENTIAL=1 for bounded offline differential work during trusted review.
+- POCKETLAB_RELEASE_COORDINATED_PREFLIGHT=1 for manual trusted coordinated preflight.
+- POCKETLAB_RELEASE_MIGRATION_REHEARSAL=1 plus complete qualification context for synthetic migration rehearsal.
+- POCKETLAB_RELEASE_POLICY_EXECUTION=1 plus complete qualification context and state, SQLite database and PM2_HOME contained under the isolated run root. An environment label alone is insufficient.
+- Signed time configuration is separate from release/rotation roles, requires independent locally pinned public key and HTTPS challenge endpoint. No production values were provisioned.
+- All new execution opt-ins remain off by default. They are not a production qualification decision.
 
-### T4 — source delivery and trusted time
+## Outstanding source blockers (do not mark T3–T5 complete)
 
-The existing DSSE/Ed25519 metadata format is retained. Optional manifest field `coordinated_source` contains schema_version 1, fixed artifact `pocketlab-lite-source.zip`, exact SHA-256 and source commit. The existing signed manifest digest binds this field. The optional archive is built by GitHub Actions using git archive of the exact source commit, and independently attested as another subject. Signing/publication and release review cross-check inventory and archive bytes. Legacy publications do not receive this asset automatically. Publishing opt-in is the repository variable `POCKETLAB_COORDINATED_RELEASE_PUBLISHING=1` and has not been configured.
+1. T3: extend the local compatibility contract beyond note-only evolution, with independently justified supported semantic change classes; complete all protected-action decision-envelope differential scenarios, race/fault/rollback qualification assets, full loaded data and native/backend identity convergence, and production enablement contract. The qualification-only activation path is not a production-ready general policy updater.
+2. T4: retain the existing trust latch (trusted_promotion_not_qualified). The existing standalone backend_runtime_promotion.py uses separate signed promotion and recovery authorities and is bound to an older migration range. Connect the actual trusted release admission/claim to its external runtime owner without replacing or bypassing either authority, coordinate backend/PWA/policy/schema generations, durable checkpoint and transition journal, startup reconciliation, independently observed runtime identity, and preserve newer writes on recovery. No coordinated native/software cutover has been added. The preflight temporary checkpoint is not a rollback point.
+3. T5: implement real local capability activation/decline/defer semantics and admission+claim enforcement for additional supported capabilities on their existing owners, including installation/activation separation and independently revocable scoped grants. A candidate consent record cannot authorize a worker. Preserve PR #661 assisted/automatic recovery fences; no automatic broadening based on package authenticity.
+4. Complete remaining Q0–Q9 source scenario/fixture coverage and qualification scripts. Existing tests authored in this branch cover fragments of these paths; they do not establish full qualification.
+5. The real publisher, independent time service, live Owner WebAuthn, actual policy activation/rollback, ARM64/Termux resource budgets, package size, UI behavior, migrations and runtime convergence are all unvalidated.
 
-The source archive is review-only, never extracted or installed. Limits: compressed 256 MiB, expanded 512 MiB, 12,000 entries, 64 MiB per member, 256 KiB per reviewed inventory member, existing release child deadline and minimum free-space check. Full tracked tree is large, so real archive fit, device storage/latency and a narrower future source-owned package need qualification. No claim of production performance or package suitability is made.
+## Authored qualification entry points
 
-`migration_inventory_comparison` requires contiguous registered filenames and unchanged prior source entries, holds any appended migration for qualification and rejects altered applied-source entries. It does not independently prove actual applied SQLite migration digests or backward-compatible data behavior. No migration is executed.
+Run only in a separate approved qualification session, after remaining source blockers are implemented. Use the repository-owned task names and exact candidate SHA. No task was executed here.
 
-`lite_release_trusted_time` adds an independent signed challenge mode, using a locally provisioned raw 32-byte Ed25519 public key at `release-trust/time-public-key.bin`, pinned SHA-256, explicit HTTPS URL, separate key from release and rotation roles, 256-bit fresh nonce, <=3 s CLOCK_BOOTTIME round trip and bounded uncertainty. It reuses the existing ten-minute same-boot anchor, trust configuration and durable time floor. The verifier accepts only a signed canonical response with schema_version, nonce, key_id, UTC timestamp and uncertainty_ms. Signature domain is the source-owned DOMAIN constant. Signed time is inspired by nonce-based trusted-time patterns; it is not NTS or Roughtime compliance. The independent service must be separately operated and qualified; HTTPS does not substitute for pinned signature. TLS failure, reboot without fresh evidence, stale or changed config, invalid response or offline state hold trusted admission. No wall-clock fallback is introduced. Default operator-anchor mode remains unchanged. No production endpoint/key is configured.
+- task lite:lifecycle:t3-t5-package (includes source/package, time, candidate review and policy execution/migration safety fixtures)
+- task lite:lifecycle:backend
+- task lite:lifecycle:ui
+- task lite:lifecycle:mocked
+- task lite:lifecycle:qualification
+- task lite:lifecycle:regression
 
-The existing release runtime still denies trusted promotion through its existing latch. No coordinated release transition or unattended installer has been implemented.
+New fixtures include tests/backend/test_lite_lifecycle_policy_execution.py and extensions to tests/backend/test_lite_lifecycle_candidate_review.py and src/lite/components/TrustedLifecyclePanel.test.jsx. Existing mock/Storybook/Playwright fixtures remain in the draft. In a separately authorized qualification session, review real service OPA claim, stale/revoked grants, source and policy drift, SQLite migration and restore fences, interruption and rollback, same-UID residual, offline trusted-time failure, mocked desktop/mobile and physical Android resource gates. Never regenerate evidence or mark gates passing without actual outputs.
 
-### T5 — capability review
+## Review before qualification
 
-`lite_capability_review.compare_capabilities` compares stable IDs, owner/domain, scope, constraints, risk, mutation, network, secret access, approval/qualification and contract versions using the existing Capability ceiling comparator. New capabilities require review, owner/domain changes require trust/ownership review, changed contract versions without expansion are unknown, narrower scopes are still only review evidence. Results are bounded to twenty rows, prioritized by impact; truncation is explicit. No new consent, grant, worker admission or capability activation route exists. The existing T0–T2 review grants cannot execute anything.
-
-### UI and evidence
-
-Existing release-worker lease and trust receipt/observation transaction remain the evidence owner. The existing authenticated lifecycle summary returns bounded owner-only candidate review facts from the latest verified observation, not a fresh live probe. The new CandidateReview component is inside the existing Updates & protection detail panel, using LiteActionRow, LiteTechnicalDetails and the existing detail-block geometry/semantic CSS. No new overlay, breakpoint, shell, theme color or motion dependency. It explicitly labels recorded evidence and unknown states. No activate/install/consent action is added. Storybook, component tests and a mocked desktop/mobile Playwright scenario are authored.
-
-## Requirement and ownership ledger
-
-| Phase | Source authored | Existing owner | Disposition |
-|---|---|---|---|
-| T3 authenticated candidate and inventory | lite_release_package, trust runtime | release review child | Source implemented / unvalidated; no executable staging |
-| T3 structured compatibility | lite_policy_compatibility | existing policy contracts | Partial; no safe typed evolution/semantic proof |
-| T3 differential decisions | differential_evidence | future existing policy analysis owner | Comparator only; no corpus execution |
-| T3 independent observation | lite_policy_runtime_evidence | release review child, read-only OPA | Partial; modules only |
-| T3 delegated activation, admission, revalidation and rollback | none | lite_policy_lifecycle, source sync, supervisor | Missing |
-| T4 package delivery | workflow, publisher, source review | existing protected release publishing and review lease | Source implemented / unvalidated, default off |
-| T4 secure time | lite_release_trusted_time | existing trust runtime/floor | Client source only; independent service qualification/provisioning missing |
-| T4 migration comparison | lite_release_package | release review child | Source comparison only |
-| T4 transition, installation, checkpoint, reconciliation, rollback | none | existing release worker, runtime supervisors, Recovery | Missing |
-| T5 capability review | lite_capability_review | lifecycle authority projection | Source implemented / unvalidated |
-| T5 consent, revocation and actual admission/claim enforcement | none | existing identity, OPA and execution owners | Missing |
-| UI review | TrustedLifecyclePanel and mocks | existing System Manage / FastAPI | Partial; read-only |
-| T6/T7 | no implementation | existing future governance contracts | Deferred |
-
-## Security and remaining implementation gates
-
-1. T3: define versioned locally enforced typed policy evolution and complete compatibility evidence (protected actions, requirements, approval, explicit deny, nondelegable actions, resource and target scope). Do not remove current repository-source consistency gate. Derive exact staged bytes and independently verify loaded module **and data** identities, backend identity, generation, active/known-good pointers, and rollback state.
-2. Add purpose-specific executable delegation with real service actor provenance rather than fake humans. Existing policy revision and activation operation schema has required human FK fields. Introduce explicit service actor persistence, independent Owner grant references, exact revisions, epoch, expiry, revocation and single-flight fencing, and wire the actual supervisor and worker claim. Old review grants must remain review-only. Revalidate existing PR #661 authority without broadening it. Do not infer activation authority from an update preference.
-3. T4: implement a durable coordinated transition using the existing release lease/worker. Authenticate each staged byte used for installation, checkpoint installed state and data, prove compatibility of real applied migrations, prevent concurrent mutation, retain installed state on deferral, implement restart-safe transition reconciliation and verified recovery without restoring over newer user writes. Independent native/backend/frontend/OPA/SQLite readiness proof must precede committed installed identity. No arbitrary script execution.
-4. T5: implement exact per-capability review/consent and passkey step-up; independent scope and expiry; revocation, decline/defer, durable audit and backend enforcement at admission and claim across existing owners. A release cannot widen local authority, even if verified. Unknown impact remains held.
-5. Complete desktop/mobile state UX, purposeful consent controls, recovery history and accessible guidance only when actual backend states exist. Add focused source, mocked and physical qualification assets for real transitions.
-6. Preserve same-UID threat residual, publisher compromise threat, clock/attestation root trust, and PR #661/#662 authority and restore safeguards. Full TUF compliance is not claimed.
-
-No additional activation flag is exposed because the executable paths are not present. Existing legacy trusted-promotion latch is intentionally unchanged. Do not merge or activate this increment.
-
-## Qualification handover (not executed)
-
-After missing source work is implemented on this branch, review the whole branch, update the exact-head ledger and author all missing adversarial/isolated transition tests before Q0–Q9. Follow the original qualification gates and existing repository-owned tasks; no gate may be skipped, weakened or recorded as passing without evidence.
-
-Authored targeted assets:
-- `tests/backend/test_lite_coordinated_release_package.py`
-- `tests/backend/test_lite_release_trusted_time.py`
-- `tests/backend/test_lite_lifecycle_candidate_review.py`
-- `src/lite/components/TrustedLifecyclePanel.test.jsx`
-- `src/lite/components/TrustedLifecyclePanel.stories.jsx`
-- `src/mocks/handlers.js` candidate scenario
-- `tests/e2e/lite-trusted-lifecycle.spec.ts` candidate scenario and Axe assertion
-
-Existing Taskfile targets to use only during later qualification:
-- `task lite:lifecycle:t3-t5-package` (new)
-- `task lite:lifecycle:backend`
-- `task lite:lifecycle:ui`
-- `task lite:lifecycle:mocked`
-- `task lite:lifecycle:qualification`
-- `task lite:lifecycle:regression`
-
-The focused tests do not cover complete T3/T4/T5 execution. Real publisher, independent trusted time, real WebAuthn, migration, interrupted install, revocation races, rollback, performance and physical Android qualification remain outstanding. Do not generate canonical artifacts or remediate CI in the source-only session. Later qualification must resolve source defects, regenerate canonical artifacts through their existing generators and record exact SHA and outputs. Separate owner approval is required for any production activation.
+This continuation intentionally chooses a narrow note-only local policy change contract, no publisher-declared arbitrary semantics, strict independent grant scopes, no synthetic production human identity, and fail-closed rather than speculative native cutover. These are conservative implementation decisions, not evidence that the original full requirement has been met.
