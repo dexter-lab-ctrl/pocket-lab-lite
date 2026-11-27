@@ -121,3 +121,21 @@ def admit_release_preparation(payload: release_execution.ReleasePreparationReque
 @router.post("/release/preparation/revoke")
 def revoke_release_preparation(payload: release_execution.ReleasePreparationRevoke, request: Request, response: Response):
     return _call(request, response, release_execution.revoke, payload, write=True)
+
+
+from ..services import lite_lifecycle_capability_activation as capability_activation
+
+
+@router.post("/capability/activation/review")
+def review_capability_activation(payload: capability_activation.CapabilityActivationRequest, request: Request, response: Response):
+    return _call(request, response, capability_activation.preview, payload, write=True)
+
+
+@router.post("/capability/activation")
+def activate_capability(payload: capability_activation.CapabilityActivationRequest, request: Request, response: Response):
+    return _call(request, response, capability_activation.activate, payload, write=True)
+
+
+@router.post("/capability/activation/revoke")
+def revoke_capability(payload: capability_activation.CapabilityActivationRevoke, request: Request, response: Response):
+    return _call(request, response, capability_activation.revoke, payload, write=True)

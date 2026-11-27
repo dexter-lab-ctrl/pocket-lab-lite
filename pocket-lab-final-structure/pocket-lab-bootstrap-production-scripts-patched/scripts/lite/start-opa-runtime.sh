@@ -104,9 +104,15 @@ start_opa_process() {
   [[ -n "$resolution" && -n "$executable" ]] || die "OPA is missing or outside the trusted runtime path"
   pocketlab_execute_resolution "$resolution" version >/dev/null 2>&1 || die "OPA executable changed during startup resolution"
   if [[ "$mode" == "native" ]]; then
-    pm2_ensure_versioned_process pocket-opa "$(opa_installed_version)" "$executable" \
-      -- run --server --addr="$OPA_ADDR" \
-      "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
+    if [[ "$OPA_ADDR" == "127.0.0.1:8181" ]]; then
+      pm2_ensure_versioned_process pocket-opa "$(opa_installed_version)" "$executable" \
+        -- run --server --addr=127.0.0.1:8181 \
+        "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
+    else
+      pm2_ensure_versioned_process pocket-opa "$(opa_installed_version)" "$executable" \
+        -- run --server --addr="$OPA_ADDR" \
+        "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
+    fi
   elif [[ "$mode" == "script" && -n "$interpreter" ]]; then
     pm2_ensure_versioned_process pocket-opa "$(opa_installed_version)" "$executable" \
       --interpreter "$interpreter" -- run --server --addr="$OPA_ADDR" \

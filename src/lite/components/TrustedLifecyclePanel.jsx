@@ -75,6 +75,7 @@ const impactNames = { U2: 'Scope reduced', U4: 'Additional authority requires re
 
 const candidateDecisionNames = { accepted_for_review: 'Accepted for review', declined: 'Declined', deferred: 'Deferred',
   review_required: 'Review required', expired: 'Expired', revoked: 'Revoked' };
+const activationStateNames = { activated: 'Activated · execution still fenced', claimed: 'Claimed by the owner', completed: 'Completed', revoked: 'Revoked', expired: 'Expired', blocked: 'Blocked', declined: 'Declined', deferred: 'Deferred' };
 const scopeFields = ['version', 'domain', 'owner', 'action', 'targets', 'data', 'access', 'risk', 'mutation', 'network',
   'secret_access', 'unattended', 'constraints', 'qualification_required', 'confirmation_required', 'verification_required',
   'revocable', 'optional', 'default_enabled', 'standing_authorization_supported', 'single_flight', 'cooldown_seconds',
@@ -139,6 +140,8 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
   const blocked = readOnly || busy || !prefs || data?.owner_authority !== true;
   const canGrant = !managed && data?.can_record_consent === true;
   const grants = Array.isArray(data?.grants) ? data.grants : [];
+  const activations = Array.isArray(data?.capability_activations) ? data.capability_activations : [];
+  const candidateChanges = Array.isArray(data?.candidate_review?.capability_review?.changes) ? data.candidate_review.capability_review.changes : [];
   return <section className="lite-system-health-manage-section" aria-label="Updates & protection">
     <div className="lite-system-health-manage-intro"><h3>Updates &amp; protection</h3>
       <p>Review release trust, choose update preferences and manage recorded permissions.</p>
@@ -161,9 +164,28 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
       <LiteActionRow label="Unattended execution" value="Not enabled by this foundation" />
       <LiteActionRow label="Safety Rules" value="Existing authority unchanged" />
       <LiteActionRow label="Routine maintenance and app updates" value="Existing controls unchanged" />
+      <LiteActionRow label="Installed runtime identity" value={data?.runtime_identity?.status === 'stable' ? 'Converged' : 'Not confirmed'}
+        summary={data?.runtime_identity?.reason_code ? String(data.runtime_identity.reason_code).replaceAll('_', ' ') : 'Independent component evidence is unavailable.'} />
+      <LiteTechnicalDetails summary="View runtime identity and convergence" haptic>
+        <LiteActionRow label="Coordinated generation" value={data?.runtime_identity?.coordinated_generation || 'Not confirmed'} />
+        <LiteActionRow label="Backend source" value={data?.runtime_identity?.authenticated_source_commit || 'Not confirmed'} />
+        <LiteActionRow label="Installed backend artifact" value={data?.runtime_identity?.installed_artifact_sha256 || 'Not confirmed'} />
+        <LiteActionRow label="Loaded policy" value={data?.runtime_identity?.loaded_policy_revision || 'Not confirmed'} />
+        <LiteActionRow label="Frontend generation" value={data?.runtime_identity?.frontend_generation || 'Not confirmed'} />
+        <LiteActionRow label="SQLite schema" value={String(data?.runtime_identity?.sqlite_schema_version || 'Not confirmed')} />
+        <LiteActionRow label="Runtime convergence" value={data?.runtime_identity?.converged === true ? 'Confirmed by the runtime owner' : 'Pending independent verification'} />
+      </LiteTechnicalDetails>
       <LiteTechnicalDetails summary="Review capability contracts" haptic>
-        {(data?.capabilities || []).map(cap => <LiteActionRow key={cap.id} label={cap.id}
-          value={'Version ' + cap.version} summary="Descriptive contract only; no new execution rights." />)}
+        {(data?.capabilities || []).map(cap => {
+          const activation = activations.find(item => item.capability_id === cap.id && !['revoked', 'expired'].includes(item.state));
+          const change = candidateChanges.find(item => item.id === cap.id);
+          const consent = data?.candidate_consents?.find(item => item.capability_id === cap.id && item.status === 'accepted_for_review' && item.metadata_sha256 === data?.candidate_review?.metadata_sha256 && item.scope_sha256 === change?.scope_sha256);
+          const canActivate = cap.optional === true && Boolean(change?.scope_sha256 && consent && data?.candidate_review?.metadata_sha256);
+          return <LiteActionRow key={cap.id} label={cap.id}
+            value={activation ? (activationStateNames[activation.state] || 'Activation recorded') : 'Review only'}
+            summary={activation ? 'Actual activation is separately scoped, expiring and worker-fenced.' : cap.optional ? 'Candidate review and consent do not activate this optional capability.' : 'No additional execution rights are available.'}
+            action={activation ? (activation.state === 'activated' ? { label: 'Revoke', haptic: true, disabled: blocked || Boolean(pending), onClick: () => onReview({ kind: 'capability-revoke', value: activation.activation_id, label: 'Revoke ' + cap.id }) } : undefined) : canActivate ? { label: 'Review activation', haptic: true, disabled: blocked || Boolean(pending), onClick: () => onReview({ kind: 'capability-activation', value: { metadata_sha256: data.candidate_review.metadata_sha256, scope_sha256: change.scope_sha256, capability_id: cap.id }, label: 'Review ' + cap.id + ' activation' }) } : undefined} />;
+        })}
       </LiteTechnicalDetails>
       {grants.map(grant => <LiteActionRow key={grant.grant_id} label={purposes[grant.purpose] || 'Recorded permission'}
         value={dispositions[grant.status] || 'Review required'} summary={'Stable channel · review only · expires ' + (grant.expires_at || 'not confirmed')}
@@ -175,6 +197,13 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
       {grants.some(grant => grant.status !== 'revoked') && <LiteButton haptic tone="secondary" disabled={blocked || Boolean(pending)}
         onClick={() => onReview({ kind: 'revoke', label: 'Revoke all standing consent' })}>Revoke all standing consent</LiteButton>}
       {!canGrant && <p>New standing consent requires a current Owner, the Recommended profile, current trust evidence and confirmed policy state.</p>}
+      {activations.length > 0 && <div className="lite-system-health-detail-block">
+        <h4>Capability activation</h4>
+        <p>Activation is separate from candidate review and consent. The existing execution owner rechecks its exact binding immediately before mutation.</p>
+        {activations.map(item => <LiteActionRow key={item.activation_id} label={item.capability_id}
+          value={activationStateNames[item.state] || 'Not confirmed'} summary={'Expires ' + (item.expires_at || 'not confirmed')}
+          action={item.state === 'activated' ? { label: 'Revoke', haptic: true, disabled: blocked || Boolean(pending), onClick: () => onReview({ kind: 'capability-revoke', value: item.activation_id, label: 'Revoke capability activation' }) } : undefined} />)}
+      </div>}
     </div>
     <ChangeImpactReview assessment={data?.assessment} />
     <CandidateReview review={data?.owner_authority === true ? data.candidate_review : null}
@@ -200,9 +229,11 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
         value={item.revoked_at ? (item.state === 'cutover_claimed' || item.reason_code === 'coordinated_rehearsal_failed' ? 'Revoked · reconciliation required' : 'Permission revoked') :
           (item.state === 'failed' && item.reason_code === 'coordinated_rehearsal_failed' ? 'Offline cutover needs review' :
           ({pending:'Waiting for manual release check',claimed:'Preparing authenticated files',prepared:'Prepared · separate authorization required',
-            cutover_claimed:'Offline cutover in progress',rehearsed:'Offline cutover rehearsed',failed:'Preparation or rehearsal failed',revoked:'Permission revoked'})[item.state] || 'Not confirmed')}
+            cutover_claimed:'Cutover in progress',rehearsed:'Offline cutover rehearsed',committed:'Promotion completed',
+            failed:'Preparation or cutover failed',revoked:'Permission revoked'})[item.state] || 'Not confirmed')}
         summary={item.reason_code === 'coordinated_rehearsal_failed' ? 'Reconciliation required. No live recovery is confirmed.' :
           item.state === 'rehearsed' ? 'Historical rehearsal only. No live update is confirmed.' :
+          item.state === 'committed' ? 'Runtime convergence was independently observed in the isolated qualification lane; production activation remains disabled.' :
           item.reason_code === 'grant_expired' ? 'Permission expired. Review again before preparing.' :
           item.state === 'failed' ? 'Preparation could not be confirmed.' : 'Expires ' + (item.expires_at || 'not confirmed')}
         action={!item.revoked_at && ['pending','claimed','prepared','cutover_claimed'].includes(item.state) ? {
@@ -237,6 +268,8 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
         : pending.kind === 'release-preparation-revoke' ? 'Revoke this preparation permission. In-flight work requires reconciliation; cancellation is not guaranteed.'
         : pending.kind === 'policy-execution' ? 'Authorize one exact, isolated policy operation. This is not a standing permission or a production update.'
         : pending.kind === 'policy-execution-revoke' ? 'Revoke this execution permission. In-flight work must be reconciled by the supervisor; cancellation is not guaranteed.'
+        : pending.kind === 'capability-activation' ? 'Activate one exact optional capability for its registered owner. Candidate review and consent are not execution authority.'
+        : pending.kind === 'capability-revoke' ? 'Revoke this optional capability activation. The worker owner will fail closed on its next admission check.'
         : pending.kind === 'candidate' ? 'Record ' + candidateDecisionNames[pending.value.disposition].toLowerCase() + ' for this exact signed candidate scope. This does not activate a capability or authorize execution.'
         : pending.kind === 'candidate-revoke' ? 'Revoke this recorded candidate decision. No active operation is claimed cancelled.'
         : pending.kind === 'grant' ? 'Record a limited, revocable review permission for 30 days. Only a previous permission for the same purpose is replaced; other permissions stay independent. It cannot start a service or install anything.'
@@ -254,6 +287,12 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
         <LiteActionRow label="Candidate policy" value={pending.review.scope.candidate_revision} />
         <LiteActionRow label="Executor" value={pending.review.scope.purpose} />
         <LiteActionRow label="Signed metadata digest" value={pending.review.scope.metadata_sha256} />
+      </LiteTechnicalDetails>}
+      {pending.kind === 'capability-activation' && pending.review?.scope && <LiteTechnicalDetails summary="Exact capability activation scope" haptic>
+        <LiteActionRow label="Capability" value={pending.review.scope.capability_id} />
+        <LiteActionRow label="Execution owner" value={pending.review.scope.execution_owner} />
+        <LiteActionRow label="Operation" value={pending.review.scope.operation_id} />
+        <LiteActionRow label="Runtime identity" value={pending.review.runtime_identity?.status === 'stable' ? 'Stable at review' : 'Not confirmed'} />
       </LiteTechnicalDetails>}
       {pending.kind === 'candidate' && pending.review?.scope && <LiteTechnicalDetails summary="Exact reviewed scope" haptic><CapabilityScope scope={pending.review.scope} /></LiteTechnicalDetails>}
       {pending.kind === 'grant' && pending.review?.scope && <>
@@ -309,6 +348,11 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
         await liteApi.lifecycleAdmitPolicyExecution({ expected_revision: pending.boundary, metadata_sha256: pending.value, confirm: true });
       } else if (pending.kind === 'policy-execution-revoke') {
         await liteApi.lifecycleRevokePolicyExecution({ expected_revision: pending.boundary, grant_id: pending.value, confirm: true });
+      } else if (pending.kind === 'capability-activation') {
+        await exactPasskey(pending.review);
+        await liteApi.lifecycleActivateCapability({ expected_revision: pending.boundary, ...pending.value, confirm: true });
+      } else if (pending.kind === 'capability-revoke') {
+        await liteApi.lifecycleRevokeCapability({ expected_revision: pending.boundary, activation_id: pending.value, confirm: true });
       } else if (pending.kind === 'candidate') {
         await exactPasskey(pending.review);
         await liteApi.lifecycleRecordCandidateConsent({ expected_revision: pending.boundary, ...pending.value, confirm: true });
@@ -318,7 +362,8 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
         await liteApi.lifecycleRevokeBoundary({ expected_revision: pending.boundary, ...(pending.value ? { grant_id: pending.value } : {}), confirm: true });
       }
       setMessage(pending.kind === 'release-preparation' ? 'Preparation permission recorded. Run a manual release check; no installation is authorized.' : pending.kind === 'policy-execution'
-        ? 'Operation admitted for isolated supervisor reconciliation. Activation is not yet confirmed.'
+        ? 'Operation admitted for isolated supervisor reconciliation. Activation is not yet confirmed.' : pending.kind === 'capability-activation'
+        ? 'Optional capability activation recorded. The execution owner must still recheck authority and runtime identity.'
         : 'Change recorded. Production unattended execution remains disabled.');
       await query.refresh();
     } catch {
@@ -338,6 +383,7 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
         const next = { ...change, revision: data.preferences.revision, boundary: data.boundary_revision };
         if (change.kind === 'release-preparation') next.review = await liteApi.lifecycleReviewReleasePreparation({ expected_revision: next.boundary, metadata_sha256: change.value, confirm: true });
         if (change.kind === 'policy-execution') next.review = await liteApi.lifecycleReviewPolicyExecution({ expected_revision: next.boundary, metadata_sha256: change.value, confirm: true });
+        if (change.kind === 'capability-activation') next.review = await liteApi.lifecycleReviewCapabilityActivation({ expected_revision: next.boundary, ...change.value, confirm: true });
         if (change.kind === 'candidate') next.review = await liteApi.lifecycleReviewCandidateConsent({ expected_revision: next.boundary, ...change.value, confirm: true });
         if (change.kind === 'grant') next.review = await liteApi.lifecycleReviewBoundary({
           expected_revision: next.boundary, expected_profile_revision: next.revision, purpose: change.value, confirm: true });

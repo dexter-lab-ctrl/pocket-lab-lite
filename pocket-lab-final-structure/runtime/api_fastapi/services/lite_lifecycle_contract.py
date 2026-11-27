@@ -147,6 +147,12 @@ EXECUTION_CAPABILITIES = (
         action="lifecycle.policy.activate", targets=("exact_policy_revision",), data=("authenticated_policy",),
         access="write", risk="C", mutation=True, network=False, secret_access=False, unattended=False,
         constraints=("current_authority","exact_candidate","isolated_qualification","local_supervisor"), optional=True),
+    Capability(id="system.activity_history.reconcile.activate", version=1, domain="system_health",
+        owner="projection_scheduler", action="system_health.automatic", targets=("local_activity_history",),
+        data=("activity_projection",), access="write", risk="A", mutation=True, network=False,
+        secret_access=False, unattended=False, constraints=("current_authority", "exact_candidate",
+        "existing_owner", "fresh_runtime_identity", "healthy_sqlite", "single_flight"),
+        optional=True, cooldown_seconds=1800, standing_authorization_supported=False),
 )
 
 
@@ -253,6 +259,14 @@ class RevisionIdentities(BaseModel):
     release_source_commit: str | None = None
     frontend_artifact_sha256: str | None = None
     backend_artifact_sha256: str | None = None
+    installed_source_inventory_sha256: str | None = None
+    fastapi_process_identity_sha256: str | None = None
+    worker_process_identity_sha256: str | None = None
+    core_supervisor_identity_sha256: str | None = None
+    runtime_reconciler_identity_sha256: str | None = None
+    coordinated_runtime_generation: str | None = None
+    frontend_generation: str | None = None
+    sqlite_migration_ledger_sha256: str | None = None
     policy_content_sha256: str | None = None
     loaded_policy_revision: str | None = None
     policy_contract_version: str | None = None

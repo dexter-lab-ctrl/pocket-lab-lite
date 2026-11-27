@@ -211,6 +211,68 @@ def test_isolated_failure_modes_and_restart_reconciliation_fail_closed(tmp_path:
     assert all(item["destructive_action"] == "none" for item in reconciled["journals"])
 
 
+def test_interrupted_cutover_requires_fresh_recovery_and_preserves_checkpoint(tmp_path: Path):
+    class InterruptingAdapter(promotion.SimulationAdapter):
+        def activate(self, release_root: Path):
+            raise KeyboardInterrupt
+
+    artifact, manifest, checksums, external, contract = _artifact(tmp_path, source_sha="b" * 40)
+    database = _database(tmp_path, contract)
+    backup = promotion.create_backup(database=database, backup_root=tmp_path / "backup", source_sha="c" * 40, device_id="server", contract=contract)
+    restore = promotion.restore_rehearsal(backup_manifest=Path(backup["backup_manifest"]), restore_root=tmp_path / "restore", contract=contract)
+    migration = promotion.migration_rehearsal(backup_manifest=Path(backup["backup_manifest"]), artifact=artifact, artifact_manifest=manifest, rehearsal_root=tmp_path / "migration", old_schema=42)
+    migration_receipt = json.loads(Path(migration["migration_receipt"]).read_text(encoding="utf-8"))
+    migration_receipt["migration_contract"] = contract
+    preflight = tmp_path / "preflight.json"
+    promotion._atomic_json(preflight, {"status": "admissible", "admitted": True})
+    _private, public, recovery_private, recovery_public, auth = _authorization_files(
+        tmp_path, candidate="b" * 40, current="c" * 40, device="server",
+        artifact_sha=external["artifact_sha256"],
+        backup=json.loads(Path(backup["backup_receipt"]).read_text(encoding="utf-8")),
+        restore=json.loads(Path(restore["restore_receipt"]).read_text(encoding="utf-8")),
+        preflight=preflight,
+    )
+    checkpoint_preview = tmp_path / "checkpoint-preview.sqlite3"
+    promotion._copy_sqlite_backup(database, checkpoint_preview)
+    recovery_for_activation = tmp_path / "recovery-for-activation.json"
+    promotion.issue_recovery_authorization(
+        private_key=recovery_private, output=recovery_for_activation, candidate_sha="b" * 40,
+        current_sha="c" * 40, device_id="server",
+        checkpoint_sha256=promotion._sha256(checkpoint_preview), audit_identity="test-recovery",
+    )
+    staged = promotion.stage_artifact(artifact=artifact, manifest_path=manifest, checksums_path=checksums, staging_root=tmp_path / "staging", expected_device_id="server", target_device_id="server")
+    state = tmp_path / "state"
+    inputs = promotion.PromotionInputs(
+        state_root=state, database=database, release_root=Path(staged["release_root"]),
+        candidate_sha="b" * 40, current_sha="c" * 40, device_id="server",
+        artifact_sha256=external["artifact_sha256"],
+        backup_receipt=json.loads(Path(backup["backup_receipt"]).read_text(encoding="utf-8")),
+        restore_receipt=json.loads(Path(restore["restore_receipt"]).read_text(encoding="utf-8")),
+        migration_receipt=migration_receipt, preflight_sha256=promotion._sha256(preflight), artifact=artifact,
+    )
+    with pytest.raises(KeyboardInterrupt):
+        promotion.PromotionController(inputs, InterruptingAdapter()).activate(
+            authorization=auth, promotion_public_key=public,
+            recovery_authorization=recovery_for_activation, recovery_public_key=recovery_public,
+            confirm_cutover=True, isolated=True,
+        )
+    journal = next((state / "backend-runtime" / "promotions").glob("*/journal.json"))
+    journal_payload = json.loads(journal.read_text(encoding="utf-8"))
+    recovery = tmp_path / "recovery.json"
+    promotion.issue_recovery_authorization(
+        private_key=recovery_private, output=recovery, candidate_sha="b" * 40,
+        current_sha="c" * 40, device_id="server",
+        checkpoint_sha256=journal_payload["checkpoint_sha256"], audit_identity="test-recovery",
+    )
+    recovered = promotion.PromotionController.for_existing_journal(
+        inputs, promotion.SimulationAdapter(), journal,
+    ).recover(recovery_authorization=recovery, recovery_public_key=recovery_public, confirm_recovery=True)
+    assert recovered["status"] == "rolled_back"
+    assert recovered["disposition"] == "recovery_completed_and_verified"
+    assert promotion.validate_database(database, contract, expected_schema=42)["schema_version"] == 42
+    assert promotion.reconcile_promotions(state)["status"] == "stable"
+
+
 def test_authority_and_final_confirmation_are_separate_gates(tmp_path: Path):
     _artifact(tmp_path)
     with pytest.raises(promotion.PromotionError, match="production promotion authority"):

@@ -62,6 +62,28 @@ def test_restrictive_candidate_is_exact_local_transformation():
     assert diff.locally_supported_evolution(before, after) == "unknown_semantic_impact"
 
 
+def test_system_health_restrictive_candidate_requires_fresh_evidence():
+    from api_fastapi.services import lite_policy_candidate_differential as diff
+    before = {name: b"package test\n" for name in REGISTERED_MODULES}
+    before[diff.MAIN_MODULE] += diff._SYSTEM_EVIDENCE_BEFORE + b"}\n"
+    after = diff.restrictive_candidate(before, diff.RESTRICTIVE_SYSTEM_EDIT)
+    assert diff.locally_supported_evolution(before, after) == "locally_supported_restrictive_evolution"
+    cases = {
+        "fresh": {"action": {"id": diff.RESTRICTIVE_SYSTEM_ACTION},
+                  "actor": {"type": "service", "id": "system-health-scheduler"},
+                  "target": {"state": {"evidence_fresh": True}}},
+        "stale": {"action": {"id": diff.RESTRICTIVE_SYSTEM_ACTION},
+                  "actor": {"type": "service", "id": "system-health-scheduler"},
+                  "target": {"state": {"evidence_fresh": False}}},
+    }
+    allow = {"allow": True, "constraints": ["fixed_projection"], "reason_code": "allowed"}
+    deny = {"allow": False, "constraints": [], "reason_code": "actor_not_authenticated"}
+    assert diff.compare_corpus(cases, {"fresh": allow, "stale": allow},
+                               {"fresh": allow, "stale": deny},
+                               "locally_supported_restrictive_evolution",
+                               diff.RESTRICTIVE_SYSTEM_EDIT)[0] == "sample_restrictive"
+
+
 def test_restrictive_comparison_never_accepts_expansion_or_changed_allow():
     from api_fastapi.services import lite_policy_candidate_differential as diff
     cases = {"owner": {"action":{"id":diff.RESTRICTIVE_ACTION},

@@ -41,7 +41,18 @@ def _stored() -> dict:
 
 
 def _gate() -> bool:
-    return ops.automatic_gate_open()
+    if not ops.automatic_gate_open():
+        return False
+    # The existing scheduler remains the owner.  This second gate is the
+    # separately recorded optional-capability activation; candidate consent or
+    # a release signature alone cannot open it.
+    from . import lite_lifecycle_capability_activation as activation
+    try:
+        from ..db.connection import read_connection
+        with read_connection() as conn:
+            return activation.execution_enabled(conn)
+    except Exception:
+        return False
 
 
 def _trigger_reason(attempt_id: str) -> str:
@@ -204,11 +215,15 @@ def tick() -> None:
                      "session":{"authenticated":True,"auth_method":"internal_worker"}}
             decision=opa.evaluate_authorization(auth_context=context,action_id=ACTION,
                 target_type="system_health_projection",target_id=DOMAIN,target_revision=str(row["revision"]),
-                target={"operation_id":OP,"adapter_enabled":True,"risk_class":"A","owner_policy_current":True})
+                target={"operation_id":OP,"adapter_enabled":True,"risk_class":"A","owner_policy_current":True,
+                        "evidence_fresh":True})
             if decision["policy_revision"]!=row["policy_revision"] or not _gate():
                 return
             if safety.maintenance_state().get("active") or safety.active_security_scan():
                 return
+            from . import lite_lifecycle_capability_activation as activation
+            attempt_id = uuid.uuid4().hex
+            claim = activation.claim(attempt_id)
             with connection() as conn:
                 with begin_immediate(conn):
                     if conn.execute("SELECT 1 FROM lite_system_health_maintenance_admissions WHERE status IN ('queued','executing') LIMIT 1").fetchone():
@@ -218,7 +233,6 @@ def tick() -> None:
                             or _owner_versions(conn,row["owner_id"])!=(row["owner_auth_version"],row["membership_version"],row["configuration_version"])
                             or not _gate()):
                         return
-                    attempt_id = uuid.uuid4().hex
                     requested_at = health._now()
                     conn.execute("INSERT INTO lite_system_health_automation_attempts VALUES(?,?,?,'pending',?,NULL,?)",
                         (attempt_id,row["revision"],OP,requested_at,decision["decision_id"]))

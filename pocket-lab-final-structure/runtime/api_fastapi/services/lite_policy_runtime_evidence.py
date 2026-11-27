@@ -102,7 +102,7 @@ def _snapshot():
 def observe():
     result = {"state": "unknown", "scope": "rego_modules_only",
               "data_identity": "unknown", "manifest_data_identity": "unknown", "backend_identity": "unknown",
-              "execution_eligible": False}
+              "execution_eligible": False, "module_identity_sha256": "", "data_identity_sha256": ""}
     try:
         snapshot = _snapshot()
         if snapshot is None:
@@ -125,11 +125,30 @@ def observe():
                            for key, value in expected_data.items())
         expected_manifest = {"revision": revision, "files": manifest["files"], "candidate_hash": content_hash}
         manifest_matches = compare_loaded_data(expected_manifest, expected_data, _get("/v1/data"))
+        module_rows = [
+            {
+                "id": item.get("id"),
+                "raw_sha256": hashlib.sha256(str(item.get("raw") or "").encode("utf-8")).hexdigest(),
+            }
+            for item in modules
+            if isinstance(item, dict)
+        ]
+        module_identity = hashlib.sha256(canonical_bytes(sorted(
+            module_rows,
+            key=lambda item: (str(item.get("id") or ""), str(item.get("raw_sha256") or "")),
+        ))).hexdigest()
+        data_identity = hashlib.sha256(canonical_bytes({
+            "manifest": expected_manifest,
+            "expected_data": expected_data,
+            "observed_root": _get("/v1/data"),
+        })).hexdigest()
         if _get("/v1/data/pocketlab/meta/revision") != revision or _snapshot() != snapshot:
             return result
         return {**result, "state": "modules_match" if matched else "module_mismatch",
                 "observed_revision": revision, "observed_at": datetime.now(timezone.utc).isoformat(),
                 "data_identity": "registered_template_matches" if data_matches else "registered_template_mismatch",
-                "manifest_data_identity": "registered_roots_match" if manifest_matches else "registered_roots_mismatch"}
+                "manifest_data_identity": "registered_roots_match" if manifest_matches else "registered_roots_mismatch",
+                "module_identity_sha256": module_identity,
+                "data_identity_sha256": data_identity}
     except Exception:
         return result

@@ -152,3 +152,36 @@ def test_runtime_profile_declaration_is_versioned_and_exact():
     declaration["profile"] = "publisher-defined"
     with pytest.raises(TrustError):
         package.source_declaration(canonical_bytes(manifest), source_commit="a"*40, release_tag="tag")
+
+
+def test_installable_runtime_profile_binds_dependency_closure():
+    files = fixture_files()
+    for name in package.RUNTIME_INSTALL_REQUIRED:
+        files.setdefault(name, b"fixture")
+    files[package.DEPENDENCY_MANIFEST] = canonical_bytes({
+        "schema_version": 1,
+        "profile": package.INSTALLABLE_RUNTIME_PROFILE,
+        "frontend_artifact": "signed-dist.zip",
+        "python_requirements": package.RUNTIME + "requirements.txt",
+        "node_lockfile": "package-lock.json",
+        "migration_root": package.MIGRATION_PREFIX,
+        "policy_root": package.POLICY_PREFIX,
+    })
+    stream, declaration = candidate(files)
+    declaration.update(schema_version=2, profile=package.INSTALLABLE_RUNTIME_PROFILE)
+    result = package.inspect_source(
+        stream, declaration=declaration,
+        policy_inventory=inventory(files, package.POLICY_PREFIX, ".rego"),
+        migration_inventory=inventory(files, package.MIGRATION_PREFIX, ".sql"),
+    )
+    assert result["profile"] == package.INSTALLABLE_RUNTIME_PROFILE
+    assert result["execution_eligible"] is False
+    files[package.DEPENDENCY_MANIFEST] = b"{}"
+    stream, declaration = candidate(files)
+    declaration.update(schema_version=2, profile=package.INSTALLABLE_RUNTIME_PROFILE)
+    with pytest.raises(TrustError, match="runtime_dependency_manifest_invalid"):
+        package.inspect_source(
+            stream, declaration=declaration,
+            policy_inventory=inventory(files, package.POLICY_PREFIX, ".rego"),
+            migration_inventory=inventory(files, package.MIGRATION_PREFIX, ".sql"),
+        )

@@ -133,11 +133,23 @@ def _invalidate(conn, workspace):
     conn.execute("UPDATE lite_lifecycle_workspace SET authority_epoch=authority_epoch+1 WHERE singleton_id=1")
     conn.execute("UPDATE lite_lifecycle_grants SET revoked_at=? WHERE revoked_at IS NULL", (_iso(),))
     conn.execute("DELETE FROM lite_lifecycle_boundary_scopes")
-    conn.execute("UPDATE lite_lifecycle_candidate_consent SET revoked_at=? WHERE revoked_at IS NULL", (_iso(),))
-    conn.execute("UPDATE lite_lifecycle_policy_execution SET revoked_at=? WHERE revoked_at IS NULL AND proof_sha256 IS NULL", (_iso(),))
-    conn.execute("""UPDATE lite_lifecycle_release_execution SET revoked_at=?,updated_at=?,
-        state=CASE WHEN state='cutover_claimed' THEN state ELSE 'revoked' END
-        WHERE revoked_at IS NULL AND state IN ('pending','claimed','prepared','cutover_claimed')""", (_iso(),_iso()))
+    # Keep the authority reducer compatible with a database paused between
+    # append-only lifecycle migrations.  Normal startup applies all migrations;
+    # a partially upgraded isolated database must still invalidate the tables
+    # that actually exist rather than failing open or hiding the revision bump.
+    tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if "lite_lifecycle_candidate_consent" in tables:
+        conn.execute("UPDATE lite_lifecycle_candidate_consent SET revoked_at=? WHERE revoked_at IS NULL", (_iso(),))
+    if "lite_lifecycle_policy_execution" in tables:
+        conn.execute("UPDATE lite_lifecycle_policy_execution SET revoked_at=? WHERE revoked_at IS NULL AND proof_sha256 IS NULL", (_iso(),))
+    if "lite_lifecycle_release_execution" in tables:
+        conn.execute("""UPDATE lite_lifecycle_release_execution SET revoked_at=?,updated_at=?,
+            state=CASE WHEN state='cutover_claimed' THEN state ELSE 'revoked' END
+            WHERE revoked_at IS NULL AND state IN ('pending','claimed','prepared','cutover_claimed')""", (_iso(),_iso()))
+    if "lite_lifecycle_capability_activation" in tables:
+        conn.execute("""UPDATE lite_lifecycle_capability_activation SET state='revoked',
+            reason_code='authority_epoch_invalidated',updated_at=?
+            WHERE state IN ('activated','blocked')""", (_iso(),))
     return rev
 
 
@@ -164,6 +176,9 @@ def _change(conn, context, action, payload):
     from .lite_lifecycle_release_execution import ReleasePreparationRequest, binding_fields as release_binding
     if isinstance(payload, ReleasePreparationRequest):
         binding["release_preparation"] = release_binding(conn, payload)
+    from .lite_lifecycle_capability_activation import CapabilityActivationRequest, binding_fields as capability_binding
+    if isinstance(payload, CapabilityActivationRequest):
+        binding["capability_activation"] = capability_binding(conn, payload)
     return owner, binding, digest(binding)
 
 
@@ -191,13 +206,21 @@ def _authorize(context, action, payload):
         owner, binding, fingerprint = _change(conn, context, action, payload)
     policy_execution = "policy_execution" in binding
     release_preparation = "release_preparation" in binding
-    execution = policy_execution or release_preparation
-    target_type = "lifecycle_policy_execution" if policy_execution else ("lifecycle_release_preparation" if release_preparation else "lifecycle_consent")
+    capability_activation = "capability_activation" in binding
+    execution = policy_execution or release_preparation or capability_activation
+    target_type = ("lifecycle_policy_execution" if policy_execution else
+                   "lifecycle_release_preparation" if release_preparation else
+                   "lifecycle_capability_activation" if capability_activation else
+                   "lifecycle_consent")
     decision = opa.evaluate_authorization(
         auth_context=context, action_id=action, target_type=target_type,
         target_id="local_workspace", target_revision=fingerprint,
         target={"change_digest": fingerprint, "contract_version": 1, "execution_enabled": execution,
-                **({"purpose": "policy-reconciler" if policy_execution else "release-reconciler"} if execution else {})},
+                **({"purpose": "policy-reconciler" if policy_execution else
+                   "release-reconciler" if release_preparation else
+                   "system-health-scheduler"} if execution else {}),
+                **({"capability_id": binding["capability_activation"]["capability_id"]}
+                   if capability_activation else {})},
         request_context={"confirmation_present": True},
     )
     if not decision.get("allow") or decision.get("policy_revision") != binding["policy_revision"]:
@@ -229,7 +252,9 @@ def _consume(conn, context, action, payload, authorized):
     from .lite_lifecycle_candidate_consent import CandidateConsentRequest
     from .lite_lifecycle_policy_execution import PolicyExecutionRequest
     from .lite_lifecycle_release_execution import ReleasePreparationRequest
-    trusted_consent = isinstance(payload, (GrantRequest, CandidateConsentRequest, PolicyExecutionRequest, ReleasePreparationRequest))
+    from .lite_lifecycle_capability_activation import CapabilityActivationRequest
+    trusted_consent = isinstance(payload, (GrantRequest, CandidateConsentRequest, PolicyExecutionRequest,
+                                           ReleasePreparationRequest, CapabilityActivationRequest))
     if trusted_consent:
         now = _trusted_now(conn)
         current_session = conn.execute("SELECT idle_expires_at,absolute_expires_at FROM auth_sessions WHERE session_id=?", (session,)).fetchone()
@@ -432,6 +457,8 @@ def summary(context):
         policy_executions = policy_execution_summary(conn) if is_owner else []
         from . import lite_lifecycle_release_execution as release_execution
         release_preparations = release_execution.summary(conn) if is_owner else []
+        from . import lite_lifecycle_capability_activation as capability_activation
+        capability_activations = capability_activation.summary(conn) if is_owner else []
         release_preparation_enabled = bool(is_owner and release_execution.gate())
         release_preparation_available = False
 
@@ -464,9 +491,19 @@ def summary(context):
         now = evaluation[3]
         transitions = [dict(row) for row in conn.execute("SELECT event_id,state,reason_code,occurred_at,release_tag FROM lite_release_trust_transitions ORDER BY event_id DESC LIMIT 20")] if is_owner else []
         identity = dict(identity) if identity else {}
+        from . import lite_runtime_identity
+        runtime_identity = lite_runtime_identity.public_projection(conn)
         revisions = RevisionIdentities(
             release_source_commit=identity["source_commit"] or None if identity else None,
             frontend_artifact_sha256=identity["artifact_sha256"] or None if identity else None,
+            installed_source_inventory_sha256=runtime_identity.get("installed_source_inventory_sha256"),
+            fastapi_process_identity_sha256=runtime_identity.get("fastapi_process_identity_sha256"),
+            worker_process_identity_sha256=runtime_identity.get("worker_process_identity_sha256"),
+            core_supervisor_identity_sha256=runtime_identity.get("core_supervisor_identity_sha256"),
+            runtime_reconciler_identity_sha256=runtime_identity.get("runtime_reconciler_identity_sha256"),
+            coordinated_runtime_generation=runtime_identity.get("coordinated_generation"),
+            frontend_generation=runtime_identity.get("frontend_generation"),
+            sqlite_migration_ledger_sha256=runtime_identity.get("sqlite_migration_ledger_sha256"),
             policy_content_sha256=policy["content_hash"] if policy else None,
             policy_contract_version=policy["template_version"] if policy else None,
             # DB active revision is not an independently observed loaded OPA revision.
@@ -513,8 +550,10 @@ def summary(context):
             "candidate_consents": candidate_consents,
             "policy_executions": policy_executions,
             "release_preparations": release_preparations,
+            "capability_activations": capability_activations,
             "release_preparation_qualification_enabled": release_preparation_enabled,
             "release_preparation_review_available": release_preparation_available,
+            "runtime_identity": runtime_identity,
             "policy_execution_qualification_enabled": bool(is_owner and policy_execution_gate()),
             "policy_execution_review_available": bool(eligible_to_record and policy_execution_gate()
                 and latest.get("provenance") == "verified"

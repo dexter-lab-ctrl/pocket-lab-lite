@@ -62,7 +62,11 @@ TARGET_RUNTIME = "proot-ubuntu"
 # Schema 42 is the last runtime baseline. Every migration after that baseline
 # is part of the exact backend candidate, including the System Health
 # continuation migrations through the current schema.
-REQUIRED_SCHEMA = 66
+# 0067 and 0068 add the prepared runtime-identity and optional-capability
+# projections. 0069 adds the verified live-coordinated terminal disposition.
+# They are append-only and therefore part of every new backend candidate
+# contract.
+REQUIRED_SCHEMA = 69
 FEATURE_MIGRATIONS = tuple(range(43, REQUIRED_SCHEMA + 1))
 MAX_ARTIFACT_BYTES = 128 * 1024 * 1024
 MAX_EXPANDED_BYTES = 512 * 1024 * 1024
@@ -1370,8 +1374,8 @@ class PromotionController:
 
     def _check_legacy_gate(self, isolated):
         if isolated:
-            if not isinstance(self.adapter, SimulationAdapter):
-                raise PromotionError("isolation_required", "Isolated promotion requires the simulation service owner.")
+            if not isinstance(self.adapter, SimulationAdapter) and not getattr(self.adapter, "isolated_qualification", False):
+                raise PromotionError("isolation_required", "Isolated promotion requires an approved qualification service owner.")
             return
         if os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256") or os.environ.get("POCKETLAB_RELEASE_ATTESTATION_ROOT_SHA256"):
             raise PromotionError("trusted_promotion_not_qualified", "A trusted installation cannot use the legacy native promotion path.")
@@ -1406,6 +1410,108 @@ class PromotionController:
                 isolated=isolated,
             )
 
+    @classmethod
+    def for_existing_journal(cls, inputs: PromotionInputs, adapter: ServiceAdapter, journal_path: Path) -> "PromotionController":
+        """Bind a recovery owner to one already-published promotion journal."""
+
+        controller = cls(inputs, adapter)
+        selected = journal_path.expanduser().resolve(strict=False)
+        expected_root = (inputs.state_root.expanduser().resolve() / "backend-runtime" / "promotions").resolve()
+        try:
+            selected.relative_to(expected_root)
+        except ValueError as exc:
+            raise PromotionError("recovery_journal_scope_invalid", "The recovery journal is outside the owned promotion state.") from exc
+        if selected.is_symlink() or not selected.is_file():
+            raise PromotionError("recovery_journal_unavailable", "The selected recovery journal is unavailable or linked.")
+        controller.journal_path = selected
+        return controller
+
+    def recover(self, *, recovery_authorization: Path, recovery_public_key: Path, confirm_recovery: bool) -> dict[str, Any]:
+        """Recover one interrupted promotion after a fresh recovery grant.
+
+        Startup reconciliation remains read-only.  This method is the explicit
+        recovery owner: it verifies the journal/checkpoint, proves that no
+        newer database writes appeared, consumes a distinct recovery grant,
+        and only then performs the bounded rollback and health observations.
+        """
+
+        if not confirm_recovery:
+            raise PromotionError("recovery_confirmation_required", "Runtime recovery requires explicit operator confirmation.")
+        journal = _read_json(self.journal_path, label="promotion recovery journal")
+        if journal.get("schema") != JOURNAL_SCHEMA or journal.get("sanitized") is not True:
+            raise PromotionError("recovery_journal_invalid", "The recovery journal is not a valid sanitized promotion record.")
+        phase = str(journal.get("phase") or "")
+        status = str(journal.get("status") or "")
+        if (phase, status) in {("committed", "committed"), ("rolled_back", "rolled_back"), ("aborted_before_checkpoint", "aborted")}:
+            return {"status": "already_terminal", "disposition": "candidate_committed" if phase == "committed" else "recovery_completed", "sanitized": True}
+        checkpoint = self.journal_path.parent / "checkpoint.sqlite3"
+        checkpoint_sha = str(journal.get("checkpoint_sha256") or "")
+        if not checkpoint_sha or not checkpoint.is_file() or _sha256(checkpoint) != checkpoint_sha:
+            raise PromotionError("recovery_checkpoint_invalid", "The retained checkpoint is missing or changed.")
+        contract = list(self.inputs.migration_receipt.get("migration_contract") or [])
+        validate_database(checkpoint, contract)
+        expected = {
+            "candidate_sha": str(journal.get("candidate_sha") or self.inputs.candidate_sha),
+            "current_production_sha": str(journal.get("current_production_sha") or self.inputs.current_sha),
+            "target_device_id": str(journal.get("target_device_id") or self.inputs.device_id),
+            "checkpoint_sha256": checkpoint_sha,
+        }
+        if expected["candidate_sha"] != self.inputs.candidate_sha or expected["current_production_sha"] != self.inputs.current_sha or expected["target_device_id"] != self.inputs.device_id:
+            raise PromotionError("recovery_binding_mismatch", "The recovery journal is bound to a different candidate or target.")
+        recovery_digest = self._verify_recovery(recovery_authorization, recovery_public_key, expected)
+        self._assert_not_consumed("recovery", recovery_digest)
+
+        cutover_observed = phase in {
+            "cutover_started", "backend_pointer_switched", "pointer_and_database_promoted",
+            "activating_services", "activation_failed", "manual_recovery_required",
+        } or bool(journal.get("cutover_started"))
+        if not cutover_observed:
+            self._consume_once("recovery", recovery_digest)
+            result = self._journal({"phase": "aborted_before_checkpoint", "status": "aborted",
+                "recovery_authorization_digest": recovery_digest, "recovery_disposition": "no_cutover_observed"})
+            return {"status": "aborted", "disposition": "no_cutover_observed", "journal_payload": result, "sanitized": True}
+
+        current_pointer = _read_pointer(self.inputs.state_root)
+        previous_pointer = journal.get("previous_pointer")
+        if not isinstance(previous_pointer, dict) or previous_pointer.get("kind") not in {"artifact", "source_checkout"}:
+            raise PromotionError("recovery_previous_pointer_invalid", "The journal does not contain a safe previous runtime identity.")
+        promoted_sha = str(journal.get("database_sha256") or "")
+        if not promoted_sha or not self.inputs.database.is_file() or _sha256(self.inputs.database) != promoted_sha:
+            raise PromotionError("post_promotion_writes_observed", "Newer writes or an uncertain database state prevent checkpoint restoration.")
+        self._consume_once("recovery", recovery_digest)
+        try:
+            self._journal({"phase": "recovery_in_progress", "status": "running",
+                "recovery_authorization_digest": recovery_digest,
+                "recovery_disposition": "recovery_authorized"})
+            quiesce = self.adapter.quiesce()
+            if quiesce.get("status") != "quiesced":
+                raise PromotionError("writer_quiescence_failed", "Owned writers did not quiesce for recovery.")
+            self._quiesced_database()
+            if _sha256(self.inputs.database) != promoted_sha:
+                raise PromotionError("post_promotion_writes_observed", "Newer writes appeared before checkpoint restoration.")
+            if _read_pointer(self.inputs.state_root) != current_pointer:
+                raise PromotionError("runtime_pointer_changed", "The active runtime pointer changed during recovery admission.")
+            _copy_sqlite_backup(checkpoint, self.inputs.database)
+            _write_pointer(self.inputs.state_root, previous_pointer)
+            prior_root = Path(str(previous_pointer.get("release_root") or "")) if previous_pointer.get("kind") == "artifact" else self.inputs.release_root.parent / "source-checkout"
+            if not prior_root.is_dir() and isinstance(self.adapter, ProductionServiceAdapter):
+                raise PromotionError("recovery_previous_runtime_missing", "The previous runtime root is unavailable.")
+            activated = self.adapter.activate(prior_root)
+            health = self.adapter.health()
+            if health.get("healthy") is not True or int(health.get("consecutive_observations") or 0) < HEALTH_OBSERVATIONS:
+                raise PromotionError("recovery_health_failed", "The recovered runtime did not pass consecutive health observations.")
+            self.adapter.resume()
+            result = self._journal({"phase": "rolled_back", "status": "rolled_back",
+                "recovery_authorization_digest": recovery_digest,
+                "recovery_disposition": "recovery_completed_and_verified",
+                "health": health, "activation": activated})
+            return {"status": "rolled_back", "disposition": "recovery_completed_and_verified", "health": health, "journal_payload": result, "sanitized": True}
+        except Exception as exc:
+            reason = exc.reason_code if isinstance(exc, PromotionError) else "recovery_runtime_error"
+            self._journal({"phase": "manual_recovery_required", "status": "blocked", "failure_code": reason,
+                "recovery_disposition": "manual_recovery_required"})
+            raise PromotionError(reason, "Runtime recovery is fail-closed and requires manual recovery.") from exc
+
     def _activate_locked(self, *, authorization: Path, promotion_public_key: Path, recovery_authorization: Path | None, recovery_public_key: Path | None, confirm_cutover: bool, isolated: bool) -> dict[str, Any]:
         if not confirm_cutover:
             raise PromotionError("final_cutover_confirmation_required", "Final production cutover requires explicit operator confirmation.")
@@ -1423,6 +1529,12 @@ class PromotionController:
             "preflight_sha256": self.inputs.preflight_sha256,
         }
         auth = verify_authorization(authorization, expected=expected_auth, public_key=promotion_public_key)
+        # Check the single-use boundary before any mutable-state comparison.
+        # A replay must remain a replay even when the first attempt changed the
+        # current pointer or left a recoverable journal behind.  This is a
+        # non-mutating check; the durable claim still happens immediately
+        # before the promotion journal is created below.
+        self._assert_not_consumed("promotion", auth["authorization_digest"])
         if recovery_authorization is None or recovery_public_key is None:
             raise PromotionError("recovery_authorization_required", "A separate recovery authorization is required for a schema-changing promotion.")
         from cryptography.hazmat.primitives import serialization
@@ -1498,8 +1610,10 @@ class PromotionController:
             # Durable intent is written before either pointer or DB changes.
             self._journal({"phase": "cutover_started", "status": "running"})
             cutover_started = True
+            coordinated_generation = f"backend-{self.inputs.candidate_sha[:12]}-{self.inputs.artifact_sha256[:12]}"
             _write_pointer(self.inputs.state_root, {"kind": "artifact", "source_commit": self.inputs.candidate_sha,
-                "release_root": str(self.inputs.release_root), "artifact_sha256": self.inputs.artifact_sha256})
+                "release_root": str(self.inputs.release_root), "artifact_sha256": self.inputs.artifact_sha256,
+                "generation": coordinated_generation})
             self._journal({"phase": "backend_pointer_switched", "status": "running"})
             with staged.open("rb") as handle:
                 os.fsync(handle.fileno())
@@ -1515,7 +1629,8 @@ class PromotionController:
                 raise PromotionError("post_activation_health_failed", "The candidate did not pass consecutive post-activation health observations.")
             self.adapter.resume()
             result = self._journal({"phase": "committed", "status": "committed", "health": health,
-                "database_schema": target_schema, "authorization_consumed": True})
+                "database_schema": target_schema, "coordinated_generation": coordinated_generation,
+                "authorization_consumed": True})
             return {"status": "committed", "journal": str(self.journal_path), "health": health,
                 "database_schema": target_schema, "sanitized": True, "journal_payload": result}
         except Exception as exc:
@@ -1556,7 +1671,7 @@ class PromotionController:
     def _consume_once(self, kind: str, digest: str) -> None:
         if kind not in {"promotion", "recovery"}:
             raise PromotionError("authorization_kind_invalid", "The authorization kind is invalid.")
-        marker = self.root / "consumed-authorizations" / f"{kind}-{_safe_digest(digest, label='authorization digest')}.json"
+        marker = self._consumed_marker(kind, digest)
         marker.parent.mkdir(parents=True, exist_ok=True)
         try:
             descriptor = os.open(marker, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0), 0o600)
@@ -1570,6 +1685,26 @@ class PromotionController:
             raise PromotionError("authorization_replayed", "The single-use authorization has already been consumed.") from exc
         except OSError as exc:
             raise PromotionError("authorization_consume_failed", "The single-use authorization could not be durably consumed.") from exc
+
+    def _consumed_marker(self, kind: str, digest: str) -> Path:
+        if kind not in {"promotion", "recovery"}:
+            raise PromotionError("authorization_kind_invalid", "The authorization kind is invalid.")
+        return self.root / "consumed-authorizations" / f"{kind}-{_safe_digest(digest, label='authorization digest')}.json"
+
+    def _assert_not_consumed(self, kind: str, digest: str) -> None:
+        """Reject a replay without changing durable state.
+
+        This deliberately does not trust the marker contents for admission:
+        its existence is the single-use fence, while the marker is inspected
+        only for diagnostics by the journal/reconciliation tooling.  A regular
+        marker with an invalid payload remains fail-closed as a replay.
+        """
+        marker = self._consumed_marker(kind, digest)
+        try:
+            if marker.exists() or marker.is_symlink():
+                raise PromotionError("authorization_replayed", "The single-use authorization has already been consumed.")
+        except OSError as exc:
+            raise PromotionError("authorization_consume_failed", "The single-use authorization state could not be checked safely.") from exc
 
     def _verify_recovery(self, path: Path, public_key: Path, expected: Mapping[str, Any]) -> str:
         receipt = _read_json(path, label="recovery authorization")
@@ -1677,6 +1812,39 @@ def qualify_isolated(*, artifact: Path, manifest_path: Path, checksums_path: Pat
     return {"status": "PASS", "qualification": "isolated-android-termux-promotion", "failure_mode": failure_mode, "artifact": verified, "stage": stage, "backup": backup, "restore": restore, "migration": migration, "lifecycle": result, "service_events": adapter.events, "production_touched": False, "phone_checkout_touched": False, "sanitized": True}
 
 
+def recover_from_journal(*, state_root: Path, journal: Path, database: Path, release_root: Path,
+                         candidate_sha: str, current_sha: str, device_id: str,
+                         migration_receipt: Path, recovery_authorization: Path,
+                         recovery_public_key: Path, confirm_recovery: bool,
+                         isolated: bool = False) -> dict[str, Any]:
+    """Run the explicit recovery owner for one reconciled journal."""
+
+    payload = _read_json(journal, label="promotion recovery journal")
+    receipt = _read_json(migration_receipt, label="migration receipt")
+    inputs = PromotionInputs(
+        state_root=state_root,
+        database=database,
+        release_root=release_root,
+        candidate_sha=_safe_sha(candidate_sha, label="candidate SHA"),
+        current_sha=_safe_sha(current_sha, label="current SHA"),
+        device_id=_safe_name(device_id, label="device id"),
+        artifact_sha256=str(payload.get("artifact_sha256") or "0" * 64),
+        backup_receipt={},
+        restore_receipt={},
+        migration_receipt=receipt,
+        preflight_sha256="0" * 64,
+    )
+    adapter: ServiceAdapter = SimulationAdapter() if isolated else ProductionServiceAdapter(
+        state_root=state_root, source_checkout=ROOT, database=database,
+    )
+    controller = PromotionController.for_existing_journal(inputs, adapter, journal)
+    return controller.recover(
+        recovery_authorization=recovery_authorization,
+        recovery_public_key=recovery_public_key,
+        confirm_recovery=confirm_recovery,
+    )
+
+
 def _contract_from_manifest(path: Path) -> list[dict[str, Any]]:
     return list(_read_json(path, label="artifact manifest").get("migration_contract") or [])
 
@@ -1745,10 +1913,25 @@ def reconcile_promotions(state_root: Path) -> dict[str, Any]:
                             ("aborted_before_checkpoint", "aborted"),
                             ("aborted_before_checkpoint", "aborted_before_checkpoint"),
                         })
+                    if offline and terminal:
+                        recovery_disposition = "historical_offline_rehearsal"
+                    elif (phase, status) == ("committed", "committed"):
+                        recovery_disposition = "candidate_committed"
+                    elif phase in {"admitted", "quiescing", "writers_quiesced", "checkpointed"}:
+                        recovery_disposition = "no_cutover_observed"
+                    elif phase in {"cutover_started", "backend_pointer_switched", "pointer_and_database_promoted", "activating_services"}:
+                        recovery_disposition = "partial_transition_detected"
+                    elif phase in {"activation_failed", "manual_recovery_required", "recovery_in_progress"}:
+                        recovery_disposition = "manual_recovery_required"
+                    else:
+                        recovery_disposition = "runtime_state_uncertain"
                     journals.append({
                         "promotion_id": directory.name[:120], "phase": phase[:80],
                         "status": "stable" if terminal else "recovery_required",
                         "runtime_convergence": "not_exercised" if offline else "not_established_by_journal",
+                        "recovery_disposition": recovery_disposition,
+                        "recovery_authority": "not_required" if terminal else "separate_recovery_authorization_required",
+                        "newer_writes": "must_be_excluded_before_checkpoint_restore" if not terminal else "not_applicable",
                         "destructive_action": "none", "sanitized": True,
                     })
     except OSError:
@@ -1850,6 +2033,29 @@ def _parser() -> argparse.ArgumentParser:
     coordinated.add_argument("--recovery-public-key", required=True)
     coordinated.add_argument("--confirm-cutover", action="store_true")
     coordinated.set_defaults(handler="coordinated_activate")
+    recover = commands.add_parser("recover")
+    recover.add_argument("--state-root", required=True)
+    recover.add_argument("--journal", required=True)
+    recover.add_argument("--database", required=True)
+    recover.add_argument("--release-root", required=True)
+    recover.add_argument("--candidate-sha", required=True)
+    recover.add_argument("--current-sha", required=True)
+    recover.add_argument("--device-id", required=True)
+    recover.add_argument("--migration-receipt", required=True)
+    recover.add_argument("--recovery-authorization", required=True)
+    recover.add_argument("--recovery-public-key", required=True)
+    recover.add_argument("--confirm-recovery", action="store_true")
+    recover.add_argument("--isolated", action="store_true")
+    recover.set_defaults(handler="recover")
+    coordinated_recover = commands.add_parser("recover-coordinated")
+    coordinated_recover.add_argument("--journal", required=True)
+    coordinated_recover.add_argument("--candidate-sha", required=True)
+    coordinated_recover.add_argument("--current-sha", required=True)
+    coordinated_recover.add_argument("--device-id", required=True)
+    coordinated_recover.add_argument("--recovery-authorization", required=True)
+    coordinated_recover.add_argument("--recovery-public-key", required=True)
+    coordinated_recover.add_argument("--confirm-recovery", action="store_true")
+    coordinated_recover.set_defaults(handler="recover_coordinated")
     reconcile = commands.add_parser("reconcile")
     reconcile.add_argument("--state-root", required=True); reconcile.set_defaults(handler="reconcile")
     return parser
@@ -1893,6 +2099,25 @@ def main(argv: list[str] | None = None) -> int:
                 result = coordinated.activate(args.grant_id,authorization=Path(args.authorization),
                     promotion_public_key=Path(args.promotion_public_key),recovery_authorization=Path(args.recovery_authorization),
                     recovery_public_key=Path(args.recovery_public_key),confirm_cutover=args.confirm_cutover)
+        elif args.handler == "recover":
+            result = recover_from_journal(
+                state_root=Path(args.state_root), journal=Path(args.journal), database=Path(args.database),
+                release_root=Path(args.release_root), candidate_sha=args.candidate_sha, current_sha=args.current_sha,
+                device_id=args.device_id, migration_receipt=Path(args.migration_receipt),
+                recovery_authorization=Path(args.recovery_authorization), recovery_public_key=Path(args.recovery_public_key),
+                confirm_recovery=args.confirm_recovery, isolated=args.isolated,
+            )
+        elif args.handler == "recover_coordinated":
+            if str(ROOT) not in sys.path:
+                sys.path.insert(0, str(ROOT))
+            from scripts.dev.lite import coordinated_runtime_promotion as coordinated
+            result = coordinated.recover_live_from_cli(
+                journal=Path(args.journal), candidate_sha=args.candidate_sha,
+                current_sha=args.current_sha, device_id=args.device_id,
+                recovery_authorization=Path(args.recovery_authorization),
+                recovery_public_key=Path(args.recovery_public_key),
+                confirm_recovery=args.confirm_recovery,
+            )
         elif args.handler == "reconcile":
             result = reconcile_promotions(Path(args.state_root))
         else:

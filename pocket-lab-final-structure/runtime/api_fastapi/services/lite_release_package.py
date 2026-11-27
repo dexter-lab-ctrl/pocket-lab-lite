@@ -22,7 +22,8 @@ MAX_EXPANDED_BYTES = 512 * 1024 * 1024
 MAX_ENTRIES = 12000
 MAX_MEMBER_BYTES = 64 * 1024 * 1024
 from .lite_release_package_profile import (
-    POLICY_PREFIX, MIGRATION_PREFIX, RUNTIME, BOOTSTRAP, RUNTIME_PROFILE, RUNTIME_PROFILE_ROOTS,
+    POLICY_PREFIX, MIGRATION_PREFIX, RUNTIME, BOOTSTRAP, RUNTIME_PROFILE,
+    INSTALLABLE_RUNTIME_PROFILE, DEPENDENCY_MANIFEST, RUNTIME_PROFILE_ROOTS,
 )
 REQUIRED = frozenset({
     RUNTIME + "requirements.txt",
@@ -39,6 +40,7 @@ RUNTIME_PROFILE_REQUIRED = REQUIRED | {
     "scripts/dev/lite/coordinated_runtime_promotion.py",
     BOOTSTRAP + "lite/reconcile-runtime.sh",
 }
+RUNTIME_INSTALL_REQUIRED = RUNTIME_PROFILE_REQUIRED | {DEPENDENCY_MANIFEST}
 
 def runtime_profile_member(name: str) -> bool:
     return any(name == root or name.startswith(root + "/") for root in RUNTIME_PROFILE_ROOTS)
@@ -63,7 +65,7 @@ def source_declaration(manifest_bytes: bytes, *, source_commit: str, release_tag
     if (type(version) is not int
             or not ((version == 1 and set(value) == fields)
                     or (version == 2 and set(value) == fields | {"profile"}
-                        and value.get("profile") == RUNTIME_PROFILE))
+                        and value.get("profile") in {RUNTIME_PROFILE, INSTALLABLE_RUNTIME_PROFILE}))
             or value["artifact"] != SOURCE_ASSET
             or not isinstance(value["sha256"], str) or not DIGEST_PATTERN.fullmatch(value["sha256"])
             or not isinstance(source_commit, str) or not SHA_PATTERN.fullmatch(source_commit)
@@ -130,6 +132,7 @@ def inspect_source(stream, *, declaration, policy_inventory: bytes, migration_in
     seen = set()
     files = set()
     expanded = 0
+    dependency_raw = None
     try:
         stream.seek(0)
         with zipfile.ZipFile(stream) as archive:
@@ -149,7 +152,7 @@ def inspect_source(stream, *, declaration, policy_inventory: bytes, migration_in
                     continue
                 if mode == stat.S_IFDIR or item.flag_bits & 1:
                     raise TrustError("source_archive_entry_invalid")
-                if declaration.get("profile") == RUNTIME_PROFILE and not runtime_profile_member(name):
+                if declaration.get("profile") in {RUNTIME_PROFILE, INSTALLABLE_RUNTIME_PROFILE} and not runtime_profile_member(name):
                     raise TrustError("source_runtime_profile_member_unexpected")
                 files.add(name)
                 expanded += item.file_size
@@ -169,6 +172,9 @@ def inspect_source(stream, *, declaration, policy_inventory: bytes, migration_in
                     if len(data) != item.file_size or hashlib.sha256(data).hexdigest() != expected[name]:
                         raise TrustError("source_inventory_digest_mismatch")
                     found[name] = expected[name]
+                if name == DEPENDENCY_MANIFEST:
+                    with archive.open(item) as member:
+                        dependency_raw = member.read(256 * 1024 + 1)
             # Reject a regular file that aliases an ancestor directory.
             folded_files = {name.casefold() for name in files}
             for name in seen:
@@ -177,9 +183,25 @@ def inspect_source(stream, *, declaration, policy_inventory: bytes, migration_in
                     raise TrustError("source_archive_path_collision")
     except (zipfile.BadZipFile, RuntimeError, NotImplementedError, OSError) as exc:
         raise TrustError("source_archive_invalid") from exc
-    required = RUNTIME_PROFILE_REQUIRED if declaration.get("profile") == RUNTIME_PROFILE else REQUIRED
+    profile = declaration.get("profile")
+    required = (RUNTIME_INSTALL_REQUIRED if profile == INSTALLABLE_RUNTIME_PROFILE
+                else RUNTIME_PROFILE_REQUIRED if profile == RUNTIME_PROFILE else REQUIRED)
     if set(found) != set(expected) or not required.issubset(files):
         raise TrustError("source_package_incomplete")
+    if profile == INSTALLABLE_RUNTIME_PROFILE:
+        try:
+            dependency = strict_json(dependency_raw or b"")
+        except (KeyError, ValueError, RuntimeError, OSError) as exc:
+            raise TrustError("runtime_dependency_manifest_invalid") from exc
+        if (not isinstance(dependency, dict)
+                or dependency.get("schema_version") != 1
+                or dependency.get("profile") != INSTALLABLE_RUNTIME_PROFILE
+                or dependency.get("frontend_artifact") != "signed-dist.zip"
+                or dependency.get("python_requirements") != RUNTIME + "requirements.txt"
+                or dependency.get("node_lockfile") != "package-lock.json"
+                or dependency.get("migration_root") != MIGRATION_PREFIX
+                or dependency.get("policy_root") != POLICY_PREFIX):
+            raise TrustError("runtime_dependency_manifest_invalid")
     return {"state": "inventory_verified", "profile": declaration.get("profile", "tracked-tree-v1"), "source_commit": declaration["source_commit"],
             "sha256": declaration["sha256"], "archive_bytes": size,
             "expanded_bytes": expanded, "file_count": len(files),

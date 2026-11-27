@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "profile": "runtime-install-v1",
+  "frontend_artifact": "signed-dist.zip",
+  "python_requirements": "pocket-lab-final-structure/runtime/requirements.txt",
+  "node_lockfile": "package-lock.json",
+  "migration_root": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/",
+  "policy_root": "security/policies/opa/",
+  "owners": [
+    "fastapi",
+    "worker",
+    "core-supervisor",
+    "runtime-reconciler",
+    "native-promotion"
+  ],
+  "system_dependencies": [
+    "python3",
+    "sqlite3",
+    "nats-server",
+    "opa",
+    "caddy"
+  ],
+  "integrity": {
+    "requirements_are_pinned": true,
+    "node_install_uses_lockfile": true,
+    "frontend_is_separately_signed": true,
+    "migrations_are_append_only": true,
+    "private_state_excluded": true
+  }
+}

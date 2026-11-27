@@ -54,6 +54,8 @@ PROTECTED_ACTIONS = frozenset(
         "lifecycle.policy.claim",
         "lifecycle.release.prepare",
         "lifecycle.release.claim",
+        "lifecycle.capability.activate",
+        "lifecycle.capability.claim",
     }
 )
 

@@ -448,7 +448,7 @@ def claim_cutover(grant_id,handoff_sha256,authorization_sha256):
             return scope
 
 
-def finish_cutover(grant_id,authorization_sha256,*,rehearsed):
+def finish_cutover(grant_id,authorization_sha256,*,rehearsed,verified=False):
     if os.environ.get("POCKETLAB_PROCESS_ROLE") != "coordinated-promotion-controller" or not gate():
         raise PermissionError("external_promotion_controller_required")
     with connection() as conn:
@@ -459,15 +459,15 @@ def finish_cutover(grant_id,authorization_sha256,*,rehearsed):
             # Recheck current authority in the same write transaction as
             # terminal disposition; a stale controller read cannot prove success.
             state = "failed"
-            if rehearsed:
+            if rehearsed or verified:
                 try:
                     current(tx, grant_id, states=("cutover_claimed",))
                 except (PermissionError, ValueError, KeyError):
                     pass
                 else:
-                    state = "rehearsed"
+                    state = "rehearsed" if rehearsed else "committed"
             tx.execute("UPDATE lite_lifecycle_release_execution SET state=?,updated_at=?,reason_code=? WHERE grant_id=?",
-                (state,authority._iso(),"" if state=="rehearsed" else "coordinated_rehearsal_failed",grant_id))
+                (state,authority._iso(),"" if state in {"rehearsed", "committed"} else "coordinated_rehearsal_failed",grant_id))
             authority._audit(tx,row["owner_id"],"release_cutover_"+state,
                 authority._workspace(tx)["boundary_revision"],grant_id=grant_id)
             return state

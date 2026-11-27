@@ -34,22 +34,45 @@ NOTE = re.compile(rb"# pocketlab-release-note: [ -~]{1,160}\n")
 # A local, versioned tightening of an existing rule, not arbitrary code or
 # publisher-defined semantics. All other bytes, including tests, must match.
 RESTRICTIVE_EDIT = "backup-location-human-owner-v1"
+RESTRICTIVE_SYSTEM_EDIT = "system-health-fresh-evidence-v1"
 MAIN_MODULE = POLICY_PREFIX + "pocketlab/pocketlab.rego"
 RESTRICTIVE_ACTION = "backup.location.manage"
+RESTRICTIVE_SYSTEM_ACTION = "system_health.automatic"
 _RESTRICT_BEFORE = b'backup_location_action if {\n\tinput.action.id == "backup.location.manage"\n'
 _RESTRICT_AFTER = _RESTRICT_BEFORE + (b'\tinput.actor.type == "human"\n'
     b'\tinput.actor.role == "Owner"\n\tinput.actor.owner_authority == true\n'
     b'\tnot synthetic_actor\n')
+_SYSTEM_EVIDENCE_BEFORE = b'    input.target.state.owner_policy_current == true\n'
+_SYSTEM_EVIDENCE_AFTER = _SYSTEM_EVIDENCE_BEFORE + b'    input.target.state.evidence_fresh == true\n'
 
 
 def restrictive_candidate(before, edit_id):
-    if (edit_id != RESTRICTIVE_EDIT or set(before) != REGISTERED_MODULES
-            or before[MAIN_MODULE].count(_RESTRICT_BEFORE) != 1
-            or _RESTRICT_AFTER in before[MAIN_MODULE]):
+    if set(before) != REGISTERED_MODULES:
         raise ValueError("policy_restrictive_contract_mismatch")
     result = dict(before)
-    result[MAIN_MODULE] = result[MAIN_MODULE].replace(_RESTRICT_BEFORE, _RESTRICT_AFTER, 1)
+    if edit_id == RESTRICTIVE_EDIT:
+        if (before[MAIN_MODULE].count(_RESTRICT_BEFORE) != 1
+                or _RESTRICT_AFTER in before[MAIN_MODULE]):
+            raise ValueError("policy_restrictive_contract_mismatch")
+        result[MAIN_MODULE] = result[MAIN_MODULE].replace(_RESTRICT_BEFORE, _RESTRICT_AFTER, 1)
+    elif edit_id == RESTRICTIVE_SYSTEM_EDIT:
+        if (before[MAIN_MODULE].count(_SYSTEM_EVIDENCE_BEFORE) != 1
+                or _SYSTEM_EVIDENCE_AFTER in before[MAIN_MODULE]):
+            raise ValueError("policy_restrictive_contract_mismatch")
+        result[MAIN_MODULE] = result[MAIN_MODULE].replace(_SYSTEM_EVIDENCE_BEFORE, _SYSTEM_EVIDENCE_AFTER, 1)
+    else:
+        raise ValueError("policy_restrictive_contract_mismatch")
     return result
+
+
+def restrictive_edit_for(before, after):
+    for edit_id in (RESTRICTIVE_EDIT, RESTRICTIVE_SYSTEM_EDIT):
+        try:
+            if restrictive_candidate(before, edit_id) == after:
+                return edit_id
+        except ValueError:
+            continue
+    return None
 
 
 def supported_differential(evidence):
@@ -57,7 +80,7 @@ def supported_differential(evidence):
              and evidence.get("state") == "sample_equal")
             or (evidence.get("local_contract") == "locally_supported_restrictive_evolution"
                 and evidence.get("state") == "sample_restrictive"
-                and evidence.get("restrictive_edit") == RESTRICTIVE_EDIT))
+                and evidence.get("restrictive_edit") in {RESTRICTIVE_EDIT, RESTRICTIVE_SYSTEM_EDIT}))
 
 
 def _eligible_backup_location_owner(case):
@@ -67,7 +90,7 @@ def _eligible_backup_location_owner(case):
             and not case.get("harness", {}).get("enabled"))
 
 
-def compare_corpus(cases, before, after, evolution):
+def compare_corpus(cases, before, after, evolution, restrictive_edit=None):
     """Full envelopes must match except an explicitly registered allow->deny.
 
     Never accept a changed allowed decision, changed existing deny, or a
@@ -75,10 +98,16 @@ def compare_corpus(cases, before, after, evolution):
     """
     if not cases or set(cases) != set(before) or set(cases) != set(after):
         raise ValueError("policy_differential_incomplete")
+    # Preserve the original helper contract for local fixtures that model the
+    # first registered transformation without carrying its identifier.
+    if restrictive_edit is None and any(
+            item.get("action", {}).get("id") == RESTRICTIVE_ACTION for item in cases.values()):
+        restrictive_edit = RESTRICTIVE_EDIT
     changed = [key for key in cases if differential_evidence(before[key], after[key])["state"] != "sample_equal"]
     if not changed:
         return "sample_equal", changed
-    if evolution == "locally_supported_restrictive_evolution":
+    if (evolution == "locally_supported_restrictive_evolution"
+            and restrictive_edit == RESTRICTIVE_EDIT):
         if all(cases[key]["action"]["id"] == RESTRICTIVE_ACTION
                and not _eligible_backup_location_owner(cases[key])
                and before[key]["allow"] is True
@@ -91,6 +120,22 @@ def compare_corpus(cases, before, after, evolution):
                 and before[key]["allow"] is True and after[key]["allow"] is True
                 for key in cases)
             if owner_survives:
+                return "sample_restrictive", changed
+    if (evolution == "locally_supported_restrictive_evolution"
+            and restrictive_edit == RESTRICTIVE_SYSTEM_EDIT):
+        if all(cases[key]["action"]["id"] == RESTRICTIVE_SYSTEM_ACTION
+               and cases[key]["actor"]["type"] == "service"
+               and cases[key]["actor"]["id"] == "system-health-scheduler"
+               and cases[key]["target"]["state"].get("evidence_fresh") is False
+               and before[key]["allow"] is True
+               and after[key] == {"allow": False, "constraints": [],
+                                  "reason_code": "actor_not_authenticated"}
+               for key in changed):
+            fresh_survives = any(cases[key]["action"]["id"] == RESTRICTIVE_SYSTEM_ACTION
+                and cases[key]["target"]["state"].get("evidence_fresh") is True
+                and before[key]["allow"] is True and after[key]["allow"] is True
+                for key in cases)
+            if fresh_survives:
                 return "sample_restrictive", changed
     return "differences_observed", changed
 
@@ -105,7 +150,7 @@ def locally_supported_evolution(before: dict[str, bytes], after: dict[str, bytes
     if set(before) != REGISTERED_MODULES or set(after) != REGISTERED_MODULES:
         return "unsupported_inventory"
     try:
-        if restrictive_candidate(before, RESTRICTIVE_EDIT) == after:
+        if restrictive_edit_for(before, after):
             return "locally_supported_restrictive_evolution"
     except ValueError:
         pass
@@ -194,11 +239,18 @@ def _target(action):
             "adapter_enabled": True, "confirmed": True}
     if action == "system_health.automatic":
         return "system_health_projection", "system.activity_history", revision, {"operation_id": "projection.reconcile",
-            "risk_class": "A", "adapter_enabled": True, "owner_policy_current": True}
+            "risk_class": "A", "adapter_enabled": True, "owner_policy_current": True,
+            "evidence_fresh": True}
     if action in {"lifecycle.policy.activate", "lifecycle.policy.claim"}:
         revision = "a" * 64
         return "lifecycle_policy_execution", ("local_workspace" if action.endswith("activate") else "synthetic-operation"), revision, {
             "change_digest": revision, "contract_version": 1, "purpose": "policy-reconciler",
+            "execution_enabled": True, "grant_current": True}
+    if action in {"lifecycle.capability.activate", "lifecycle.capability.claim"}:
+        revision = "a" * 64
+        return "lifecycle_capability_activation", ("local_workspace" if action.endswith("activate") else "synthetic-operation"), revision, {
+            "change_digest": revision, "contract_version": 1,
+            "purpose": "system-health-scheduler", "capability_id": "system.activity_history.reconcile.activate",
             "execution_enabled": True, "grant_current": True}
     if action in {"lifecycle.release.prepare", "lifecycle.release.claim"}:
         revision = "a" * 64
@@ -254,6 +306,10 @@ def corpus():
                 }
                 synthetic["target"]["scope"] = "synthetic-recovery"
                 cases[f"{action}:{i}:synthetic_owner"] = synthetic
+            if action == RESTRICTIVE_SYSTEM_ACTION and kind == "service":
+                stale = copy.deepcopy(doc)
+                stale["target"]["state"]["evidence_fresh"] = False
+                cases[f"{action}:{i}:stale_evidence"] = stale
             if i in (0, 2, 3):
                 blocked = copy.deepcopy(doc)
                 blocked["session"]["assurance"] = []
@@ -342,9 +398,10 @@ def assess(stream, local_document, candidate_document, *, parent: Path, deadline
             b = _evaluate(right, after, template, cases, capabilities, deadline)
         if _snapshot() != snapshot:
             return {**result, "state": "baseline_changed"}
-        comparison, changed = compare_corpus(cases, a, b, evolution)
+        restrictive_edit = restrictive_edit_for(before, after)
+        comparison, changed = compare_corpus(cases, a, b, evolution, restrictive_edit)
         return {**result, "state": comparison,
-                "restrictive_edit": RESTRICTIVE_EDIT if comparison == "sample_restrictive" else None,
+                "restrictive_edit": restrictive_edit if comparison == "sample_restrictive" else None,
                 "case_count": len(cases), "changed_count": len(changed), "corpus_sha256": digest(cases),
                 "before_sha256": digest(a), "after_sha256": digest(b), "baseline_revision": revision,
                 "semantic_equivalence_proved": False,
