@@ -104,3 +104,12 @@ it('does not offer release preparation controls from stale state', () => {
     release_preparation_review_available:true,candidate_review:{metadata_sha256:'a'.repeat(64)}}}/>);
   expect(screen.getByRole('button',{name:'Review isolated update preparation'}).disabled).toBe(true);
 });
+
+
+it('shows a failed offline cutover as requiring reconciliation, never recovery success', () => {
+  render(<LifecycleContent data={{...data,release_preparations:[
+    {grant_id:'c'.repeat(32),state:'failed',reason_code:'coordinated_rehearsal_failed'}]}}/>);
+  expect(screen.getByText('Offline cutover needs review')).toBeTruthy();
+  expect(screen.getByText('Reconciliation required. No live recovery is confirmed.')).toBeTruthy();
+  expect(screen.queryByRole('button',{name:'Revoke preparation permission'})).toBeNull();
+});

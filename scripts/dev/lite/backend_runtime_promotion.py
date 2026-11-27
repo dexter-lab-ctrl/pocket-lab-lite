@@ -1709,12 +1709,14 @@ def reconcile_promotions(state_root: Path) -> dict[str, Any]:
         if (not isinstance(payload, dict) or payload.get("schema") != JOURNAL_SCHEMA
                 or type(payload.get("sequence")) is not int or payload["sequence"] < 1
                 or payload.get("sanitized") is not True
-                or not isinstance(payload.get("phase"), str)):
+                or not isinstance(payload.get("phase"), str)
+                or not re.fullmatch(r"[a-z][a-z0-9_]{0,79}", payload["phase"])
+                or (payload.get("status") is not None and not isinstance(payload["status"], str))):
             raise ValueError("journal_schema_invalid")
         return payload
 
     try:
-        if root.is_symlink() or (root.exists() and not root.is_dir()):
+        if root.parent.is_symlink() or root.is_symlink() or (root.exists() and not root.is_dir()):
             journals.append(blocked("journal_root_unsafe"))
         elif root.is_dir():
             # A crash before atomic publication may leave a directory with no

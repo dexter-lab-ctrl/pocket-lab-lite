@@ -96,3 +96,51 @@ In the future authorized qualification environment, use `task lite:lifecycle:t3-
 ### Residual implementation risks
 
 The new migrations, API/worker/supervisor integration, exact grant lifecycle, differential corpus, OPA manifest data observation, signed handoff, native controller, and UI have not been compiled or exercised. Integration and compatibility defects may remain, including migration, policy-format, lease, rollback and platform differences. The optional source archive still uses the existing tracked-tree packaging approach. Independent trusted-time service provisioning and live human WebAuthn remain unexercised. No new autonomous application or maintenance execution was enabled. These are intentional fail-closed limits, not completed requirements.
+
+
+## Source closure continuation — independent follow-up (2026-11-27)
+
+**SOURCE INCOMPLETE / UNVALIDATED.** This section supersedes the earlier ledger where indicated. Draft PR #663 remains the only target. No test, build, check, qualification, performance run, generated-doc regeneration, deployment, release, merge, Server Phone access or production activation was performed by this follow-up. GitHub may independently trigger configured workflows on commits.
+
+Starting remote head: `c5969b82bf89cc240de5a23fb5d8cf3eee3ae752`.
+
+### Authored source increments
+
+- `b36c7572634a8b4cd8cf7e2fd87754f79712876a`: terminal offline grant authority rechecked within its write transaction; controller must honor failed disposition, retains blocked journal on claim/finalization failure; staged source file fsync; native promotion test file included in lifecycle package qualification.
+- `912affbcd1c90b8d72e02c9dddf1f2b5c2a1f3be`: versioned `runtime-review-v1` scoped exact-Git-commit archive contract, optional release workflow, verifier and fixture coverage; inconsistent, Boolean, decreasing or out-of-range schema scopes rejected.
+- `6daefbe62264c21fd9dbee1a351c5722db48ccf0`: publisher/verifier share a dependency-free profile, avoiding backend dependency imports in the PWA build job.
+- `4322b603b13462ab2bdf1f6d15154e4d093fb8c4`: read-only restart journal inspection with bounds, missing/symlink/invalid journal refusal, explicit phase/status agreement and distinct offline rehearsal convergence.
+- This ledger's commit: exact differential corpus completeness and real-human Owner preservation, synthetic and false-Owner-authority cases; safer failure/reconciliation language in System Manage and corresponding component fixture; additional malformed-journal fences.
+
+### SC1–SC7 disposition after follow-up
+
+| Package | Additional source | Remaining source blocker |
+|---|---|---|
+| SC1 | Restrictive differential refuses incomplete corpus, real Owner access loss, non-registered deny envelopes; more adversarial inputs | Independent installed and loaded backend identity, complete registered/base policy data proof and additional justified semantic classes (SC-R02/R08). |
+| SC2 | Exact runtime-review package profile and schema scope fences | Live coordinated generation switch across backend/PWA/OPA/SQLite, independently verified installation inventory (SC-R01). The new profile is review-only, not a dependency-closed production install image (SC-R07). |
+| SC3 | Recheck terminal authority, distinguish failed versus rehearsed result, hardened read-only journal reconciliation | Actual startup owner integration, writer quiescence, recoverable live switch and separately authorized runtime recovery preserving newer writes (SC-R03). |
+| SC4 | Exact existing release-grant scope/expiry/revocation completion fences reinforced | No new app or maintenance execution capability. Local optional activation and actual domain-owner admission and claim enforcement remain source work (SC-R04). |
+| SC5 | Historical rehearsal and failure/reconciliation copy based on prepared grant disposition | Live runtime convergence/recovery and broader capability controls require real source owners first (SC-R06). |
+| SC6 | Native promotion suite connected; authored policy, package, grant, journal and UI fixtures | End-to-end and fault scenario harness coverage still incomplete (SC-R05). |
+| SC7 | Updated this ledger and PR handover | No source-complete, qualification-ready or merge signoff. |
+
+### Codex qualification sequence (original phase-level sequence recovered; exact original detailed scenario inventory unavailable)
+
+Every phase is NOT RUN. Do not convert a fixture into a passing result, and do not start full qualification until P0 source blockers are resolved. Use exact remote head and isolated workspaces, not production state.
+
+| Phase | Scope and required evidence | Available source / remaining work |
+|---|---|---|
+| Q0 | Resolve exact candidate, clean worktree, immutable artifact/input identities and isolation; independent signing/time authorities | Existing candidate prep and package contract; require reproducibility, profile dependency inventory, signature/provenance and size verification. |
+| Q1 | T3 policy differential, real OPA modules/data, deny and allow envelope comparison, unauthorized/stale/revoked and rollback cases | `test_lite_lifecycle_candidate_review.py`, `test_lite_lifecycle_policy_execution.py`; missing complete loaded identity and real OPA activation/rollback qualification. |
+| Q2 | T4 artifact integrity, migration ledger, checkpoint, coordinated cutover, failure at every journal boundary, no overwrite of newer writes | `test_lite_coordinated_release_package.py`, `test_lite_lifecycle_release_execution.py`, `test_lite_backend_runtime_promotion.py`; live coordinated owner missing. |
+| Q3 | T5 optional scope, candidate consent vs activation, exact admission/claim and revocation; preserve existing recovery owners | Candidate review and release/policy execution tests; new domain owner paths still missing. |
+| Q4 | Frontend desktop/mobile, light/dark, keyboard/accessibility, stale/degraded/role fences, no fake completion | `TrustedLifecyclePanel.test.jsx`, stories, `lite-trusted-lifecycle.spec.ts`; extend after actual live controls exist. |
+| Q5 | Isolated runtime/security: current human passkey and separate executor, NATS worker claim, trusted time, restart/fault injection, tamper/replay denial | Existing focused lifecycle tasks and signed time fixtures; implement complete integrated scenario drivers before signoff. |
+| Q6 | Android/Termux ARM64 qualification: realistic CPU/RAM/disk/battery/thermal bounds, timeouts, interruption, idle regression | Requires separately authorized isolated device environment and measured evidence; not executed against Server Phone. |
+| Q7 | Canonical contracts, docs generation, repository gates, full regression as appropriate | Existing repo-owned tasks; execute only in later qualification session. |
+| Q8 | Inspect exact-head CI, remediate actual failures, rerun applicable checks | No CI inspection or reruns performed. |
+| Q9 | Reconcile requirement ledger to artifacts and actual evidence; review-ready decision | Keep draft until source and qualification gates are satisfied. No merge or deployment authorization. |
+
+### Specific residual risks and decisions
+
+The runtime-review archive deliberately excludes unrelated roots, uses Git archive of an exact commit and declares a new signed profile. It is not a complete native installer; v1 full-tree declarations remain reviewable, while clients without schema v2 support must fail closed. Archive contents, dependencies, byte reproducibility and budgets are unvalidated. The read-only restart journal inspector cannot independently establish runtime health, nor authorize recovery. Restrictive policy changes still use the pre-existing exact locally registered backup-location transformation; no speculative additional semantic rule was enabled. The failure UI is based only on recorded disposition and is not a live runtime recovery control. Do not treat any of these source edits as formal qualification.

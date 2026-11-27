@@ -197,10 +197,14 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
         disabled={blocked || Boolean(pending) || managed}
         onClick={() => onReview({kind:'release-preparation', value:data.candidate_review.metadata_sha256, label:'Review isolated update preparation'})}>Review isolated update preparation</LiteButton>}
       {(data.release_preparations || []).map(item => <LiteActionRow key={item.grant_id} label="Update preparation"
-        value={item.revoked_at ? (item.state === 'cutover_claimed' ? 'Revoked · reconciliation required' : 'Permission revoked') :
+        value={item.revoked_at ? (item.state === 'cutover_claimed' || item.reason_code === 'coordinated_rehearsal_failed' ? 'Revoked · reconciliation required' : 'Permission revoked') :
+          (item.state === 'failed' && item.reason_code === 'coordinated_rehearsal_failed' ? 'Offline cutover needs review' :
           ({pending:'Waiting for manual release check',claimed:'Preparing authenticated files',prepared:'Prepared · separate authorization required',
-            cutover_claimed:'Offline cutover in progress',rehearsed:'Offline cutover rehearsed',failed:'Preparation or rehearsal failed',revoked:'Permission revoked'})[item.state] || 'Not confirmed'}
-        summary={item.reason_code ? String(item.reason_code).replaceAll('_',' ') : 'Expires ' + (item.expires_at || 'not confirmed')}
+            cutover_claimed:'Offline cutover in progress',rehearsed:'Offline cutover rehearsed',failed:'Preparation or rehearsal failed',revoked:'Permission revoked'})[item.state] || 'Not confirmed')}
+        summary={item.reason_code === 'coordinated_rehearsal_failed' ? 'Reconciliation required. No live recovery is confirmed.' :
+          item.state === 'rehearsed' ? 'Historical rehearsal only. No live update is confirmed.' :
+          item.reason_code === 'grant_expired' ? 'Permission expired. Review again before preparing.' :
+          item.state === 'failed' ? 'Preparation could not be confirmed.' : 'Expires ' + (item.expires_at || 'not confirmed')}
         action={!item.revoked_at && ['pending','claimed','prepared','cutover_claimed'].includes(item.state) ? {
           label:'Revoke preparation permission',haptic:true,disabled:blocked || Boolean(pending),
           onClick:() => onReview({kind:'release-preparation-revoke', value:item.grant_id,label:'Revoke preparation permission'})} : undefined} />)}

@@ -64,10 +64,12 @@ def test_restrictive_candidate_is_exact_local_transformation():
 
 def test_restrictive_comparison_never_accepts_expansion_or_changed_allow():
     from api_fastapi.services import lite_policy_candidate_differential as diff
-    cases = {"owner": {"action":{"id":diff.RESTRICTIVE_ACTION}, "actor":{"role":"Owner"}},
-             "viewer": {"action":{"id":diff.RESTRICTIVE_ACTION}, "actor":{"role":"Viewer"}}}
+    cases = {"owner": {"action":{"id":diff.RESTRICTIVE_ACTION},
+                       "actor":{"type":"human","role":"Owner","owner_authority":True}},
+             "viewer": {"action":{"id":diff.RESTRICTIVE_ACTION},
+                        "actor":{"type":"human","role":"Viewer","owner_authority":False}}}
     allow = {"allow": True, "constraints":["authenticated_actor"], "reason_code":"allowed"}
-    deny = {"allow": False, "constraints":[], "reason_code":"denied"}
+    deny = {"allow": False, "constraints":[], "reason_code":"actor_not_authenticated"}
     old = {"owner":allow, "viewer":allow}
     new = {"owner":allow, "viewer":deny}
     evolution = "locally_supported_restrictive_evolution"
@@ -84,3 +86,23 @@ def test_registered_loaded_data_includes_manifest_and_rejects_extra_roots():
     assert compare_loaded_data(manifest,template,loaded)
     assert not compare_loaded_data(manifest,template,{**loaded,"unknown":True})
     assert not compare_loaded_data(manifest,template,{**loaded,"candidate_hash":"b"*64})
+
+
+def test_restrictive_comparison_rejects_owner_loss_and_incomplete_envelopes():
+    from api_fastapi.services import lite_policy_candidate_differential as diff
+    owner = {"action": {"id": diff.RESTRICTIVE_ACTION},
+             "actor": {"type": "human", "role": "Owner", "owner_authority": True}}
+    cases = {"owner1": owner, "owner2": owner}
+    allow = {"allow": True, "constraints": ["authenticated_actor"], "reason_code": "allowed"}
+    deny = {"allow": False, "constraints": [], "reason_code": "actor_not_authenticated"}
+    old = {"owner1": allow, "owner2": allow}
+    evolution = "locally_supported_restrictive_evolution"
+    assert diff.compare_corpus(cases, old, {"owner1": allow, "owner2": deny}, evolution)[0] == "differences_observed"
+    with pytest.raises(ValueError, match="policy_differential_incomplete"):
+        diff.compare_corpus(cases, old, {"owner1": allow}, evolution)
+    synthetic = {**owner, "harness": {"enabled": True}}
+    assert diff.compare_corpus({"owner1": owner, "owner2": synthetic}, old,
+                              {"owner1": allow, "owner2": deny}, evolution)[0] == "sample_restrictive"
+    assert diff.compare_corpus({"owner1": owner, "owner2": synthetic}, old,
+                              {"owner1": allow, "owner2": {**deny, "unexpected": True}},
+                              evolution)[0] == "differences_observed"

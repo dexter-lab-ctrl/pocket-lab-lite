@@ -60,22 +60,34 @@ def supported_differential(evidence):
                 and evidence.get("restrictive_edit") == RESTRICTIVE_EDIT))
 
 
+def _eligible_backup_location_owner(case):
+    actor = case["actor"]
+    return (actor.get("type") == "human" and actor.get("role") == "Owner"
+            and actor.get("owner_authority") is True
+            and not case.get("harness", {}).get("enabled"))
+
+
 def compare_corpus(cases, before, after, evolution):
     """Full envelopes must match except an explicitly registered allow->deny.
 
     Never accept a changed allowed decision, changed existing deny, or a
     changed action outside the locally understood tightening.
     """
+    if not cases or set(cases) != set(before) or set(cases) != set(after):
+        raise ValueError("policy_differential_incomplete")
     changed = [key for key in cases if differential_evidence(before[key], after[key])["state"] != "sample_equal"]
     if not changed:
         return "sample_equal", changed
     if evolution == "locally_supported_restrictive_evolution":
         if all(cases[key]["action"]["id"] == RESTRICTIVE_ACTION
-               and before[key]["allow"] is True and after[key]["allow"] is False
-               and not after[key].get("requirements") for key in changed):
+               and not _eligible_backup_location_owner(cases[key])
+               and before[key]["allow"] is True
+               and after[key] == {"allow": False, "constraints": [],
+                                  "reason_code": "actor_not_authenticated"}
+               for key in changed):
             # Positive and negative cases must both be exercised.
             owner_survives = any(cases[key]["action"]["id"] == RESTRICTIVE_ACTION
-                and cases[key]["actor"]["role"] == "Owner"
+                and _eligible_backup_location_owner(cases[key])
                 and before[key]["allow"] is True and after[key]["allow"] is True
                 for key in cases)
             if owner_survives:
@@ -230,6 +242,18 @@ def corpus():
                 request_context={"confirmation_present": True})
             doc["continuation"] = {"matching_independent_approval": False, "matching_temporary_exception": False}
             cases[f"{action}:{i}:valid"] = doc
+            if action == RESTRICTIVE_ACTION and i == 0:
+                no_authority = copy.deepcopy(doc)
+                no_authority["actor"]["owner_authority"] = False
+                cases[f"{action}:{i}:no_owner_authority"] = no_authority
+                synthetic = copy.deepcopy(doc)
+                synthetic["harness"] = {
+                    "enabled": True, "qualification_environment": True,
+                    "target_scope": "synthetic-recovery", "capabilities": [action],
+                    "destructive_allowed": True,
+                }
+                synthetic["target"]["scope"] = "synthetic-recovery"
+                cases[f"{action}:{i}:synthetic_owner"] = synthetic
             if i in (0, 2, 3):
                 blocked = copy.deepcopy(doc)
                 blocked["session"]["assurance"] = []
