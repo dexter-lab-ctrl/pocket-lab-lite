@@ -1,4 +1,6 @@
-# Trusted Lifecycle T3–T5 — continuation handover
+# Trusted Lifecycle T3–T5 — source closure continuation
+
+The SC1–SC7 continuation ledger at the end of this document supersedes earlier progress descriptions. Earlier sections remain as historical implementation context.
 
 **Disposition: SOURCE INCOMPLETE / UNVALIDATED.** Draft PR #663. No tests, checks, builds, scans, qualification, canonical generation, CI inspection/remediation, production provisioning, release, deployment, merge or Server Phone actions were performed in the implementation session. GitHub may independently trigger its configured workflows; no results are claimed. Do not transfer baseline qualification to these changes.
 
@@ -63,3 +65,34 @@ New fixtures include tests/backend/test_lite_lifecycle_policy_execution.py and e
 ## Review before qualification
 
 This continuation intentionally chooses a narrow note-only local policy change contract, no publisher-declared arbitrary semantics, strict independent grant scopes, no synthetic production human identity, and fail-closed rather than speculative native cutover. These are conservative implementation decisions, not evidence that the original full requirement has been met.
+
+
+## SC1–SC7 continuation ledger (source only)
+
+- Starting head: `4e71cd52cb33fdfceaf0900e65fd8077a2e1a8cd`.
+- Code-bearing head before this ledger: `4cbcd07a6003c76fd88b8863ed71e3dbba3c1d24`.
+- Branch and draft PR unchanged; no main changes or merge.
+- New migration: 0066, in addition to authored 0064–0065. Not applied here.
+- No validation commands, runtime actions, CI inspection, release, provisioning or canonical regeneration were performed.
+
+| Package | Source delivered | Disposition / remaining source |
+|---|---|---|
+| SC1 | Locally registered restrictive backup-location policy evolution, exact differential matching, reconstructed signed policy inventory, isolated OPA endpoint and registered stage-data proof | Partial: other compatible semantic classes, complete base-data and independent installed backend identity, complete execution corpus and production eligibility remain. |
+| SC2 | Exact one-shot Owner release preparation, service claim and durable authenticated handoff; existing native controller commands; separately pinned promotion and recovery authority | Partial: runtime-oriented package refinement and live coordinated promotion owner integration remain. |
+| SC3 | Dynamic contiguous migration contract, durable checkpoint/journal, WAL and interruption fences, private offline generation transaction, manual-recovery-required disposition on failure | Partial: actual live backend/PWA/OPA/SQLite generation switch, startup recovery and separately authorized runtime recovery transaction remain. Offline rehearsal is not live convergence. |
+| SC4 | Versioned independently scoped policy activation and release preparation contracts, Owner consent, current grant/lease checks and revocation | Partial: optional candidate capability activation and broader app/maintenance owner admission/claim remain. Existing PR #661 fences and PR #662 review-only consent are not replaced. Unsupported actions remain non-delegable. |
+| SC5 | Existing System Manage shared components and API wrappers expose preparation, pending, prepared, cutover claim, rehearsal and revocation; policy data and restrictive result presentation | Partial: live promotion/recovery and broader capability activation UI are not implemented. Component fixtures authored; responsive behavior unvalidated. |
+| SC6 | Existing policy/clock/package/native migration fixtures extended, release preparation scope/tamper/role fixtures added, aggregate qualification task includes T3–T5 package tests | Partial: full Q0–Q9 coverage, real integrated owner and runtime fault injection, desktop/mobile E2E and physical resource qualification remain. |
+| SC7 | This ledger and PR description reconcile delivered source, decisions and blockers | Handover recorded, NOT a source-complete or qualification-ready signoff. |
+
+### Execution limits
+
+The explicit `POCKETLAB_RELEASE_COORDINATED_EXECUTION=1` flag is default off and requires an isolated qualification context, contained state/database/PWA paths and explicit isolated loopback OPA endpoint. Existing `POCKETLAB_RELEASE_POLICY_EXECUTION` also remains default off. Neither is permission to execute against the Server Phone. A release preparation grant cannot authorize native cutover by itself. Native controller `prepare-coordinated` and `activate-coordinated` operate on an offline qualification workspace and require current grant binding, the authenticated handoff, and separately pinned signed promotion and recovery authority. The offline generation records `runtime_convergence=not_exercised`. Do not interpret it as installed software, a production rollback point, or independently observed runtime identity. Do not use legacy native promotion on a trust-latched installation.
+
+### Qualification assets (authored, not executed)
+
+In the future authorized qualification environment, use `task lite:lifecycle:t3-t5-package`, `task lite:lifecycle:qualification` and the existing lifecycle regression tasks. These are not comprehensive Q0–Q9 signoff and should not be run against live data. Before formal qualification, complete the remaining source items above and reconcile the original Q0–Q9 requirements with executable scenarios. Do not promote or activate solely from these source changes.
+
+### Residual implementation risks
+
+The new migrations, API/worker/supervisor integration, exact grant lifecycle, differential corpus, OPA manifest data observation, signed handoff, native controller, and UI have not been compiled or exercised. Integration and compatibility defects may remain, including migration, policy-format, lease, rollback and platform differences. The optional source archive still uses the existing tracked-tree packaging approach. Independent trusted-time service provisioning and live human WebAuthn remain unexercised. No new autonomous application or maintenance execution was enabled. These are intentional fail-closed limits, not completed requirements.
