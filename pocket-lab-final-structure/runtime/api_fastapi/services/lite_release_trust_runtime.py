@@ -334,6 +334,11 @@ def inspect_candidate(request):
                         or hashlib.sha256(migration_document).hexdigest() != receipt["migration_inventory_sha256"]):
                     raise TrustError("source_inventory_changed")
                 receipt["policy_review"] = compare_source(local_policy, policy_document)
+                if local_policy is not None and os.environ.get("POCKETLAB_RELEASE_POLICY_DIFFERENTIAL") == "1":
+                    from .lite_policy_candidate_differential import assess as differential
+                    with _open_controlled(candidate, source_package.SOURCE_ASSET, source_package.MAX_SOURCE_BYTES) as (stream, _):
+                        receipt["policy_review"]["differential"] = differential(stream, local_policy, policy_document,
+                            parent=candidate, deadline=int(request.get("deadline_ns") or time.monotonic_ns()))
                 from .lite_policy_runtime_evidence import observe
                 receipt["policy_runtime_observation"] = observe()
                 receipt["migration_review"] = (source_package.migration_inventory_comparison(

@@ -94,3 +94,23 @@ def test_exact_scope_transport_restores_only_strict_capability_objects():
     review["exact_scopes"][0]["after"]["network"] = not changed.network
     with pytest.raises(ValueError):
         exact_scopes_for_transport(review)
+
+
+def test_local_policy_evolution_is_exact_append_only_note_contract():
+    from api_fastapi.services.lite_policy_candidate_differential import locally_supported_evolution
+    before = {name: b"package pocketlab.authz\n" for name in REGISTERED_MODULES}
+    key = sorted(before)[0]
+    after = dict(before)
+    after[key] += b"# pocketlab-release-note: documentation only\n"
+    assert locally_supported_evolution(before, after) == "locally_supported_note_evolution"
+    after[key] += b"decision := true\n"
+    assert locally_supported_evolution(before, after) == "unknown_semantic_impact"
+
+
+def test_differential_corpus_covers_registered_protected_actions():
+    from api_fastapi.services.lite_policy_candidate_differential import corpus, MAX_CASES
+    from api_fastapi.services.lite_policy_opa import PROTECTED_ACTIONS
+    cases = corpus()
+    assert 0 < len(cases) <= MAX_CASES
+    assert PROTECTED_ACTIONS <= {item["action"]["id"] for item in cases.values()}
+    assert {item["actor"]["type"] for item in cases.values()} >= {"human", "service", "qualification", "test", "anonymous"}

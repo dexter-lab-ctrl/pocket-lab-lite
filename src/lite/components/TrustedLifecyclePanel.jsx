@@ -100,6 +100,7 @@ export function CandidateReview({ review, consents = [], canDecide = false, onRe
     <LiteActionRow label="Recorded check" value={review.checked_at || 'Not confirmed'} />
     <LiteActionRow label="Coordinated source" value={reviewStates[review.source_package?.state] || 'Not confirmed'} />
     <LiteActionRow label="Policy source" value={reviewStates[review.policy_review?.state] || 'Not confirmed'} />
+    <LiteActionRow label="Policy comparison" value={({ sample_equal: "Recorded samples matched", differences_observed: "Differences observed", not_executed: "Not assessed" })[review.policy_review?.differential?.state] || "Not confirmed"} summary="Sample comparison cannot establish general policy equivalence or execution authority." />
     <LiteActionRow label="Loaded policy modules" value={reviewStates[review.policy_runtime_observation?.state] || 'Not confirmed'}
       summary="Historical module observation only. Complete loaded data and backend identity are not established." />
     <LiteActionRow label="Registered policy data" value={({registered_template_matches: "Matched at recorded check", registered_template_mismatch: "Mismatch"})[review.policy_runtime_observation?.data_identity] || "Not confirmed"} />
