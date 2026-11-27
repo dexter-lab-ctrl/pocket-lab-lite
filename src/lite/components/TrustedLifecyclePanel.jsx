@@ -73,10 +73,27 @@ const reviewStates = {
 };
 const impactNames = { U2: 'Scope reduced', U4: 'Additional authority requires review', U5: 'Trust or ownership review', UX: 'Compatibility not confirmed' };
 
-export function CandidateReview({ review }) {
+const candidateDecisionNames = { accepted_for_review: 'Accepted for review', declined: 'Declined', deferred: 'Deferred',
+  review_required: 'Review required', expired: 'Expired', revoked: 'Revoked' };
+const scopeFields = ['version', 'domain', 'owner', 'action', 'targets', 'data', 'access', 'risk', 'mutation', 'network',
+  'secret_access', 'unattended', 'constraints', 'qualification_required', 'confirmation_required', 'verification_required',
+  'revocable', 'optional', 'default_enabled', 'standing_authorization_supported', 'single_flight', 'cooldown_seconds',
+  'audit_required', 'blind_replay_allowed'];
+function CapabilityScope({ scope }) {
+  const format = value => Array.isArray(value) ? value.join(', ') || 'None' :
+    typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value ?? 'Not present');
+  return <>{['before', 'after'].map(key => <div key={key}>
+    <h5>{key === 'before' ? 'Current scope' : 'Candidate scope'}</h5>
+    {scope[key] ? scopeFields.map(field => <LiteActionRow key={field} label={field.replaceAll('_', ' ')}
+      value={format(scope[key][field])} />) : <p>Not present.</p>}
+  </div>)}</>;
+}
+
+export function CandidateReview({ review, consents = [], canDecide = false, onReview }) {
   if (!review) return null;
   const capabilities = review.capability_review;
   const rows = Array.isArray(capabilities?.changes) ? capabilities.changes : [];
+  const scopes = new Map((capabilities?.exact_scopes || []).map(scope => [scope.id, scope]));
   return <div className="lite-system-health-detail-block">
     <h4>Candidate evidence</h4>
     <p>Recorded review evidence only. No installation, Safety Rules activation or additional permissions are authorized here.</p>
@@ -91,8 +108,25 @@ export function CandidateReview({ review }) {
     <LiteActionRow label="Applied migration ledger" value={({ledger_matches: "Recorded checksums matched", incompatible: "Mismatch"})[review.migration_review?.applied_ledger?.state] || "Not confirmed"} summary="Recorded application evidence, not data or rollback compatibility." />
     <LiteTechnicalDetails summary="Review individual capability changes" haptic>
       <LiteActionRow label="Recorded changes" value={String(capabilities?.total ?? 'Not confirmed')} />
-      {rows.map(row => <LiteActionRow key={row.id} label={row.id} value={impactNames[row.impact] || 'Review required'}
-        summary={typeof row.changed_fields === 'string' ? row.changed_fields : 'No detailed evidence available'} />)}
+      {rows.map(row => {
+        const current = consents.find(item => item.metadata_sha256 === review.metadata_sha256 && item.scope_sha256 === row.scope_sha256 && item.capability_id === row.id && item.status !== 'revoked');
+        const scope = scopes.get(row.id);
+        const enabled = canDecide && Boolean(scope && row.scope_sha256 && review.metadata_sha256);
+        const decide = disposition => onReview({ kind: 'candidate', label: 'Review ' + row.id,
+          value: { metadata_sha256: review.metadata_sha256, scope_sha256: row.scope_sha256, capability_id: row.id, disposition } });
+        return <div key={row.id} className="lite-system-health-detail-block">
+          <LiteActionRow label={row.id} value={impactNames[row.impact] || 'Review required'}
+            summary={typeof row.changed_fields === 'string' ? row.changed_fields : 'No detailed evidence available'} />
+          {current && <LiteActionRow label="Recorded decision" value={candidateDecisionNames[current.status] || 'Review required'}
+            action={{ label: 'Revoke', haptic: true, disabled: !canDecide, onClick: () => onReview({ kind: 'candidate-revoke', value: current.consent_id, label: 'Revoke ' + row.id }) }} />}
+          {scope && <LiteTechnicalDetails summary="Exact capability scope" haptic><CapabilityScope scope={scope} /></LiteTechnicalDetails>}
+          {enabled && <>
+            <LiteButton haptic tone="secondary" onClick={() => decide('accepted_for_review')}>Accept for review</LiteButton>
+            <LiteButton haptic tone="secondary" onClick={() => decide('declined')}>Decline</LiteButton>
+            <LiteButton haptic tone="secondary" onClick={() => decide('deferred')}>Decide later</LiteButton>
+          </>}
+        </div>;
+      })}
       {capabilities?.truncated && <p>Only the first recorded changes are shown. Further review is required.</p>}
       {!rows.length && <p>No individual changes recorded here. This does not establish authorization.</p>}
     </LiteTechnicalDetails>
@@ -143,7 +177,15 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
       {!canGrant && <p>New standing consent requires a current Owner, the Recommended profile, current trust evidence and confirmed policy state.</p>}
     </div>
     <ChangeImpactReview assessment={data?.assessment} />
-    <CandidateReview review={data?.owner_authority === true ? data.candidate_review : null} />
+    <CandidateReview review={data?.owner_authority === true ? data.candidate_review : null}
+      consents={data?.candidate_consents || []} canDecide={!blocked && !managed && !pending && data?.release_trust?.current_review_eligible === true} onReview={onReview} />
+    <LiteTechnicalDetails summary="Candidate decision history" haptic>
+      {(data?.candidate_consents || []).map(item => <LiteActionRow key={item.consent_id} label={item.capability_id}
+        value={candidateDecisionNames[item.status] || 'Review required'} summary={'Review only · expires ' + (item.expires_at || 'not confirmed')}
+        action={item.status !== 'revoked' ? { label: 'Revoke', haptic: true, disabled: blocked || Boolean(pending),
+          onClick: () => onReview({ kind: 'candidate-revoke', value: item.consent_id, label: 'Revoke ' + item.capability_id }) } : undefined} />)}
+      {!data?.candidate_consents?.length && <p>No candidate decisions recorded.</p>}
+    </LiteTechnicalDetails>
     <LiteTechnicalDetails className="lite-system-health-detail-block" summary="Verification history" haptic>
       {(data?.release_trust?.history || []).map(item => <LiteActionRow key={item.receipt_id} label={item.release_tag} value={item.checked_at} summary="Historical verification; not current installation authority." />)}
       {!data?.release_trust?.history?.length && <p>No verification history recorded.</p>}
@@ -156,10 +198,13 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
     </LiteTechnicalDetails>
     {pending && <div className="lite-system-health-detail-block" role="group" aria-label="Review proposed change">
       <h4>{pending.label}</h4>
-      <p>{pending.kind === 'grant' ? 'Record a limited, revocable review permission for 30 days. Only a previous permission for the same purpose is replaced; other permissions stay independent. It cannot start a service or install anything.'
+      <p>{pending.kind === 'candidate' ? 'Record ' + candidateDecisionNames[pending.value.disposition].toLowerCase() + ' for this exact signed candidate scope. This does not activate a capability or authorize execution.'
+        : pending.kind === 'candidate-revoke' ? 'Revoke this recorded candidate decision. No active operation is claimed cancelled.'
+        : pending.kind === 'grant' ? 'Record a limited, revocable review permission for 30 days. Only a previous permission for the same purpose is replaced; other permissions stay independent. It cannot start a service or install anything.'
         : pending.kind === 'revoke' ? 'Prevent new use of ' + (pending.value ? 'this recorded permission' : 'all recorded permissions') + '. This does not claim to cancel existing work.'
         : 'Save this preference and revoke previous standing consent. Existing release and recovery settings are not changed.'}</p>
-      {pending.review?.scope && <>
+      {pending.kind === 'candidate' && pending.review?.scope && <LiteTechnicalDetails summary="Exact reviewed scope" haptic><CapabilityScope scope={pending.review.scope} /></LiteTechnicalDetails>}
+      {pending.kind === 'grant' && pending.review?.scope && <>
         <LiteActionRow label="Exact reviewed scope" value={purposes[pending.review.scope.purpose] || 'Review permission'} summary={pending.review.scope.channel + " channel · risk " + pending.review.scope.max_risk + " · no execution or secret access"} />
         <LiteTechnicalDetails summary="Review exact limits" haptic>
           <LiteActionRow label="Targets" value={(pending.review.scope.capability?.targets || []).join(', ') || 'Not confirmed'} />
@@ -202,6 +247,11 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
         const body = { expected_revision: pending.boundary, expected_profile_revision: pending.revision, purpose: pending.value, confirm: true };
         await exactPasskey(pending.review);
         await liteApi.lifecycleIssueBoundary(body);
+      } else if (pending.kind === 'candidate') {
+        await exactPasskey(pending.review);
+        await liteApi.lifecycleRecordCandidateConsent({ expected_revision: pending.boundary, ...pending.value, confirm: true });
+      } else if (pending.kind === 'candidate-revoke') {
+        await liteApi.lifecycleRevokeCandidateConsent({ expected_revision: pending.boundary, consent_id: pending.value, confirm: true });
       } else if (pending.kind === 'revoke') {
         await liteApi.lifecycleRevokeBoundary({ expected_revision: pending.boundary, ...(pending.value ? { grant_id: pending.value } : {}), confirm: true });
       }
@@ -222,6 +272,7 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
       inFlight.current = true; setBusy(true); setMessage('');
       try {
         const next = { ...change, revision: data.preferences.revision, boundary: data.boundary_revision };
+        if (change.kind === 'candidate') next.review = await liteApi.lifecycleReviewCandidateConsent({ expected_revision: next.boundary, ...change.value, confirm: true });
         if (change.kind === 'grant') next.review = await liteApi.lifecycleReviewBoundary({
           expected_revision: next.boundary, expected_profile_revision: next.revision, purpose: change.value, confirm: true });
         if (change.kind === 'profile' && change.value !== 'notify') next.review = await liteApi.lifecycleReviewPreference({

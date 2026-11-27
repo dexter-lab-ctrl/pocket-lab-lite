@@ -56,3 +56,28 @@ def test_runtime_observation_matches_exact_module_digests_only():
     assert not compare_loaded_modules({"files": rows}, modules[:-1])
     modules[0]["raw"] += "changed"
     assert not compare_loaded_modules({"files": rows}, modules)
+
+
+def test_exact_scope_digest_binds_every_field():
+    from api_fastapi.services.lite_lifecycle_contract import digest
+    cap = CAPABILITIES[0]
+    changed = cap.model_copy(update={"version": cap.version + 1})
+    review = compare_capabilities((cap,), (changed,))
+    scope = review["exact_scopes"][0]
+    assert review["changes"][0]["scope_sha256"] == digest(scope)
+    assert scope["before"] == cap.model_dump(mode="json")
+    assert scope["after"] == changed.model_dump(mode="json")
+    scope["after"]["network"] = not scope["after"]["network"]
+    assert review["changes"][0]["scope_sha256"] != digest(scope)
+
+
+def test_candidate_consent_request_cannot_smuggle_execution_scope():
+    from pydantic import ValidationError
+    from api_fastapi.services.lite_lifecycle_candidate_consent import CandidateConsentRequest
+    body = dict(expected_revision=1, metadata_sha256="a"*64, capability_id=CAPABILITIES[0].id,
+                scope_sha256="b"*64, disposition="accepted_for_review", confirm=True)
+    assert CandidateConsentRequest(**body).disposition == "accepted_for_review"
+    with pytest.raises(ValidationError):
+        CandidateConsentRequest(**body, execution_enabled=True)
+    with pytest.raises(ValidationError):
+        CandidateConsentRequest(**{**body, "disposition": "enabled"})
