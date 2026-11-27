@@ -314,3 +314,27 @@ This is a source/contract correction, not a runtime-bearing change, but it
 requires a new commit/push and exact-head CI recheck. Until that recheck,
 the active disposition is Q8 `GATE MISS / CORRECTIVE PUSH PENDING` and Q9
 `PARTIAL`.
+
+### Final exact-head CI recheck — 2026-11-27
+
+The promoted contract candidate
+`9810349c455d50567692f6ce8ba326f377673dfe` was inspected in [workflow
+45993578648](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45993578648).
+The isolated qualification job and the quick-and-docs job passed. The
+[ui-performance-qualification job](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45993578648/job/140487253672)
+completed the component/build checks and 54 mocked interactions but failed the
+existing broad performance gate for Apps Manage; a Catalog sample was flaky.
+The observed p95 frame interval was 33.3 ms, maximum frame interval 33.4 ms,
+and gate smooth-frame ratio approximately 0.915–0.918.
+
+This contract-only commit does not change the runtime or performance source
+paths after the physically qualified candidate. The failure is therefore
+retained as a truthful renderer-sensitive broad-matrix `GATE MISS` outside the
+PR #663 physical System-only optimization scope. The physical System evidence
+already records zero absolute-target and hard-gate passes with eight `MIXED`
+and one `PLATFORM_DOMINATED` attribution; no threshold or attribution rule was
+changed.
+
+The final active disposition is Q8 `GATE MISS / PERFORMANCE RESIDUAL` and Q9
+`PARTIAL`. The branch remains draft, production activation remains disabled,
+and the Server Phone restoration to main remains independently verified.

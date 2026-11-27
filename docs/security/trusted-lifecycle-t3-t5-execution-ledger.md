@@ -243,3 +243,30 @@ the T3–T5 rationale. `oasdiff` produced an empty breaking-change report;
 This corrective promotion is source/contract work and must be committed and
 rechecked at a new exact head. Until that run completes, Q8 remains
 `GATE MISS / CORRECTIVE PUSH PENDING` and Q9 remains `PARTIAL`.
+
+### Final exact-head CI recheck — 2026-11-27
+
+The promoted contract candidate
+`9810349c455d50567692f6ce8ba326f377673dfe` was inspected in [workflow
+45993578648](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45993578648):
+
+- [isolated-devpc-qualification](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45993578648/job/140487253190): PASS;
+- [quick-and-docs](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45993578648/job/140487253700): PASS;
+- [ui-performance-qualification](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45993578648/job/140487253672): GATE MISS.
+
+The UI job executed its complete performance contract: component tests and
+build checks passed, while the existing broad mocked matrix retained one
+failure in the Apps Manage interaction and one flaky Catalog sample (54
+passed). The observed violations were `p95_frame_ms` at 33.3 ms, maximum
+frame interval 33.4 ms, and gate smooth-frame ratio approximately 0.915–0.918.
+The physical PR #663 qualification remains System-only; no System interaction
+was omitted or threshold changed. The current failure is retained as a
+renderer-sensitive broad-matrix `GATE MISS` outside the T3–T5 System-only
+optimization scope, supported by the preceding exact-head UI pass and the
+absence of runtime/performance-source changes in this contract-only commit.
+
+Q8 is therefore `GATE MISS / PERFORMANCE RESIDUAL`, not PASS. Q9 remains
+`PARTIAL`: exact-head source/documentation reconciliation and phone restoration
+are verified, but the mandatory CI performance gate and live production
+cutover/recovery proof remain unresolved. No threshold, assertion, or unrelated
+screen was weakened to obtain a green result.
