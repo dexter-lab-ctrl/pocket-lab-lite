@@ -154,7 +154,8 @@ def admit(context, payload):
                 created_by_principal_id,created_at,validation_status,lifecycle_status,change_summary)
                 VALUES(?,?,?,?,?,?,?,?, 'human',?,?,'pending','draft','Exact signed policy note evolution')""",
                 (revision, local, scope["template"]["template_id"], scope["template"]["template_version"],
-                 canonical_bytes(scope["template"]["parameters"]).decode("ascii"), canonical_bytes(manifest).decode("ascii"),
+                 canonical_bytes(scope["template"]["parameters"]).decode("ascii"),
+                 canonical_bytes({"revision": revision, "files": manifest, "candidate_hash": content_hash}).decode("ascii"),
                  content_hash, owner, owner, stamp))
             row = tx.execute("SELECT content_hash FROM policy_revisions WHERE revision_id=?", (revision,)).fetchone()
             if not row or row["content_hash"] != content_hash:
@@ -250,7 +251,9 @@ def claim(operation):
         row, scope = current(conn, operation)
         if row["claimed_at"] or operation["state"] != "pending":
             raise PermissionError("policy_execution_replay")
-    if not prove_loaded(scope["baseline_revision"]):
+    if (lifecycle._pointer_revision("active") != scope["baseline_revision"]
+            or lifecycle._pointer_revision("known-good") != scope["baseline_revision"]
+            or not prove_loaded(scope["baseline_revision"])):
         raise PermissionError("policy_baseline_identity_unproved")
     # Dedicated decision on the existing loaded baseline while the native
     # pending-operation fence blocks every ordinary protected action. No
@@ -286,6 +289,51 @@ def claim(operation):
     return scope
 
 
+def recheck(operation):
+    with read_connection() as conn:
+        return current(conn, operation, require_claim=True)[1]
+
+
+def stage_matches(scope, stage):
+    try:
+        _, revision, tree, manifest, content_hash = _render(scope["template"], scope["suffixes"], scope["policy_sha256"])
+        expected = set(tree) | {"manifest.json", "revision.txt"}
+        entries = list(stage.iterdir())
+        return (not stage.is_symlink() and set(p.name for p in entries) == expected
+                and all(p.is_file() and not p.is_symlink() for p in entries)
+                and all((stage / name).read_bytes() == raw.encode("utf-8") for name, raw in tree.items())
+                and (stage / "revision.txt").read_text().strip() == revision
+                and json.loads((stage / "manifest.json").read_text()) == {"revision": revision, "files": manifest, "candidate_hash": content_hash})
+    except Exception:
+        return False
+
+
+def finalize(operation, stage):
+    scope = recheck(operation)
+    expected = scope["candidate_revision"]
+    if (not stage_matches(scope, stage) or not prove_loaded(expected)
+            or lifecycle._pointer_revision("active") != expected or lifecycle._pointer_revision("known-good") != expected):
+        raise PermissionError("policy_execution_final_proof_failed")
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            row, latest = current(tx, operation, require_claim=True)
+            if latest != scope:
+                raise PermissionError("policy_execution_binding_changed")
+            stamp = authority._iso()
+            tx.execute("UPDATE policy_runtime_state SET active_revision_id=?,known_good_revision_id=?,updated_at=?,updated_by_operation_id=? WHERE state_id=1",
+                       (expected, expected, stamp, operation["operation_id"]))
+            tx.execute("UPDATE policy_revisions SET validation_status='valid',validated_at=?,lifecycle_status='active',activated_at=? WHERE revision_id=?",
+                       (stamp, stamp, expected))
+            tx.execute("UPDATE lite_lifecycle_policy_execution SET proof_sha256=? WHERE operation_id=?",
+                       (digest({"revision": expected, "content_hash": scope["content_hash"]}), operation["operation_id"]))
+            updated = tx.execute("UPDATE policy_activation_operations SET state='active',updated_at=?,observed_filesystem_revision=?,observed_opa_revision=?,evidence_ref='policy:trusted-note-proved' WHERE operation_id=? AND state='verifying'",
+                       (stamp, expected, expected, operation["operation_id"]))
+            if updated.rowcount != 1:
+                raise ValueError("policy_execution_state_changed")
+            authority._audit(tx, row["owner_id"], "policy_execution_completed", authority._workspace(tx)["boundary_revision"],
+                             decision_id=row["claim_decision_id"], grant_id=row["grant_id"])
+
+
 def stage_source(scope, directory):
     local, revision, tree, _, content_hash = _render(scope["template"], scope["suffixes"], scope["policy_sha256"])
     if (local, revision, content_hash) != (scope["baseline_revision"], scope["candidate_revision"], scope["content_hash"]):
@@ -316,7 +364,8 @@ def active_compatible(conn, state, revision, repository):
                 and content_hash == revision["content_hash"]
                 and row["proof_sha256"] == digest({"revision": expected, "content_hash": content_hash})
                 and lifecycle._pointer_revision("active") == expected
-                and lifecycle._pointer_revision("known-good") == expected)
+                and lifecycle._pointer_revision("known-good") == expected
+                and stage_matches(scope, lifecycle._state_root() / "opa" / "stage" / expected))
     except Exception:
         return False
 

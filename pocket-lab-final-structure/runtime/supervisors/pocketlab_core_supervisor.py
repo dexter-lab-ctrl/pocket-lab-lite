@@ -870,9 +870,11 @@ class LiteCoreSupervisor:
             })
             return False
 
-    def _prepare_policy(self, action: str, revision: str, template_json: str = "") -> bool:
+    def _prepare_policy(self, action: str, revision: str, template_json: str = "", source_dir: str = "") -> bool:
         env = os.environ.copy()
         env["POCKETLAB_STATE_DIR"] = str(self.state_root)
+        if source_dir:
+            env["POCKETLAB_OPA_POLICY_SOURCE_DIR"] = source_dir
         if template_json:
             env["POCKETLAB_POLICY_TEMPLATE_JSON"] = template_json
             env["POCKETLAB_POLICY_REVISION"] = revision
@@ -895,11 +897,15 @@ class LiteCoreSupervisor:
                 if not operation:
                     return None
                 op = dict(operation)
+                from api_fastapi.services import lite_lifecycle_policy_execution as trusted
+                trusted_execution = trusted.get(conn, op["operation_id"])
                 revision = conn.execute("SELECT * FROM policy_revisions WHERE revision_id=?", (op["candidate_revision_id"],)).fetchone()
             if not revision:
                 self._set_policy_operation(op["operation_id"], "failed", reason="policy_revision_unknown")
                 return {"event": "policy_activation_failed", "reason": "policy_revision_unknown", "acted": False}
             revision_data = dict(revision)
+            if trusted_execution:
+                return self._reconcile_trusted_policy(op, revision_data, trusted_execution, trusted)
             template_json = json.dumps({"template_id": revision_data["template_id"], "template_version": revision_data["template_version"], "parameters": json.loads(revision_data["canonical_parameters_json"])}, sort_keys=True, separators=(",", ":"))
             self._set_policy_operation(op["operation_id"], "validating")
             if not self._prepare_policy("stage", op["candidate_revision_id"], template_json) or not self._stage_is_valid(op["candidate_revision_id"]):
@@ -939,6 +945,71 @@ class LiteCoreSupervisor:
             self._set_policy_operation(op["operation_id"], "active", opa=observed, evidence="policy:metadata-proved")
             self._append_event({"event": "policy_activation_active", "operation_id": op["operation_id"], "revision": op["candidate_revision_id"], "acted": True})
             return {"event": "policy_activation_active", "operation_id": op["operation_id"], "revision": op["candidate_revision_id"], "acted": True}
+
+    def _reconcile_trusted_policy(self, op, revision, execution, trusted):
+        """Same activation owner/lock; interrupted execution only rolls back."""
+        import tempfile
+        prior = op["prior_known_good_revision_id"]
+        candidate = op["candidate_revision_id"]
+        stage = self.state_root / "opa" / "stage" / candidate
+        switched = op["state"] != "pending" or bool(execution["claimed_at"])
+        try:
+            if switched:
+                return self._rollback_trusted_policy(op, trusted, "trusted_policy_interrupted")
+            scope = trusted.claim(op)
+            self._set_policy_operation(op["operation_id"], "validating")
+            template = json.dumps(scope["template"], sort_keys=True, separators=(",", ":"))
+            with tempfile.TemporaryDirectory(prefix="trusted-policy-", dir=self.state_root / "opa") as directory:
+                trusted.stage_source(scope, directory)
+                if not self._prepare_policy("stage", candidate, template, source_dir=directory):
+                    raise ValueError("trusted_policy_stage_failed")
+            if not trusted.stage_matches(scope, stage) or not self._stage_matches_revision(candidate, revision["manifest_json"], revision["content_hash"]):
+                raise ValueError("trusted_policy_stage_mismatch")
+            trusted.recheck(op)
+            if not trusted.prove_loaded(prior):
+                raise ValueError("trusted_policy_baseline_changed")
+            self._set_policy_operation(op["operation_id"], "switching", filesystem=candidate)
+            switched = True
+            if not self._prepare_policy("activate", candidate):
+                raise ValueError("trusted_policy_pointer_failed")
+            self._set_policy_operation(op["operation_id"], "restarting")
+            if not self.restart_pm2("pocket-opa", "trusted_policy_activation").get("acted"):
+                raise ValueError("trusted_policy_restart_failed")
+            self._set_policy_operation(op["operation_id"], "verifying")
+            if not self._wait_for_opa_revision(candidate).get("proved") or not trusted.prove_loaded(candidate):
+                raise ValueError("trusted_policy_runtime_unproved")
+            trusted.recheck(op)
+            if not self._prepare_policy("known-good", candidate):
+                raise ValueError("trusted_policy_known_good_failed")
+            trusted.finalize(op, stage)
+        except Exception:
+            if switched:
+                return self._rollback_trusted_policy(op, trusted, "trusted_policy_activation_failed")
+            self._set_policy_operation(op["operation_id"], "failed", reason="trusted_policy_admission_denied")
+            return {"event": "trusted_policy_activation_failed", "acted": False}
+        self._append_event({"event": "trusted_policy_activation_active", "operation_id": op["operation_id"],
+                            "revision": candidate, "acted": True})
+        return {"event": "trusted_policy_activation_active", "revision": candidate, "acted": True}
+
+    def _rollback_trusted_policy(self, op, trusted, reason):
+        prior = op["prior_known_good_revision_id"]
+        self._set_policy_operation(op["operation_id"], "rolling_back", reason=reason)
+        try:
+            if not prior or not self._stage_is_valid(prior) or not self._prepare_policy("activate", prior):
+                raise ValueError("trusted_policy_rollback_pointer_failed")
+            if not self.restart_pm2("pocket-opa", "trusted_policy_rollback").get("acted"):
+                raise ValueError("trusted_policy_rollback_restart_failed")
+            if not self._wait_for_opa_revision(prior).get("proved") or not trusted.prove_loaded(prior):
+                raise ValueError("trusted_policy_rollback_unproved")
+            if not self._prepare_policy("known-good", prior) or not self._restore_policy_runtime_state_after_rollback(op, prior):
+                raise ValueError("trusted_policy_rollback_state_failed")
+            self._set_policy_operation(op["operation_id"], "rolled_back", reason=reason, filesystem=prior,
+                                       opa=prior, evidence="policy:trusted-rollback-proved")
+            self._append_event({"event": "trusted_policy_rolled_back", "operation_id": op["operation_id"], "acted": True})
+            return {"event": "trusted_policy_rolled_back", "acted": True}
+        except Exception:
+            self._set_policy_operation(op["operation_id"], "uncertain", reason="trusted_policy_rollback_unproved")
+            return {"event": "trusted_policy_rollback_uncertain", "acted": False}
 
     def _rollback_policy(self, op: Dict[str, Any], reason: str, *, observed: str | None = None) -> Dict[str, Any]:
         self._set_policy_operation(op["operation_id"], "rolling_back", reason=reason, opa=observed)
