@@ -50,3 +50,27 @@ def test_synthetic_migration_rehearsal_denies_unsafe_sql(sql):
         db.set_authorizer(rehearsal._authorizer)
         with pytest.raises(sqlite3.DatabaseError):
             db.execute(sql)
+
+
+def test_restrictive_candidate_is_exact_local_transformation():
+    from api_fastapi.services import lite_policy_candidate_differential as diff
+    before = {name: b"package test\n" for name in REGISTERED_MODULES}
+    before[diff.MAIN_MODULE] += diff._RESTRICT_BEFORE + b"}\n"
+    after = diff.restrictive_candidate(before, diff.RESTRICTIVE_EDIT)
+    assert diff.locally_supported_evolution(before, after) == "locally_supported_restrictive_evolution"
+    after[diff.MAIN_MODULE] += b"allow := true\n"
+    assert diff.locally_supported_evolution(before, after) == "unknown_semantic_impact"
+
+
+def test_restrictive_comparison_never_accepts_expansion_or_changed_allow():
+    from api_fastapi.services import lite_policy_candidate_differential as diff
+    cases = {"owner": {"action":{"id":diff.RESTRICTIVE_ACTION}, "actor":{"role":"Owner"}},
+             "viewer": {"action":{"id":diff.RESTRICTIVE_ACTION}, "actor":{"role":"Viewer"}}}
+    allow = {"allow": True, "constraints":["authenticated_actor"], "reason_code":"allowed"}
+    deny = {"allow": False, "constraints":[], "reason_code":"denied"}
+    old = {"owner":allow, "viewer":allow}
+    new = {"owner":allow, "viewer":deny}
+    evolution = "locally_supported_restrictive_evolution"
+    assert diff.compare_corpus(cases, old, new, evolution)[0] == "sample_restrictive"
+    assert diff.compare_corpus(cases, new, old, evolution)[0] == "differences_observed"
+    assert diff.compare_corpus(cases, old, {**new,"owner":{**allow,"constraints":[]}}, evolution)[0] == "differences_observed"

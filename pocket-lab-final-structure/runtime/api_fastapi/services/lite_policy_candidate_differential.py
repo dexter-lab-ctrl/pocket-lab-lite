@@ -31,6 +31,57 @@ ALLOWED_BUILTINS = frozenset({"object.get", "object.union", "concat", "lower",
                               "time.parse_rfc3339_ns", "time.now_ns"})
 NOTE = re.compile(rb"# pocketlab-release-note: [ -~]{1,160}\n")
 
+# A local, versioned tightening of an existing rule, not arbitrary code or
+# publisher-defined semantics. All other bytes, including tests, must match.
+RESTRICTIVE_EDIT = "backup-location-human-owner-v1"
+MAIN_MODULE = POLICY_PREFIX + "pocketlab/pocketlab.rego"
+RESTRICTIVE_ACTION = "backup.location.manage"
+_RESTRICT_BEFORE = b'backup_location_action if {\n\tinput.action.id == "backup.location.manage"\n'
+_RESTRICT_AFTER = _RESTRICT_BEFORE + (b'\tinput.actor.type == "human"\n'
+    b'\tinput.actor.role == "Owner"\n\tinput.actor.owner_authority == true\n'
+    b'\tnot synthetic_actor\n')
+
+
+def restrictive_candidate(before, edit_id):
+    if (edit_id != RESTRICTIVE_EDIT or set(before) != REGISTERED_MODULES
+            or before[MAIN_MODULE].count(_RESTRICT_BEFORE) != 1
+            or _RESTRICT_AFTER in before[MAIN_MODULE]):
+        raise ValueError("policy_restrictive_contract_mismatch")
+    result = dict(before)
+    result[MAIN_MODULE] = result[MAIN_MODULE].replace(_RESTRICT_BEFORE, _RESTRICT_AFTER, 1)
+    return result
+
+
+def supported_differential(evidence):
+    return ((evidence.get("local_contract") == "locally_supported_note_evolution"
+             and evidence.get("state") == "sample_equal")
+            or (evidence.get("local_contract") == "locally_supported_restrictive_evolution"
+                and evidence.get("state") == "sample_restrictive"
+                and evidence.get("restrictive_edit") == RESTRICTIVE_EDIT))
+
+
+def compare_corpus(cases, before, after, evolution):
+    """Full envelopes must match except an explicitly registered allow->deny.
+
+    Never accept a changed allowed decision, changed existing deny, or a
+    changed action outside the locally understood tightening.
+    """
+    changed = [key for key in cases if differential_evidence(before[key], after[key])["state"] != "sample_equal"]
+    if not changed:
+        return "sample_equal", changed
+    if evolution == "locally_supported_restrictive_evolution":
+        if all(cases[key]["action"]["id"] == RESTRICTIVE_ACTION
+               and before[key]["allow"] is True and after[key]["allow"] is False
+               and not after[key].get("requirements") for key in changed):
+            # Positive and negative cases must both be exercised.
+            owner_survives = any(cases[key]["action"]["id"] == RESTRICTIVE_ACTION
+                and cases[key]["actor"]["role"] == "Owner"
+                and before[key]["allow"] is True and after[key]["allow"] is True
+                for key in cases)
+            if owner_survives:
+                return "sample_restrictive", changed
+    return "differences_observed", changed
+
 
 def locally_supported_evolution(before: dict[str, bytes], after: dict[str, bytes]):
     """Exact identity or a deliberately narrow local lexical transformation.
@@ -41,6 +92,11 @@ def locally_supported_evolution(before: dict[str, bytes], after: dict[str, bytes
     """
     if set(before) != REGISTERED_MODULES or set(after) != REGISTERED_MODULES:
         return "unsupported_inventory"
+    try:
+        if restrictive_candidate(before, RESTRICTIVE_EDIT) == after:
+            return "locally_supported_restrictive_evolution"
+    except ValueError:
+        pass
     changed = False
     for name, old in before.items():
         new = after[name]
@@ -125,8 +181,13 @@ def _target(action):
         return "system_health_maintenance", target_id, revision, {"operation_id": "sqlite.checkpoint.passive",
             "adapter_enabled": True, "confirmed": True}
     if action == "system_health.automatic":
-        return "system_health_projection", target_id, revision, {"operation_id": "projection.reconcile",
+        return "system_health_projection", "system.activity_history", revision, {"operation_id": "projection.reconcile",
             "risk_class": "A", "adapter_enabled": True, "owner_policy_current": True}
+    if action in {"lifecycle.policy.activate", "lifecycle.policy.claim"}:
+        revision = "a" * 64
+        return "lifecycle_policy_execution", ("local_workspace" if action.endswith("activate") else "synthetic-operation"), revision, {
+            "change_digest": revision, "contract_version": 1, "purpose": "policy-reconciler",
+            "execution_enabled": True, "grant_current": True}
     if action.startswith("lifecycle."):
         revision = "a" * 64
         return "lifecycle_consent", "local_workspace", revision, {"change_digest": revision,
@@ -146,10 +207,15 @@ def corpus():
     for action in sorted(PROTECTED_ACTIONS | {"rules.activate", "rules.rollback", "unknown.action"}):
         target_type, target_id, revision, state = _target(action)
         for i, (kind, role, enterprise) in enumerate(actors):
-            context = {"actor": {"type": kind, "identity_id": "synthetic"},
+            actor_id = ("policy-reconciler" if action == "lifecycle.policy.claim" and kind == "service"
+                        else "system-health-scheduler" if action == "system_health.automatic" and kind == "service"
+                        else "synthetic")
+            method = ("local_supervisor" if actor_id == "policy-reconciler" else
+                      "internal_worker" if actor_id == "system-health-scheduler" else "passkey")
+            context = {"actor": {"type": kind, "identity_id": actor_id},
                        "authorization": {"role": role, "owner_authority": role == "Owner",
                            "enterprise_enabled": enterprise, "membership_active": bool(role and enterprise)},
-                       "session": {"authenticated": kind != "anonymous", "assurance": [
+                       "session": {"authenticated": kind != "anonymous", "auth_method": method, "assurance": [
                            {"purpose": purpose, "credential_id": "synthetic", "satisfied_at": "2020-01-01T00:00:00Z",
                             "expires_at": "2099-01-01T00:00:00Z"}
                            for purpose in (action, "lifecycle:" + revision)]}}
@@ -219,7 +285,7 @@ def assess(stream, local_document, candidate_document, *, parent: Path, deadline
         evolution = locally_supported_evolution(before, after)
         result = {"state": "not_executed", "local_contract": evolution, "execution_eligible": False}
         # Arbitrary new policy source is not run even in the offline tool.
-        if evolution not in ("source_unchanged", "locally_supported_note_evolution"):
+        if evolution not in ("source_unchanged", "locally_supported_note_evolution", "locally_supported_restrictive_evolution"):
             return result
         snapshot = _snapshot()
         if snapshot is None:
@@ -246,12 +312,14 @@ def assess(stream, local_document, candidate_document, *, parent: Path, deadline
             b = _evaluate(right, after, template, cases, capabilities, deadline)
         if _snapshot() != snapshot:
             return {**result, "state": "baseline_changed"}
-        changed = [key for key in cases if differential_evidence(a[key], b[key])["state"] != "sample_equal"]
-        return {**result, "state": "differences_observed" if changed else "sample_equal",
+        comparison, changed = compare_corpus(cases, a, b, evolution)
+        return {**result, "state": comparison,
+                "restrictive_edit": RESTRICTIVE_EDIT if comparison == "sample_restrictive" else None,
                 "case_count": len(cases), "changed_count": len(changed), "corpus_sha256": digest(cases),
                 "before_sha256": digest(a), "after_sha256": digest(b), "baseline_revision": revision,
                 "semantic_equivalence_proved": False,
                 "note_suffixes": {name.rsplit("/", 1)[-1]: base64.b64encode(after[name][len(before[name]):]).decode("ascii")
-                                  for name in before if after[name] != before[name]} if not changed else {}}
+                                  for name in before if after[name] != before[name]}
+                                  if comparison == "sample_equal" and evolution == "locally_supported_note_evolution" else {}}
     except Exception:
         return {"state": "unavailable", "execution_eligible": False}

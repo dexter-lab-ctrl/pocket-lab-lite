@@ -27,7 +27,7 @@ from . import lite_policy_lifecycle as lifecycle
 from . import lite_policy_opa as opa
 from . import lite_release_trust_configuration as trust_config
 from .lite_lifecycle_contract import canonical_bytes, digest, registry_revision
-from .lite_policy_candidate_differential import locally_supported_evolution
+from .lite_policy_candidate_differential import locally_supported_evolution, restrictive_candidate, supported_differential
 from .lite_policy_compatibility import REGISTERED_MODULES
 
 ACTION = "lifecycle.policy.activate"
@@ -86,22 +86,29 @@ def _receipt(conn):
     return json.loads(row["review_json"]) if row else {}
 
 
-def _render(template, suffixes, expected_policy):
+def _render(template, suffixes, expected_policy, restrictive_edit=None):
     local_revision, local_tree = lifecycle.policy_source_tree(
         template["template_id"], template["template_version"], template["parameters"])
     by_name = {name.rsplit("/", 1)[-1]: name for name in REGISTERED_MODULES}
     before = {full: local_tree[name].encode("utf-8") for name, full in by_name.items()}
     if set(local_tree) != set(by_name) | {"template.json", "revision.rego"}:
         raise ValueError("policy_inventory_changed")
-    if not isinstance(suffixes, dict) or not suffixes or set(suffixes) - set(by_name):
+    if not isinstance(suffixes, dict) or set(suffixes) - set(by_name):
         raise ValueError("policy_note_scope_invalid")
-    after = dict(before)
-    for name, value in suffixes.items():
-        if not isinstance(value, str) or len(value) > 2048:
+    if restrictive_edit is not None:
+        if suffixes:
+            raise ValueError("policy_mixed_evolution_unsupported")
+        after = restrictive_candidate(before, restrictive_edit)
+    else:
+        if not suffixes:
             raise ValueError("policy_note_scope_invalid")
-        after[by_name[name]] += base64.b64decode(value, validate=True)
-    if locally_supported_evolution(before, after) != "locally_supported_note_evolution":
-        raise ValueError("policy_evolution_not_supported")
+        after = dict(before)
+        for name, value in suffixes.items():
+            if not isinstance(value, str) or len(value) > 2048:
+                raise ValueError("policy_note_scope_invalid")
+            after[by_name[name]] += base64.b64decode(value, validate=True)
+        if locally_supported_evolution(before, after) != "locally_supported_note_evolution":
+            raise ValueError("policy_evolution_not_supported")
     inventory = [{"path": name, "sha256": hashlib.sha256(raw).hexdigest()} for name, raw in sorted(after.items())]
     if digest(inventory) != expected_policy:
         raise ValueError("policy_signed_inventory_mismatch")
@@ -128,8 +135,7 @@ def binding_fields(conn, payload):
     if (receipt.get("metadata_sha256") != payload.metadata_sha256
             or receipt.get("registry_revision") != registry_revision()
             or (receipt.get("source_package") or {}).get("state") != "verified_for_review"
-            or differential.get("state") != "sample_equal"
-            or differential.get("local_contract") != "locally_supported_note_evolution"
+            or not supported_differential(differential)
             or differential.get("baseline_revision") != authority._policy(conn)
             or observation.get("state") != "modules_match"
             or observation.get("data_identity") != "registered_template_matches"
@@ -142,14 +148,15 @@ def binding_fields(conn, payload):
     template = {"template_id": current["template_id"], "template_version": current["template_version"],
                 "parameters": json.loads(current["canonical_parameters_json"])}
     suffixes = differential.get("note_suffixes")
-    local, revision, _, _, content_hash = _render(template, suffixes, receipt["policy_sha256"])
+    restrictive_edit = differential.get("restrictive_edit")
+    local, revision, _, _, content_hash = _render(template, suffixes, receipt["policy_sha256"], restrictive_edit)
     if local != current["revision_id"] or revision == local:
         raise ValueError("policy_baseline_changed")
     return {"purpose": EXECUTOR, "metadata_sha256": payload.metadata_sha256,
             "policy_sha256": receipt["policy_sha256"], "baseline_revision": local,
             "candidate_revision": revision, "content_hash": content_hash,
             "corpus_sha256": differential["corpus_sha256"], "template": template,
-            "suffixes": suffixes}
+            "suffixes": suffixes, "restrictive_edit": restrictive_edit}
 
 
 def preview(context, payload):
@@ -158,7 +165,7 @@ def preview(context, payload):
         scope = binding["policy_execution"]
     return {"purpose": "lifecycle:" + fingerprint, "confirmation_required": True,
             "scope": {k: scope[k] for k in ("purpose", "metadata_sha256", "policy_sha256",
-                "baseline_revision", "candidate_revision", "content_hash", "corpus_sha256")},
+                "baseline_revision", "candidate_revision", "content_hash", "corpus_sha256", "restrictive_edit")},
             "execution_eligible": True, "qualification_only": True}
 
 
@@ -175,14 +182,14 @@ def admit(context, payload):
             now = authority._trusted_now(tx)
             if now is None:
                 raise PermissionError("trusted_time_unavailable")
-            local, revision, _, manifest, content_hash = _render(scope["template"], scope["suffixes"], scope["policy_sha256"])
+            local, revision, _, manifest, content_hash = _render(scope["template"], scope["suffixes"], scope["policy_sha256"], scope.get("restrictive_edit"))
             operation = "plo-" + uuid.uuid4().hex
             grant = uuid.uuid4().hex
             stamp = now.isoformat()
             tx.execute("""INSERT OR IGNORE INTO policy_revisions(revision_id,parent_revision_id,template_id,template_version,
                 canonical_parameters_json,manifest_json,content_hash,created_by_human_id,created_by_principal_type,
                 created_by_principal_id,created_at,validation_status,lifecycle_status,change_summary)
-                VALUES(?,?,?,?,?,?,?,?, 'human',?,?,'pending','draft','Exact signed policy note evolution')""",
+                VALUES(?,?,?,?,?,?,?,?, 'human',?,?,'pending','draft','Exact signed locally supported policy evolution')""",
                 (revision, local, scope["template"]["template_id"], scope["template"]["template_version"],
                  canonical_bytes(scope["template"]["parameters"]).decode("ascii"),
                  canonical_bytes({"revision": revision, "files": manifest, "candidate_hash": content_hash}).decode("ascii"),
@@ -250,7 +257,7 @@ def current(conn, operation, *, require_claim=False):
             or operation["prior_known_good_revision_id"] != scope["baseline_revision"]
             or (require_claim and (not row["claimed_at"] or not row["claim_decision_id"]))):
         raise PermissionError("policy_execution_binding_changed")
-    local, candidate, _, _, content_hash = _render(scope["template"], scope["suffixes"], scope["policy_sha256"])
+    local, candidate, _, _, content_hash = _render(scope["template"], scope["suffixes"], scope["policy_sha256"], scope.get("restrictive_edit"))
     if (local, candidate, content_hash) != (scope["baseline_revision"], scope["candidate_revision"], scope["content_hash"]):
         raise PermissionError("policy_execution_source_changed")
     return row, scope
@@ -329,7 +336,7 @@ def recheck(operation):
 
 def stage_matches(scope, stage):
     try:
-        _, revision, tree, manifest, content_hash = _render(scope["template"], scope["suffixes"], scope["policy_sha256"])
+        _, revision, tree, manifest, content_hash = _render(scope["template"], scope["suffixes"], scope["policy_sha256"], scope.get("restrictive_edit"))
         expected = set(tree) | {"manifest.json", "revision.txt"}
         entries = list(stage.iterdir())
         return (not stage.is_symlink() and set(p.name for p in entries) == expected
@@ -359,7 +366,7 @@ def finalize(operation, stage):
                        (stamp, stamp, expected))
             tx.execute("UPDATE lite_lifecycle_policy_execution SET proof_sha256=? WHERE operation_id=?",
                        (digest({"revision": expected, "content_hash": scope["content_hash"]}), operation["operation_id"]))
-            updated = tx.execute("UPDATE policy_activation_operations SET state='active',updated_at=?,observed_filesystem_revision=?,observed_opa_revision=?,evidence_ref='policy:trusted-note-proved' WHERE operation_id=? AND state='verifying'",
+            updated = tx.execute("UPDATE policy_activation_operations SET state='active',updated_at=?,observed_filesystem_revision=?,observed_opa_revision=?,evidence_ref='policy:trusted-evolution-proved' WHERE operation_id=? AND state='verifying'",
                        (stamp, expected, expected, operation["operation_id"]))
             if updated.rowcount != 1:
                 raise ValueError("policy_execution_state_changed")
@@ -368,7 +375,7 @@ def finalize(operation, stage):
 
 
 def stage_source(scope, directory):
-    local, revision, tree, _, content_hash = _render(scope["template"], scope["suffixes"], scope["policy_sha256"])
+    local, revision, tree, _, content_hash = _render(scope["template"], scope["suffixes"], scope["policy_sha256"], scope.get("restrictive_edit"))
     if (local, revision, content_hash) != (scope["baseline_revision"], scope["candidate_revision"], scope["content_hash"]):
         raise ValueError("policy_stage_contract_changed")
     for name, contents in tree.items():
@@ -391,7 +398,7 @@ def active_compatible(conn, state, revision, repository):
             return False
         binding = json.loads(row["binding_json"])
         scope = binding["policy_execution"]
-        local, expected, _, manifest, content_hash = _render(scope["template"], scope["suffixes"], scope["policy_sha256"])
+        local, expected, _, manifest, content_hash = _render(scope["template"], scope["suffixes"], scope["policy_sha256"], scope.get("restrictive_edit"))
         return (digest(binding) == row["binding_sha256"] and local == repository["revision_id"]
                 and expected == revision["revision_id"] == state["known_good_revision_id"]
                 and content_hash == revision["content_hash"]

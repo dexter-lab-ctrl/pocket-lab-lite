@@ -409,6 +409,7 @@ def summary(context):
         evaluation = (ws, prefs, _trust(conn), _trusted_now(conn), _policy(conn))
         from .lite_lifecycle_candidate_consent import summary as candidate_summary
         from .lite_lifecycle_policy_execution import summary as policy_execution_summary, gate as policy_execution_gate
+        from .lite_policy_candidate_differential import supported_differential
         policy_executions = policy_execution_summary(conn) if is_owner else []
         candidate_consents = candidate_summary(conn, ws=ws, prefs=prefs, trust=evaluation[2], now=evaluation[3],
             policy=evaluation[4], owner=owner, versions=versions, enterprise=enterprise) if is_owner else []
@@ -482,8 +483,7 @@ def summary(context):
             "policy_execution_qualification_enabled": bool(is_owner and policy_execution_gate()),
             "policy_execution_review_available": bool(eligible_to_record and policy_execution_gate()
                 and latest.get("provenance") == "verified"
-                and (policy_review.get("differential") or {}).get("state") == "sample_equal"
-                and (policy_review.get("differential") or {}).get("local_contract") == "locally_supported_note_evolution"
+                and supported_differential(policy_review.get("differential") or {})
                 and (latest.get("capability_review") or {}).get("total") == 0),
             "candidate_review": ({key: latest.get(key) for key in
                 ("release_tag", "checked_at", "metadata_sha256", "source_package", "policy_review", "policy_runtime_observation", "migration_review", "coordinated_preflight")} | {"capability_review": candidate_review, "policy_review": policy_review}
