@@ -18,6 +18,7 @@ import uuid
 
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal
+from urllib.parse import urlsplit
 
 from ..db.connection import connection, read_connection, begin_immediate
 from . import lite_lifecycle_authority as authority
@@ -58,9 +59,24 @@ def gate():
         if not qualification.enabled() or not os.environ.get("PM2_HOME"):
             return False
         root = qualification.root()
-        paths = (lifecycle._state_root(), database_path(), Path(os.environ["PM2_HOME"]))
-        return all(qualification._resolved_without_symlink_escape(path, root) != root
-                   for path in paths)
+        state = qualification._resolved_without_symlink_escape(lifecycle._state_root(), root)
+        paths = (state, database_path(), Path(os.environ["PM2_HOME"]))
+        if not all(qualification._resolved_without_symlink_escape(path, root) != root
+                   for path in paths):
+            return False
+        # Active is a governed symlink: validate its parent and resolved target,
+        # not just the state DB. Never probe the production default listener.
+        active = opa._policy_root()
+        if active.absolute() != state / "opa" / "active":
+            return False
+        if active.exists():
+            active.resolve(strict=True).relative_to(state / "opa" / "stage")
+        endpoint = urlsplit(opa.OPA_BASE_URL)
+        return (os.environ.get("POCKETLAB_OPA_URL", "").rstrip("/") == opa.OPA_BASE_URL
+                and opa._opa_endpoint_is_loopback() and endpoint.scheme == "http"
+                and endpoint.hostname == "127.0.0.1" and endpoint.port is not None
+                and 1024 <= endpoint.port <= 65535 and endpoint.port != 8181
+                and not endpoint.path and not endpoint.query and not endpoint.fragment)
     except Exception:
         return False
 

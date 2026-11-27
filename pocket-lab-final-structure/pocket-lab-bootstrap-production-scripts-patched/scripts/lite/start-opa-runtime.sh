@@ -16,6 +16,30 @@ POCKETLAB_STATE_DIR="${POCKETLAB_STATE_DIR:-${POCKETLAB_BASE_DIR:-$POCKET_LAB_BA
 POCKETLAB_LITE_DB_PATH="${POCKETLAB_LITE_DB_PATH:-$POCKETLAB_STATE_DIR/pocketlab-lite.sqlite3}"
 POCKETLAB_OPA_ACTIVE_POLICY_DIR="${POCKETLAB_OPA_ACTIVE_POLICY_DIR:-$POCKETLAB_STATE_DIR/opa/active}"
 export POCKETLAB_STATE_DIR POCKETLAB_LITE_DB_PATH POCKETLAB_OPA_ACTIVE_POLICY_DIR
+# Normal deployment retains the fixed loopback endpoint. Qualification must
+# explicitly choose a different port and keep writable paths inside its root.
+OPA_ADDR="127.0.0.1:8181"
+if [[ "${POCKETLAB_ENVIRONMENT:-}" == "qualification" ]]; then
+  OPA_ADDR="$(python3 - <<'PY'
+import os, pathlib, re, sys
+from urllib.parse import urlsplit
+root = pathlib.Path(os.environ["POCKETLAB_QUALIFICATION_ROOT"]).resolve(strict=True)
+assert os.environ.get("POCKETLAB_QUALIFICATION_CONTEXT") == "isolated-runtime-v1"
+assert re.fullmatch(r"[a-f0-9]{12,64}", os.environ["POCKETLAB_QUALIFICATION_RUN_ID"])
+assert re.fullmatch(r"[a-f0-9]{40}", os.environ["POCKETLAB_QUALIFICATION_CANDIDATE_SHA"])
+for key in ("POCKETLAB_STATE_DIR", "POCKETLAB_LITE_DB_PATH", "PM2_HOME", "POCKETLAB_OPA_ACTIVE_POLICY_DIR"):
+    path = pathlib.Path(os.environ[key]).resolve()
+    assert path != root
+    path.relative_to(root)
+url = urlsplit(os.environ["POCKETLAB_OPA_URL"])
+assert url.scheme == "http" and url.hostname == "127.0.0.1"
+assert not (url.username or url.password or url.path or url.query or url.fragment)
+assert url.port and 1024 <= url.port <= 65535 and url.port != 8181
+print(f"127.0.0.1:{url.port}")
+PY
+)" || die "OPA qualification endpoint or writable roots are unsafe"
+fi
+OPA_ORIGIN="http://$OPA_ADDR"
 
 bounded_revision() {
   [[ "${1:-}" =~ ^[A-Za-z0-9._-]{8,80}$ ]]
@@ -78,11 +102,11 @@ start_opa_process() {
   pocketlab_execute_resolution "$resolution" version >/dev/null 2>&1 || die "OPA executable changed during startup resolution"
   if [[ "$mode" == "native" ]]; then
     pm2_ensure_versioned_process pocket-opa "$(opa_installed_version)" "$executable" \
-      -- run --server --addr=127.0.0.1:8181 \
+      -- run --server --addr="$OPA_ADDR" \
       "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
   elif [[ "$mode" == "script" && -n "$interpreter" ]]; then
     pm2_ensure_versioned_process pocket-opa "$(opa_installed_version)" "$executable" \
-      --interpreter "$interpreter" -- run --server --addr=127.0.0.1:8181 \
+      --interpreter "$interpreter" -- run --server --addr="$OPA_ADDR" \
       "$POCKETLAB_OPA_ACTIVE_POLICY_DIR"
   else
     die "OPA executable resolution has an unsupported format"
@@ -92,7 +116,7 @@ start_opa_process() {
 wait_for_exact_revision() {
   local expected="$1" ready=0 attempt observed=""
   for attempt in $(seq 1 20); do
-    if curl -fsS --max-time 2 http://127.0.0.1:8181/health >/dev/null 2>&1; then
+    if curl -fsS --max-time 2 "$OPA_ORIGIN/health" >/dev/null 2>&1; then
       ready=1
       break
     fi
@@ -103,7 +127,7 @@ wait_for_exact_revision() {
     die "OPA did not become ready on loopback"
   }
   observed="$(curl -fsS --max-time 3 \
-    http://127.0.0.1:8181/v1/data/pocketlab/meta/revision \
+    "$OPA_ORIGIN/v1/data/pocketlab/meta/revision" \
     | python3 -c 'import json,sys; value=json.load(sys.stdin).get("result"); print(value if isinstance(value,str) else ""); raise SystemExit(0 if isinstance(value,str) else 1)' \
     2>/dev/null || true)"
   [[ "$observed" == "$expected" ]] || die "OPA metadata revision did not match the startup-authorized revision"
@@ -118,7 +142,7 @@ start_blocked_runtime_for_recovery() {
   fi
   # Diagnostics only. Never bless this revision or change pointers while the
   # durable lifecycle is nonterminal/uncertain/inconsistent.
-  if curl -fsS --max-time 2 http://127.0.0.1:8181/health >/dev/null 2>&1; then
+  if curl -fsS --max-time 2 "$OPA_ORIGIN/health" >/dev/null 2>&1; then
     log INFO "OPA preserved runtime is reachable while governed startup remains blocked"
   else
     log WARN "OPA preserved runtime is not ready; continuing for supervisor/API recovery"

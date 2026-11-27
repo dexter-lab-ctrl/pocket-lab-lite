@@ -782,6 +782,16 @@ class LiteCoreSupervisor:
         interval_seconds: float | None = None,
     ) -> Dict[str, Any]:
         """Bound readiness proof after an OPA restart to health plus exact revision."""
+        # In a qualification lane never accidentally prove the production OPA.
+        from urllib.parse import urlsplit
+        base = os.environ.get("POCKETLAB_OPA_URL", "http://127.0.0.1:8181").rstrip("/")
+        endpoint = urlsplit(base)
+        if (endpoint.scheme != "http" or endpoint.hostname != "127.0.0.1"
+                or endpoint.username or endpoint.password or endpoint.path
+                or endpoint.query or endpoint.fragment or endpoint.port is None
+                or (os.environ.get("POCKETLAB_ENVIRONMENT", "").lower() == "qualification"
+                    and endpoint.port == 8181)):
+            return {"proved": False, "observed_revision": None, "health_ready": False, "attempts": 0}
         timeout = self.opa_readiness_timeout if timeout_seconds is None else max(0.0, float(timeout_seconds))
         interval = self.opa_readiness_interval if interval_seconds is None else max(0.0, float(interval_seconds))
         deadline = time.monotonic() + timeout
@@ -792,11 +802,11 @@ class LiteCoreSupervisor:
             attempts += 1
             remaining = max(0.0, deadline - time.monotonic())
             probe_timeout = max(0.1, min(1.0, remaining if remaining > 0 else 0.1))
-            health_ready = fetch_json("http://127.0.0.1:8181/health", timeout=probe_timeout) is not None
+            health_ready = fetch_json(base + "/health", timeout=probe_timeout) is not None
             remaining = max(0.0, deadline - time.monotonic())
             probe_timeout = max(0.1, min(1.0, remaining if remaining > 0 else 0.1))
             observed = self._opa_metadata_revision(
-                fetch_json("http://127.0.0.1:8181/v1/data/pocketlab/meta/revision", timeout=probe_timeout)
+                fetch_json(base + "/v1/data/pocketlab/meta/revision", timeout=probe_timeout)
             )
             if health_ready and observed == expected_revision:
                 return {
@@ -952,10 +962,19 @@ class LiteCoreSupervisor:
         prior = op["prior_known_good_revision_id"]
         candidate = op["candidate_revision_id"]
         stage = self.state_root / "opa" / "stage" / candidate
-        switched = op["state"] != "pending" or bool(execution["claimed_at"])
+        # A claimed operation may have been interrupted before any pointer
+        # mutation. Only a switching-or-later durable phase permits rollback.
+        switched = op["state"] in {"switching", "restarting", "verifying", "rolling_back"}
+        if not trusted.gate():
+            self._set_policy_operation(op["operation_id"], "uncertain" if switched else "failed",
+                                       reason="trusted_policy_isolation_unproved")
+            return {"event": "trusted_policy_isolation_unproved", "acted": False}
         try:
             if switched:
                 return self._rollback_trusted_policy(op, trusted, "trusted_policy_interrupted")
+            if op["state"] != "pending" or execution["claimed_at"]:
+                self._set_policy_operation(op["operation_id"], "failed", reason="trusted_policy_interrupted_before_switch")
+                return {"event": "trusted_policy_interrupted_before_switch", "acted": False}
             scope = trusted.claim(op)
             self._set_policy_operation(op["operation_id"], "validating")
             template = json.dumps(scope["template"], sort_keys=True, separators=(",", ":"))
@@ -993,6 +1012,9 @@ class LiteCoreSupervisor:
 
     def _rollback_trusted_policy(self, op, trusted, reason):
         prior = op["prior_known_good_revision_id"]
+        if not trusted.gate():
+            self._set_policy_operation(op["operation_id"], "uncertain", reason="trusted_policy_isolation_unproved")
+            return {"event": "trusted_policy_rollback_uncertain", "acted": False}
         self._set_policy_operation(op["operation_id"], "rolling_back", reason=reason)
         try:
             if not prior or not self._stage_is_valid(prior) or not self._prepare_policy("activate", prior):
