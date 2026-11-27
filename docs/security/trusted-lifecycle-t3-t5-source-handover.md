@@ -338,3 +338,32 @@ changed.
 The final active disposition is Q8 `GATE MISS / PERFORMANCE RESIDUAL` and Q9
 `PARTIAL`. The branch remains draft, production activation remains disabled,
 and the Server Phone restoration to main remains independently verified.
+
+### Final documentation/evidence head and exact-head CI — 2026-11-27
+
+The final documentation/evidence head recorded by this handover is
+`471d28c376f70259a60d0494e5be9f923a1429d7`. It is documentation, contract and
+evidence-only work after the physically qualified runtime candidate
+`1c9ee06818fb396e56ccd86ecfd99bab85c32a4d`; the runtime-bearing source
+inventory remains equivalent to that qualified candidate.
+
+The exact-head workflow
+[45997861790](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45997861790)
+completed successfully for this final recorded head:
+
+- [isolated-devpc-qualification](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45997861790/job/140501689508): PASS;
+- [ui-performance-qualification](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45997861790/job/140501689880): PASS;
+- [quick-and-docs](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45997861790/job/140501690062): PASS.
+
+The earlier `45993578648` broad mocked performance miss remains retained as a
+renderer-sensitive residual; the successful rerun did not change thresholds,
+attribution rules, or the physical System-only evidence. The final remote
+feature head recorded for this handover is `471d28c…`, the PR remains draft,
+production activation remains disabled, and the Server Phone remains restored
+to remote `main` `9bc53ce047c800be71cd76f1a37e79659af1ca4d`.
+
+The active Q0–Q9 disposition is therefore: Q0 `PARTIAL`, Q1 `PASS — isolated`,
+Q2 `PARTIAL`, Q3 `PASS — isolated`, Q4 `PARTIAL`, Q5 `PASS — isolated`, Q6
+`RESIDUAL`, Q7 `PASS`, Q8 `PASS` for exact-head CI, and Q9 `PARTIAL` pending
+any separately authorized live cutover/recovery qualification and resolution
+of the retained physical performance target/gate residual.

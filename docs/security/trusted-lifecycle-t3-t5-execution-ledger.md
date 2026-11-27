@@ -270,3 +270,27 @@ Q8 is therefore `GATE MISS / PERFORMANCE RESIDUAL`, not PASS. Q9 remains
 are verified, but the mandatory CI performance gate and live production
 cutover/recovery proof remain unresolved. No threshold, assertion, or unrelated
 screen was weakened to obtain a green result.
+
+### Final documentation/evidence head and exact-head CI — 2026-11-27
+
+The final documentation/evidence head at the time of this record is
+`471d28c376f70259a60d0494e5be9f923a1429d7`. It contains no runtime-bearing
+source change after the physically qualified candidate
+`1c9ee06818fb396e56ccd86ecfd99bab85c32a4d`; the contract promotion and
+documentation/evidence changes were checked for source-inventory equivalence.
+
+The exact-head workflow
+[45997861790](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45997861790)
+for that head completed all required jobs successfully:
+
+- [isolated-devpc-qualification](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45997861790/job/140501689508): PASS;
+- [ui-performance-qualification](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45997861790/job/140501689880): PASS;
+- [quick-and-docs](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/45997861790/job/140501690062): PASS.
+
+This rerun is CI evidence for the exact `471d28c…` head. It does not erase the
+prior `45993578648` broad-matrix renderer-sensitive performance residual, and
+it does not turn the physical System-only `TARGET MISS`/`GATE MISS` results
+into compliance. No performance threshold, attribution rule, or assertion was
+changed. Q8 is therefore `PASS` for exact-head CI, while Q9 remains `PARTIAL`
+because live coordinated cutover/recovery and production activation were not
+performed, and the physical performance residual remains disclosed.
