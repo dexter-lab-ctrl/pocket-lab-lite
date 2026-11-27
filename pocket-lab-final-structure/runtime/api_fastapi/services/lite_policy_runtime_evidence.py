@@ -62,6 +62,23 @@ def compare_loaded_modules(manifest, modules):
     return Counter(observed.values()) == Counter(expected.values())
 
 
+def compare_loaded_data(manifest, template, root):
+    """Compare every registered base-document root, including stage manifest.
+
+    OPA's root Data API also returns virtual documents under pocketlab. These
+    cannot be distinguished from arbitrary injected base data solely by that
+    API; do not claim an in-memory attestation. Stage-file proof is separate.
+    """
+    if not isinstance(root, dict) or not isinstance(manifest, dict):
+        return False
+    expected = {**template, **manifest}
+    if set(root) != set(expected) | {"pocketlab"}:
+        return False
+    if not isinstance(root["pocketlab"], dict):
+        return False
+    return all(canonical_bytes(root.get(key)) == canonical_bytes(value) for key, value in expected.items())
+
+
 def _snapshot():
     from ..db.connection import read_connection
     from . import lite_policy_lifecycle as lifecycle
@@ -84,7 +101,7 @@ def _snapshot():
 
 def observe():
     result = {"state": "unknown", "scope": "rego_modules_only",
-              "data_identity": "unknown", "backend_identity": "unknown",
+              "data_identity": "unknown", "manifest_data_identity": "unknown", "backend_identity": "unknown",
               "execution_eligible": False}
     try:
         snapshot = _snapshot()
@@ -106,10 +123,13 @@ def observe():
         # the entire virtual policy tree, which can depend on input or time.
         data_matches = all(canonical_bytes(_get("/v1/data/" + key)) == canonical_bytes(value)
                            for key, value in expected_data.items())
+        expected_manifest = {"revision": revision, "files": manifest["files"], "candidate_hash": content_hash}
+        manifest_matches = compare_loaded_data(expected_manifest, expected_data, _get("/v1/data"))
         if _get("/v1/data/pocketlab/meta/revision") != revision or _snapshot() != snapshot:
             return result
         return {**result, "state": "modules_match" if matched else "module_mismatch",
                 "observed_revision": revision, "observed_at": datetime.now(timezone.utc).isoformat(),
-                "data_identity": "registered_template_matches" if data_matches else "registered_template_mismatch"}
+                "data_identity": "registered_template_matches" if data_matches else "registered_template_mismatch",
+                "manifest_data_identity": "registered_roots_match" if manifest_matches else "registered_roots_mismatch"}
     except Exception:
         return result

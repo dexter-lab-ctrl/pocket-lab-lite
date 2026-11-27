@@ -139,6 +139,7 @@ def binding_fields(conn, payload):
             or differential.get("baseline_revision") != authority._policy(conn)
             or observation.get("state") != "modules_match"
             or observation.get("data_identity") != "registered_template_matches"
+            or observation.get("manifest_data_identity") != "registered_roots_match"
             or observation.get("observed_revision") != authority._policy(conn)
             or (receipt.get("capability_review") or {}).get("total") != 0
             or (receipt.get("migration_review") or {}).get("state") != "unchanged"
@@ -264,7 +265,7 @@ def current(conn, operation, *, require_claim=False):
 
 
 def prove_loaded(revision):
-    from .lite_policy_runtime_evidence import _get, compare_loaded_modules
+    from .lite_policy_runtime_evidence import _get, compare_loaded_modules, compare_loaded_data
     try:
         with read_connection() as conn:
             row = conn.execute("SELECT * FROM policy_revisions WHERE revision_id=?", (revision,)).fetchone()
@@ -279,7 +280,9 @@ def prove_loaded(revision):
             return False
         values = {"template_id": row["template_id"], "template_version": row["template_version"],
                   "parameters": json.loads(row["canonical_parameters_json"])}
+        expected_manifest = {"revision": revision, "files": manifest["files"], "candidate_hash": row["content_hash"]}
         return (all(canonical_bytes(_get("/v1/data/" + key)) == canonical_bytes(value) for key, value in values.items())
+                and compare_loaded_data(expected_manifest, values, _get("/v1/data"))
                 and _get("/v1/data/pocketlab/meta/revision") == revision)
     except Exception:
         return False

@@ -74,3 +74,13 @@ def test_restrictive_comparison_never_accepts_expansion_or_changed_allow():
     assert diff.compare_corpus(cases, old, new, evolution)[0] == "sample_restrictive"
     assert diff.compare_corpus(cases, new, old, evolution)[0] == "differences_observed"
     assert diff.compare_corpus(cases, old, {**new,"owner":{**allow,"constraints":[]}}, evolution)[0] == "differences_observed"
+
+
+def test_registered_loaded_data_includes_manifest_and_rejects_extra_roots():
+    from api_fastapi.services.lite_policy_runtime_evidence import compare_loaded_data
+    template = {"template_id":"baseline","template_version":"1","parameters":{}}
+    manifest = {"revision":"plr-fixture","files":[],"candidate_hash":"a"*64}
+    loaded = {**template,**manifest,"pocketlab":{"meta":{"revision":"plr-fixture"}}}
+    assert compare_loaded_data(manifest,template,loaded)
+    assert not compare_loaded_data(manifest,template,{**loaded,"unknown":True})
+    assert not compare_loaded_data(manifest,template,{**loaded,"candidate_hash":"b"*64})

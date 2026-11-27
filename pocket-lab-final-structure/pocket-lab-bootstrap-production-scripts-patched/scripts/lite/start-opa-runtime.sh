@@ -24,17 +24,20 @@ if [[ "${POCKETLAB_ENVIRONMENT:-}" == "qualification" ]]; then
 import os, pathlib, re, sys
 from urllib.parse import urlsplit
 root = pathlib.Path(os.environ["POCKETLAB_QUALIFICATION_ROOT"]).resolve(strict=True)
-assert os.environ.get("POCKETLAB_QUALIFICATION_CONTEXT") == "isolated-runtime-v1"
-assert re.fullmatch(r"[a-f0-9]{12,64}", os.environ["POCKETLAB_QUALIFICATION_RUN_ID"])
-assert re.fullmatch(r"[a-f0-9]{40}", os.environ["POCKETLAB_QUALIFICATION_CANDIDATE_SHA"])
+if (os.environ.get("POCKETLAB_QUALIFICATION_CONTEXT") != "isolated-runtime-v1"
+        or not re.fullmatch(r"[a-f0-9]{12,64}", os.environ["POCKETLAB_QUALIFICATION_RUN_ID"])
+        or not re.fullmatch(r"[a-f0-9]{40}", os.environ["POCKETLAB_QUALIFICATION_CANDIDATE_SHA"])):
+    raise SystemExit(1)
 for key in ("POCKETLAB_STATE_DIR", "POCKETLAB_LITE_DB_PATH", "PM2_HOME", "POCKETLAB_OPA_ACTIVE_POLICY_DIR"):
     path = pathlib.Path(os.environ[key]).resolve()
-    assert path != root
+    if path == root:
+        raise SystemExit(1)
     path.relative_to(root)
 url = urlsplit(os.environ["POCKETLAB_OPA_URL"])
-assert url.scheme == "http" and url.hostname == "127.0.0.1"
-assert not (url.username or url.password or url.path or url.query or url.fragment)
-assert url.port and 1024 <= url.port <= 65535 and url.port != 8181
+if (url.scheme != "http" or url.hostname != "127.0.0.1"
+        or url.username or url.password or url.path or url.query or url.fragment
+        or not url.port or not 1024 <= url.port <= 65535 or url.port == 8181):
+    raise SystemExit(1)
 print(f"127.0.0.1:{url.port}")
 PY
 )" || die "OPA qualification endpoint or writable roots are unsafe"
