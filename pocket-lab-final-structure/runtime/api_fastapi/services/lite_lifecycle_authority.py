@@ -68,7 +68,7 @@ def _workspace(conn):
     return conn.execute("SELECT workspace_id,boundary_revision,delegation_revision,authority_epoch FROM lite_lifecycle_workspace WHERE singleton_id=1").fetchone()
 
 
-def _trust(conn):
+def _trust(conn, *, release_lease=None):
     row = conn.execute("""SELECT f.metadata_version,f.root_version,o.review_json,f.metadata_sha256
         FROM lite_release_trust_floor f JOIN lite_release_trust_observation o
         ON o.singleton_id=1 AND o.release_tag=f.release_tag
@@ -77,9 +77,18 @@ def _trust(conn):
         return None
     review = json.loads(row["review_json"])
     now = trust_config.prepared_now(conn, review)
-    release = conn.execute("SELECT latest_tag,status FROM release_runtime_projection WHERE owner='release'").fetchone()
-    if not release or release["status"] != "healthy" or release["latest_tag"] != review.get("release_tag"):
+    release = conn.execute("SELECT latest_tag,status,active_generation,active_command_id,worker_generation,lease_expires_epoch_ms FROM release_runtime_projection WHERE owner='release'").fetchone()
+    if not release or release["latest_tag"] != review.get("release_tag"):
         return None
+    if release["status"] != "healthy":
+        if not release_lease or release["status"] != "running":
+            return None
+        import time
+        if (release["active_generation"] != release_lease["generation"]
+                or release["active_command_id"] != release_lease["command_id"]
+                or release["worker_generation"] != release_lease["worker_generation"]
+                or release["lease_expires_epoch_ms"] < int(time.time()*1000)):
+            return None
     if (review.get("metadata_sha256") != row["metadata_sha256"] or review.get("channel") != "stable"
         or review.get("provenance") != "verified" or review.get("authenticity") != "verified"
         or review.get("integrity") != "verified" or not trust_config.future(review.get("expires"), now)
@@ -126,6 +135,9 @@ def _invalidate(conn, workspace):
     conn.execute("DELETE FROM lite_lifecycle_boundary_scopes")
     conn.execute("UPDATE lite_lifecycle_candidate_consent SET revoked_at=? WHERE revoked_at IS NULL", (_iso(),))
     conn.execute("UPDATE lite_lifecycle_policy_execution SET revoked_at=? WHERE revoked_at IS NULL AND proof_sha256 IS NULL", (_iso(),))
+    conn.execute("""UPDATE lite_lifecycle_release_execution SET revoked_at=?,updated_at=?,
+        state=CASE WHEN state='cutover_claimed' THEN state ELSE 'revoked' END
+        WHERE revoked_at IS NULL AND state IN ('pending','claimed','prepared','cutover_claimed')""", (_iso(),_iso()))
     return rev
 
 
@@ -149,6 +161,9 @@ def _change(conn, context, action, payload):
     from .lite_lifecycle_policy_execution import PolicyExecutionRequest, binding_fields as execution_binding
     if isinstance(payload, PolicyExecutionRequest):
         binding["policy_execution"] = execution_binding(conn, payload)
+    from .lite_lifecycle_release_execution import ReleasePreparationRequest, binding_fields as release_binding
+    if isinstance(payload, ReleasePreparationRequest):
+        binding["release_preparation"] = release_binding(conn, payload)
     return owner, binding, digest(binding)
 
 
@@ -174,12 +189,15 @@ def preview(context, action, payload):
 def _authorize(context, action, payload):
     with read_connection() as conn:
         owner, binding, fingerprint = _change(conn, context, action, payload)
-    execution = "policy_execution" in binding
+    policy_execution = "policy_execution" in binding
+    release_preparation = "release_preparation" in binding
+    execution = policy_execution or release_preparation
+    target_type = "lifecycle_policy_execution" if policy_execution else ("lifecycle_release_preparation" if release_preparation else "lifecycle_consent")
     decision = opa.evaluate_authorization(
-        auth_context=context, action_id=action, target_type="lifecycle_policy_execution" if execution else "lifecycle_consent",
+        auth_context=context, action_id=action, target_type=target_type,
         target_id="local_workspace", target_revision=fingerprint,
         target={"change_digest": fingerprint, "contract_version": 1, "execution_enabled": execution,
-                **({"purpose": "policy-reconciler"} if execution else {})},
+                **({"purpose": "policy-reconciler" if policy_execution else "release-reconciler"} if execution else {})},
         request_context={"confirmation_present": True},
     )
     if not decision.get("allow") or decision.get("policy_revision") != binding["policy_revision"]:
@@ -210,7 +228,8 @@ def _consume(conn, context, action, payload, authorized):
     session = context["session"]["session_id"]
     from .lite_lifecycle_candidate_consent import CandidateConsentRequest
     from .lite_lifecycle_policy_execution import PolicyExecutionRequest
-    trusted_consent = isinstance(payload, (GrantRequest, CandidateConsentRequest, PolicyExecutionRequest))
+    from .lite_lifecycle_release_execution import ReleasePreparationRequest
+    trusted_consent = isinstance(payload, (GrantRequest, CandidateConsentRequest, PolicyExecutionRequest, ReleasePreparationRequest))
     if trusted_consent:
         now = _trusted_now(conn)
         current_session = conn.execute("SELECT idle_expires_at,absolute_expires_at FROM auth_sessions WHERE session_id=?", (session,)).fetchone()

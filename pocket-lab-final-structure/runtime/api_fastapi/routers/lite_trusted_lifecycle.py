@@ -103,3 +103,21 @@ def admit_policy_execution(payload: execution.PolicyExecutionRequest, request: R
 @router.post("/policy/execution/revoke")
 def revoke_policy_execution(payload: execution.PolicyExecutionRevoke, request: Request, response: Response):
     return _call(request, response, execution.revoke, payload, write=True)
+
+
+from ..services import lite_lifecycle_release_execution as release_execution
+
+
+@router.post("/release/preparation/review")
+def review_release_preparation(payload: release_execution.ReleasePreparationRequest, request: Request, response: Response):
+    return _call(request, response, release_execution.preview, payload, write=True)
+
+
+@router.post("/release/preparation")
+def admit_release_preparation(payload: release_execution.ReleasePreparationRequest, request: Request, response: Response):
+    return _call(request, response, release_execution.admit, payload, write=True)
+
+
+@router.post("/release/preparation/revoke")
+def revoke_release_preparation(payload: release_execution.ReleasePreparationRevoke, request: Request, response: Response):
+    return _call(request, response, release_execution.revoke, payload, write=True)

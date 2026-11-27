@@ -1000,3 +1000,51 @@ decision := {"allow": true, "constraints": ["local_supervisor", "current_exact_g
     input.target.state.execution_enabled == true
     input.target.state.grant_current == true
 }
+
+
+# Release preparation is a distinct, exact one-shot grant. It does not
+# authorize native promotion or recovery, which remain bootstrap-owned.
+lifecycle_release_preparation_target if {
+    input.action.id == "lifecycle.release.prepare"
+    input.target.type == "lifecycle_release_preparation"
+    input.target.id == "local_workspace"
+    input.target.revision == input.target.state.change_digest
+    input.target.state.contract_version == 1
+    input.target.state.purpose == "release-reconciler"
+    input.target.state.execution_enabled == true
+    input.request.confirmation_present == true
+    input.actor.type == "human"
+    input.actor.role == "Owner"
+    input.actor.owner_authority == true
+    input.actor.enterprise_enabled == false
+    input.session.authenticated == true
+    not synthetic_actor
+}
+
+decision := {"allow": true, "constraints": ["exact_passkey_consent", "single_release_preparation", "no_native_cutover"], "reason_code": "lifecycle_release_preparation_allowed"} if {
+    lifecycle_release_preparation_target
+    lifecycle_exact_assurance
+}
+
+decision := {"allow": false, "constraints": ["exact_passkey_consent"], "reason_code": "passkey_step_up_required"} if {
+    lifecycle_release_preparation_target
+    not lifecycle_exact_assurance
+}
+
+decision := {"allow": true, "constraints": ["local_worker", "current_exact_grant", "no_native_cutover"], "reason_code": "lifecycle_release_claim_allowed"} if {
+    input.action.id == "lifecycle.release.claim"
+    input.actor.type == "service"
+    input.actor.id == "release-reconciler"
+    input.actor.role == null
+    input.actor.owner_authority == false
+    input.session.authenticated == true
+    input.session.auth_method == "internal_worker"
+    not synthetic_actor
+    input.target.type == "lifecycle_release_preparation"
+    input.target.id != ""
+    input.target.revision == input.target.state.change_digest
+    input.target.state.contract_version == 1
+    input.target.state.purpose == "release-reconciler"
+    input.target.state.execution_enabled == true
+    input.target.state.grant_current == true
+}

@@ -62,7 +62,7 @@ TARGET_RUNTIME = "proot-ubuntu"
 # Schema 42 is the last runtime baseline. Every migration after that baseline
 # is part of the exact backend candidate, including the System Health
 # continuation migrations through the current schema.
-REQUIRED_SCHEMA = 65
+REQUIRED_SCHEMA = 66
 FEATURE_MIGRATIONS = tuple(range(43, REQUIRED_SCHEMA + 1))
 MAX_ARTIFACT_BYTES = 128 * 1024 * 1024
 MAX_EXPANDED_BYTES = 512 * 1024 * 1024
