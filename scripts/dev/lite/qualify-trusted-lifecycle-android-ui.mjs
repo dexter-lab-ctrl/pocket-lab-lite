@@ -134,12 +134,28 @@ async function main() {
   interactions.push('system_entry');
 
   const manageButton = page.getByRole('button', { name: 'Manage System Health', exact: true });
-  await manageButton.scrollIntoViewIfNeeded({ timeout: 15_000 });
+  await manageButton.evaluate((element) => {
+    element.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+  });
   const manageDebug = await manageButton.evaluate((element) => {
     const rect = element.getBoundingClientRect();
     const center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     const hit = document.elementFromPoint(center.x, center.y);
     const style = window.getComputedStyle(element);
+    const animationOwners = [];
+    let current = element;
+    for (let depth = 0; current && depth < 6; depth += 1, current = current.parentElement) {
+      const animations = typeof current.getAnimations === 'function'
+        ? current.getAnimations().map((animation) => ({
+          name: animation.animationName || animation.id || 'anonymous',
+          playState: animation.playState,
+          currentTime: animation.currentTime,
+          duration: animation.effect?.getComputedTiming?.().duration ?? null,
+          iterations: animation.effect?.getComputedTiming?.().iterations ?? null,
+        }))
+        : [];
+      if (animations.length) animationOwners.push({ tag: current.tagName, className: String(current.className || '').slice(0, 160), animations });
+    }
     return {
       rect: { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) },
       viewport: { width: window.innerWidth, height: window.innerHeight, scrollY: window.scrollY },
@@ -147,11 +163,13 @@ async function main() {
       visibility: style.visibility,
       opacity: style.opacity,
       hit: hit ? { tag: hit.tagName, className: String(hit.className || '').slice(0, 160), text: String(hit.textContent || '').trim().slice(0, 120) } : null,
+      animationOwners,
     };
   });
   console.log(`[trusted-lifecycle-android-ui] manage_debug ${JSON.stringify(manageDebug)}`);
   await page.screenshot({ path: resolve(outputDir, 'trusted-lifecycle-before-manage.png'), fullPage: false });
-  await manageButton.click();
+  if (!manageDebug.hit || !['BUTTON', 'SPAN', 'SVG', 'PATH'].includes(manageDebug.hit.tag)) fail('Manage System Health trigger was not the hit-tested surface');
+  await page.mouse.click(manageDebug.rect.x + manageDebug.rect.width / 2, manageDebug.rect.y + manageDebug.rect.height / 2);
   const dialog = page.getByRole('dialog', { name: /System Health Manage/i });
   await dialog.waitFor({ state: 'visible', timeout: 10_000 });
   interactions.push('manage_open');
