@@ -65,6 +65,34 @@ async function setTheme(theme) {
   }, theme);
 }
 
+async function waitForSystemSurfaceToSettle() {
+  const screen = page.locator('[data-system-health-page="true"]');
+  await screen.waitFor({ state: 'visible', timeout: 30_000 });
+  await page.evaluate(async () => {
+    if ('fonts' in document) await document.fonts.ready;
+  });
+  const deadline = Date.now() + 15_000;
+  let previous = '';
+  let stableSamples = 0;
+  while (Date.now() < deadline) {
+    const signature = await screen.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const busy = element.querySelectorAll('[aria-busy="true"], [data-loading="true"], [data-lite-loading-state="true"]').length;
+      return [Math.round(rect.width), Math.round(rect.height), element.scrollHeight, (element.textContent || '').trim().length, busy].join(':');
+    });
+    const busy = Number(signature.split(':').at(-1) || '0');
+    if (signature === previous && busy === 0) {
+      stableSamples += 1;
+      if (stableSamples >= 4) return;
+    } else {
+      stableSamples = 0;
+      previous = signature;
+    }
+    await page.waitForTimeout(250);
+  }
+  fail('System Health surface did not settle before interaction');
+}
+
 async function main() {
   const expectedCommit = exactCommit();
   const cdp = localEndpoint(cdpUrl, 'LITE_ANDROID_CDP_URL', 19222);
@@ -102,10 +130,27 @@ async function main() {
   const pageHeaderSha = landing?.headers()['x-pocket-lab-candidate-sha'] || '';
   const pageMetaSha = await page.locator('meta[name="pocketlab-candidate-sha"]').getAttribute('content') || '';
   if (!landing?.ok() || pageHeaderSha !== expectedCommit || pageMetaSha !== expectedCommit) fail('Android lifecycle page did not prove the exact candidate SHA');
-  await page.locator('[data-system-health-page="true"]').waitFor({ state: 'visible', timeout: 30_000 });
+  await waitForSystemSurfaceToSettle();
   interactions.push('system_entry');
 
   const manageButton = page.getByRole('button', { name: 'Manage System Health', exact: true });
+  await manageButton.scrollIntoViewIfNeeded({ timeout: 15_000 });
+  const manageDebug = await manageButton.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    const hit = document.elementFromPoint(center.x, center.y);
+    const style = window.getComputedStyle(element);
+    return {
+      rect: { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) },
+      viewport: { width: window.innerWidth, height: window.innerHeight, scrollY: window.scrollY },
+      pointerEvents: style.pointerEvents,
+      visibility: style.visibility,
+      opacity: style.opacity,
+      hit: hit ? { tag: hit.tagName, className: String(hit.className || '').slice(0, 160), text: String(hit.textContent || '').trim().slice(0, 120) } : null,
+    };
+  });
+  console.log(`[trusted-lifecycle-android-ui] manage_debug ${JSON.stringify(manageDebug)}`);
+  await page.screenshot({ path: resolve(outputDir, 'trusted-lifecycle-before-manage.png'), fullPage: false });
   await manageButton.click();
   const dialog = page.getByRole('dialog', { name: /System Health Manage/i });
   await dialog.waitFor({ state: 'visible', timeout: 10_000 });
@@ -224,7 +269,7 @@ async function main() {
 try {
   await main();
 } catch (error) {
-  console.error(`[trusted-lifecycle-android-ui] ERROR ${String(error?.message || error).slice(0, 320)}`);
+  console.error(`[trusted-lifecycle-android-ui] ERROR ${String(error?.message || error).slice(0, 2000)}`);
   process.exitCode = 1;
 } finally {
   if (page) await page.close().catch(() => {});
