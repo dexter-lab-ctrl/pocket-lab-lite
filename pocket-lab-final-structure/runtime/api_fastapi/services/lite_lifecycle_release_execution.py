@@ -104,6 +104,13 @@ def _scope(receipt, baseline):
             or not isinstance(baseline,str) or not re.fullmatch(r"[a-f0-9]{40}", baseline)
             or not re.fullmatch(r"[a-f0-9]{40}", receipt["source_commit"])):
         raise ValueError("coordinated_identity_unproved")
+    current_schema = receipt.get("current_schema")
+    target_schema = receipt["migration_review"].get("target_schema")
+    if (type(current_schema) is not int or type(target_schema) is not int
+            or not 1 <= current_schema <= target_schema <= 512
+            or (receipt["migration_review"]["state"] == "unchanged" and current_schema != target_schema)
+            or (receipt["migration_review"]["state"] == "review_required" and current_schema >= target_schema)):
+        raise PermissionError("coordinated_schema_binding_invalid")
     return {**hashes, **execution_capability_binding(ACTION), "source_commit": receipt["source_commit"], "baseline_commit": baseline,
             "release_tag": receipt["release_tag"], "current_schema": receipt["current_schema"],
             "target_schema": receipt["migration_review"]["target_schema"],

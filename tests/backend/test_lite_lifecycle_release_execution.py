@@ -124,3 +124,15 @@ def test_cutover_finalization_is_fenced_by_current_authority(monkeypatch):
     monkeypatch.setattr(execution, "current", lambda *args, **kwargs: ({}, {}))
     assert execution.finish_cutover("1"*32, "3"*64, rehearsed=True) == "rehearsed"
     assert tx.updates[-1][1][0] == "rehearsed"
+
+
+@pytest.mark.parametrize("current,target,state", [
+    (True, 66, "unchanged"), (66, 65, "review_required"),
+    (66, 67, "unchanged"), (66, 66, "review_required"),
+    (66, 513, "review_required"),
+])
+def test_invalid_schema_scope_cannot_be_prepared(receipt, current, target, state):
+    receipt["current_schema"] = current
+    receipt["migration_review"].update(target_schema=target, state=state)
+    with pytest.raises(PermissionError, match="coordinated_schema_binding_invalid"):
+        execution._scope(receipt, "1"*40)

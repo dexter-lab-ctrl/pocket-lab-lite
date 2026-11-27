@@ -261,19 +261,24 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git archive --format=zip --output=pocketlab-lite-source.zip "$GITHUB_SHA"
+          # Use the same registered profile as the signature-bound verifier.
+          # Exact Git objects only; no generated build, checkout changes or user data.
           python3 - <<'PY'
-          import hashlib, json, os
+          import hashlib, json, os, subprocess, sys
           from pathlib import Path
+          sys.path.insert(0, str(Path("pocket-lab-final-structure/runtime").resolve()))
+          from api_fastapi.services.lite_release_package import RUNTIME_PROFILE, RUNTIME_PROFILE_ROOTS
           source = Path("pocketlab-lite-source.zip")
+          subprocess.run(["git", "archive", "--format=zip", "--output=" + str(source),
+                          os.environ["GITHUB_SHA"], "--", *RUNTIME_PROFILE_ROOTS], check=True)
           if source.stat().st_size > 256 * 1024 * 1024:
               raise SystemExit("coordinated source exceeds admission budget")
           with source.open("rb") as handle:
               digest = hashlib.file_digest(handle, "sha256").hexdigest()
           manifest = Path("pocketlab-lite-release.json")
           payload = json.loads(manifest.read_bytes())
-          payload["coordinated_source"] = {"schema_version": 1, "artifact": source.name,
-              "sha256": digest, "source_commit": os.environ["GITHUB_SHA"]}
+          payload["coordinated_source"] = {"schema_version": 2, "artifact": source.name,
+              "sha256": digest, "source_commit": os.environ["GITHUB_SHA"], "profile": RUNTIME_PROFILE}
           manifest.write_text(json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n")
           PY
 

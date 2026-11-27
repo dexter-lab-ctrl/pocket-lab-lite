@@ -124,3 +124,31 @@ def test_applied_ledger_checks_actual_recorded_checksum():
     rows[0]["checksum"] = "0" * 64
     assert package.applied_migration_evidence(raw, raw, rows, current_schema=1)["state"] == "incompatible"
     assert package.applied_migration_evidence(raw, raw, [], current_schema=1)["state"] == "unknown"
+
+
+def test_runtime_profile_requires_native_owners_and_rejects_unrelated_files():
+    files = fixture_files()
+    for name in package.RUNTIME_PROFILE_REQUIRED:
+        files.setdefault(name, b"fixture")
+    def inspect_profile(members):
+        stream, declaration = candidate(members)
+        declaration.update(schema_version=2, profile=package.RUNTIME_PROFILE)
+        return package.inspect_source(stream, declaration=declaration,
+            policy_inventory=inventory(members, package.POLICY_PREFIX, ".rego"),
+            migration_inventory=inventory(members, package.MIGRATION_PREFIX, ".sql"))
+    assert inspect_profile(files)["profile"] == package.RUNTIME_PROFILE
+    with pytest.raises(TrustError, match="source_runtime_profile_member_unexpected"):
+        inspect_profile({**files, "docs/unrelated.md": b"not runtime"})
+    del files["scripts/dev/lite/coordinated_runtime_promotion.py"]
+    with pytest.raises(TrustError, match="source_package_incomplete"):
+        inspect_profile(files)
+
+
+def test_runtime_profile_declaration_is_versioned_and_exact():
+    declaration = {"schema_version": 2, "artifact": package.SOURCE_ASSET,
+                   "sha256": "b"*64, "source_commit": "a"*40, "profile": package.RUNTIME_PROFILE}
+    manifest = {"source_commit": "a"*40, "release_tag": "tag", "coordinated_source": declaration}
+    assert package.source_declaration(canonical_bytes(manifest), source_commit="a"*40, release_tag="tag") == declaration
+    declaration["profile"] = "publisher-defined"
+    with pytest.raises(TrustError):
+        package.source_declaration(canonical_bytes(manifest), source_commit="a"*40, release_tag="tag")

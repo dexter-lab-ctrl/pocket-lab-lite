@@ -35,6 +35,25 @@ REQUIRED = frozenset({
     POLICY_PREFIX + "pocketlab/pocketlab.rego",
     "package.json", "package-lock.json",
 })
+RUNTIME_PROFILE = "runtime-review-v1"
+# This is a review/staging package, not an installable runtime image.
+# Keep dependencies used by the native owner, contracts and policy inventory;
+# omit the frontend source, docs, test suites and unrelated repository trees.
+RUNTIME_PROFILE_ROOTS = (
+    RUNTIME.rstrip("/"), BOOTSTRAP.rstrip("/"), POLICY_PREFIX.rstrip("/"),
+    "scripts/dev/lite", "contracts", "schemas", "operations", "runbooks",
+    "package.json", "package-lock.json",
+)
+RUNTIME_PROFILE_REQUIRED = REQUIRED | {
+    "scripts/dev/lite/backend_runtime_promotion.py",
+    "scripts/dev/lite/coordinated_runtime_promotion.py",
+    BOOTSTRAP + "lite/reconcile-runtime.sh",
+}
+
+def runtime_profile_member(name: str) -> bool:
+    return any(name == root or name.startswith(root + "/") for root in RUNTIME_PROFILE_ROOTS)
+
+
 DIGEST_PATTERN = re.compile(r"[0-9a-f]{64}")
 SHA_PATTERN = re.compile(r"[0-9a-f]{40}")
 
@@ -47,9 +66,14 @@ def source_declaration(manifest_bytes: bytes, *, source_commit: str, release_tag
     if "coordinated_source" not in manifest:
         return None
     value = manifest["coordinated_source"]
-    if (not isinstance(value, dict)
-            or set(value) != {"schema_version", "artifact", "sha256", "source_commit"}
-            or type(value["schema_version"]) is not int or value["schema_version"] != 1
+    fields = {"schema_version", "artifact", "sha256", "source_commit"}
+    if not isinstance(value, dict):
+        raise TrustError("source_declaration_invalid")
+    version = value.get("schema_version")
+    if (type(version) is not int
+            or not ((version == 1 and set(value) == fields)
+                    or (version == 2 and set(value) == fields | {"profile"}
+                        and value.get("profile") == RUNTIME_PROFILE))
             or value["artifact"] != SOURCE_ASSET
             or not isinstance(value["sha256"], str) or not DIGEST_PATTERN.fullmatch(value["sha256"])
             or not isinstance(source_commit, str) or not SHA_PATTERN.fullmatch(source_commit)
@@ -135,6 +159,8 @@ def inspect_source(stream, *, declaration, policy_inventory: bytes, migration_in
                     continue
                 if mode == stat.S_IFDIR or item.flag_bits & 1:
                     raise TrustError("source_archive_entry_invalid")
+                if declaration.get("profile") == RUNTIME_PROFILE and not runtime_profile_member(name):
+                    raise TrustError("source_runtime_profile_member_unexpected")
                 files.add(name)
                 expanded += item.file_size
                 if item.file_size > MAX_MEMBER_BYTES or expanded > MAX_EXPANDED_BYTES:
@@ -161,9 +187,10 @@ def inspect_source(stream, *, declaration, policy_inventory: bytes, migration_in
                     raise TrustError("source_archive_path_collision")
     except (zipfile.BadZipFile, RuntimeError, NotImplementedError, OSError) as exc:
         raise TrustError("source_archive_invalid") from exc
-    if set(found) != set(expected) or not REQUIRED.issubset(files):
+    required = RUNTIME_PROFILE_REQUIRED if declaration.get("profile") == RUNTIME_PROFILE else REQUIRED
+    if set(found) != set(expected) or not required.issubset(files):
         raise TrustError("source_package_incomplete")
-    return {"state": "inventory_verified", "source_commit": declaration["source_commit"],
+    return {"state": "inventory_verified", "profile": declaration.get("profile", "tracked-tree-v1"), "source_commit": declaration["source_commit"],
             "sha256": declaration["sha256"], "archive_bytes": size,
             "expanded_bytes": expanded, "file_count": len(files),
             "policy_module_count": len(policy), "migration_count": len(migrations),
