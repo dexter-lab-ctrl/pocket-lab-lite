@@ -97,16 +97,30 @@ async function waitForManageTriggerToSettle(manageButton) {
   const deadline = Date.now() + 15_000;
   let previous = '';
   let stableSamples = 0;
+  let lastState = null;
   while (Date.now() < deadline) {
     const state = await manageButton.evaluate((element) => {
       const rect = element.getBoundingClientRect();
       const center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
       const hit = document.elementFromPoint(center.x, center.y);
+      const scrolling = document.scrollingElement;
+      const dock = document.querySelector('.pocket-nav-dock');
+      const dockRect = dock?.getBoundingClientRect();
       return {
         signature: [Math.round(rect.x), Math.round(rect.y), Math.round(rect.width), Math.round(rect.height), Math.round(window.scrollY)].join(':'),
         hitIsTrigger: hit === element || element.contains(hit),
+        rect: { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) },
+        scroll: {
+          top: Math.round(scrolling?.scrollTop || window.scrollY),
+          max: Math.round(Math.max(0, (scrolling?.scrollHeight || 0) - (scrolling?.clientHeight || window.innerHeight))),
+          height: Math.round(scrolling?.scrollHeight || 0),
+          viewport: Math.round(window.innerHeight),
+        },
+        dock: dockRect ? { x: Math.round(dockRect.x), y: Math.round(dockRect.y), width: Math.round(dockRect.width), height: Math.round(dockRect.height) } : null,
+        hit: hit ? { tag: hit.tagName, className: String(hit.className || '').slice(0, 120), text: String(hit.textContent || '').trim().slice(0, 80) } : null,
       };
     });
+    lastState = state;
     if (state.hitIsTrigger && state.signature === previous) {
       stableSamples += 1;
       if (stableSamples >= 3) return;
@@ -116,7 +130,7 @@ async function waitForManageTriggerToSettle(manageButton) {
     }
     await page.waitForTimeout(100);
   }
-  fail('Manage System Health trigger did not reach a stable hit-tested position');
+  fail(`Manage System Health trigger did not reach a stable hit-tested position: ${JSON.stringify(lastState)}`);
 }
 
 async function main() {
@@ -163,7 +177,15 @@ async function main() {
   await manageButton.evaluate((element) => {
     document.documentElement.style.scrollBehavior = 'auto';
     document.body.style.scrollBehavior = 'auto';
-    element.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+    const scrolling = document.scrollingElement;
+    if (scrolling) {
+      const rect = element.getBoundingClientRect();
+      const targetTop = scrolling.scrollTop + rect.top - ((window.innerHeight - rect.height) / 2);
+      const maxTop = Math.max(0, scrolling.scrollHeight - scrolling.clientHeight);
+      scrolling.scrollTop = Math.max(0, Math.min(maxTop, targetTop));
+    } else {
+      element.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+    }
   });
   await waitForManageTriggerToSettle(manageButton);
   const manageDebug = await manageButton.evaluate((element) => {
