@@ -62,9 +62,11 @@ TARGET_RUNTIME = "proot-ubuntu"
 # Schema 42 is the last runtime baseline. Every migration after that baseline
 # is part of the exact backend candidate, including the System Health
 # continuation migrations through the current schema.
-REQUIRED_SCHEMA = 54
+REQUIRED_SCHEMA = 65
 FEATURE_MIGRATIONS = tuple(range(43, REQUIRED_SCHEMA + 1))
 MAX_ARTIFACT_BYTES = 128 * 1024 * 1024
+MAX_EXPANDED_BYTES = 512 * 1024 * 1024
+MAX_ARTIFACT_ENTRIES = 12000
 MIN_FREE_BYTES = 512 * 1024 * 1024
 MIN_AVAILABLE_MEMORY_BYTES = 256 * 1024 * 1024
 HEALTH_OBSERVATIONS = 3
@@ -342,7 +344,20 @@ def migration_contract(schema_dir: Path) -> list[dict[str, Any]]:
     return items
 
 
+def _target_schema(contract: Sequence[Mapping[str, Any]]) -> int:
+    if not isinstance(contract, (list, tuple)) or not 43 <= len(contract) <= 512:
+        raise PromotionError("migration_contract_invalid", "The migration contract is not a supported contiguous schema.")
+    for version, item in enumerate(contract, 1):
+        if (not isinstance(item, Mapping) or type(item.get("version")) is not int
+                or item["version"] != version or not isinstance(item.get("name"), str)
+                or not re.fullmatch(r"[a-z0-9_-]+", item["name"])
+                or not isinstance(item.get("checksum"), str) or not HEX64_RE.fullmatch(item["checksum"])):
+            raise PromotionError("migration_contract_invalid", "The migration contract contains an invalid ledger entry.")
+    return len(contract)
+
+
 def _artifact_inner_manifest(records: Sequence[tuple[str, bytes, int]], source_sha: str, contract: list[dict[str, Any]]) -> dict[str, Any]:
+    target_schema = _target_schema(contract)
     inventory = [
         {"path": path, "size_bytes": len(data), "sha256": _sha256_bytes(data), "mode": mode}
         for path, data, mode in records
@@ -363,8 +378,8 @@ def _artifact_inner_manifest(records: Sequence[tuple[str, bytes, int]], source_s
             "projection_writer": "pocket-worker",
             "messaging": "nats-jetstream",
         },
-        "required_schema": REQUIRED_SCHEMA,
-        "feature_migrations": list(FEATURE_MIGRATIONS),
+        "required_schema": target_schema,
+        "feature_migrations": list(range(43, target_schema + 1)),
         "migration_contract": contract,
         "rollback": {
             "strategy": "consistent_code_and_database_restore",
@@ -470,6 +485,9 @@ def verify_artifact(artifact: Path, manifest_path: Path, checksums_path: Path) -
     if manifest.get("schema") != ARTIFACT_SCHEMA or manifest.get("product") != "pocket-lab-lite" or manifest.get("artifact_type") != "backend-runtime":
         raise PromotionError("artifact_manifest_contract", "The backend artifact manifest contract is invalid.")
     source_sha = _safe_sha(str(manifest.get("source_commit") or ""))
+    target_schema = _target_schema(manifest.get("migration_contract") or [])
+    if manifest.get("required_schema") != target_schema or manifest.get("feature_migrations") != list(range(43, target_schema + 1)):
+        raise PromotionError("migration_contract_invalid", "The artifact schema declaration differs from its exact migration ledger.")
     archive_digest = _sha256(artifact)
     manifest_digest = _sha256(manifest_path)
     if manifest.get("artifact_name") != artifact.name or manifest.get("manifest_name") != manifest_path.name:
@@ -486,6 +504,9 @@ def verify_artifact(artifact: Path, manifest_path: Path, checksums_path: Path) -
         raise PromotionError("artifact_inventory_invalid", "The backend artifact inventory contains duplicates.")
     with zipfile.ZipFile(artifact) as archive:
         names = archive.namelist()
+        if (len(names) > MAX_ARTIFACT_ENTRIES or sum(info.file_size for info in archive.infolist()) > MAX_EXPANDED_BYTES
+                or len({name.casefold() for name in names}) != len(names)):
+            raise PromotionError("artifact_inventory_invalid", "The backend archive exceeds bounds or contains ambiguous paths.")
         if len(names) != len(set(names)):
             raise PromotionError("artifact_duplicate_path", "The backend artifact contains duplicate archive paths.")
         if "artifact-manifest.json" not in names:
@@ -498,7 +519,7 @@ def verify_artifact(artifact: Path, manifest_path: Path, checksums_path: Path) -
             if _forbidden_path(relative.as_posix()):
                 raise PromotionError("artifact_secret_path", "The backend artifact contains a forbidden private-state path.")
             mode = (info.external_attr >> 16) & 0o170000
-            if mode == stat.S_IFLNK:
+            if mode not in (0, stat.S_IFREG):
                 raise PromotionError("artifact_symlink", "Symlinks are not allowed in the backend artifact.")
             if relative.as_posix() == "artifact-manifest.json":
                 continue
@@ -506,7 +527,7 @@ def verify_artifact(artifact: Path, manifest_path: Path, checksums_path: Path) -
             if not item:
                 raise PromotionError("artifact_inventory_mismatch", "The backend archive contains an unlisted file.")
             data = archive.read(info)
-            if len(data) != int(item.get("size_bytes") or -1) or _sha256_bytes(data) != str(item.get("sha256") or ""):
+            if len(data) != int(item.get("size_bytes", -1)) or _sha256_bytes(data) != str(item.get("sha256") or ""):
                 raise PromotionError("artifact_file_checksum", "A backend artifact file checksum does not match.")
             if _contains_embedded_secret_marker(relative.as_posix(), data):
                 raise PromotionError("artifact_secret_marker", "The backend artifact contains a private credential marker.")
@@ -604,7 +625,7 @@ def _migration_rows(path: Path) -> list[dict[str, Any]]:
 def _validate_migration_rows(rows: list[dict[str, Any]], contract: Sequence[Mapping[str, Any]], expected_schema: int | None = None) -> dict[str, Any]:
     by_version = {int(item["version"]): item for item in contract}
     versions = [int(row.get("version") or 0) for row in rows]
-    if versions != sorted(versions) or len(versions) != len(set(versions)) or any(version not in by_version for version in versions):
+    if versions != list(range(1, len(versions) + 1)) or any(version not in by_version for version in versions):
         raise PromotionError("migration_metadata_invalid", "SQLite migration metadata is not an ordered contract prefix.")
     for row in rows:
         expected = by_version[int(row["version"])]
@@ -668,7 +689,7 @@ def _artifact_migration_sql(artifact: Path, manifest: Mapping[str, Any]) -> dict
     contract = {int(item["version"]): item for item in manifest.get("migration_contract", []) if isinstance(item, dict)}
     result: dict[int, str] = {}
     with zipfile.ZipFile(artifact) as archive:
-        for version in FEATURE_MIGRATIONS:
+        for version in range(43, _target_schema(list(contract.values())) + 1):
             item = contract.get(version)
             if not item:
                 raise PromotionError("migration_contract_missing", "The artifact is missing a required feature migration.")
@@ -698,7 +719,7 @@ def apply_migrations(path: Path, manifest: Mapping[str, Any]) -> list[int]:
             version = int(item["version"])
             if version in applied:
                 continue
-            if version not in FEATURE_MIGRATIONS:
+            if version not in sql_by_version:
                 raise PromotionError("migration_source_missing", "The staged database requires a migration not included in the feature artifact.")
             for statement in _migration_statements(sql_by_version[version]):
                 connection.execute(statement)
@@ -731,6 +752,8 @@ def _copy_sqlite_backup(source: Path, destination: Path) -> None:
         target_connection.close()
         source_connection.close()
         os.chmod(temporary, 0o600)
+        with temporary.open("rb") as handle:
+            os.fsync(handle.fileno())
         os.replace(temporary, destination)
         _fsync_directory(destination.parent)
     except (OSError, sqlite3.Error) as exc:
@@ -843,9 +866,11 @@ def migration_rehearsal(*, backup_manifest: Path, artifact: Path, artifact_manif
     manifest_with_path = dict(manifest)
     manifest_with_path["_artifact_path"] = str(artifact.expanduser().resolve())
     added = apply_migrations(target, manifest_with_path)
-    target_validation = validate_database(target, contract, expected_schema=REQUIRED_SCHEMA)
-    code_rollback_compatible = old_schema is not None and int(old_schema) >= REQUIRED_SCHEMA
-    rollback_reason = f"old-runtime-schema-does-not-accept-schema-{REQUIRED_SCHEMA}" if not code_rollback_compatible else "old-runtime-compatibility-tested"
+    target_schema = _target_schema(contract)
+    target_validation = validate_database(target, contract, expected_schema=target_schema)
+    # A numeric schema alone is not proof that an older runtime can read it.
+    code_rollback_compatible = False
+    rollback_reason = f"old-runtime-schema-compatibility-unproved-{target_schema}" if not code_rollback_compatible else "old-runtime-compatibility-tested"
     receipt = {
         "schema": RECEIPT_SCHEMA,
         "kind": "migration-rehearsal",
@@ -1336,7 +1361,39 @@ class PromotionController:
         self.journal_path = self.root / "promotions" / f"promotion-{inputs.candidate_sha[:12]}-{uuid.uuid4().hex[:8]}" / "journal.json"
 
     def _journal(self, payload: Mapping[str, Any]) -> dict[str, Any]:
-        return _atomic_json(self.journal_path, {"schema": JOURNAL_SCHEMA, **dict(payload), "updated_at": _utc(), "sanitized": True})
+        previous = _read_json(self.journal_path, label="promotion journal") if self.journal_path.exists() else {}
+        sequence = int(previous.get("sequence", 0)) + 1
+        # Preserve checkpoint and previous-pointer bindings across every phase.
+        # No signature, credential or raw exception enters the journal.
+        return _atomic_json(self.journal_path, {**previous, **dict(payload), "schema": JOURNAL_SCHEMA,
+            "sequence": sequence, "updated_at": _utc(), "sanitized": True})
+
+    def _check_legacy_gate(self, isolated):
+        if isolated:
+            if not isinstance(self.adapter, SimulationAdapter):
+                raise PromotionError("isolation_required", "Isolated promotion requires the simulation service owner.")
+            return
+        if os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256") or os.environ.get("POCKETLAB_RELEASE_ATTESTATION_ROOT_SHA256"):
+            raise PromotionError("trusted_promotion_not_qualified", "A trusted installation cannot use the legacy native promotion path.")
+        with contextlib.closing(sqlite3.connect(self.inputs.database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
+            tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            for name in ("lite_release_trust_configuration", "lite_release_trust_pin"):
+                if name in tables and db.execute(f"SELECT 1 FROM {name} LIMIT 1").fetchone():
+                    raise PromotionError("trusted_promotion_not_qualified", "A trusted installation cannot use the legacy native promotion path.")
+
+    def _quiesced_database(self):
+        # No database replacement while a WAL still contains newer writes.
+        with contextlib.closing(sqlite3.connect(str(self.inputs.database), timeout=2)) as db:
+            result = db.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+            if result and result[0]:
+                raise PromotionError("writer_quiescence_failed", "SQLite WAL could not be drained safely.")
+        wal = self.inputs.database.with_name(self.inputs.database.name + "-wal")
+        if wal.exists() and wal.stat().st_size:
+            raise PromotionError("writer_quiescence_failed", "SQLite WAL still contains writes.")
+        if not isinstance(self.adapter, SimulationAdapter):
+            for suffix in ("-wal", "-shm"):
+                if self.inputs.database.with_name(self.inputs.database.name + suffix).exists():
+                    raise PromotionError("sqlite_sidecar_present", "SQLite sidecars remain after writer quiescence.")
 
     def activate(self, *, authorization: Path, promotion_public_key: Path, recovery_authorization: Path | None, recovery_public_key: Path | None, confirm_cutover: bool, isolated: bool) -> dict[str, Any]:
         with _FileLock(self.root / "promotion.lock"):
@@ -1352,96 +1409,148 @@ class PromotionController:
     def _activate_locked(self, *, authorization: Path, promotion_public_key: Path, recovery_authorization: Path | None, recovery_public_key: Path | None, confirm_cutover: bool, isolated: bool) -> dict[str, Any]:
         if not confirm_cutover:
             raise PromotionError("final_cutover_confirmation_required", "Final production cutover requires explicit operator confirmation.")
-        if not isolated and str(self.inputs.state_root).startswith(str((Path.home() / "pocket-lab-lite/state").resolve())):
-            # This guard makes accidental activation against the known Server
-            # Phone-style production state impossible from a generic dry run.
-            pass
+        self._check_legacy_gate(isolated)
+        contract = list(self.inputs.migration_receipt.get("migration_contract") or [])
+        target_schema = _target_schema(contract)
         expected_auth = {
             "candidate_sha": self.inputs.candidate_sha,
             "current_production_sha": self.inputs.current_sha,
             "target_device_id": self.inputs.device_id,
-            "target_schema": REQUIRED_SCHEMA,
+            "target_schema": target_schema,
             "artifact_sha256": self.inputs.artifact_sha256,
             "backup_receipt_sha256": _sha256_bytes(_canonical(self.inputs.backup_receipt)),
             "restore_receipt_sha256": _sha256_bytes(_canonical(self.inputs.restore_receipt)),
             "preflight_sha256": self.inputs.preflight_sha256,
         }
         auth = verify_authorization(authorization, expected=expected_auth, public_key=promotion_public_key)
-        self._consume_once("promotion", auth["authorization_digest"])
         if recovery_authorization is None or recovery_public_key is None:
             raise PromotionError("recovery_authorization_required", "A separate recovery authorization is required for a schema-changing promotion.")
-        checkpoint = self.root / "checkpoints" / f"{self.inputs.candidate_sha}.sqlite3"
+        from cryptography.hazmat.primitives import serialization
+        def key_bytes(path):
+            return _load_public_key(path).public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
+        if key_bytes(promotion_public_key) == key_bytes(recovery_public_key):
+            raise PromotionError("recovery_authority_invalid", "Promotion and recovery authorities must use distinct keys.")
+        if reconcile_promotions(self.inputs.state_root)["status"] != "stable":
+            raise PromotionError("promotion_recovery_required", "An earlier promotion requires reconciliation.")
+        previous_pointer = _read_pointer(self.inputs.state_root)
+        if previous_pointer.get("kind") not in {"artifact", "source_checkout"}:
+            raise PromotionError("previous_pointer_invalid", "The current backend pointer is unrecognized.")
+        if previous_pointer.get("source_commit") not in (None, self.inputs.current_sha):
+            raise PromotionError("previous_pointer_mismatch", "The current backend pointer differs from the admitted source.")
+        if previous_pointer.get("kind") == "artifact":
+            if not previous_pointer.get("release_root") or not Path(previous_pointer["release_root"]).is_dir():
+                raise PromotionError("previous_pointer_invalid", "The previous release directory is unavailable.")
+            prior_root = Path(previous_pointer["release_root"])
+        else:
+            prior_root = self.inputs.release_root.parent / "source-checkout"
+            if isinstance(self.adapter, ProductionServiceAdapter):
+                actual = subprocess.run(["git", "-C", str(self.adapter.source_checkout), "rev-parse", "HEAD"],
+                    capture_output=True, text=True, timeout=10, check=False)
+                if actual.returncode or actual.stdout.strip() != self.inputs.current_sha:
+                    raise PromotionError("previous_pointer_mismatch", "The prior source checkout is not the admitted revision.")
+            previous_pointer = {"kind": "source_checkout", "source_commit": self.inputs.current_sha}
+        self._consume_once("promotion", auth["authorization_digest"])
         promotion_root = self.journal_path.parent
-        promotion_root.mkdir(parents=True, exist_ok=True)
-        self._journal({"phase": "admitted", "status": "running", "candidate_sha": self.inputs.candidate_sha, "current_production_sha": self.inputs.current_sha, "target_device_id": self.inputs.device_id, "target_schema": REQUIRED_SCHEMA, "artifact_sha256": self.inputs.artifact_sha256, "authorization_digest": auth["authorization_digest"], "recovery_strategy": "consistent_code_and_database_restore"})
+        promotion_root.mkdir(parents=True, exist_ok=False, mode=0o700)
+        checkpoint = promotion_root / "checkpoint.sqlite3"
+        self._journal({"phase": "admitted", "status": "running", "candidate_sha": self.inputs.candidate_sha,
+            "current_production_sha": self.inputs.current_sha, "target_device_id": self.inputs.device_id,
+            "target_schema": target_schema, "artifact_sha256": self.inputs.artifact_sha256,
+            "previous_pointer": previous_pointer, "authorization_digest": auth["authorization_digest"],
+            "recovery_strategy": "consistent_code_and_database_restore"})
+        cutover_started = False
+        database_replaced = False
+        promoted_digest = None
+        recovery_digest = None
         try:
+            self._journal({"phase": "quiescing", "status": "running"})
             quiesce = self.adapter.quiesce()
+            if quiesce.get("status") != "quiesced":
+                raise PromotionError("writer_quiescence_failed", "Owned writers have not quiesced.")
+            self._quiesced_database()
             self._journal({"phase": "writers_quiesced", "status": "running", "quiescence": quiesce})
             _copy_sqlite_backup(self.inputs.database, checkpoint)
-            checkpoint_validation = validate_database(checkpoint, list(self.inputs.migration_receipt.get("migration_contract") or [])) if self.inputs.migration_receipt.get("migration_contract") else None
+            checkpoint_validation = validate_database(checkpoint, contract)
             checkpoint_sha = _sha256(checkpoint)
-            self._journal({"phase": "checkpointed", "status": "running", "checkpoint_sha256": checkpoint_sha, "checkpoint_validation": checkpoint_validation})
-            # Stage the migrated database beside the live file.  The live
-            # database is not changed until the candidate service boundary is
-            # durable and the journal has the checkpoint hash.
+            expected_recovery = {"candidate_sha": self.inputs.candidate_sha, "current_production_sha": self.inputs.current_sha,
+                "target_device_id": self.inputs.device_id, "checkpoint_sha256": checkpoint_sha}
+            # Verify the independent recovery authorization BEFORE cutover.
+            recovery_digest = self._verify_recovery(recovery_authorization, recovery_public_key, expected_recovery)
+            self._journal({"phase": "checkpointed", "status": "running", "checkpoint_sha256": checkpoint_sha,
+                "checkpoint_validation": checkpoint_validation, "recovery_authorization_digest": recovery_digest})
             staged = promotion_root / DATABASE_NAME
             _copy_sqlite_backup(checkpoint, staged)
-            manifest = {"migration_contract": self.inputs.migration_receipt.get("migration_contract") or [], "_artifact_path": str(self.inputs.release_root.parent / "artifact.zip")}
-            if not manifest["migration_contract"]:
-                raise PromotionError("migration_contract_missing", "The migration receipt is missing the exact candidate contract.")
-            # The live activation path expects the staged release to retain the
-            # artifact archive for migration SQL.  The qualifier and production
-            # staging path both write it next to the release journal.
             artifact_path = promotion_root / "artifact.zip"
-            if not artifact_path.is_file():
-                if self.inputs.artifact is None:
-                    raise PromotionError("activation_artifact_missing", "The activation artifact is not retained beside the promotion journal.")
-                _ensure_regular(self.inputs.artifact, label="backend artifact")
-                shutil.copyfile(self.inputs.artifact, artifact_path)
-                os.chmod(artifact_path, 0o600)
-            manifest["_artifact_path"] = str(artifact_path)
+            if self.inputs.artifact is None:
+                raise PromotionError("activation_artifact_missing", "The exact activation artifact is required.")
+            _ensure_regular(self.inputs.artifact, label="backend artifact")
+            if _sha256(self.inputs.artifact) != self.inputs.artifact_sha256:
+                raise PromotionError("artifact_checksum_mismatch", "The activation artifact changed.")
+            shutil.copyfile(self.inputs.artifact, artifact_path)
+            os.chmod(artifact_path, 0o600)
+            if _sha256(artifact_path) != self.inputs.artifact_sha256:
+                raise PromotionError("artifact_checksum_mismatch", "The retained activation artifact changed.")
+            manifest = {"migration_contract": contract, "_artifact_path": str(artifact_path)}
             apply_migrations(staged, manifest)
-            staged_validation = validate_database(staged, manifest["migration_contract"], expected_schema=REQUIRED_SCHEMA)
-            self._journal({"phase": "database_staged", "status": "running", "staged_sha256": staged_validation["sha256"], "target_schema": staged_validation["schema_version"]})
-            previous_pointer = _read_pointer(self.inputs.state_root)
-            _write_pointer(self.inputs.state_root, {"kind": "artifact", "source_commit": self.inputs.candidate_sha, "release_root": str(self.inputs.release_root), "artifact_sha256": self.inputs.artifact_sha256})
+            staged_validation = validate_database(staged, contract, expected_schema=target_schema)
+            self._journal({"phase": "database_staged", "status": "running", "staged_sha256": staged_validation["sha256"]})
+            self._quiesced_database()
+            # Durable intent is written before either pointer or DB changes.
+            self._journal({"phase": "cutover_started", "status": "running"})
+            cutover_started = True
+            _write_pointer(self.inputs.state_root, {"kind": "artifact", "source_commit": self.inputs.candidate_sha,
+                "release_root": str(self.inputs.release_root), "artifact_sha256": self.inputs.artifact_sha256})
+            self._journal({"phase": "backend_pointer_switched", "status": "running"})
+            with staged.open("rb") as handle:
+                os.fsync(handle.fileno())
             os.replace(staged, self.inputs.database)
+            database_replaced = True
             _fsync_directory(self.inputs.database.parent)
-            self._journal({"phase": "pointer_and_database_promoted", "status": "running", "previous_pointer": previous_pointer, "database_sha256": _sha256(self.inputs.database)})
+            promoted_digest = _sha256(self.inputs.database)
+            self._journal({"phase": "pointer_and_database_promoted", "status": "running", "database_sha256": promoted_digest})
+            self._journal({"phase": "activating_services", "status": "running"})
             self.adapter.activate(self.inputs.release_root)
             health = self.adapter.health()
             if health.get("healthy") is not True or int(health.get("consecutive_observations") or 0) < HEALTH_OBSERVATIONS:
                 raise PromotionError("post_activation_health_failed", "The candidate did not pass consecutive post-activation health observations.")
             self.adapter.resume()
-            result = self._journal({"phase": "committed", "status": "committed", "health": health, "database_schema": REQUIRED_SCHEMA, "authorization_consumed": True})
-            return {"status": "committed", "journal": str(self.journal_path), "health": health, "database_schema": REQUIRED_SCHEMA, "sanitized": True, "journal_payload": result}
-        except PromotionError as exc:
-            self._journal({"phase": "activation_failed", "status": "failed", "failure_code": exc.reason_code, "summary": exc.message})
-            if self.adapter.writes_observed(self.inputs.database, _sha256(checkpoint) if checkpoint.exists() else ""):
-                self._journal({"phase": "manual_recovery_required", "status": "blocked", "failure_code": "post_promotion_writes_observed", "summary": "Automatic rollback is disabled because newer writes may exist."})
-                raise PromotionError("post_promotion_writes_observed", "Promotion failed after newer writes were observed; recovery is fail-closed.") from exc
-            if not checkpoint.exists():
-                self._journal({"phase": "aborted_before_checkpoint", "status": "aborted", "failure_code": exc.reason_code, "summary": "Promotion failed before a rollback checkpoint existed; no rollback mutation was attempted."})
-                raise
-            # The recovery authorization is bound to the checkpoint and the
-            # old runtime.  No rollback is attempted without it.
-            recovery_payload = _read_json(recovery_authorization, label="recovery authorization")
-            expected_recovery = {"candidate_sha": self.inputs.candidate_sha, "current_production_sha": self.inputs.current_sha, "target_device_id": self.inputs.device_id, "checkpoint_sha256": _sha256(checkpoint)}
-            if recovery_payload.get("authority") != "recovery-authorization":
-                raise PromotionError("recovery_authority_invalid", "The recovery authorization is not a separate recovery authority.") from exc
-            # Signature validation is intentionally performed with the same
-            # strict Ed25519 contract as promotion, but recovery has a distinct
-            # authority value and key.
-            recovery_digest = self._verify_recovery(recovery_authorization, recovery_public_key, expected_recovery)
-            self._consume_once("recovery", recovery_digest)
-            previous_pointer = _read_pointer(self.inputs.state_root)
-            if previous_pointer.get("kind") == "artifact" and previous_pointer.get("source_commit") == self.inputs.candidate_sha:
-                previous_pointer = {"kind": "source_checkout", "source_commit": self.inputs.current_sha}
-            _copy_sqlite_backup(checkpoint, self.inputs.database)
-            _write_pointer(self.inputs.state_root, previous_pointer)
-            self.adapter.activate(self.inputs.release_root.parent / "source-checkout")
-            self.adapter.resume()
-            self._journal({"phase": "rolled_back", "status": "rolled_back", "failure_code": exc.reason_code, "recovery_strategy": "consistent_code_and_database_restore"})
+            result = self._journal({"phase": "committed", "status": "committed", "health": health,
+                "database_schema": target_schema, "authorization_consumed": True})
+            return {"status": "committed", "journal": str(self.journal_path), "health": health,
+                "database_schema": target_schema, "sanitized": True, "journal_payload": result}
+        except Exception as exc:
+            reason = exc.reason_code if isinstance(exc, PromotionError) else "promotion_runtime_error"
+            self._journal({"phase": "activation_failed", "status": "failed", "failure_code": reason})
+            if not cutover_started:
+                # Writers may have stopped only partially; never claim resumed
+                # or restore a database when no cutover happened.
+                self._journal({"phase": "manual_recovery_required", "status": "blocked",
+                    "failure_code": reason, "cutover_started": False})
+                raise PromotionError(reason, "Promotion stopped before cutover; reconcile the service state.") from exc
+            # Only a simulation may prove the no-write rollback path here.
+            # Production must not overwrite newer data after starting services.
+            try:
+                if (not isinstance(self.adapter, SimulationAdapter) or not database_replaced
+                        or not promoted_digest or self.adapter.writes_observed(self.inputs.database, promoted_digest)):
+                    raise PromotionError("post_promotion_writes_observed", "Newer writes cannot be excluded.")
+                if _sha256(checkpoint) != checkpoint_sha:
+                    raise PromotionError("checkpoint_changed", "The recovery checkpoint changed.")
+                if self._verify_recovery(recovery_authorization, recovery_public_key, expected_recovery) != recovery_digest:
+                    raise PromotionError("recovery_binding_mismatch", "The recovery authority changed.")
+                self._consume_once("recovery", recovery_digest)
+                self._journal({"phase": "rolling_back", "status": "running"})
+                self.adapter.quiesce()
+                self._quiesced_database()
+                _copy_sqlite_backup(checkpoint, self.inputs.database)
+                _write_pointer(self.inputs.state_root, previous_pointer)
+                self.adapter.activate(prior_root)
+                self.adapter.resume()
+                self._journal({"phase": "rolled_back", "status": "rolled_back", "failure_code": reason,
+                    "recovery_strategy": "consistent_code_and_database_restore"})
+            except Exception as recovery_exc:
+                recovery_reason = recovery_exc.reason_code if isinstance(recovery_exc, PromotionError) else "recovery_unproved"
+                self._journal({"phase": "manual_recovery_required", "status": "blocked", "failure_code": recovery_reason})
+                raise PromotionError(recovery_reason, "Promotion recovery is fail-closed.") from exc
             raise PromotionError("promotion_rolled_back", "Promotion failed and was rolled back using the verified checkpoint.") from exc
 
     def _consume_once(self, kind: str, digest: str) -> None:
@@ -1628,7 +1737,7 @@ def _activate_from_cli(args: argparse.Namespace) -> dict[str, Any]:
         raise PromotionError("restore_binding_mismatch", "The restore rehearsal is not bound to the production backup.")
     if migration_receipt.get("backup_id") != backup_receipt.get("backup_id") or migration_receipt.get("artifact_sha256") != verified["artifact_sha256"]:
         raise PromotionError("migration_binding_mismatch", "The migration rehearsal is not bound to the verified backup and artifact.")
-    if migration_receipt.get("target_schema") != REQUIRED_SCHEMA or migration_receipt.get("old_runtime_code_rollback_compatible") is not False:
+    if migration_receipt.get("target_schema") != _target_schema(manifest.get("migration_contract") or []) or migration_receipt.get("old_runtime_code_rollback_compatible") is not False:
         raise PromotionError("rollback_strategy_unproved", "The migration receipt does not prove the required fail-closed rollback strategy.")
     inputs = PromotionInputs(
         state_root=Path(args.state_root),

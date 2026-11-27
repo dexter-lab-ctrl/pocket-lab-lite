@@ -220,3 +220,24 @@ def test_authority_and_final_confirmation_are_separate_gates(tmp_path: Path):
     assert adapter.snapshot()["services"]["pocket-worker"] == "online"
     assert promotion._worker_heartbeat({"reachable": True, "json": True, "state": "stable", "stable": True, "services": [{"process": "pocket-worker", "status": "Recovered recently", "stable": True}]})
     assert not promotion._worker_heartbeat({"reachable": True, "json": True, "state": "stable", "stable": True, "services": [{"process": "pocket-worker", "status": "Something changed", "stable": False}]})
+
+
+def test_migration_contract_rejects_gaps_and_noncanonical_versions():
+    with pytest.raises(promotion.PromotionError):
+        promotion._target_schema([{"version": True, "name":"a", "checksum":"a"*64}]*43)
+    contract = promotion.migration_contract(SCHEMA)
+    with pytest.raises(promotion.PromotionError):
+        promotion._validate_migration_rows([contract[0], contract[2]], contract)
+
+
+def test_promotion_journal_preserves_checkpoint_and_prior_identity(tmp_path):
+    inputs = promotion.PromotionInputs(tmp_path / "state", tmp_path / "db",
+        tmp_path / "candidate", "a"*40, "b"*40, "server", "c"*64, {}, {}, {}, "d"*64)
+    controller = promotion.PromotionController(inputs, promotion.SimulationAdapter())
+    controller._journal({"phase":"checkpointed", "checkpoint_sha256":"e"*64,
+                         "previous_pointer":{"kind":"artifact","source_commit":"b"*40}})
+    result = controller._journal({"phase":"cutover_started"})
+    assert result["checkpoint_sha256"] == "e"*64
+    assert result["previous_pointer"]["source_commit"] == "b"*40
+    assert result["sequence"] == 2
+    assert promotion.reconcile_promotions(inputs.state_root)["status"] == "recovery_required"

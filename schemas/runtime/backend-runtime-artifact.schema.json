@@ -43,8 +43,8 @@
     },
     "required_services": {"type": "array", "items": {"type": "string"}, "minItems": 1},
     "service_ownership": {"type": "object"},
-    "required_schema": {"type": "integer", "const": 44},
-    "feature_migrations": {"type": "array", "items": {"type": "integer"}, "const": [43, 44]},
+    "required_schema": {"type": "integer", "minimum": 43, "maximum": 512},
+    "feature_migrations": {"type": "array", "items": {"type": "integer", "minimum": 43, "maximum": 512}, "minItems": 1, "maxItems": 470, "uniqueItems": true},
     "migration_contract": {
       "type": "array",
       "items": {
@@ -56,7 +56,7 @@
           "checksum": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
         }
       },
-      "minItems": 44
+      "minItems": 43
     },
     "rollback": {
       "type": "object",
