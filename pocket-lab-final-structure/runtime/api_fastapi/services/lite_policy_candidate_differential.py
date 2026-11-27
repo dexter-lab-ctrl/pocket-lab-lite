@@ -213,10 +213,11 @@ def corpus():
         target_type, target_id, revision, state = _target(action)
         for i, (kind, role, enterprise) in enumerate(actors):
             actor_id = ("policy-reconciler" if action == "lifecycle.policy.claim" and kind == "service"
+                        else "release-reconciler" if action == "lifecycle.release.claim" and kind == "service"
                         else "system-health-scheduler" if action == "system_health.automatic" and kind == "service"
                         else "synthetic")
             method = ("local_supervisor" if actor_id == "policy-reconciler" else
-                      "internal_worker" if actor_id == "system-health-scheduler" else "passkey")
+                      "internal_worker" if actor_id in {"system-health-scheduler", "release-reconciler"} else "passkey")
             context = {"actor": {"type": kind, "identity_id": actor_id},
                        "authorization": {"role": role, "owner_authority": role == "Owner",
                            "enterprise_enabled": enterprise, "membership_active": bool(role and enterprise)},

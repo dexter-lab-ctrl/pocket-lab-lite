@@ -430,6 +430,11 @@ def summary(context):
         from .lite_lifecycle_policy_execution import summary as policy_execution_summary, gate as policy_execution_gate
         from .lite_policy_candidate_differential import supported_differential
         policy_executions = policy_execution_summary(conn) if is_owner else []
+        from . import lite_lifecycle_release_execution as release_execution
+        release_preparations = release_execution.summary(conn) if is_owner else []
+        release_preparation_enabled = bool(is_owner and release_execution.gate())
+        release_preparation_available = False
+
         candidate_consents = candidate_summary(conn, ws=ws, prefs=prefs, trust=evaluation[2], now=evaluation[3],
             policy=evaluation[4], owner=owner, versions=versions, enterprise=enterprise) if is_owner else []
         rows = conn.execute("""SELECT g.*,d.delegation_id FROM lite_lifecycle_grants g LEFT JOIN lite_lifecycle_service_delegations d ON d.grant_id=g.grant_id ORDER BY (g.revoked_at IS NULL) DESC,boundary_revision DESC LIMIT 20""").fetchall() if is_owner else []
@@ -447,6 +452,14 @@ def summary(context):
         fence = conn.execute("SELECT * FROM lite_system_health_activation_fence WHERE singleton_id=1").fetchone()
         floor = conn.execute("SELECT metadata_version,root_version FROM lite_release_trust_floor WHERE singleton_id=1").fetchone()
         eligible_to_record = is_owner and bool(evaluation[2]) and bool(evaluation[4]) and not enterprise and prefs["profile"] == "recommended"
+        if release_preparation_enabled and eligible_to_record:
+            try:
+                review = release_execution._receipt(conn)
+                release_execution.binding_fields(conn, release_execution.ReleasePreparationRequest(
+                    expected_revision=ws["boundary_revision"],metadata_sha256=review.get("metadata_sha256"),confirm=True))
+                release_preparation_available = not any(item["state"] in ("pending","claimed","prepared","cutover_claimed") and not item["revoked_at"] for item in release_preparations)
+            except (PermissionError, ValueError, KeyError, TypeError):
+                pass
         trust_setup = trust_config.configuration(conn)
         now = evaluation[3]
         transitions = [dict(row) for row in conn.execute("SELECT event_id,state,reason_code,occurred_at,release_tag FROM lite_release_trust_transitions ORDER BY event_id DESC LIMIT 20")] if is_owner else []
@@ -499,6 +512,9 @@ def summary(context):
             "assessment": latest.get("assessment"),
             "candidate_consents": candidate_consents,
             "policy_executions": policy_executions,
+            "release_preparations": release_preparations,
+            "release_preparation_qualification_enabled": release_preparation_enabled,
+            "release_preparation_review_available": release_preparation_available,
             "policy_execution_qualification_enabled": bool(is_owner and policy_execution_gate()),
             "policy_execution_review_available": bool(eligible_to_record and policy_execution_gate()
                 and latest.get("provenance") == "verified"

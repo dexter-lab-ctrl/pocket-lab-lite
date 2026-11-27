@@ -85,3 +85,22 @@ it('keeps isolated policy execution distinct from standing review consent', () =
   expect(onReview).toHaveBeenCalledWith({ kind: 'policy-execution', value: metadata, label: 'Review isolated policy activation' });
   expect(screen.getByText(/Production activation remains disabled/)).toBeTruthy();
 });
+
+
+it('shows preparation and offline rehearsal without implying production installation', () => {
+  const onReview = vi.fn();
+  const metadata = 'a'.repeat(64);
+  render(<LifecycleContent data={{...data, release_preparation_qualification_enabled:true,
+    release_preparation_review_available:true,candidate_review:{metadata_sha256:metadata},
+    release_preparations:[{grant_id:'b'.repeat(32),state:'rehearsed'}]}} onReview={onReview}/>);
+  expect(screen.getByText('Offline cutover rehearsed')).toBeTruthy();
+  expect(screen.getByText(/Production installation remains disabled/)).toBeTruthy();
+  fireEvent.click(screen.getByRole('button',{name:'Review isolated update preparation'}));
+  expect(onReview).toHaveBeenCalledWith({kind:'release-preparation',value:metadata,label:'Review isolated update preparation'});
+});
+
+it('does not offer release preparation controls from stale state', () => {
+  render(<LifecycleContent readOnly data={{...data,release_preparation_qualification_enabled:true,
+    release_preparation_review_available:true,candidate_review:{metadata_sha256:'a'.repeat(64)}}}/>);
+  expect(screen.getByRole('button',{name:'Review isolated update preparation'}).disabled).toBe(true);
+});

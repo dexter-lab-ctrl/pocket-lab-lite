@@ -100,10 +100,12 @@ export function CandidateReview({ review, consents = [], canDecide = false, onRe
     <LiteActionRow label="Recorded check" value={review.checked_at || 'Not confirmed'} />
     <LiteActionRow label="Coordinated source" value={reviewStates[review.source_package?.state] || 'Not confirmed'} />
     <LiteActionRow label="Policy source" value={reviewStates[review.policy_review?.state] || 'Not confirmed'} />
-    <LiteActionRow label="Policy comparison" value={({ sample_equal: "Recorded samples matched", differences_observed: "Differences observed", not_executed: "Not assessed" })[review.policy_review?.differential?.state] || "Not confirmed"} summary="Sample comparison cannot establish general policy equivalence or execution authority." />
+    <LiteActionRow label="Policy comparison" value={({ sample_equal: "Recorded samples matched", sample_restrictive: "Registered restrictive change matched", differences_observed: "Differences observed", not_executed: "Not assessed" })[review.policy_review?.differential?.state] || "Not confirmed"} summary="Sample comparison cannot establish general policy equivalence or execution authority." />
     <LiteActionRow label="Loaded policy modules" value={reviewStates[review.policy_runtime_observation?.state] || 'Not confirmed'}
       summary="Historical module observation only. Complete loaded data and backend identity are not established." />
     <LiteActionRow label="Registered policy data" value={({registered_template_matches: "Matched at recorded check", registered_template_mismatch: "Mismatch"})[review.policy_runtime_observation?.data_identity] || "Not confirmed"} />
+    <LiteActionRow label="Loaded stage data" value={({registered_roots_match: "Registered roots matched", registered_roots_mismatch: "Mismatch"})[review.policy_runtime_observation?.manifest_data_identity] || "Not confirmed"} summary="Recorded root comparison; not complete in-memory attestation." />
+    <LiteActionRow label="Coordinated preflight" value={({isolated_preflight_checked: "Isolated preflight recorded", blocked: "Preparation blocked"})[review.coordinated_preflight?.state] || "Not confirmed"} summary="A preflight is not a recovery checkpoint or installation." />
     <LiteActionRow label="Database migrations" value={reviewStates[review.migration_review?.state] || 'Not confirmed'} />
     <LiteActionRow label="Applied migration ledger" value={({ledger_matches: "Recorded checksums matched", incompatible: "Mismatch"})[review.migration_review?.applied_ledger?.state] || "Not confirmed"} summary="Recorded application evidence, not data or rollback compatibility." />
     <LiteTechnicalDetails summary="Review individual capability changes" haptic>
@@ -188,6 +190,26 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
         action={item.revoked_at || item.proof_sha256 ? undefined : { label: 'Revoke execution permission', haptic: true,
           disabled: blocked || Boolean(pending), onClick: () => onReview({ kind: 'policy-execution-revoke', value: item.grant_id, label: 'Revoke execution permission' }) }} />)}
     </div>}
+    {data?.owner_authority === true && (data.release_preparation_qualification_enabled || data.release_preparations?.length > 0) && <div className="lite-system-health-detail-block">
+      <h4>Coordinated update preparation</h4>
+      <p>Isolated qualification only. Preparation, offline cutover rehearsal and production installation are separate. Production installation remains disabled.</p>
+      {data.release_preparation_review_available && data.candidate_review?.metadata_sha256 && <LiteButton haptic tone="secondary"
+        disabled={blocked || Boolean(pending) || managed}
+        onClick={() => onReview({kind:'release-preparation', value:data.candidate_review.metadata_sha256, label:'Review isolated update preparation'})}>Review isolated update preparation</LiteButton>}
+      {(data.release_preparations || []).map(item => <LiteActionRow key={item.grant_id} label="Update preparation"
+        value={item.revoked_at ? (item.state === 'cutover_claimed' ? 'Revoked · reconciliation required' : 'Permission revoked') :
+          ({pending:'Waiting for manual release check',claimed:'Preparing authenticated files',prepared:'Prepared · separate authorization required',
+            cutover_claimed:'Offline cutover in progress',rehearsed:'Offline cutover rehearsed',failed:'Preparation or rehearsal failed',revoked:'Permission revoked'})[item.state] || 'Not confirmed'}
+        summary={item.reason_code ? String(item.reason_code).replaceAll('_',' ') : 'Expires ' + (item.expires_at || 'not confirmed')}
+        action={!item.revoked_at && ['pending','claimed','prepared','cutover_claimed'].includes(item.state) ? {
+          label:'Revoke preparation permission',haptic:true,disabled:blocked || Boolean(pending),
+          onClick:() => onReview({kind:'release-preparation-revoke', value:item.grant_id,label:'Revoke preparation permission'})} : undefined} />)}
+      <LiteTechnicalDetails summary="Update execution boundaries" haptic>
+        <LiteActionRow label="Native promotion" value="Separate external authorization" />
+        <LiteActionRow label="Recovery" value="Independent checkpoint authorization" />
+        <LiteActionRow label="Live runtime convergence" value="Not established by offline rehearsal" />
+      </LiteTechnicalDetails>
+    </div>}
     <LiteTechnicalDetails summary="Candidate decision history" haptic>
       {(data?.candidate_consents || []).map(item => <LiteActionRow key={item.consent_id} label={item.capability_id}
         value={candidateDecisionNames[item.status] || 'Review required'} summary={'Review only · expires ' + (item.expires_at || 'not confirmed')}
@@ -207,13 +229,22 @@ export function LifecycleContent({ data, readOnly = false, busy = false, pending
     </LiteTechnicalDetails>
     {pending && <div className="lite-system-health-detail-block" role="group" aria-label="Review proposed change">
       <h4>{pending.label}</h4>
-      <p>{pending.kind === 'policy-execution' ? 'Authorize one exact, isolated policy operation. This is not a standing permission or a production update.'
+      <p>{pending.kind === 'release-preparation' ? 'Authorize one exact isolated release preparation. Run the normal manual release check afterwards. Separate external promotion and recovery authority is still required.'
+        : pending.kind === 'release-preparation-revoke' ? 'Revoke this preparation permission. In-flight work requires reconciliation; cancellation is not guaranteed.'
+        : pending.kind === 'policy-execution' ? 'Authorize one exact, isolated policy operation. This is not a standing permission or a production update.'
         : pending.kind === 'policy-execution-revoke' ? 'Revoke this execution permission. In-flight work must be reconciled by the supervisor; cancellation is not guaranteed.'
         : pending.kind === 'candidate' ? 'Record ' + candidateDecisionNames[pending.value.disposition].toLowerCase() + ' for this exact signed candidate scope. This does not activate a capability or authorize execution.'
         : pending.kind === 'candidate-revoke' ? 'Revoke this recorded candidate decision. No active operation is claimed cancelled.'
         : pending.kind === 'grant' ? 'Record a limited, revocable review permission for 30 days. Only a previous permission for the same purpose is replaced; other permissions stay independent. It cannot start a service or install anything.'
         : pending.kind === 'revoke' ? 'Prevent new use of ' + (pending.value ? 'this recorded permission' : 'all recorded permissions') + '. This does not claim to cancel existing work.'
         : 'Save this preference and revoke previous standing consent. Existing release and recovery settings are not changed.'}</p>
+      {pending.kind === 'release-preparation' && pending.review?.scope && <LiteTechnicalDetails summary="Exact update preparation scope" haptic>
+        <LiteActionRow label="Release" value={pending.review.scope.release_tag} />
+        <LiteActionRow label="Source commit" value={pending.review.scope.source_commit} />
+        <LiteActionRow label="Prior source" value={pending.review.scope.baseline_commit} />
+        <LiteActionRow label="Target database schema" value={String(pending.review.scope.target_schema)} />
+        <LiteActionRow label="Signed metadata digest" value={pending.review.scope.metadata_sha256} />
+      </LiteTechnicalDetails>}
       {pending.kind === 'policy-execution' && pending.review?.scope && <LiteTechnicalDetails summary="Exact activation scope" haptic>
         <LiteActionRow label="Prior policy" value={pending.review.scope.baseline_revision} />
         <LiteActionRow label="Candidate policy" value={pending.review.scope.candidate_revision} />
@@ -264,6 +295,11 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
         const body = { expected_revision: pending.boundary, expected_profile_revision: pending.revision, purpose: pending.value, confirm: true };
         await exactPasskey(pending.review);
         await liteApi.lifecycleIssueBoundary(body);
+      } else if (pending.kind === 'release-preparation') {
+        await exactPasskey(pending.review);
+        await liteApi.lifecycleAdmitReleasePreparation({ expected_revision: pending.boundary, metadata_sha256: pending.value, confirm: true });
+      } else if (pending.kind === 'release-preparation-revoke') {
+        await liteApi.lifecycleRevokeReleasePreparation({ expected_revision: pending.boundary, grant_id: pending.value, confirm: true });
       } else if (pending.kind === 'policy-execution') {
         await exactPasskey(pending.review);
         await liteApi.lifecycleAdmitPolicyExecution({ expected_revision: pending.boundary, metadata_sha256: pending.value, confirm: true });
@@ -277,7 +313,7 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
       } else if (pending.kind === 'revoke') {
         await liteApi.lifecycleRevokeBoundary({ expected_revision: pending.boundary, ...(pending.value ? { grant_id: pending.value } : {}), confirm: true });
       }
-      setMessage(pending.kind === 'policy-execution'
+      setMessage(pending.kind === 'release-preparation' ? 'Preparation permission recorded. Run a manual release check; no installation is authorized.' : pending.kind === 'policy-execution'
         ? 'Operation admitted for isolated supervisor reconciliation. Activation is not yet confirmed.'
         : 'Change recorded. Production unattended execution remains disabled.');
       await query.refresh();
@@ -296,6 +332,7 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
       inFlight.current = true; setBusy(true); setMessage('');
       try {
         const next = { ...change, revision: data.preferences.revision, boundary: data.boundary_revision };
+        if (change.kind === 'release-preparation') next.review = await liteApi.lifecycleReviewReleasePreparation({ expected_revision: next.boundary, metadata_sha256: change.value, confirm: true });
         if (change.kind === 'policy-execution') next.review = await liteApi.lifecycleReviewPolicyExecution({ expected_revision: next.boundary, metadata_sha256: change.value, confirm: true });
         if (change.kind === 'candidate') next.review = await liteApi.lifecycleReviewCandidateConsent({ expected_revision: next.boundary, ...change.value, confirm: true });
         if (change.kind === 'grant') next.review = await liteApi.lifecycleReviewBoundary({
