@@ -93,6 +93,32 @@ async function waitForSystemSurfaceToSettle() {
   fail('System Health surface did not settle before interaction');
 }
 
+async function waitForManageTriggerToSettle(manageButton) {
+  const deadline = Date.now() + 15_000;
+  let previous = '';
+  let stableSamples = 0;
+  while (Date.now() < deadline) {
+    const state = await manageButton.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      const hit = document.elementFromPoint(center.x, center.y);
+      return {
+        signature: [Math.round(rect.x), Math.round(rect.y), Math.round(rect.width), Math.round(rect.height), Math.round(window.scrollY)].join(':'),
+        hitIsTrigger: hit === element || element.contains(hit),
+      };
+    });
+    if (state.hitIsTrigger && state.signature === previous) {
+      stableSamples += 1;
+      if (stableSamples >= 3) return;
+    } else {
+      stableSamples = 0;
+      previous = state.signature;
+    }
+    await page.waitForTimeout(100);
+  }
+  fail('Manage System Health trigger did not reach a stable hit-tested position');
+}
+
 async function main() {
   const expectedCommit = exactCommit();
   const cdp = localEndpoint(cdpUrl, 'LITE_ANDROID_CDP_URL', 19222);
@@ -135,8 +161,11 @@ async function main() {
 
   const manageButton = page.getByRole('button', { name: 'Manage System Health', exact: true });
   await manageButton.evaluate((element) => {
+    document.documentElement.style.scrollBehavior = 'auto';
+    document.body.style.scrollBehavior = 'auto';
     element.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
   });
+  await waitForManageTriggerToSettle(manageButton);
   const manageDebug = await manageButton.evaluate((element) => {
     const rect = element.getBoundingClientRect();
     const center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
@@ -167,7 +196,11 @@ async function main() {
     };
   });
   console.log(`[trusted-lifecycle-android-ui] manage_debug ${JSON.stringify(manageDebug)}`);
-  await page.screenshot({ path: resolve(outputDir, 'trusted-lifecycle-before-manage.png'), fullPage: false });
+  try {
+    await page.screenshot({ path: resolve(outputDir, 'trusted-lifecycle-before-manage.png'), fullPage: false, timeout: 5_000 });
+  } catch (error) {
+    console.log(`[trusted-lifecycle-android-ui] screenshot_unavailable ${String(error?.message || error).slice(0, 240)}`);
+  }
   if (!manageDebug.hit || !['BUTTON', 'SPAN', 'SVG', 'PATH'].includes(manageDebug.hit.tag)) fail('Manage System Health trigger was not the hit-tested surface');
   await page.mouse.click(manageDebug.rect.x + manageDebug.rect.width / 2, manageDebug.rect.y + manageDebug.rect.height / 2);
   const dialog = page.getByRole('dialog', { name: /System Health Manage/i });
