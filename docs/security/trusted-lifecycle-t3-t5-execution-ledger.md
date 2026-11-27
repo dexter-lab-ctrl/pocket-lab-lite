@@ -376,3 +376,13 @@ This continuation started from the clean PR #663 head `f363b1f3c2f1de29e08ccb14e
 | C10 performance disposition | RESIDUAL | Existing nine-interaction, three-repetition System evidence remains 0/9 absolute-target passes, 0/9 hard-gate passes, 8 MIXED, 1 PLATFORM_DOMINATED, 0 APP_INCREMENTAL_COST. Thresholds and attribution rules were unchanged. |
 
 The new source-bearing candidate is `526df4643fd016afeab13c731342b222ca2f3b81`; prior physical evidence for `1c9ee06818fb396e56ccd86ecfd99bab85c32a4d` is not transferred to this runtime-bearing candidate. Exact-head CI for `526df464…` must be inspected after GitHub completes. C02, C05, C06, C08 and C09 remain unresolved qualification gates; this continuation does not make PR #663 merge-ready.
+
+### Final exact-head continuation closure — 2026-11-27
+
+The documentation/evidence commit is `591fe340b00e8e1e5d1bfa4eac82572f165099b1`, and it is the current remote PR #663 head. Exact-head workflow [46056738239](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/46056738239) passed all required jobs: isolated DEV-PC qualification, UI performance qualification, and quick-and-docs. The quick-and-docs job also passed current-head contract/docs generation and check, quick Lite/Storybook, mocked integration/documentation browser, redaction, and evidence steps.
+
+This is a documentation/evidence-only continuation after `526df464…`; it does not change runtime-bearing source, migrations, production activation fences, or the physical candidate identity. The previously physically exercised `1c9ee068…` evidence therefore remains historical and is not transferred to `591fe340…`.
+
+The final read-only Server Phone resilience check passed with the ordinary phone on clean `main` at `9bc53ce047c800be71cd76f1a37e79659af1ca4d`. C02 remains `BLOCKED`; C05 and C06 remain `NOT RUN` for live cutover/recovery; C08 and C09 remain `PARTIAL`; C10 remains the retained performance `RESIDUAL`. Local final-stage `task lite:docs:generate`, `task lite:docs:check`, and `task lite:check` were intentionally not rerun while those mandatory live/device gates remain unresolved; their current-head CI coverage is recorded separately above.
+
+The PR description was rewritten at the current head with evidence-bound status badges, technology logos, Mermaid architecture, C01–C11 and Q0–Q9 matrices, exact provenance, residual performance results, restoration state, and explicit no-merge/no-release/no-production-activation boundaries. PR #663 remains open and draft.

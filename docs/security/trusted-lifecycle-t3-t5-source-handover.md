@@ -463,3 +463,13 @@ suites into `task lite:lifecycle:t3-t5-package`.
 This candidate does not inherit physical runtime qualification from
 `1c9ee06818fb396e56ccd86ecfd99bab85c32a4d`. The PR remains draft, no
 production release or activation was performed, and T6/T7 remain deferred.
+
+### Final exact-head continuation closure — 2026-11-27
+
+The current documentation/evidence head is `591fe340b00e8e1e5d1bfa4eac82572f165099b1`; the preceding qualification-affecting commit is `526df4643fd016afeab13c731342b222ca2f3b81`. Exact-head workflow [46056738239](https://github.com/dexter-lab-ctrl/pocket-lab-lite/actions/runs/46056738239) passed all required jobs for `591fe340…`: isolated DEV-PC qualification, UI performance qualification, and quick-and-docs. Current-head docs/contracts generation and check, quick Lite/Storybook, mocked browser integration, redaction, and evidence steps passed within that workflow.
+
+This is a documentation/evidence-only continuation after the trusted-time qualification change. It does not alter runtime-bearing source, migrations, activation fences, or the previously qualified physical candidate. The `1c9ee068…` physical evidence is not transferred to `591fe340…`.
+
+The final read-only Server Phone resilience check passed with branch `main`, SHA `9bc53ce047c800be71cd76f1a37e79659af1ca4d`, normal runtime topology healthy, and temporary qualification state absent. C02 remains `BLOCKED`; C05/C06 remain live `NOT RUN`; C08/C09 remain `PARTIAL`; C10 remains the retained performance `RESIDUAL`. Local final-stage docs/gate tasks were intentionally deferred pending those live/device closures, even though the current-head CI quick-and-docs job passed its own generation/check steps.
+
+PR #663 remains open and draft. Its active description now carries current-head provenance, evidence-bound status badges and logos, architecture/qualification matrices, exact CI links, residual performance treatment, Server Phone restoration evidence, and explicit production/T6/T7 deferrals. No merge, auto-merge, release, deployment, or production activation occurred.
