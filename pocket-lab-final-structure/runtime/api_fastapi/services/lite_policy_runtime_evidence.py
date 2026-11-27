@@ -66,7 +66,8 @@ def _snapshot():
     from ..db.connection import read_connection
     from . import lite_policy_lifecycle as lifecycle
     with read_connection() as conn:
-        row = conn.execute("""SELECT s.active_revision_id,s.known_good_revision_id,r.content_hash,r.manifest_json
+        row = conn.execute("""SELECT s.active_revision_id,s.known_good_revision_id,r.content_hash,r.manifest_json,
+                r.template_id,r.template_version,r.canonical_parameters_json
             FROM policy_runtime_state s JOIN policy_revisions r ON s.active_revision_id=r.revision_id
             WHERE s.state_id=1""").fetchone()
         pending = conn.execute("""SELECT 1 FROM policy_activation_operations
@@ -77,7 +78,8 @@ def _snapshot():
     revision = row["active_revision_id"]
     if lifecycle._pointer_revision("active") != revision or lifecycle._pointer_revision("known-good") != revision:
         return None
-    return (revision, row["content_hash"], row["manifest_json"])
+    return (revision, row["content_hash"], row["manifest_json"], row["template_id"],
+            row["template_version"], row["canonical_parameters_json"])
 
 
 def observe():
@@ -88,7 +90,7 @@ def observe():
         snapshot = _snapshot()
         if snapshot is None:
             return result
-        revision, content_hash, manifest_json = snapshot
+        revision, content_hash, manifest_json, template_id, template_version, parameters_json = snapshot
         if _get("/v1/data/pocketlab/meta/revision") != revision:
             return {**result, "state": "revision_mismatch"}
         modules = _get("/v1/policies")
@@ -98,9 +100,16 @@ def observe():
         if hashlib.sha256(canonical_bytes(manifest["files"])).hexdigest() != content_hash:
             return result
         matched = compare_loaded_modules(manifest, modules)
+        expected_data = {"template_id": template_id, "template_version": template_version,
+                         "parameters": json.loads(parameters_json)}
+        # Probe only the registered generated data documents. Do not evaluate
+        # the entire virtual policy tree, which can depend on input or time.
+        data_matches = all(canonical_bytes(_get("/v1/data/" + key)) == canonical_bytes(value)
+                           for key, value in expected_data.items())
         if _get("/v1/data/pocketlab/meta/revision") != revision or _snapshot() != snapshot:
             return result
         return {**result, "state": "modules_match" if matched else "module_mismatch",
-                "observed_revision": revision, "observed_at": datetime.now(timezone.utc).isoformat()}
+                "observed_revision": revision, "observed_at": datetime.now(timezone.utc).isoformat(),
+                "data_identity": "registered_template_matches" if data_matches else "registered_template_mismatch"}
     except Exception:
         return result

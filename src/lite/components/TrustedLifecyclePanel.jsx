@@ -85,8 +85,10 @@ export function CandidateReview({ review }) {
     <LiteActionRow label="Coordinated source" value={reviewStates[review.source_package?.state] || 'Not confirmed'} />
     <LiteActionRow label="Policy source" value={reviewStates[review.policy_review?.state] || 'Not confirmed'} />
     <LiteActionRow label="Loaded policy modules" value={reviewStates[review.policy_runtime_observation?.state] || 'Not confirmed'}
-      summary="Historical module observation only. Loaded data and backend identity are not established." />
+      summary="Historical module observation only. Complete loaded data and backend identity are not established." />
+    <LiteActionRow label="Registered policy data" value={({registered_template_matches: "Matched at recorded check", registered_template_mismatch: "Mismatch"})[review.policy_runtime_observation?.data_identity] || "Not confirmed"} />
     <LiteActionRow label="Database migrations" value={reviewStates[review.migration_review?.state] || 'Not confirmed'} />
+    <LiteActionRow label="Applied migration ledger" value={({ledger_matches: "Recorded checksums matched", incompatible: "Mismatch"})[review.migration_review?.applied_ledger?.state] || "Not confirmed"} summary="Recorded application evidence, not data or rollback compatibility." />
     <LiteTechnicalDetails summary="Review individual capability changes" haptic>
       <LiteActionRow label="Recorded changes" value={String(capabilities?.total ?? 'Not confirmed')} />
       {rows.map(row => <LiteActionRow key={row.id} label={row.id} value={impactNames[row.impact] || 'Review required'}

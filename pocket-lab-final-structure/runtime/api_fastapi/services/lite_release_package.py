@@ -205,3 +205,42 @@ def migration_inventory_comparison(installed: bytes, candidate: bytes, *, curren
         return {"state": "unchanged", "target_schema": current_schema}
     return {"state": "review_required", "reason_code": "migration_qualification_required",
             "target_schema": max(after), "pending_versions": list(range(current_schema + 1, max(after) + 1))}
+
+
+def applied_migration_evidence(installed: bytes, candidate: bytes, rows, *, current_schema: int):
+    """Compare durable applied names/checksums against both exact inventories.
+
+    The ledger proves recorded application, not data compatibility or a
+    successful rollback. No migration is executed by this review.
+    """
+    local = _inventory(installed, prefix=MIGRATION_PREFIX, suffix=".sql")
+    remote = _inventory(candidate, prefix=MIGRATION_PREFIX, suffix=".sql")
+    if type(current_schema) is not int or not 1 <= current_schema <= 512:
+        return {"state": "unknown", "reason_code": "applied_schema_unconfirmed"}
+    if len(rows) != current_schema or len(rows) > 512:
+        return {"state": "unknown", "reason_code": "applied_schema_ledger_incomplete"}
+    for version, row in enumerate(rows, 1):
+        name, checksum = row["name"], row["checksum"]
+        if (row["version"] != version or not isinstance(name, str)
+                or not re.fullmatch(r"[a-z0-9_-]+", name)
+                or not isinstance(checksum, str) or not DIGEST_PATTERN.fullmatch(checksum)):
+            return {"state": "unknown", "reason_code": "applied_schema_ledger_invalid"}
+        path = MIGRATION_PREFIX + f"{version:04d}_{name}.sql"
+        if local.get(path) != checksum:
+            return {"state": "incompatible", "reason_code": "installed_migration_checksum_mismatch"}
+        if remote.get(path) != checksum:
+            return {"state": "incompatible", "reason_code": "candidate_applied_migration_checksum_mismatch"}
+    return {"state": "ledger_matches", "applied_count": current_schema,
+            "ledger_sha256": hashlib.sha256(canonical_bytes([
+                {"version": row["version"], "name": row["name"], "checksum": row["checksum"]}
+                for row in rows])).hexdigest(), "execution_eligible": False}
+
+
+def observe_applied_migrations(installed: bytes, candidate: bytes, *, current_schema: int):
+    from ..db.connection import fast_read_connection
+    try:
+        with fast_read_connection(timeout_ms=250) as conn:
+            rows = conn.execute("SELECT version,name,checksum FROM schema_migrations ORDER BY version LIMIT 513").fetchall()
+        return applied_migration_evidence(installed, candidate, rows, current_schema=current_schema)
+    except Exception:
+        return {"state": "unknown", "reason_code": "applied_schema_ledger_unavailable"}

@@ -114,3 +114,13 @@ def test_unbound_policy_data_rejected():
     files[package.POLICY_PREFIX + "pocketlab/data.json"] = b"{}"
     with pytest.raises(TrustError, match="policy_data_inventory_unsupported"):
         inspect(files)
+
+
+def test_applied_ledger_checks_actual_recorded_checksum():
+    files = fixture_files()
+    raw = inventory(files, package.MIGRATION_PREFIX, ".sql")
+    rows = [{"version": 1, "name": "initial", "checksum": hashlib.sha256(b"SELECT 1;").hexdigest()}]
+    assert package.applied_migration_evidence(raw, raw, rows, current_schema=1)["state"] == "ledger_matches"
+    rows[0]["checksum"] = "0" * 64
+    assert package.applied_migration_evidence(raw, raw, rows, current_schema=1)["state"] == "incompatible"
+    assert package.applied_migration_evidence(raw, raw, [], current_schema=1)["state"] == "unknown"

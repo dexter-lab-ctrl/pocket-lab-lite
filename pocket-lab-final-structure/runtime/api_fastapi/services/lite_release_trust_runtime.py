@@ -339,6 +339,9 @@ def inspect_candidate(request):
                 receipt["migration_review"] = (source_package.migration_inventory_comparison(
                     local_migrations, migration_document, current_schema=current_schema)
                     if local_migrations is not None else {"state": "unknown", "reason_code": "migration_baseline_unconfirmed"})
+                if local_migrations is not None:
+                    receipt["migration_review"]["applied_ledger"] = source_package.observe_applied_migrations(
+                        local_migrations, migration_document, current_schema=current_schema)
             schema_match = receipt["schema_min"] <= current_schema <= receipt["schema_max"]
             receipt.update(provenance=disposition, provenance_reason=reason, **rotation, **clock_fields,
                 root_sha256=pin, attestation_root_sha256=config.configured()[1],
