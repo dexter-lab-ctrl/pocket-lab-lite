@@ -352,3 +352,27 @@ The consolidated session must not be marked merge-ready until C02, C03,
 C05, C06, C08 and C09 are either executed successfully or explicitly
 resolved by a separately authorized decision. The retained C10 performance
 misses remain visible and are not relabeled as compliance.
+
+### Consolidated qualification continuation — 2026-11-27, candidate `526df4643fd016afeab13c731342b222ca2f3b81`
+
+This continuation started from the clean PR #663 head `f363b1f3c2f1de29e08ccb14e2a4148047e5f2bc` and added only a bounded trusted-time integration qualification asset plus task wiring. It did not alter production activation fences, release publication, ordinary device state, or the physical performance contract.
+
+| Evidence item | Result | Exact evidence / limitation |
+|---|---|---|
+| Focused coordinator, promotion, identity, reconciler and trusted-time suites | PASS | 47 tests passed before the continuation change. |
+| Disposable HTTPS signed-time client/server integration | PASS — ISOLATED | `tests/backend/test_lite_release_trusted_time_integration.py`; real loopback TLS, ephemeral independent Ed25519 signer, nonce-bound response, pinned key and boot-time RTT receipt. |
+| T3–T5 package task after wiring | PASS — DEV-PC | `task lite:lifecycle:t3-t5-package`; 106 passed, 1 existing Starlette/httpx deprecation warning. |
+| Trusted Lifecycle backend task | PASS — DEV-PC | `task lite:lifecycle:backend`; 21 passed, 1 existing Starlette/httpx deprecation warning. |
+| Server Phone ordinary runtime baseline | PASS — READ ONLY | `main` and remote main `9bc53ce047c800be71cd76f1a37e79659af1ca4d`, clean worktree, ARM64, normal PM2 topology, FastAPI/OPA health, SQLite integrity `ok`. |
+| Server Phone resilience check | PASS — READ ONLY | `task lite:runtime:resilience:phone:check`; guardian, PM2 ownership, service versions, runtime projections, NATS, remote access and PhotoPrism checks passed. |
+| Repository Android read-only preflight | BLOCKED | The existing two-host lane reported the Server Phone baseline but could not establish its separately authorized private secondary transport; no candidate launch or production mutation was attempted. |
+| Windows Android CDP preflight | PASS — PREREQUISITE ONLY | Standard-user PowerShell confirmed Chrome Protocol 1.3 on localhost; ADB showed two authorized transports for the same physical device and the existing `9222` forward. The open target was a new tab, not Pocket Lab Lite. No UAC elevation was used. |
+| C02 human Owner WebAuthn | BLOCKED | No candidate-specific isolated HTTPS relying-party topology was available. Windows and phone Tailscale status did not expose a verified configured HTTPS FQDN; no human ceremony was requested, no credential was handled, and no main-runtime authentication was represented as candidate evidence. |
+| C03 independent trusted-time service | VALIDATED — ISOLATED | The disposable HTTPS service proves the execution-relevant client/server path. Production trusted-time service provisioning remains deferred. |
+| C05 live coordinated cutover | NOT RUN — LIVE OWNER PREREQUISITE | The live adapter remains default-disabled and requires an actual contained PM2/Caddy/OPA/NATS owner stack. The DEV-PC environment has no `pm2`, Caddy or `nats-server` binary, and the phone’s ordinary stack was not used as a candidate. Offline rehearsal remains explicitly non-live. |
+| C06 live startup/recovery | NOT RUN — LIVE OWNER PREREQUISITE | No live cutover was run, so no live interruption/restart/recovery claim is made. Existing isolated journal, checkpoint and newer-write fixtures remain valid. |
+| C08 ARM64 package/resource qualification | PARTIAL | Physical ordinary-runtime preservation and resilience passed; exact runtime-install package installation, candidate cutover, battery/thermal and full resource matrix remain unvalidated. |
+| C09 backend-projected physical System UI | PARTIAL | Existing fixture-backed physical System evidence is retained; no new actual candidate backend projection was exercised. |
+| C10 performance disposition | RESIDUAL | Existing nine-interaction, three-repetition System evidence remains 0/9 absolute-target passes, 0/9 hard-gate passes, 8 MIXED, 1 PLATFORM_DOMINATED, 0 APP_INCREMENTAL_COST. Thresholds and attribution rules were unchanged. |
+
+The new source-bearing candidate is `526df4643fd016afeab13c731342b222ca2f3b81`; prior physical evidence for `1c9ee06818fb396e56ccd86ecfd99bab85c32a4d` is not transferred to this runtime-bearing candidate. Exact-head CI for `526df464…` must be inspected after GitHub completes. C02, C05, C06, C08 and C09 remain unresolved qualification gates; this continuation does not make PR #663 merge-ready.

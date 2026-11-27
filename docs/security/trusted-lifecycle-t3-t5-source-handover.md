@@ -431,3 +431,35 @@ cutover, human-authentication, ARM64-install or production-activation signoff.
 The PR remains draft and is not merge-ready until the unresolved mandatory
 packages are either executed with evidence or separately dispositioned by the
 authorized reviewers. T6/T7 and production activation remain deferred.
+
+### Qualification continuation update — 2026-11-27
+
+The continuation candidate is `526df4643fd016afeab13c731342b222ca2f3b81`,
+following the prior documentation/evidence head `f363b1f3c2f1de29e08ccb14e2a4148047e5f2bc`.
+It adds `tests/backend/test_lite_release_trusted_time_integration.py` and
+wires the identity, reconciler, coordinator and trusted-time integration
+suites into `task lite:lifecycle:t3-t5-package`.
+
+- `task lite:lifecycle:t3-t5-package`: PASS, 106 tests;
+- `task lite:lifecycle:backend`: PASS, 21 tests;
+- disposable signed-time HTTPS client/server integration: PASS — ISOLATED;
+- Server Phone ordinary runtime and `task lite:runtime:resilience:phone:check`:
+  PASS read-only, with the phone remaining on clean `main` at
+  `9bc53ce047c800be71cd76f1a37e79659af1ca4d`;
+- Windows Android CDP preflight: PASS as a prerequisite only; localhost
+  Chrome Protocol 1.3 was healthy, but the target was a new tab rather than a
+  candidate Pocket Lab Lite page;
+- repository Android candidate preflight: BLOCKED because the existing
+  two-host lane could not establish its separately authorized secondary
+  transport;
+- C02 remains BLOCKED because no verified candidate-specific HTTPS/WebAuthn
+  relying-party topology was available; no human ceremony was requested;
+- C05 and C06 remain NOT RUN for live cutover/recovery because no contained
+  PM2/Caddy/OPA/NATS owner stack is available on DEV-PC and the ordinary phone
+  runtime was not used as a candidate;
+- C08 remains PARTIAL and C09 remains PARTIAL; C10 remains the retained
+  physical performance RESIDUAL.
+
+This candidate does not inherit physical runtime qualification from
+`1c9ee06818fb396e56ccd86ecfd99bab85c32a4d`. The PR remains draft, no
+production release or activation was performed, and T6/T7 remain deferred.
