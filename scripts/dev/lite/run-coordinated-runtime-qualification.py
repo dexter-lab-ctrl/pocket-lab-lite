@@ -556,7 +556,10 @@ def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], bi
         "POCKETLAB_COORDINATED_API_URL": f"http://127.0.0.1:{ports['api']}",
         "POCKETLAB_COORDINATED_PROXY_URL": f"http://127.0.0.1:{ports['caddy']}",
         "POCKETLAB_QUALIFICATION_ALLOW_TEST_DESTINATION": "1",
-        "POCKETLAB_RUNTIME_RECONCILE_SECONDS": "10",
+        # The runtime contract requires observations at least 15 seconds
+        # apart. Keep the disposable reconciler cadence above that floor so
+        # two consecutive observations can actually establish convergence.
+        "POCKETLAB_RUNTIME_RECONCILE_SECONDS": "20",
         "PYTHONPATH": os.pathsep.join((str(source / "pocket-lab-final-structure" / "runtime"), str(source / "pocket-lab-final-structure" / "runtime" / "supervisors"), os.environ.get("PYTHONPATH", ""))),
         "POCKETLAB_CANDIDATE_SOURCE_COMMIT": commit,
     }

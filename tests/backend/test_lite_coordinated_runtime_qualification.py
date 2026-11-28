@@ -35,3 +35,8 @@ def test_coordinated_runtime_binds_supervisor_nats_probe_to_isolated_port():
 def test_coordinated_runtime_binds_supervisor_lifecycle_lock_to_run_root():
     source = RUNNER.read_text(encoding="utf-8")
     assert '"POCKETLAB_START_DASHBOARD_LOCK": str(root / "locks" / "start-dashboard.sh.lock")' in source
+
+
+def test_coordinated_runtime_reconcile_cadence_allows_stable_observations():
+    source = RUNNER.read_text(encoding="utf-8")
+    assert '"POCKETLAB_RUNTIME_RECONCILE_SECONDS": "20"' in source
