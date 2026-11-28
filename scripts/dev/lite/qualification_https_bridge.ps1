@@ -111,6 +111,12 @@ public static class PocketLabQualificationHttpsBridge
             request = new HttpRequestMessage(
                 new HttpMethod(incoming.HttpMethod),
                 "http://" + targetHost + ":" + targetPort + incoming.RawUrl);
+            // Host is the browser-facing authority, not a hop-by-hop header.
+            // Preserve it while the request travels to the private WSL target;
+            // WebAuthn/status endpoints use it when a browser request has no
+            // Origin header (for example, a refresh-time claim status read).
+            if (!String.IsNullOrWhiteSpace(incoming.Headers["Host"]))
+                request.Headers.Host = incoming.Headers["Host"];
             request.Headers.TryAddWithoutValidation("X-Forwarded-Proto", "https");
             if (!String.IsNullOrWhiteSpace(incoming.Headers["Host"]))
                 request.Headers.TryAddWithoutValidation("X-Forwarded-Host", incoming.Headers["Host"]);

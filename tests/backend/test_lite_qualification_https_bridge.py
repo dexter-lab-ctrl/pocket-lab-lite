@@ -15,6 +15,8 @@ def test_qualification_https_bridge_preserves_cookie_authority_and_streams_sse()
     assert "ResponseHeadersRead" in source
     assert 'header.Key.Equals("Set-Cookie"' in source
     assert 'target.AppendHeader("Set-Cookie", value)' in source
+    assert 'request.Headers.Host = incoming.Headers["Host"]' in source
+    assert source.index('request.Headers.Host = incoming.Headers["Host"]') < source.index('foreach (var name in incoming.Headers.AllKeys)')
     assert "Task.Run" in source
     assert "SemaphoreSlim" in source
     assert "ReadAsByteArrayAsync" not in source
