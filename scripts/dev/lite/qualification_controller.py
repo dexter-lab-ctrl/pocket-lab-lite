@@ -435,7 +435,9 @@ def _start_trust_services(run: Mapping[str, Any], env: Mapping[str, str]) -> lis
     private = root / "secrets" / "trusted-time-signing.key"
     certificate = root / str(trust.get("certificate_relative") or "")
     tls_key = root / "secrets" / "trusted-time-key.pem"
-    for path in (assets, private, certificate, tls_key):
+    if not assets.is_dir() or assets.is_symlink():
+        raise QualificationControllerError("qualification_trust_material_missing", "The run-owned release asset directory is incomplete.")
+    for path in (private, certificate, tls_key):
         if not path.is_file() or path.is_symlink():
             raise QualificationControllerError("qualification_trust_material_missing", "The run-owned trust service material is incomplete.")
     log_root = root / "logs"
