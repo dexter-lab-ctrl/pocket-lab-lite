@@ -263,7 +263,13 @@ def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], bi
     state = root / "state"
     runtime_root = root / "runtime"
     allow = ",".join(SERVICE_NAMES)
-    path_parts = [str(root / "bin"), str(binaries["nats"].parent), str(binaries["caddy"].parent), str(binaries["opa"].parent)]
+    path_parts = [
+        str(root / "bin"),
+        str(binaries["nats"].parent),
+        str(binaries["caddy"].parent),
+        str(binaries["opa"].parent),
+        str(ROOT / ".venv" / "bin"),
+    ]
     path_parts.extend(item for item in os.environ.get("PATH", "").split(os.pathsep) if item)
     return {
         **os.environ,
@@ -446,6 +452,30 @@ def _cleanup(env: dict[str, str]) -> bool:
     return not any(str(item.get("name")) in SERVICE_NAMES and int(item.get("pid") or 0) > 0 for item in after if isinstance(item, dict))
 
 
+def _assert_isolated_environment(env: dict[str, str], root: Path) -> None:
+    base = root.resolve(strict=True)
+    for key in (
+        "POCKETLAB_QUALIFICATION_ROOT",
+        "POCKETLAB_BASE_DIR",
+        "POCKETLAB_STATE_DIR",
+        "POCKETLAB_LITE_DB_PATH",
+        "POCKETLAB_OPA_ACTIVE_POLICY_DIR",
+        "POCKET_LAB_BASE_DIR",
+        "POCKET_LAB_PWA_DIR",
+        "POCKET_LAB_API_DIR",
+        "POCKET_LAB_CADDYFILE",
+        "PM2_HOME",
+        "POCKETLAB_PM2_CLI",
+        "TMPDIR",
+        "TMP_ROOT",
+    ):
+        value = Path(env[key]).expanduser().resolve(strict=False)
+        try:
+            value.relative_to(base)
+        except ValueError as exc:
+            raise QualificationError(f"qualification path escaped run root: {key}") from exc
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run exact-SHA isolated coordinated-runtime qualification preflight")
     parser.add_argument("--candidate-sha")
@@ -495,6 +525,7 @@ def main(argv: list[str] | None = None) -> int:
             "POCKETLAB_LOCAL_RELEASE_CHECKSUMS": assets["checksums"],
             "POCKETLAB_LOCAL_RELEASE_TAG": assets["tag"],
         })
+        _assert_isolated_environment(env, root)
         Path(env["HOME"]).mkdir(mode=0o700, parents=True, exist_ok=True)
         install = source / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "install-pwa-ui.sh"
         install_result = _run(["bash", str(install)], cwd=source, env=env, timeout=180, check=False)
