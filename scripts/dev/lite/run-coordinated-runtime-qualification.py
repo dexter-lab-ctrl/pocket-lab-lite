@@ -184,6 +184,7 @@ def _release_assets(source: Path, commit: str, root: Path, npm: Path) -> dict[st
     link.symlink_to(node_modules, target_is_directory=True)
     try:
         build_env = os.environ.copy()
+        build_env["PATH"] = os.pathsep.join((str(npm.parent), build_env.get("PATH", "")))
         build_env.update({"POCKETLAB_BUILD_ID": commit, "VITE_POCKETLAB_BUILD_ID": commit})
         _run([str(npm), "run", "build"], cwd=source, env=build_env, timeout=300)
     finally:
