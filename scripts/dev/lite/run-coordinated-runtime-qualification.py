@@ -439,7 +439,8 @@ def _identity_projection(env: dict[str, str]) -> dict:
         "with connection() as conn:\n"
         "    print(json.dumps(lite_runtime_identity.public_projection(conn), sort_keys=True))\n"
     )
-    result = _run([sys.executable, "-c", script], env=env, timeout=20, check=False)
+    runtime_python = shutil.which("python3", path=env.get("PATH")) or sys.executable
+    result = _run([runtime_python, "-c", script], env=env, timeout=20, check=False)
     if result.returncode != 0:
         return {"status": "unknown", "reason_code": "runtime_identity_observation_unavailable", "sanitized": True}
     try:
