@@ -36,6 +36,27 @@ def test_execution_default_disabled(monkeypatch):
     assert not execution.gate()
 
 
+def test_review_path_tolerates_pre_execution_schema_without_grant_rows():
+    """A schema-63 baseline may review trust before candidate migrations run."""
+    class Transaction:
+        def __init__(self):
+            self.statements = []
+
+        def execute(self, sql, params=()):
+            self.statements.append((sql, params))
+            return self
+
+        def fetchone(self):
+            return None
+
+    tx = Transaction()
+    lease = type("Lease", (), {"generation": 1, "worker_generation": "worker", "command_id": "check"})()
+    execution.finish(tx, lease, {})
+    assert len(tx.statements) == 1
+    with pytest.raises(PermissionError, match="release_preparation_schema_unavailable"):
+        execution.current(tx, "1" * 32)
+
+
 def test_release_and_policy_capabilities_are_independent(receipt):
     scope = execution._scope(receipt,"1"*40)
     assert scope["capability_sha256"] == execution_capability_binding(execution.ACTION)["capability_sha256"]

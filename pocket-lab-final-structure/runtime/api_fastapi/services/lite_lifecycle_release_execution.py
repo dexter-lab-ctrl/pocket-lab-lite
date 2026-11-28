@@ -10,6 +10,7 @@ from datetime import timedelta
 import json
 import os
 from pathlib import Path
+import sqlite3
 from typing import Literal
 import uuid
 
@@ -71,6 +72,22 @@ def state_root():
     if not gate():
         raise PermissionError("coordinated_qualification_required")
     return Path(os.environ["POCKETLAB_STATE_DIR"]).resolve(strict=True)
+
+
+def _execution_table_available(conn) -> bool:
+    """Return whether the candidate execution schema is installed.
+
+    Release review can run against an older, read-only baseline while the
+    candidate migration is still a cutover prerequisite.  The absence of the
+    table therefore means "no pending execution grant" for the review path;
+    every actual grant/current/terminal path still fails closed below.
+    """
+    try:
+        return bool(conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='lite_lifecycle_release_execution'"
+        ).fetchone())
+    except sqlite3.OperationalError:
+        return False
 
 
 def _receipt(conn):
@@ -197,6 +214,8 @@ def _lease_dict(lease):
 
 
 def current(conn,grant_id,*,lease=None,states=("pending","claimed","prepared")):
+    if not _execution_table_available(conn):
+        raise PermissionError("release_preparation_schema_unavailable")
     row = conn.execute("SELECT * FROM lite_lifecycle_release_execution WHERE grant_id=?", (grant_id,)).fetchone()
     if not row or row["state"] not in states or row["revoked_at"] or not gate():
         raise PermissionError("release_preparation_not_current")
@@ -230,6 +249,8 @@ def claim(lease):
         return None
     lease_doc = _lease_dict(lease)
     with read_connection() as conn:
+        if not _execution_table_available(conn):
+            return None
         found = conn.execute("SELECT grant_id FROM lite_lifecycle_release_execution WHERE state='pending' AND revoked_at IS NULL").fetchone()
         if not found:
             return None
@@ -263,6 +284,8 @@ def claim(lease):
 
 
 def finish(tx, lease, observation):
+    if not _execution_table_available(tx):
+        return
     lease_doc = _lease_dict(lease)
     row = tx.execute("""SELECT * FROM lite_lifecycle_release_execution WHERE state='claimed'
         AND command_id=? AND lease_generation=? AND worker_generation=?""",
