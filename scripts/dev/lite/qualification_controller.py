@@ -355,6 +355,40 @@ def _baseline_package(runner: Any, repo: Path, baseline: str, root: Path) -> dic
             raise QualificationControllerError("baseline_worktree_cleanup_failed", "The temporary baseline worktree could not be removed safely.")
 
 
+def _package_inputs(run: Mapping[str, Any], lane: str, source_sha: str) -> dict[str, Any]:
+    """Resolve the sealed package inputs for one exact run-owned lane.
+
+    ``prepare`` deliberately keeps the manifest sanitized, so it records the
+    verified package identity rather than absolute build paths.  The package
+    names are deterministic and remain inside the run root; resolving them at
+    startup lets the existing promotion owner verify and stage the exact
+    artifact without rebuilding or trusting an expected digest alone.
+    """
+    if lane not in {"baseline", "candidate"}:
+        raise QualificationControllerError("package_lane_invalid", "The qualification package lane is invalid.")
+    root = Path(str(run["run_root"])).resolve(strict=True)
+    package_root = (root / f"{lane}-package" / "backend-artifact").resolve(strict=True)
+    try:
+        package_root.relative_to(root)
+    except ValueError as exc:
+        raise QualificationControllerError("package_path_invalid", "The qualification package escaped its run root.") from exc
+    prefix = f"pocketlab-lite-backend-{source_sha}"
+    inputs = {
+        "artifact": package_root / f"{prefix}.zip",
+        "manifest": package_root / f"{prefix}.manifest.json",
+        "checksums": package_root / f"{prefix}.checksums.txt",
+    }
+    if not all(path.is_file() and not path.is_symlink() for path in inputs.values()):
+        raise QualificationControllerError("package_inputs_missing", "The sealed qualification package inputs are incomplete.")
+    artifact_record = ((run.get("package") or {}).get(lane) or {}).get("artifact")
+    if not isinstance(artifact_record, dict) or artifact_record.get("source_commit") != source_sha:
+        raise QualificationControllerError("package_identity_missing", "The sealed qualification package identity is incomplete.")
+    return {
+        "prepared": {key: str(path) for key, path in inputs.items()},
+        "verified": artifact_record,
+    }
+
+
 def _sanitize_tail(text: str, root: Path) -> list[str]:
     output: list[str] = []
     for line in (text or "").splitlines()[-16:]:
@@ -472,6 +506,18 @@ def _start(run: dict[str, Any]) -> dict[str, Any]:
     env = _base_env(validated)
     runner._assert_isolated_environment(env, paths["manifest"].parent)
     Path(env["HOME"]).mkdir(mode=0o700, parents=True, exist_ok=True)
+    # The preflight runner installs and records these two independent identity
+    # anchors before it starts the owners.  The resumable controller must do
+    # the same work for its real baseline checkpoint; otherwise the runtime
+    # reconciler correctly reports an incomplete artifact/policy projection and
+    # the continuation can never reach owner authentication.
+    baseline_package = _package_inputs(validated, "baseline", validated["baseline_sha"])
+    installed_baseline = runner._install_backend_baseline(
+        baseline_package,
+        env,
+        commit=validated["baseline_sha"],
+        run_id=str(validated["run_id"]),
+    )
     install = paths["baseline"] / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "install-pwa-ui.sh"
     installed = _run(["bash", str(install)], cwd=paths["baseline"], env=env, timeout=180)
     if installed.returncode != 0:
@@ -480,13 +526,28 @@ def _start(run: dict[str, Any]) -> dict[str, Any]:
     started = _run(["bash", str(start_script), "--lite", "--reconcile-only"], cwd=paths["baseline"], env=env, timeout=300)
     if started.returncode != 0:
         raise QualificationControllerError("runtime_start_failed", "The isolated runtime owners did not start.")
-    observation = runner._observe(env, str(validated["run_id"]))
-    if not observation.get("all_required_online"):
-        raise QualificationControllerError("runtime_identity_unavailable", "The isolated runtime owners did not establish run-owned identity.")
-    status, runtime = runner._http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/api/lite/runtime")
-    health, _ = runner._http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/health")
-    ready, _ = runner._http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/ready")
-    projection = runner._identity_projection(env)
+    policy_baseline = runner._seed_policy_baseline(env, run_id=str(validated["run_id"]))
+    observation: dict[str, Any] = {}
+    status = health = ready = 0
+    runtime: dict[str, Any] = {}
+    projection: dict[str, Any] = {}
+    deadline = time.monotonic() + 60
+    while time.monotonic() < deadline:
+        observation = runner._observe(env, str(validated["run_id"]))
+        status, runtime = runner._http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/api/lite/runtime")
+        health, _ = runner._http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/health")
+        ready, _ = runner._http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/ready")
+        projection = runner._identity_projection(env)
+        if (
+            observation.get("all_required_online")
+            and status == 200
+            and health == 200
+            and ready == 200
+            and runtime.get("stable") is True
+            and projection.get("status") == "stable"
+        ):
+            break
+        time.sleep(2)
     identity_module = paths["baseline"] / "pocket-lab-final-structure" / "runtime" / "api_fastapi" / "services" / "lite_runtime_identity.py"
     baseline_has_identity_contract = identity_module.is_file()
     baseline_ready = status == 200 and health == 200 and ready == 200 and observation.get("all_required_online") is True
@@ -506,7 +567,7 @@ def _start(run: dict[str, Any]) -> dict[str, Any]:
         }
     if not baseline_ready or (baseline_has_identity_contract and (runtime.get("stable") is not True or projection.get("status") != "stable")):
         raise QualificationControllerError("runtime_convergence_failed", "The isolated baseline did not converge with independently observed identity.")
-    updated = _write_phase(validated, phase="awaiting_owner", next_action="verify_candidate_https_then_request_owner_authentication", status="AWAITING_OPERATOR", services={"started": True, "owned": list(runner.SERVICE_NAMES), "process_manager": "qualification_pm2_shim"}, baseline_identity={"status": "PASS" if baseline_projection.get("status") == "stable" and runtime.get("stable") is True else "PARTIAL", "source_commit": validated["baseline_sha"], "runtime": runtime, "projection": baseline_projection, "observation": observation}, startup={"status": "PASS", "owner": "exact_baseline_start_dashboard", "qualification_overlay": "isolated_nats_port_and_process_identity"}, evidence=["baseline_identity"])
+    updated = _write_phase(validated, phase="awaiting_owner", next_action="verify_candidate_https_then_request_owner_authentication", status="AWAITING_OPERATOR", services={"started": True, "owned": list(runner.SERVICE_NAMES), "process_manager": "qualification_pm2_shim"}, baseline_identity={"status": "PASS" if baseline_projection.get("status") == "stable" and runtime.get("stable") is True else "PARTIAL", "source_commit": validated["baseline_sha"], "installed_artifact": installed_baseline, "policy": policy_baseline, "runtime": runtime, "projection": baseline_projection, "observation": observation}, startup={"status": "PASS", "owner": "exact_baseline_start_dashboard", "qualification_overlay": "isolated_nats_port_and_process_identity"}, evidence=["baseline_identity"])
     updated["manifest"] = str(_manifest_path(paths["manifest"].parent))
     _report(updated, "baseline-start.json", {"status": "PASS", "run_id": updated["run_id"], "baseline_sha": updated["baseline_sha"], "runtime": runtime, "projection": projection, "services": observation, "sanitized": True})
     return updated

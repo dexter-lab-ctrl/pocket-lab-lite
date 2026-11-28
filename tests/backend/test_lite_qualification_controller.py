@@ -160,3 +160,84 @@ def test_baseline_start_overlay_only_rebinds_legacy_nats_listeners(tmp_path: Pat
     assert "listen: 0.0.0.0:4222" not in rendered
     assert 'source "$SCRIPT_DIR/lib/.qualification-common.sh"' in rendered
     assert (overlay.parent / "lib" / ".qualification-common.sh").read_text(encoding="utf-8") == "# candidate qualification common\n"
+
+
+def test_package_inputs_bind_to_the_sealed_exact_sha(tmp_path: Path):
+    run = _run(tmp_path)
+    source_sha = run["baseline_sha"]
+    package_root = tmp_path / "run" / "baseline-package" / "backend-artifact"
+    package_root.mkdir(mode=0o700, parents=True)
+    prefix = package_root / f"pocketlab-lite-backend-{source_sha}"
+    for suffix in (".zip", ".manifest.json", ".checksums.txt"):
+        (Path(str(prefix) + suffix)).write_text("sealed", encoding="utf-8")
+    run["package"] = {"baseline": {"artifact": {"source_commit": source_sha}}}
+
+    resolved = controller._package_inputs(run, "baseline", source_sha)
+
+    assert resolved["verified"]["source_commit"] == source_sha
+    assert set(resolved["prepared"]) == {"artifact", "manifest", "checksums"}
+    assert all(Path(path).is_file() for path in resolved["prepared"].values())
+
+
+def test_start_records_identity_anchors_before_owner_checkpoint(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    run = _run(tmp_path, phase="prepared")
+    root = tmp_path / "run"
+    source_sha = run["baseline_sha"]
+    package_root = root / "baseline-package" / "backend-artifact"
+    package_root.mkdir(mode=0o700, parents=True)
+    prefix = package_root / f"pocketlab-lite-backend-{source_sha}"
+    for suffix in (".zip", ".manifest.json", ".checksums.txt"):
+        (Path(str(prefix) + suffix)).write_text("sealed", encoding="utf-8")
+    run["package"] = {"baseline": {"artifact": {"source_commit": source_sha}}}
+    identity_module = root / "baseline" / "pocket-lab-final-structure" / "runtime" / "api_fastapi" / "services" / "lite_runtime_identity.py"
+    identity_module.parent.mkdir(mode=0o700, parents=True)
+    identity_module.write_text("# identity contract", encoding="utf-8")
+    for relative in ("home", "base/pwa/current", "state", "runtime"):
+        (root / relative).mkdir(mode=0o700, parents=True, exist_ok=True)
+    events: list[str] = []
+
+    class FakeRunner:
+        SERVICE_NAMES = ["pocket-api"]
+
+        def _assert_isolated_environment(self, env, run_root):
+            events.append("assert-isolated")
+
+        def _install_backend_baseline(self, package, env, *, commit, run_id):
+            events.append("install-backend")
+            assert package["verified"]["source_commit"] == commit
+            return {"status": "PASS", "source_commit": commit, "sanitized": True}
+
+        def _seed_policy_baseline(self, env, *, run_id):
+            events.append("seed-policy")
+            return {"status": "PASS", "revision": "qualification-policy", "sanitized": True}
+
+        def _observe(self, env, expected):
+            events.append("observe")
+            return {"all_required_online": True, "sanitized": True}
+
+        def _http_json(self, url):
+            events.append(url.rsplit("/", 1)[-1])
+            if url.endswith("/api/lite/runtime"):
+                return 200, {"stable": True}
+            return 200, {}
+
+        def _identity_projection(self, env):
+            events.append("identity")
+            return {"status": "stable", "sanitized": True}
+
+    monkeypatch.setattr(controller, "_runner", lambda: FakeRunner())
+    monkeypatch.setattr(controller, "_base_env", lambda value: {
+        "HOME": str(root / "home"),
+        "POCKETLAB_COORDINATED_API_URL": "http://127.0.0.1:1",
+    })
+    monkeypatch.setattr(controller, "_baseline_start_script", lambda value: root / "baseline-start.sh")
+    monkeypatch.setattr(controller, "_run", lambda *args, **kwargs: type("Result", (), {"returncode": 0})())
+
+    updated = controller._start(run)
+
+    assert updated["phase"] == "awaiting_owner"
+    assert updated["status"] == "AWAITING_OPERATOR"
+    assert updated["baseline_identity"]["installed_artifact"]["status"] == "PASS"
+    assert updated["baseline_identity"]["policy"]["revision"] == "qualification-policy"
+    assert events.index("install-backend") < events.index("seed-policy") < events.index("observe")
+    assert controller._read_manifest(root / controller.MANIFEST_NAME)["phase"] == "awaiting_owner"
