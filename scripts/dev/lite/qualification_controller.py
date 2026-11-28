@@ -618,6 +618,33 @@ def _owner_evidence(run: Mapping[str, Any], path: Path | None) -> dict[str, Any]
     return {"status": "PASS", "authentication": "backend_confirmed_human_owner", "purpose": str(value.get("purpose") or "")[:120], "candidate_sha": run["candidate_sha"], "authority_epoch": value.get("authority_epoch"), "policy_revision": value.get("policy_revision"), "expires_at": value.get("expires_at"), "sanitized": True}
 
 
+def _newer_write_evidence(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Preserve the recovery owner's actual newer-write disposition.
+
+    A successful recovery only proves that the owner restored a checkpoint
+    after proving that no newer writes were present at the restore boundary.
+    It does not prove the separate qualification scenario in which committed
+    writes are deliberately created after the checkpoint and then protected.
+    That scenario must be reported independently and may not be inferred from
+    a terminal recovery status.
+    """
+    observation = payload.get("newer_write_observation")
+    if isinstance(observation, Mapping):
+        state = str(observation.get("state") or "").strip().lower()
+        if state in {"preserved", "blocked"} and observation.get("independently_verified") is True:
+            return {
+                "state": state,
+                "independently_verified": True,
+                "preserved": state == "preserved",
+                "sanitized": True,
+            }
+    if payload.get("newer_writes_preserved") is True and payload.get("newer_writes_independently_verified") is True:
+        return {"state": "preserved", "independently_verified": True, "preserved": True, "sanitized": True}
+    if payload.get("reason_code") == "post_promotion_writes_observed":
+        return {"state": "blocked", "independently_verified": False, "preserved": None, "sanitized": True}
+    return {"state": "not_executed", "independently_verified": False, "preserved": None, "sanitized": True}
+
+
 def _promotion(run: dict[str, Any], *, owner_evidence: Path | None, grant_id: str | None, authorization: Path | None, promotion_public_key: Path | None, recovery_authorization: Path | None, recovery_public_key: Path | None) -> dict[str, Any]:
     runner = _runner()
     validated = _validate_run(run)
@@ -653,12 +680,13 @@ def _recover(run: dict[str, Any], *, journal: Path, recovery_authorization: Path
         payload = json.loads(result.stdout or result.stderr)
     except json.JSONDecodeError:
         payload = {"status": "FAIL", "reason_code": "recovery_owner_invalid_output"}
-    if result.returncode != 0 or payload.get("status") not in {"recovered", "already_terminal"}:
-        updated = _write_phase(validated, phase="recovery_required", next_action="manual_recovery_review", status="BLOCKED", recovery={"status": "FAIL", "owner": payload, "newer_writes_preserved": payload.get("reason_code") == "newer_writes_observed"})
+    newer_writes = _newer_write_evidence(payload)
+    if result.returncode != 0 or payload.get("status") not in {"recovered", "rolled_back", "already_terminal"}:
+        updated = _write_phase(validated, phase="recovery_required", next_action="manual_recovery_review", status="BLOCKED", recovery={"status": "FAIL", "owner": payload, "newer_writes": newer_writes})
         _report(updated, "recovery.json", {"status": "FAIL", "run_id": updated["run_id"], "candidate_sha": updated["candidate_sha"], "owner": payload, "sanitized": True})
         raise QualificationControllerError("recovery_failed", "The existing recovery owner did not independently verify recovery.")
-    updated = _write_phase(validated, phase="recovered", next_action="cleanup", status="PASS", recovery={"status": "PASS", "owner": payload, "newer_writes_preserved": True})
-    _report(updated, "recovery.json", {"status": "PASS", "run_id": updated["run_id"], "candidate_sha": updated["candidate_sha"], "owner": payload, "newer_writes_preserved": True, "sanitized": True})
+    updated = _write_phase(validated, phase="recovered", next_action="cleanup", status="PASS", recovery={"status": "PASS", "owner": payload, "newer_writes": newer_writes})
+    _report(updated, "recovery.json", {"status": "PASS", "run_id": updated["run_id"], "candidate_sha": updated["candidate_sha"], "owner": payload, "newer_writes": newer_writes, "sanitized": True})
     return updated
 
 
@@ -668,8 +696,14 @@ def cleanup(run: dict[str, Any], *, remove_root: bool) -> dict[str, Any]:
     paths = validated["paths_resolved"]
     env = _base_env(validated)
     cleanup_ok = runner._cleanup(env)
-    updated = _write_phase(validated, phase="cleaned", next_action="none", status="PASS" if cleanup_ok else "BLOCKED", cleanup={"status": "PASS" if cleanup_ok else "BLOCKED", "run_owned_services_stopped": cleanup_ok, "root_removed": False})
-    _report(updated, "cleanup.json", {"status": updated["status"], "run_id": updated["run_id"], "services_stopped": cleanup_ok, "root_removed": False, "sanitized": True})
+    prior_status = str(validated.get("status") or "UNVALIDATED")
+    # Cleanup is an operational disposition, never qualification evidence.
+    # Preserve an unresolved or failed result even when owned services stop
+    # cleanly; otherwise a cleanup-only success would mask a missing cutover,
+    # recovery or human-authority requirement.
+    qualification_status = prior_status if cleanup_ok else "BLOCKED"
+    updated = _write_phase(validated, phase="cleaned", next_action="none", status=qualification_status, cleanup={"status": "PASS" if cleanup_ok else "BLOCKED", "run_owned_services_stopped": cleanup_ok, "root_removed": False, "prior_status": prior_status, "qualification_status": qualification_status})
+    _report(updated, "cleanup.json", {"status": updated["status"], "cleanup_status": "PASS" if cleanup_ok else "BLOCKED", "qualification_status": qualification_status, "run_id": updated["run_id"], "services_stopped": cleanup_ok, "root_removed": False, "sanitized": True})
     if remove_root and cleanup_ok:
         root = Path(str(updated["run_root"])).resolve()
         if root == ROOT or root == Path("/") or root.is_symlink():
@@ -752,7 +786,11 @@ def main(argv: list[str] | None = None) -> int:
             env = _base_env(validated)
             observation = runner._observe(env, str(validated["run_id"])) if validated.get("services", {}).get("started") else {"status": "not_started"}
             _print({**validated, "runtime_observation": observation})
-            return EXIT_AWAITING_OPERATOR if validated.get("phase") in {"awaiting_owner", "owner_ready", "recovery_required"} else EXIT_SUCCESS
+            if validated.get("phase") in {"awaiting_owner", "owner_ready", "recovery_required"}:
+                return EXIT_AWAITING_OPERATOR
+            if validated.get("status") == "BLOCKED":
+                return EXIT_BLOCKED
+            return EXIT_SUCCESS
         if args.command == "await-owner":
             _print(await_owner(run, args.origin))
             return EXIT_AWAITING_OPERATOR
@@ -763,8 +801,9 @@ def main(argv: list[str] | None = None) -> int:
             _print(_recover(run, journal=args.journal, recovery_authorization=args.recovery_authorization, recovery_public_key=args.recovery_public_key))
             return EXIT_SUCCESS
         if args.command == "cleanup":
-            _print(cleanup(run, remove_root=args.remove_root))
-            return EXIT_SUCCESS
+            result = cleanup(run, remove_root=args.remove_root)
+            _print(result)
+            return EXIT_SUCCESS if result.get("status") == "PASS" else EXIT_BLOCKED
         if args.command == "qualify":
             prepared = prepare(baseline_sha=args.baseline_sha, candidate_sha=args.candidate_sha, run_root=args.run_root, evidence_dir=args.evidence_dir, npm_bin=None, nats_bin=None, caddy_bin=None, opa_bin=None, ttl_minutes=args.ttl_minutes)
             started = _start(prepared)

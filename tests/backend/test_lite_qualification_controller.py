@@ -108,6 +108,46 @@ def test_controller_exit_codes_keep_awaiting_operator_distinct():
     assert controller.EXIT_FAILED != controller.EXIT_SUCCESS
 
 
+def test_recovery_evidence_does_not_infer_newer_write_preservation_from_terminal_state():
+    assert controller._newer_write_evidence({"status": "rolled_back"}) == {
+        "state": "not_executed",
+        "independently_verified": False,
+        "preserved": None,
+        "sanitized": True,
+    }
+    assert controller._newer_write_evidence({
+        "status": "blocked",
+        "reason_code": "post_promotion_writes_observed",
+    })["state"] == "blocked"
+    assert controller._newer_write_evidence({
+        "status": "rolled_back",
+        "newer_write_observation": {
+            "state": "preserved",
+            "independently_verified": True,
+        },
+    })["preserved"] is True
+
+
+def test_cleanup_preserves_unresolved_qualification_status(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    run = _run(tmp_path, phase="recovery_required")
+    run["status"] = "BLOCKED"
+    controller._atomic_json(tmp_path / "run" / controller.MANIFEST_NAME, run)
+
+    class FakeRunner:
+        def _cleanup(self, env):
+            return True
+
+    monkeypatch.setattr(controller, "_runner", lambda: FakeRunner())
+    monkeypatch.setattr(controller, "_base_env", lambda value: {})
+
+    updated = controller.cleanup(run, remove_root=False)
+
+    assert updated["status"] == "BLOCKED"
+    assert updated["cleanup"]["status"] == "PASS"
+    assert updated["cleanup"]["qualification_status"] == "BLOCKED"
+    assert controller._read_manifest(tmp_path / "run" / controller.MANIFEST_NAME)["status"] == "BLOCKED"
+
+
 def test_phase_transition_does_not_persist_internal_path_objects(tmp_path: Path):
     run = _run(tmp_path)
     updated = controller._write_phase(
