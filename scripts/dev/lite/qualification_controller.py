@@ -487,9 +487,26 @@ def _start(run: dict[str, Any]) -> dict[str, Any]:
     health, _ = runner._http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/health")
     ready, _ = runner._http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/ready")
     projection = runner._identity_projection(env)
-    if status != 200 or health != 200 or ready != 200 or runtime.get("stable") is not True or projection.get("status") != "stable":
+    identity_module = paths["baseline"] / "pocket-lab-final-structure" / "runtime" / "api_fastapi" / "services" / "lite_runtime_identity.py"
+    baseline_has_identity_contract = identity_module.is_file()
+    baseline_ready = status == 200 and health == 200 and ready == 200 and observation.get("all_required_online") is True
+    baseline_projection = projection
+    if not baseline_has_identity_contract and projection.get("status") == "unknown":
+        # The exact T0--T2 baseline is intentionally pre-identity.  Keep the
+        # bounded startup checkpoint usable for a real baseline-to-candidate
+        # transition while recording that this old runtime cannot prove the
+        # new identity projection.  The candidate post-cutover observation is
+        # still required to be stable and complete before qualification can
+        # commit.
+        baseline_projection = {
+            "status": "not_available",
+            "reason_code": "baseline_pre_identity_contract",
+            "source_commit": validated["baseline_sha"],
+            "sanitized": True,
+        }
+    if not baseline_ready or (baseline_has_identity_contract and (runtime.get("stable") is not True or projection.get("status") != "stable")):
         raise QualificationControllerError("runtime_convergence_failed", "The isolated baseline did not converge with independently observed identity.")
-    updated = _write_phase(validated, phase="awaiting_owner", next_action="verify_candidate_https_then_request_owner_authentication", status="AWAITING_OPERATOR", services={"started": True, "owned": list(runner.SERVICE_NAMES), "process_manager": "qualification_pm2_shim"}, baseline_identity={"status": "PASS", "source_commit": validated["baseline_sha"], "runtime": runtime, "projection": projection, "observation": observation}, startup={"status": "PASS", "owner": "exact_baseline_start_dashboard", "qualification_overlay": "isolated_nats_port_only"}, evidence=["baseline_identity"])
+    updated = _write_phase(validated, phase="awaiting_owner", next_action="verify_candidate_https_then_request_owner_authentication", status="AWAITING_OPERATOR", services={"started": True, "owned": list(runner.SERVICE_NAMES), "process_manager": "qualification_pm2_shim"}, baseline_identity={"status": "PASS" if baseline_projection.get("status") == "stable" and runtime.get("stable") is True else "PARTIAL", "source_commit": validated["baseline_sha"], "runtime": runtime, "projection": baseline_projection, "observation": observation}, startup={"status": "PASS", "owner": "exact_baseline_start_dashboard", "qualification_overlay": "isolated_nats_port_and_process_identity"}, evidence=["baseline_identity"])
     updated["manifest"] = str(_manifest_path(paths["manifest"].parent))
     _report(updated, "baseline-start.json", {"status": "PASS", "run_id": updated["run_id"], "baseline_sha": updated["baseline_sha"], "runtime": runtime, "projection": projection, "services": observation, "sanitized": True})
     return updated
