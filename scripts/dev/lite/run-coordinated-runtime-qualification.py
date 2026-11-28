@@ -478,6 +478,8 @@ def main(argv: list[str] | None = None) -> int:
             "POCKETLAB_LOCAL_RELEASE_TAG": assets["tag"],
         })
         Path(env["HOME"]).mkdir(mode=0o700, parents=True, exist_ok=True)
+        install = source / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "install-pwa-ui.sh"
+        _run(["bash", str(install)], cwd=source, env=env, timeout=180)
         start = _run([
             "bash",
             str(source / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "start-dashboard.sh"),
