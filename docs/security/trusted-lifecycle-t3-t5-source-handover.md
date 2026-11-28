@@ -473,3 +473,53 @@ This is a documentation/evidence-only continuation after the trusted-time qualif
 The final read-only Server Phone resilience check passed with branch `main`, SHA `9bc53ce047c800be71cd76f1a37e79659af1ca4d`, normal runtime topology healthy, and temporary qualification state absent. C02 remains `BLOCKED`; C05/C06 remain live `NOT RUN`; C08/C09 remain `PARTIAL`; C10 remains the retained performance `RESIDUAL`. Local final-stage docs/gate tasks were intentionally deferred pending those live/device closures, even though the current-head CI quick-and-docs job passed its own generation/check steps.
 
 PR #663 remains open and draft. Its active description now carries current-head provenance, evidence-bound status badges and logos, architecture/qualification matrices, exact CI links, residual performance treatment, Server Phone restoration evidence, and explicit production/T6/T7 deferrals. No merge, auto-merge, release, deployment, or production activation occurred.
+
+## Qualification infrastructure enablement — 2026-11-28
+
+The continuation started from feature head `5a3041e3c7ece80904488a050d83baf2127144af` with main/base `9bc53ce047c800be71cd76f1a37e79659af1ca4d`. The pushed current source candidate is `3d88dff920c4bd434188ca745d212f155eb6959b`; the PR remains draft.
+
+### Implemented qualification infrastructure
+
+The DEV-PC lane now has a repository-owned exact-SHA disposable coordinated-runtime preflight. It archives the exact commit, builds and installs the PWA, verifies the dependency-complete runtime artifact, provisions a run-owned SQLite/OPA/NATS/Caddy/PM2 namespace, starts the existing FastAPI/worker/node-agent/core-supervisor/runtime-reconciler owners, and records independent identity/convergence evidence. The frontend remains a prepared-read client; no browser or simulated adapter is treated as a cutover owner.
+
+Three qualification defects found by executing the real owners were fixed on DEV-PC and covered by regression tests:
+
+1. The supervisor was probing default NATS port 4222 instead of the disposable listener; the lane now binds `POCKETLAB_NATS_PORT` and `POCKETLAB_LITE_NATS_PORT` to the same dynamic loopback port.
+2. Python supervisors could not observe the shell startup lock because the lane used a separate `LOCK_DIR`; `POCKETLAB_START_DASHBOARD_LOCK` now points to the run-owned lock.
+3. A 10-second disposable reconciler cadence could never satisfy the existing 15-second stable-observation interval; the lane now uses 20 seconds. The runtime contract and production defaults are unchanged.
+
+### Exact isolated runtime result
+
+The sanitized committed evidence is [`coordinated-runtime-preflight.json`](evidence/trusted-lifecycle-t3-t5/3d88dff920c4bd434188ca745d212f155eb6959b/coordinated-runtime-preflight.json). It records:
+
+- package/PWA/source identity bound to `3d88dff9`;
+- artifact, source-inventory, FastAPI, worker, core supervisor, runtime reconciler, OPA module/data, frontend, SQLite schema and migration-ledger identities;
+- all nine run-owned services online, with process markers and executable paths under the qualification root;
+- runtime contract `converged=true` and `execution_eligible=true` after two stable observations;
+- cleanup PASS with the disposable root removed;
+- cutover BLOCKED before execution because the required candidate-bound human Owner authorization was not available;
+- recovery and physical Android NOT RUN.
+
+This is integrated DEV-PC baseline/convergence evidence, not live coordinated promotion, recovery, physical Android qualification, hardware-backed attestation, or production authorization. Previous physical evidence for `1c9ee06818fb396e56ccd86ecfd99bab85c32a4d` remains exact-candidate historical evidence and is not transferred.
+
+### Current requirement and qualification status
+
+| Requirement/package | Disposition | Limitation |
+|---|---|---|
+| SC-R01 / C05 coordinated activation | IMPLEMENTED; isolated baseline/convergence validated | Human-authorized cutover and backend/PWA/OPA/SQLite switching not attempted |
+| SC-R02 / C01 independent identity | VALIDATED — ISOLATED | Physical installed identity and same-UID limitations remain |
+| SC-R03 / C06 recovery | IMPLEMENTED; live recovery NOT RUN | Interruption matrix, authorized recovery and newer-write execution remain open |
+| SC-R04 / C07 capability enforcement | VALIDATED — ISOLATED | No production capability activation; T6 domains remain deferred |
+| SC-R05 / C11 qualification assets | PARTIAL | Focused tasks and exact runtime preflight exist; full Q0–Q9 closure remains open |
+| SC-R06 / C09 System Manage | MOCKED/ISOLATED | Candidate backend-projected physical UI not exercised |
+| SC-R07 / C04 package | VALIDATED — ISOLATED | Physical ARM64/Termux install and resource matrix remain open |
+| SC-R08 / C03/T3 policy and trusted time | VALIDATED — ISOLATED | Production trusted-time/provenance prerequisites remain deferred |
+| C02 human Owner WebAuthn | BLOCKED | No verified isolated HTTPS relying-party topology/FQDN was available |
+| C08 ARM64/Termux | PARTIAL | Server Phone stayed consumer-only on main; no candidate installed |
+| C10 performance | RESIDUAL | Existing System-only target/gate misses retained; no threshold changed |
+
+### Exact DEV-PC tasks
+
+`task lite:lifecycle:backend` passed 21 tests; `task lite:lifecycle:t3-t5-package` passed 107; `task lite:lifecycle:ui` passed 14; mocked desktop/mobile passed 10; and `task lite:lifecycle:regression` passed 56. Python compilation and `git diff --check` passed. The Node 24 npm path was supplied by the established local toolchain after the first aggregate shell invocation lacked it; no toolchain guard or dependency was weakened.
+
+Canonical documentation generation and the broad final repository gate remain deferred until the live/human/physical prerequisites are safely available. The Server Phone remains restored to main with its normal runtime; production activation, release publication, merge and auto-merge remain disabled.

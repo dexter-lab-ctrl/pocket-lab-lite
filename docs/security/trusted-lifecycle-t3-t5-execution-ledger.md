@@ -386,3 +386,62 @@ This is a documentation/evidence-only continuation after `526df464…`; it does 
 The final read-only Server Phone resilience check passed with the ordinary phone on clean `main` at `9bc53ce047c800be71cd76f1a37e79659af1ca4d`. C02 remains `BLOCKED`; C05 and C06 remain `NOT RUN` for live cutover/recovery; C08 and C09 remain `PARTIAL`; C10 remains the retained performance `RESIDUAL`. Local final-stage `task lite:docs:generate`, `task lite:docs:check`, and `task lite:check` were intentionally not rerun while those mandatory live/device gates remain unresolved; their current-head CI coverage is recorded separately above.
 
 The PR description was rewritten at the current head with evidence-bound status badges, technology logos, Mermaid architecture, C01–C11 and Q0–Q9 matrices, exact provenance, residual performance results, restoration state, and explicit no-merge/no-release/no-production-activation boundaries. PR #663 remains open and draft.
+
+### Qualification infrastructure enablement and exact isolated runtime — 2026-11-28
+
+This continuation began from remote feature head `5a3041e3c7ece80904488a050d83baf2127144af` and base/main `9bc53ce047c800be71cd76f1a37e79659af1ca4d`. The current source-bearing candidate is `3d88dff920c4bd434188ca745d212f155eb6959b`, pushed to the existing PR branch. No prior physical candidate evidence is transferred to this SHA.
+
+#### Source changes and defects resolved
+
+- Added the repository-owned exact-SHA disposable coordinated-runtime qualification driver and Taskfile entry point.
+- Added a run-owned PM2 compatibility shim with finite service allowlisting, process markers, policy/spec projection, memory observation and cleanup.
+- Isolated NATS, Caddy, OPA, FastAPI, worker, supervisor, reconciler, PWA, SQLite, PM2, temporary and lock paths under one disposable root.
+- Corrected the qualification lane to bind `POCKETLAB_NATS_PORT` to its dynamic NATS listener; the prior lane incorrectly made the supervisor probe production port 4222.
+- Corrected the qualification lane to expose the run-owned `POCKETLAB_START_DASHBOARD_LOCK` to Python supervisors; the prior lane could race startup PM2 definition publication.
+- Corrected the qualification reconciler cadence to 20 seconds so the existing 15-second minimum stable-observation contract can produce two consecutive observations. No runtime threshold was weakened.
+- Added regression coverage for all three isolation corrections and the PM2/runtime projection.
+
+#### Exact candidate evidence
+
+The sanitized report is [`coordinated-runtime-preflight.json`](evidence/trusted-lifecycle-t3-t5/3d88dff920c4bd434188ca745d212f155eb6959b/coordinated-runtime-preflight.json).
+
+| Evidence | Result |
+|---|---|
+| Exact source archive, runtime package and migration inventory | PASS; source `3d88dff9`, artifact `6b0e4d8b…`, payload `161ea8dce…`, schema 69, 342 entries |
+| PWA installation and exact source binding | PASS; generation `lite-2026.11.28.663`, artifact `3bf992ae…` |
+| OPA baseline and loaded module/data identity | PASS; revision `plr-f6ae06aac321d63dbea96d9547b18137` |
+| Independent FastAPI/worker/core/reconciler/process identity | PASS; all nine run-owned services online and marked |
+| SQLite schema and migration ledger | PASS; schema 69 and ledger digest recorded |
+| Runtime contract | PASS; `converged=true`, `execution_eligible=true`, two stable observations |
+| Coordinated cutover | BLOCKED; `human_owner_authorization_required`, not attempted |
+| Recovery and physical Android | NOT RUN; cutover not authorized / driver is DEV-PC-only |
+| Disposable cleanup | PASS; run-owned services stopped and root removed |
+
+#### Current consolidated disposition
+
+| Package | Current result |
+|---|---|
+| C01 independent runtime identity | VALIDATED — ISOLATED; complete physical installed identity remains open |
+| C02 human Owner WebAuthn | BLOCKED; no verified candidate-bound HTTPS/RP topology was available |
+| C03 independent trusted time | VALIDATED — ISOLATED; production service remains deferred |
+| C04 authenticated runtime package | VALIDATED — ISOLATED; physical ARM64 install remains open |
+| C05 coordinated backend/PWA/OPA/SQLite cutover | BLOCKED before authorization; baseline/convergence preflight passed, cutover was not attempted |
+| C06 startup reconciliation/recovery/newer-write protection | NOT RUN for live fault/recovery path |
+| C07 capability activation and owner enforcement | VALIDATED — ISOLATED |
+| C08 ARM64/Termux/resource qualification | PARTIAL; main-runtime read-only baseline only |
+| C09 backend-projected System UI | PARTIAL; mocked/fixture evidence only for this candidate |
+| C10 performance | RESIDUAL; existing 0/9 target and 0/9 hard-gate passes remain truthful |
+| C11 finalization | PARTIAL; focused regression passed, canonical docs and broad final gate remain deferred |
+
+#### Current DEV-PC result ledger
+
+- `task lite:lifecycle:backend`: PASS, 21 tests.
+- `task lite:lifecycle:t3-t5-package`: PASS, 107 tests.
+- `task lite:lifecycle:ui`: PASS, 14 tests.
+- `task lite:lifecycle:mocked`: PASS, 10 tests across mocked desktop/mobile.
+- `task lite:lifecycle:regression`: PASS, 56 tests.
+- New runtime identity/qualification regression set: PASS, 62 tests before the final cadence correction and 61 targeted tests after it.
+- `git diff --check` and Python compilation: PASS.
+- The first aggregate qualification invocation stopped before UI because the shell lacked Node 24 npm on `PATH`; the established Node 24 path was then used and the UI/browser tasks passed. No source toolchain change was made.
+
+Canonical `task lite:docs:generate`, `task lite:docs:check`, and `task lite:check` remain intentionally deferred until the blocked human, physical and live-cutover prerequisites are resolved. The Server Phone remains on restored main; no candidate was installed or mutated there. Production release, activation, merge and auto-merge remain disabled.
