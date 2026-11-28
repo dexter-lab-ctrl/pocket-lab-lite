@@ -278,6 +278,11 @@ def _baseline_start_script(run: Mapping[str, Any]) -> Path:
         text = source.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
         raise QualificationControllerError("baseline_startup_unavailable", "The exact baseline startup owner is unavailable.") from exc
+    candidate_common = paths["candidate"] / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "lib" / "common.sh"
+    try:
+        common_text = candidate_common.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise QualificationControllerError("qualification_common_unavailable", "The candidate qualification process-management boundary is unavailable.") from exc
     replacements = {
         "listen: 0.0.0.0:4222": "listen: ${POCKETLAB_NATS_LISTEN_HOST:-127.0.0.1}:${POCKETLAB_LITE_NATS_PORT:-4222}",
         "http: 127.0.0.1:8222": "http: 127.0.0.1:${POCKETLAB_LITE_NATS_MONITOR_PORT:-8222}",
@@ -291,9 +296,18 @@ def _baseline_start_script(run: Mapping[str, Any]) -> Path:
     if not changed and "POCKETLAB_LITE_NATS_PORT" not in text:
         raise QualificationControllerError("baseline_startup_contract_unsupported", "The exact baseline has no safe isolated NATS port contract.")
     overlay = source.with_name(".qualification-start-dashboard.sh")
+    common_overlay = source.parent / "lib" / ".qualification-common.sh"
     try:
+        common_overlay.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         overlay.write_text(text, encoding="utf-8")
         overlay.chmod(0o700)
+        common_overlay.write_text(common_text, encoding="utf-8")
+        common_overlay.chmod(0o700)
+        rendered = overlay.read_text(encoding="utf-8")
+        source_import = 'source "$SCRIPT_DIR/lib/common.sh"'
+        if source_import not in rendered:
+            raise QualificationControllerError("baseline_startup_contract_unsupported", "The exact baseline startup owner has no stable common-shell import.")
+        overlay.write_text(rendered.replace(source_import, 'source "$SCRIPT_DIR/lib/.qualification-common.sh"', 1), encoding="utf-8")
     except OSError as exc:
         raise QualificationControllerError("baseline_startup_overlay_failed", "The run-owned baseline startup overlay could not be created.") from exc
     return overlay

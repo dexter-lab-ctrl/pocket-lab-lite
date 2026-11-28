@@ -134,8 +134,20 @@ def test_baseline_start_overlay_only_rebinds_legacy_nats_listeners(tmp_path: Pat
         / "start-dashboard.sh"
     )
     source.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    candidate_common = (
+        tmp_path
+        / "run"
+        / "candidate"
+        / "pocket-lab-final-structure"
+        / "pocket-lab-bootstrap-production-scripts-patched"
+        / "scripts"
+        / "lib"
+        / "common.sh"
+    )
+    candidate_common.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    candidate_common.write_text("# candidate qualification common\n", encoding="utf-8")
     source.write_text(
-        "#!/usr/bin/env bash\ncat <<EOF\nlisten: 0.0.0.0:4222\nhttp: 127.0.0.1:8222\ncurl http://127.0.0.1:8222/healthz\nEOF\n",
+        "#!/usr/bin/env bash\nsource \"$SCRIPT_DIR/lib/common.sh\"\ncat <<EOF\nlisten: 0.0.0.0:4222\nhttp: 127.0.0.1:8222\ncurl http://127.0.0.1:8222/healthz\nEOF\n",
         encoding="utf-8",
     )
     source.chmod(0o700)
@@ -146,3 +158,5 @@ def test_baseline_start_overlay_only_rebinds_legacy_nats_listeners(tmp_path: Pat
     assert "${POCKETLAB_LITE_NATS_MONITOR_PORT:-8222}" in rendered
     assert "${POCKETLAB_LITE_NATS_MONITOR_PORT:-8222}/healthz" in rendered
     assert "listen: 0.0.0.0:4222" not in rendered
+    assert 'source "$SCRIPT_DIR/lib/.qualification-common.sh"' in rendered
+    assert (overlay.parent / "lib" / ".qualification-common.sh").read_text(encoding="utf-8") == "# candidate qualification common\n"
