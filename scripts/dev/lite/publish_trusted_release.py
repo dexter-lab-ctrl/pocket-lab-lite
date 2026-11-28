@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from prepare_trusted_release_candidate import metadata_version
 from api_fastapi.services.lite_release_trust import Root, _parse, verify
 from api_fastapi.services.lite_release_contract import parse_lite_tag
+from api_fastapi.services import lite_release_package as source_package
 
 NAMES = ("dist.zip", "checksums.txt", "pocketlab-lite-release.json",
          "pocketlab-lite-capabilities.json", "pocketlab-lite-policy-inventory.json",
@@ -50,6 +51,21 @@ def main():
             "policy_sha256":hashes["pocketlab-lite-policy-inventory.json"],
             "migration_inventory_sha256":hashes["pocketlab-lite-migration-inventory.json"]},
         capability_manifest=paths["pocketlab-lite-capabilities.json"].read_bytes())
+    names_expected = NAMES
+    declaration = source_package.source_declaration(
+        paths["pocketlab-lite-release.json"].read_bytes(),
+        source_commit=receipt["source_commit"], release_tag=receipt["release_tag"])
+    if declaration is not None:
+        name = source_package.SOURCE_ASSET
+        paths[name] = args.assets / name
+        with paths[name].open("rb") as stream:
+            source_package.inspect_source(stream, declaration=declaration,
+                policy_inventory=paths["pocketlab-lite-policy-inventory.json"].read_bytes(),
+                migration_inventory=paths["pocketlab-lite-migration-inventory.json"].read_bytes())
+        hashes[name] = sha(paths[name])
+        if hashes[name] != declaration["sha256"]:
+            raise ValueError("source_archive_digest_mismatch")
+        names_expected = (*NAMES, name)
     if receipt["metadata_version"] != metadata_version(args.tag):
         raise ValueError("metadata_version_conflict")
     if subprocess.check_output(["git","rev-list","-n","1",args.tag],text=True).strip() != args.commit:
@@ -76,7 +92,7 @@ def main():
     if current["isPrerelease"] != (args.channel == "preview"):
         raise ValueError("channel_conflict")
     names = [asset["name"] for asset in current["assets"]]
-    if len(names) != len(set(names)) or set(names) - set(NAMES):
+    if len(names) != len(set(names)) or set(names) - set(names_expected):
         raise ValueError("existing_asset_conflict")
     def compare(names):
         with tempfile.TemporaryDirectory() as directory:
@@ -85,7 +101,7 @@ def main():
                 if sha(Path(directory)/name) != hashes[name]:
                     raise ValueError("existing_asset_conflict")
     compare(names)
-    missing = [name for name in NAMES if name not in names]
+    missing = [name for name in names_expected if name not in names]
     if not current["isDraft"]:
         if missing:
             raise ValueError("published_release_immutable")
@@ -93,9 +109,9 @@ def main():
     for name in missing:
         gh("release","upload",args.tag,str(paths[name]))
     current = state()
-    if not current["isDraft"] or sorted(asset["name"] for asset in current["assets"]) != sorted(NAMES):
+    if not current["isDraft"] or sorted(asset["name"] for asset in current["assets"]) != sorted(names_expected):
         raise ValueError("draft_asset_set_changed")
-    compare(NAMES)
+    compare(names_expected)
     gh("release","edit",args.tag,"--draft=false")
 
 if __name__ == "__main__":

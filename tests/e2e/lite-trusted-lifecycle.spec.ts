@@ -52,3 +52,19 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(dialog).toHaveScreenshot('trusted-lifecycle-' + theme + '.png', { animations: 'disabled' });
   });
 }
+
+
+test('candidate review remains non-executing on desktop and mobile', async ({ page }) => {
+  const writes: string[] = [];
+  page.on('request', r => { if (r.method() !== 'GET' && r.url().includes('/api/lite/lifecycle/')) writes.push(r.url()); });
+  const panel = await openLifecycle(page, 'system-health-lifecycle-candidate');
+  await expect(panel.getByText('Verified for review', { exact: true })).toBeVisible();
+  await expect(panel.getByText('Policy change requires review', { exact: true })).toBeVisible();
+  await expect(panel.getByText('Migration qualification required', { exact: true })).toBeVisible();
+  await panel.getByText('Review individual capability changes', { exact: true }).click();
+  await expect(panel.getByText('Additional authority requires review', { exact: true })).toBeVisible();
+  await expect(panel.getByRole('button', { name: /activate|install/i })).toHaveCount(0);
+  const report = await new AxeBuilder({ page }).include('[aria-label="Updates & protection"]').analyze();
+  expect(report.violations.filter(v => ['critical', 'serious'].includes(v.impact || ''))).toEqual([]);
+  expect(writes).toEqual([]);
+});

@@ -9,7 +9,11 @@ digraph "twoDegreesRelationshipsDiagram" {
   "human_enrollment_claims":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "human_enrollment_claims":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "lite_lifecycle_boundary_scopes":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "lite_lifecycle_candidate_consent":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "lite_lifecycle_capability_activation":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "lite_lifecycle_grants":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "lite_lifecycle_policy_execution":"elipses":w -> "policy_activation_operations":"operation_id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "lite_lifecycle_policy_execution":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "owner_approved_operations":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "owner_approved_operations":"elipses":w -> "owner_operation_clients":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "owner_operation_client_pairings":"elipses":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -89,7 +93,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="116" HEIGHT="16"><B>human_identities</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">24 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">27 &gt;</TD></TR>
     </TABLE>>
     URL="human_identities.html"
     target="_top"
@@ -106,6 +110,28 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="lite_lifecycle_boundary_scopes"
   ];
+  "lite_lifecycle_candidate_consent" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16"><B>lite_lifecycle_candidate_consent</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="lite_lifecycle_candidate_consent.html"
+    target="_top"
+    tooltip="lite_lifecycle_candidate_consent"
+  ];
+  "lite_lifecycle_capability_activation" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16"><B>lite_lifecycle_capability_activation</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="lite_lifecycle_capability_activation.html"
+    target="_top"
+    tooltip="lite_lifecycle_capability_activation"
+  ];
   "lite_lifecycle_grants" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -116,6 +142,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="lite_lifecycle_grants.html"
     target="_top"
     tooltip="lite_lifecycle_grants"
+  ];
+  "lite_lifecycle_policy_execution" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16"><B>lite_lifecycle_policy_execution</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="lite_lifecycle_policy_execution.html"
+    target="_top"
+    tooltip="lite_lifecycle_policy_execution"
   ];
   "owner_approved_operations" [
    label=<
@@ -155,7 +192,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="192" HEIGHT="16"><B>policy_activation_operations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
     </TABLE>>
     URL="policy_activation_operations.html"
     target="_top"

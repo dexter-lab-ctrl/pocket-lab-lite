@@ -56,3 +56,60 @@ it('distinguishes unconfirmed current trust from historical evidence', () => {
   expect(screen.queryByRole('button', { name: 'Review release verification review' })).toBeNull();
   expect(screen.getByText('Not enabled by this foundation')).toBeTruthy();
 });
+
+
+it('shows scoped candidate evidence without any activation controls', () => {
+  const candidate_review = { release_tag: 'lite-2026.11.27.1', source_package: { state: 'verified_for_review' },
+    policy_review: { state: 'unknown_semantic_impact' }, policy_runtime_observation: { state: 'modules_match' },
+    migration_review: { state: 'review_required' },
+    capability_review: { total: 1, changes: [{ id: 'fixture.capability', impact: 'U4', changed_fields: 'targets' }] } };
+  render(<LifecycleContent data={{ ...data, candidate_review }} />);
+  expect(screen.getByText('Verified for review')).toBeTruthy();
+  expect(screen.getByText('Policy change requires review')).toBeTruthy();
+  expect(screen.getByText('Loaded Rego matched at recorded check')).toBeTruthy();
+  expect(screen.getByText('Migration qualification required')).toBeTruthy();
+  expect(screen.queryByRole('button', { name: /activate|install/i })).toBeNull();
+});
+
+it('does not expose owner candidate detail in a non-Owner view', () => {
+  render(<LifecycleContent data={{ ...data, owner_authority: false, candidate_review: { release_tag: 'fixture' } }} />);
+  expect(screen.queryByText('Candidate evidence')).toBeNull();
+});
+
+it('keeps isolated policy execution distinct from standing review consent', () => {
+  const onReview = vi.fn();
+  const metadata = 'a'.repeat(64);
+  render(<LifecycleContent data={{ ...data, policy_execution_qualification_enabled: true,
+    policy_execution_review_available: true, candidate_review: { metadata_sha256: metadata } }} onReview={onReview} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Review isolated policy activation' }));
+  expect(onReview).toHaveBeenCalledWith({ kind: 'policy-execution', value: metadata, label: 'Review isolated policy activation' });
+  expect(screen.getByText(/Production activation remains disabled/)).toBeTruthy();
+});
+
+
+it('shows preparation and offline rehearsal without implying production installation', () => {
+  const onReview = vi.fn();
+  const metadata = 'a'.repeat(64);
+  render(<LifecycleContent data={{...data, release_preparation_qualification_enabled:true,
+    release_preparation_review_available:true,candidate_review:{metadata_sha256:metadata},
+    release_preparations:[{grant_id:'b'.repeat(32),state:'rehearsed'}]}} onReview={onReview}/>);
+  expect(screen.getByText('Offline cutover rehearsed')).toBeTruthy();
+  expect(screen.getByText(/Production installation remains disabled/)).toBeTruthy();
+  fireEvent.click(screen.getByRole('button',{name:'Review isolated update preparation'}));
+  expect(onReview).toHaveBeenCalledWith({kind:'release-preparation',value:metadata,label:'Review isolated update preparation'});
+});
+
+it('does not offer release preparation controls from stale state', () => {
+  render(<LifecycleContent readOnly data={{...data,release_preparation_qualification_enabled:true,
+    release_preparation_review_available:true,candidate_review:{metadata_sha256:'a'.repeat(64)}}}/>);
+  expect(screen.getByRole('button',{name:'Review isolated update preparation'}).disabled).toBe(true);
+});
+
+
+it('shows a failed offline cutover as requiring reconciliation, never recovery success', () => {
+  render(<LifecycleContent data={{...data,release_preparations:[
+    {grant_id:'c'.repeat(32),state:'failed',reason_code:'coordinated_rehearsal_failed'}]}}/>);
+  expect(screen.getByText('Offline cutover needs review')).toBeTruthy();
+  expect(screen.getByText('Reconciliation required. No live recovery is confirmed.')).toBeTruthy();
+  expect(screen.queryByRole('button',{name:'Revoke preparation permission'})).toBeNull();
+});

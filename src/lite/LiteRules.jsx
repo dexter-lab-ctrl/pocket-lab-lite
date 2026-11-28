@@ -61,6 +61,7 @@ export default function RulesScreen() {
   const [manageDecision, setManageDecision] = React.useState(null);
   const [sourceSyncBusy, setSourceSyncBusy] = React.useState(false);
   const [sourceSyncNotice, setSourceSyncNotice] = React.useState(null);
+  const [sourceSyncStepUp, setSourceSyncStepUp] = React.useState(null);
   const [activationStatus, setActivationStatus] = React.useState(null);
   const [activationTracked, setActivationTracked] = React.useState(false);
   const [activationDetailsOpen, setActivationDetailsOpen] = React.useState(false);
@@ -162,43 +163,67 @@ export default function RulesScreen() {
     };
   }, [activationInProgress, activationTracked, activationState, backendReachable, refresh]);
 
+  async function finishSafetyRulesUpdate(result) {
+    if (result?.accepted) {
+      setActivationTracked(true);
+      setActivationStatus(result?.operation || { state: 'pending' });
+    }
+    setSourceSyncNotice({
+      title: result?.accepted ? 'Safety Rules update accepted' : 'Safety Rules already current',
+      message: result?.summary || 'Pocket Lab accepted the Rules reconciliation request.',
+    });
+    pushToast({
+      id: `rules-source:${result?.operation?.operation_id || result?.updated_at || 'current'}`,
+      kind: 'info', // Accepted is not proof of completed activation.
+      title: result?.accepted ? 'Safety Rules update accepted' : 'Safety Rules already current',
+      message: result?.summary || 'Pocket Lab accepted the Rules reconciliation request.',
+    });
+    await refresh({ force: true });
+  }
+
+  function reportSafetyRulesUpdateError(syncError) {
+    const reason = getLiteReasonPresentation(errorCode(syncError), syncError?.message || 'Pocket Lab could not start the Safety Rules update.');
+    setSourceSyncNotice({ error: true, title: reason.title, message: reason.message });
+    triggerLiteHaptic('warning'); // Reported API failure only, never accepted/queued success.
+    pushToast({ id: 'rules-source:problem', kind: 'error', title: reason.title, message: reason.message });
+  }
+
   async function updateSafetyRules() {
     if (activationBusy) return;
     setSourceSyncBusy(true);
     setSourceSyncNotice({ title: 'Waiting for Pocket Lab', message: 'Current protection stays fail-closed while the Rules update is prepared.' });
     try {
-      let result;
       try {
-        result = await liteEnterpriseApi.syncRuleSource();
+        await finishSafetyRulesUpdate(await liteEnterpriseApi.syncRuleSource());
       } catch (firstError) {
         if (firstError?.status !== 428 && errorCode(firstError) !== 'owner_step_up_required') throw firstError;
-        setSourceSyncNotice({ title: 'Confirm with your passkey', message: 'Owner confirmation is required before Pocket Lab can activate updated Safety Rules.' });
         const options = await liteApi.passkeyStepUpOptions('policy.rules.activate');
-        const credential = await getLitePasskey(options);
-        await liteApi.verifyPasskeyStepUp({ purpose: 'policy.rules.activate', challenge: options.publicKey.challenge, credential });
-        result = await liteEnterpriseApi.syncRuleSource();
+        setSourceSyncStepUp({ purpose: 'policy.rules.activate', options });
+        setSourceSyncNotice({ title: 'Confirm with your passkey', message: 'Owner confirmation is ready. Tap Confirm with your passkey to continue the Safety Rules update.' });
       }
-      if (result?.accepted) {
-        setActivationTracked(true);
-        setActivationStatus(result?.operation || { state: 'pending' });
-      }
-      setSourceSyncNotice({
-        title: result?.accepted ? 'Safety Rules update accepted' : 'Safety Rules already current',
-        message: result?.summary || 'Pocket Lab accepted the Rules reconciliation request.',
-      });
-      pushToast({
-        id: `rules-source:${result?.operation?.operation_id || result?.updated_at || 'current'}`,
-        kind: 'info', // Accepted is not proof of completed activation.
-        title: result?.accepted ? 'Safety Rules update accepted' : 'Safety Rules already current',
-        message: result?.summary || 'Pocket Lab accepted the Rules reconciliation request.',
-      });
-      await refresh({ force: true });
     } catch (syncError) {
-      const reason = getLiteReasonPresentation(errorCode(syncError), syncError?.message || 'Pocket Lab could not start the Safety Rules update.');
-      setSourceSyncNotice({ error: true, title: reason.title, message: reason.message });
-      triggerLiteHaptic('warning'); // Reported API failure only, never accepted/queued success.
-      pushToast({ id: 'rules-source:problem', kind: 'error', title: reason.title, message: reason.message });
+      reportSafetyRulesUpdateError(syncError);
     } finally {
+      setSourceSyncBusy(false);
+    }
+  }
+
+  async function confirmSafetyRulesUpdate() {
+    const prepared = sourceSyncStepUp;
+    if (!prepared || activationBusy) return;
+    setSourceSyncBusy(true);
+    setSourceSyncNotice({ title: 'Confirm with your passkey', message: 'Complete the Owner passkey confirmation to continue the Safety Rules update.' });
+    try {
+      // This must be the first asynchronous operation in the user-activated
+      // handler. Fetching challenge options is deliberately completed by the
+      // preceding button before Android Chrome opens WebAuthn.
+      const credential = await getLitePasskey(prepared.options);
+      await liteApi.verifyPasskeyStepUp({ purpose: prepared.purpose, challenge: prepared.options.publicKey.challenge, credential });
+      await finishSafetyRulesUpdate(await liteEnterpriseApi.syncRuleSource());
+    } catch (syncError) {
+      reportSafetyRulesUpdateError(syncError);
+    } finally {
+      setSourceSyncStepUp(null);
       setSourceSyncBusy(false);
     }
   }
@@ -282,7 +307,7 @@ export default function RulesScreen() {
               <LiteFreshness saved={savedStateOnly} stale={isExpired} refreshing={refreshing} lastUpdatedLabel={lastUpdatedLabel} backendReachable={backendReachable} />
               <p>Mode: {protection.mode}. Revision: {revisionLabel}. Rules updates and decisions require current server authority.</p>
               {sourceUpdateRequired ? <StateSurface tone="neutral" title="Safety Rules update required" description="An Owner must confirm the update. Known-good protection stays authoritative until verified." /> : null}
-              {sourceUpdateRequired && role === 'Owner' ? <LiteButton disabled={rulesReadOnly || activationBusy} onClick={updateSafetyRules}>{activationBusy ? 'Update running' : 'Update Safety Rules'}</LiteButton> : null}
+              {sourceUpdateRequired && role === 'Owner' ? <LiteButton disabled={rulesReadOnly || activationBusy} onClick={sourceSyncStepUp ? confirmSafetyRulesUpdate : updateSafetyRules}>{activationBusy ? 'Update running' : sourceSyncStepUp ? 'Confirm with your passkey' : 'Update Safety Rules'}</LiteButton> : null}
               {showActivationProgress ? <RulesActivationTimeline operation={activationOperation} backendReachable={backendReachable && !savedStateOnly} /> : null}
             </div> : null}
             {manageSection === 'protections' ? <div className="lite-rules-premium-manage-content" data-rules-manage-section="protections">

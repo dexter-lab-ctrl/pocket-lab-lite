@@ -217,6 +217,7 @@ def verify(envelope_bytes: bytes, *, pinned_root: Root, trusted_now: datetime | 
         "release_tag": metadata.release_tag, "source_commit": metadata.source_commit,
         "metadata_version": metadata.version, "root_version": pinned_root.version,
         "artifact_sha256": metadata.artifact_sha256, "metadata_sha256": hashlib.sha256(payload).hexdigest(),
+        "release_manifest_sha256": metadata.release_manifest_sha256,
         "expires": metadata.expires, "root_expires": pinned_root.expires, "checked_at": now.isoformat(),
         "channel": metadata.channel, "policy_sha256": metadata.policy_sha256,
         "migration_inventory_sha256": metadata.migration_inventory_sha256,

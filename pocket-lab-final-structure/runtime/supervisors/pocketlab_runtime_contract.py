@@ -20,6 +20,7 @@ import socket
 import stat
 import time
 from typing import Any, Iterable, Mapping
+from urllib.parse import urlsplit
 import urllib.request
 
 try:
@@ -220,19 +221,55 @@ def _http_ready(url: str, timeout: float = 1.0) -> bool:
         return False
 
 
+def _loopback_port(name: str, default: int) -> int:
+    """Read a bounded local qualification port, retaining production defaults."""
+    try:
+        value = int(os.environ.get(name, default))
+    except (TypeError, ValueError, OverflowError):
+        return default
+    return value if 1024 <= value <= 65535 else default
+
+
+def _url_port(name: str, default: int) -> int:
+    value = str(os.environ.get(name, "") or "").strip()
+    if not value:
+        return default
+    try:
+        parsed = urlsplit(value)
+        if parsed.scheme not in {"http", "https"} or parsed.hostname != "127.0.0.1":
+            return default
+        port = parsed.port
+    except ValueError:
+        return default
+    return port if port is not None and 1024 <= port <= 65535 else default
+
+
 def local_health_snapshot(*, include_photoprism: bool = False) -> dict[str, str]:
     """Cheap semantic readiness probes. No remote-network probe is performed."""
 
+    nats_port = _loopback_port(
+        "POCKETLAB_LITE_NATS_PORT",
+        _loopback_port("POCKETLAB_NATS_PORT", 4222),
+    )
+    api_port = _loopback_port(
+        "POCKETLAB_API_PORT",
+        _loopback_port("API_PORT", 8080),
+    )
+    caddy_port = _loopback_port(
+        "POCKETLAB_CADDY_PORT",
+        _loopback_port("DASH_PORT", 8443),
+    )
+    opa_port = _url_port("POCKETLAB_OPA_URL", 8181)
     snapshot = {
-        "nats": "ready" if _tcp_ready(4222) else "not_ready",
-        "opa": "ready" if _http_ready("http://127.0.0.1:8181/health") else "not_ready",
+        "nats": "ready" if _tcp_ready(nats_port) else "not_ready",
+        "opa": "ready" if _http_ready(f"http://127.0.0.1:{opa_port}/health") else "not_ready",
         "api": (
             "ready"
-            if _http_ready("http://127.0.0.1:8080/health")
-            and _http_ready("http://127.0.0.1:8080/ready")
+            if _http_ready(f"http://127.0.0.1:{api_port}/health")
+            and _http_ready(f"http://127.0.0.1:{api_port}/ready")
             else "not_ready"
         ),
-        "caddy": "ready" if _tcp_ready(8443) else "not_ready",
+        "caddy": "ready" if _tcp_ready(caddy_port) else "not_ready",
     }
     if include_photoprism:
         snapshot["photoprism_local"] = (

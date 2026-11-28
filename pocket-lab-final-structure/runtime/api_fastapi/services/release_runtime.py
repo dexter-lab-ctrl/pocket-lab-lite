@@ -23,6 +23,7 @@ import sys
 import threading
 import time
 from typing import Any, Callable, Mapping
+import uuid
 
 from ..db.connection import begin_immediate, connection, read_connection
 from .lite_release_contract import (
@@ -990,6 +991,8 @@ def commit_release_result(
                 if payload.get("_trust_observation") is not None:
                     from .lite_release_trust_runtime import persist
                     persist(tx, payload["_trust_observation"], str(payload.get("latest_tag") or ""))
+                from .lite_lifecycle_release_execution import finish
+                finish(tx, lease, payload.get("_trust_observation") or {})
                 changed = str(row["canonical_hash"] or "") != digest
                 phase = str(canonical.get("phase") or "current")
                 current_tag = str(canonical.get("current_tag") or "unknown")
@@ -1190,6 +1193,9 @@ def fail_release_operation(
                 tuple(values + [now_ms]),
             )
             stale = cursor.rowcount != 1
+            if not stale:
+                from .lite_lifecycle_release_execution import finish
+                finish(tx, lease, {})
     if stale:
         _record_stale_rejection()
         raise ReleaseStaleResult("release_generation_fence_rejected_failure")
@@ -1476,7 +1482,16 @@ async def execute_release_subprocess(
         raise ReleaseSubprocessError(
             "release_subprocess_missing_result", metrics=metrics
         )
-    return _sanitize(result), metrics
+    sanitized = _sanitize(result)
+    if operation == "verify_trust" and isinstance(result.get("receipt"), dict):
+        from .lite_capability_review import exact_scopes_for_transport
+        raw_review = result["receipt"].get("capability_review")
+        if isinstance(raw_review, dict):
+            try:
+                sanitized["receipt"]["capability_review"]["exact_scopes"] = exact_scopes_for_transport(raw_review)
+            except (ValueError, KeyError, TypeError) as exc:
+                raise ReleaseSubprocessError("candidate_scope_transport_invalid", metrics=metrics) from exc
+    return sanitized, metrics
 
 
 async def recover_abandoned_release_operation() -> dict[str, Any]:
@@ -1793,7 +1808,13 @@ async def run_release_check(
                     "source_commit": manifest.get("source_commit"),
                     "artifact_sha256": manifest.get("artifact_sha256"),
                     "channel": "preview" if latest.get("prerelease") else "stable",
+                    "coordinated_preflight": source == "manual",
                 }
+                if source == "manual":
+                    from .lite_lifecycle_release_execution import claim
+                    preparation = claim(lease)
+                    if preparation:
+                        trust_request["preparation"] = preparation
                 with connection() as conn:
                     reuse = source == "automatic" and cached_review(conn, trust_request)
                 if not reuse:

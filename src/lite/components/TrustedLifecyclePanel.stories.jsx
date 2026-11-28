@@ -28,3 +28,15 @@ export const RevokedPermission = { args: { data: { ...base, grants: [
 ] } } };
 
 export const CurrentTrustUnconfirmed = { args: { data: { ...base, release_trust: { state: 'current_trust_unconfirmed', current_review_eligible: false } } } };
+
+
+export const CoordinatedCandidateReview = { args: { data: { ...base, candidate_review: {
+  release_tag: 'lite-2026.11.27.1', checked_at: '2026-11-27T00:00:00Z',
+  source_package: { state: 'verified_for_review' }, policy_review: { state: 'unknown_semantic_impact' },
+  policy_runtime_observation: { state: 'modules_match' }, migration_review: { state: 'review_required' },
+  capability_review: { total: 1, changes: [{ id: 'fixture.capability', impact: 'U4', changed_fields: 'network, targets' }] },
+} } } };
+export const CandidateWithoutSource = { args: { data: { ...base, candidate_review: {
+  release_tag: 'lite-2026.11.27.1', source_package: { state: 'not_delivered' },
+  capability_review: { total: 0, changes: [] },
+} } } };

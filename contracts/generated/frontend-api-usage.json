@@ -1645,6 +1645,132 @@
           "src/lite/components/TrustedLifecyclePanel.jsx",
           "src/lib/liteApi.js"
         ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleRecordCandidateConsent",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/candidate/consent",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleReviewCandidateConsent",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/candidate/consent/review",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleRevokeCandidateConsent",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/candidate/consent/revoke",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleActivateCapability",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/capability/activation",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleReviewCapabilityActivation",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/capability/activation/review",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleRevokeCapability",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/capability/activation/revoke",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleAdmitPolicyExecution",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/policy/execution",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleReviewPolicyExecution",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/policy/execution/review",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleRevokePolicyExecution",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/policy/execution/revoke",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
         "method": "PUT",
         "mocked": false,
         "owner": "liteApi.lifecyclePreference",
@@ -1664,6 +1790,48 @@
         "owner": "liteApi.lifecycleReviewPreference",
         "resolved": true,
         "route": "/api/lite/lifecycle/preferences/review",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleAdmitReleasePreparation",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/release/preparation",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleReviewReleasePreparation",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/release/preparation/review",
+        "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+        "usage": "mutation"
+      },
+      {
+        "dynamic": false,
+        "import_chain": [
+          "src/lite/components/TrustedLifecyclePanel.jsx",
+          "src/lib/liteApi.js"
+        ],
+        "method": "POST",
+        "mocked": false,
+        "owner": "liteApi.lifecycleRevokeReleasePreparation",
+        "resolved": true,
+        "route": "/api/lite/lifecycle/release/preparation/revoke",
         "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
         "usage": "mutation"
       },
@@ -4247,7 +4415,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "5585721d87c7d67c9f6f34db7cf901ca2f07e7b5c25ea78cbefb0ecd360580ba",
+    "aggregate_fingerprint": "3d59db1e51069f6f5e4872077960885b6e79407086c6751ab738c501b8244668",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -4257,11 +4425,11 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "836ffc0f09712aede0ff821c8f18e47c6da3a03acd3e1bf2f2d05061045266e2",
+      "contracts/generated/lite-openapi.json": "582181f99288a3870935f77fa0289bf1a5cd6b91f63d92a8fc03f617ef6a6cf3",
       "contracts/metadata/documentation-platform.json": "b8d66469fc3ab5b0b2b2ed610617a35c091810bc2d564d81075cce898682ddda",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "3b34f0debcf38e177dca50b99dea00a9b2710c4889dcb2b706d688ce0a9fcd9e",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "b7a3f249e30c6b29db8bf4b2d65e54d0b5ea15108fedf22be5f314b0fc1f486e",
       "scripts/docs/lite/generate_platform_catalogs.py": "03d45e1757f6eff0622b0bac8d53108a7229b00c2c746bf158a746224499fd08",
-      "src/lib/liteApi.js": "5cc6b2f0d6afe3477256abab06e26ae7e71cc504340937ba1116defd2faf113e",
+      "src/lib/liteApi.js": "adbfe699ad452c023c840ab79cda66285c1a384439aa6f53f49cd38d81d1a7f2",
       "src/lite/LiteActionProgress.jsx": "880d1bf891c3f76ef42e4565c01b0d2a39a9660a6f2d0ac9f909f0fce458f5a5",
       "src/lite/LiteApp.jsx": "809ff822ef1b6aa8d570f985a824240f5052d67a964d2cf71f8878ba33010b62",
       "src/lite/LiteAzureHorizon.stories.jsx": "a2ee55a0c896d4e6047164e8d08979241fe08c2a382992c87247cfd823811bf4",
@@ -4307,7 +4475,7 @@
       "src/lite/LiteUi.test.jsx": "d09ad1e06cf21773a1d8ed93dc8071ef7516d872ebd3e3f44eafed0644ee8c50",
       "src/lite/LiteUx.jsx": "f093c59d1866f706dbeb2f54472d42e67fcfce624c99bd342c5c5297ce63f4ac",
       "src/lite/LiteUx.stories.jsx": "a45605c9460b371143058035f733beab232d1374d4fa4eb77a9c4b3704843e5f",
-      "src/mocks/handlers.js": "1247333bfa5a3f0c6f774a2e28acdb583790108d0cd5469ffd55a341a5580b3d"
+      "src/mocks/handlers.js": "e243f4293541a76e6d0fce281dc2e2c01c2ae9510884449cfeb16fd885653ae2"
     },
     "validation_state": "generated"
   }

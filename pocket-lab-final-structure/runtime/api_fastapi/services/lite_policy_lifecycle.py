@@ -278,6 +278,8 @@ def _admit_operation(*, auth_context: dict[str, Any], candidate_revision_id: str
                 revision = tx.execute("SELECT revision_id FROM policy_revisions WHERE revision_id=?", (candidate_revision_id,)).fetchone()
                 if not revision:
                     raise PolicyLifecycleError("policy_revision_unknown", "That policy revision does not exist.", status_code=404)
+                if tx.execute("SELECT 1 FROM lite_lifecycle_policy_execution e JOIN policy_activation_operations o ON o.operation_id=e.operation_id WHERE o.candidate_revision_id=? LIMIT 1", (candidate_revision_id,)).fetchone():
+                    raise PolicyLifecycleError("trusted_policy_execution_required", "This candidate requires its exact trusted activation authorization.", status_code=409)
                 runtime = tx.execute("SELECT known_good_revision_id FROM policy_runtime_state WHERE state_id=1").fetchone()
                 tx.execute(
                     """INSERT INTO policy_activation_operations(operation_id,requested_by_human_id,correlation_id,candidate_revision_id,prior_known_good_revision_id,state,created_at,updated_at)

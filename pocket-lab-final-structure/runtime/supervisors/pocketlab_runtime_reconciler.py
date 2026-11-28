@@ -14,14 +14,16 @@ PM2 itself is supervised outside PM2 by the Termux boot/runtime guardian.
 from __future__ import annotations
 
 import fcntl
+import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import signal
 import subprocess
 import sys
 import time
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping
 
 from pocketlab_runtime_registry import (
     CONTROL_PLANE_SERVICES,
@@ -272,6 +274,216 @@ def pm2_policy_reasons(
             detail = ",".join(fields) if fields else "fingerprint"
             reasons.append(f"pm2_policy:{spec.name}:{detail}")
     return reasons
+
+
+_IDENTITY_SHA256 = re.compile(r"^[0-9a-f]{64}$")
+_IDENTITY_SOURCE = re.compile(r"^[0-9a-f]{40}$")
+_IDENTITY_GENERATION = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
+
+
+def _identity_digest(value: Mapping[str, Any]) -> str:
+    return hashlib.sha256(
+        json.dumps(dict(value), sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    ).hexdigest()
+
+
+def _process_identity(item: Mapping[str, Any] | None, name: str) -> tuple[str, bool]:
+    """Hash only the bounded, non-secret PM2 identity projection."""
+
+    if not isinstance(item, Mapping):
+        return _identity_digest({"service": name, "status": "missing"}), False
+    env = item.get("pm2_env") if isinstance(item.get("pm2_env"), Mapping) else {}
+    status = str(env.get("status") or item.get("status") or "unknown").strip().lower()
+    observed = {
+        "service": name,
+        "status": status,
+        "pid": int(item.get("pid") or env.get("pid") or 0),
+        "started_at": int(env.get("pm_uptime") or 0),
+        "version": str(env.get("version") or "")[:120],
+        "declared_version": str(env.get("POCKETLAB_SERVICE_VERSION") or "")[:120],
+        "exec_path": str(env.get("pm_exec_path") or item.get("pm_exec_path") or "")[:512],
+        "cwd": str(env.get("pm_cwd") or env.get("cwd") or item.get("cwd") or "")[:512],
+    }
+    healthy = status == "online" and bool(observed["pid"] and observed["exec_path"] and observed["cwd"])
+    return _identity_digest(observed), healthy
+
+
+def _bounded_json(path: Path, *, limit: int = 64 * 1024) -> dict[str, Any]:
+    try:
+        if path.is_symlink() or not path.is_file() or path.stat().st_size > limit:
+            return {}
+        value = json.loads(path.read_text(encoding="utf-8"))
+        return value if isinstance(value, dict) else {}
+    except (OSError, ValueError, json.JSONDecodeError):
+        return {}
+
+
+def _source_inventory_digest(root: Path) -> str:
+    """Bounded content inventory for a source-checkout fallback.
+
+    Release installs normally use the authenticated artifact manifest.  The
+    fallback is deliberately bounded and includes bytes, mode and content so
+    a checkout path or Git SHA alone cannot become installed-source proof.
+    """
+
+    rows: list[dict[str, Any]] = []
+    total = 0
+    try:
+        for path in sorted(root.rglob("*")):
+            if path.is_symlink() or not path.is_file():
+                continue
+            relative = path.relative_to(root).as_posix()
+            if relative.startswith(".git/"):
+                continue
+            size = path.stat().st_size
+            total += size
+            if len(rows) >= 12_000 or total > 128 * 1024 * 1024:
+                return _identity_digest({"root": str(root), "status": "inventory_limit"})
+            rows.append({
+                "path": relative,
+                "size": size,
+                "mode": path.stat().st_mode & 0o777,
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            })
+    except OSError:
+        return _identity_digest({"root": str(root), "status": "inventory_unavailable"})
+    return _identity_digest({"root": "runtime", "files": rows})
+
+
+def publish_runtime_identity(*, processes: Iterable[dict[str, Any]], runtime_contract: Mapping[str, Any], state_root: Path) -> dict[str, Any]:
+    """Publish independently observed component identity from the reconciler.
+
+    This is an owner-side operation, never a request/GET probe.  Any missing
+    or contradictory observation is recorded as ``degraded`` so the prepared
+    execution gate remains closed until a later owner observation converges.
+    """
+
+    runtime_root = Path(__file__).resolve().parents[1]
+    by_name = {
+        str(item.get("name") or ""): item
+        for item in processes
+        if isinstance(item, dict) and str(item.get("name") or "")
+    }
+    pointer = _bounded_json(state_root / "backend-runtime" / "active.json")
+    release_root = Path(str(pointer.get("release_root") or "")) if pointer.get("release_root") else None
+    # The authenticated backend manifest contains the complete runtime file
+    # inventory.  It is intentionally bounded, but the repository's current
+    # dependency-complete artifact is larger than the active-pointer bound.
+    # Keep the pointer strict while allowing the signed inventory to be read
+    # within its separate finite envelope.
+    manifest = _bounded_json(release_root / "artifact-manifest.json", limit=512 * 1024) if release_root else {}
+
+    source_commit = str(pointer.get("source_commit") or manifest.get("source_commit") or "").lower()
+    if not _IDENTITY_SOURCE.fullmatch(source_commit):
+        source_commit = "0" * 40
+    artifact_sha = str(pointer.get("artifact_sha256") or "").lower()
+    artifact_observed = bool(_IDENTITY_SHA256.fullmatch(artifact_sha))
+    if not artifact_observed:
+        artifact_sha = _identity_digest({"status": "backend_artifact_unavailable"})
+    source_inventory = str(manifest.get("payload_sha256") or "").lower()
+    inventory_observed = bool(_IDENTITY_SHA256.fullmatch(source_inventory))
+    if not inventory_observed:
+        source_inventory = _source_inventory_digest(runtime_root)
+
+    try:
+        from api_fastapi.db import migrations
+        from api_fastapi.db.connection import connection
+        from api_fastapi.services import lite_policy_runtime_evidence, lite_runtime_identity, release_runtime
+
+        installed = release_runtime.read_installed_identity()
+        frontend_tag = str(installed.get("release_tag") or "").strip()
+        frontend_observed = bool(installed.get("verified") is True and frontend_tag)
+        if not frontend_tag:
+            frontend_tag = "frontend-unavailable"
+        policy = lite_policy_runtime_evidence.observe()
+        rows = migrations.migration_rows()
+        schema_version = max((int(row.get("version") or 0) for row in rows), default=0)
+        ledger_sha = _identity_digest({"migrations": rows})
+        policy_revision = str(policy.get("observed_revision") or "unavailable")
+        module_sha = str(policy.get("module_identity_sha256") or "").lower()
+        data_sha = str(policy.get("data_identity_sha256") or "").lower()
+        policy_observed = bool(
+            policy.get("state") == "modules_match"
+            and policy.get("data_identity") == "registered_template_matches"
+            and policy.get("manifest_data_identity") == "registered_roots_match"
+            and _IDENTITY_SHA256.fullmatch(module_sha)
+            and _IDENTITY_SHA256.fullmatch(data_sha)
+            and policy_revision != "unavailable"
+        )
+        if not _IDENTITY_SHA256.fullmatch(module_sha):
+            module_sha = _identity_digest({"status": "policy_module_unavailable"})
+        if not _IDENTITY_SHA256.fullmatch(data_sha):
+            data_sha = _identity_digest({"status": "policy_data_unavailable"})
+
+        process_identities = {
+            name: _process_identity(by_name.get(name), name)
+            for name in (
+                "pocket-api",
+                "pocket-worker",
+                "pocketlab-core-supervisor",
+                "pocketlab-runtime-reconciler",
+            )
+        }
+        process_ok = all(item[1] for item in process_identities.values())
+        generation = str(pointer.get("generation") or "").strip()
+        generation_observed = bool(_IDENTITY_GENERATION.fullmatch(generation))
+        if not generation_observed:
+            generation = "runtime-" + _identity_digest({
+                "source": source_commit,
+                "artifact": artifact_sha,
+                "frontend": frontend_tag,
+                "policy": policy_revision,
+                "ledger": ledger_sha,
+            })[:32]
+
+        stable = bool(
+            pointer.get("kind") == "artifact"
+            and _IDENTITY_SOURCE.fullmatch(source_commit)
+            and source_commit != "0" * 40
+            and artifact_observed
+            and inventory_observed
+            and frontend_observed
+            and policy_observed
+            and schema_version > 0
+            and process_ok
+            and runtime_contract.get("stable") is True
+            and generation_observed
+        )
+        observation = lite_runtime_identity.build_observation(
+            status="stable" if stable else "degraded",
+            reason_code="converged" if stable else "runtime_identity_incomplete",
+            coordinated_generation=generation,
+            authenticated_source_commit=source_commit,
+            installed_artifact_sha256=artifact_sha,
+            installed_source_inventory_sha256=source_inventory,
+            fastapi_process_identity_sha256=process_identities["pocket-api"][0],
+            worker_process_identity_sha256=process_identities["pocket-worker"][0],
+            core_supervisor_identity_sha256=process_identities["pocketlab-core-supervisor"][0],
+            runtime_reconciler_identity_sha256=process_identities["pocketlab-runtime-reconciler"][0],
+            loaded_policy_revision=policy_revision,
+            loaded_policy_module_sha256=module_sha,
+            loaded_policy_data_sha256=data_sha,
+            frontend_generation=frontend_tag,
+            sqlite_schema_version=max(schema_version, 1),
+            sqlite_migration_ledger_sha256=ledger_sha,
+        )
+        with connection() as conn:
+            projection = lite_runtime_identity.record(conn, observation)
+        return {
+            "status": "PASS" if stable else "DEGRADED",
+            "projection": projection,
+            "independent_sources": {
+                "backend_pointer": pointer.get("kind", "missing"),
+                "backend_artifact_manifest": bool(manifest),
+                "loaded_opa_observation": policy_observed,
+                "process_projection": process_ok,
+                "frontend_installed_marker": frontend_observed,
+                "sqlite_migration_ledger": schema_version > 0,
+            },
+            "sanitized": True,
+        }
+    except Exception as exc:
+        return {"status": "DEGRADED", "reason_code": "runtime_identity_observation_failed", "error_type": type(exc).__name__, "sanitized": True}
 
 
 def pm2_desired_spec_reasons(
@@ -615,6 +827,11 @@ class RuntimeReconciler:
             repairing=bool(reasons or actions),
             remote_access=remote,
         )
+        runtime_identity = publish_runtime_identity(
+            processes=processes,
+            runtime_contract=runtime_contract,
+            state_root=self.state_dir.parent,
+        )
         payload = {
             "reconciler": "pocketlab-runtime-reconciler",
             "version": VERSION,
@@ -631,6 +848,7 @@ class RuntimeReconciler:
                 "reason_codes": runtime_contract.get("reason_codes"),
                 "observed_at": runtime_contract.get("observed_at"),
             },
+            "runtime_identity": runtime_identity,
             "legacy_lite_services_present": legacy_present,
             "legacy_lite_services_allowed": False,
             "checked_at": _now_iso(),

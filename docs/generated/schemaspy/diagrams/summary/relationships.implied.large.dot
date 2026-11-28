@@ -879,7 +879,7 @@ digraph "largeImpliedRelationshipsDiagram" {
       <TR><TD PORT="created_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="148" HEIGHT="16">created_at</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="updated_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="148" HEIGHT="16">updated_at</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="last_authenticated_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="148" HEIGHT="16">last_authenticated_at</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">24 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">27 &gt;</TD></TR>
     </TABLE>>
     URL="tables/human_identities.html"
     target="_top"
@@ -942,7 +942,7 @@ digraph "largeImpliedRelationshipsDiagram" {
       <TR><TD PORT="revision" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="125" HEIGHT="16">revision</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="occurred_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="125" HEIGHT="16">occurred_at</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="decision_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="125" HEIGHT="16">decision_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="grant_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="125" HEIGHT="16">grant_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="grant_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="125" HEIGHT="16">grant_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="reason_code" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="125" HEIGHT="16">reason_code</TD></TR></TABLE></TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
@@ -966,6 +966,62 @@ digraph "largeImpliedRelationshipsDiagram" {
     URL="tables/lite_lifecycle_boundary_scopes.html"
     target="_top"
     tooltip="lite_lifecycle_boundary_scopes"
+  ];
+  "lite_lifecycle_candidate_consent" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16"><B>lite_lifecycle_candidate_consent</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="consent_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16">consent_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="workspace_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16">workspace_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="owner_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16">owner_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="capability_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16">capability_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="metadata_sha256" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16">metadata_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="scope_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16">scope_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="scope_json" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16">scope_json</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="binding_json" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16">binding_json</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="disposition" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16">disposition</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="decision_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16">decision_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="issued_at" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16">issued_at</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="expires_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16">expires_at</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="revoked_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="216" HEIGHT="16">revoked_at</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="tables/lite_lifecycle_candidate_consent.html"
+    target="_top"
+    tooltip="lite_lifecycle_candidate_consent"
+  ];
+  "lite_lifecycle_capability_activation" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16"><B>lite_lifecycle_capability_activation</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="activation_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">activation_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="workspace_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">workspace_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="owner_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">owner_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="capability_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">capability_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="capability_version" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">capability_version</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="metadata_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">metadata_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="scope_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">scope_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="scope_json" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">scope_json</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="binding_json" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">binding_json</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="binding_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">binding_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="decision_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">decision_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="issued_at" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">issued_at</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="expires_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">expires_at</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="authority_epoch" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">authority_epoch</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="policy_revision" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">policy_revision</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="execution_owner" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">execution_owner</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="state" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">state</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="claimed_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">claimed_at</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="claim_decision_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">claim_decision_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="last_attempt_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">last_attempt_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="terminal_evidence_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">terminal_evidence_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="reason_code" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">reason_code</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="updated_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="229" HEIGHT="16">updated_at</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="tables/lite_lifecycle_capability_activation.html"
+    target="_top"
+    tooltip="lite_lifecycle_capability_activation"
   ];
   "lite_lifecycle_grants" [
    label=<
@@ -1000,6 +1056,58 @@ digraph "largeImpliedRelationshipsDiagram" {
     target="_top"
     tooltip="lite_lifecycle_grants"
   ];
+  "lite_lifecycle_policy_execution" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16"><B>lite_lifecycle_policy_execution</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="operation_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16">operation_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="grant_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16">grant_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="owner_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16">owner_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="executor_principal" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16">executor_principal</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="binding_json" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16">binding_json</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="binding_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16">binding_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="decision_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16">decision_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="issued_at" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16">issued_at</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="expires_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16">expires_at</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="revoked_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16">revoked_at</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="claimed_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16">claimed_at</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="claim_decision_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16">claim_decision_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="proof_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="202" HEIGHT="16">proof_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="tables/lite_lifecycle_policy_execution.html"
+    target="_top"
+    tooltip="lite_lifecycle_policy_execution"
+  ];
+  "lite_lifecycle_release_execution" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16"><B>lite_lifecycle_release_execution</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="grant_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">grant_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="owner_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">owner_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="metadata_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">metadata_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="executor_principal" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">executor_principal</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="binding_json" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">binding_json</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="binding_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">binding_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="decision_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">decision_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="issued_at" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">issued_at</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="expires_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">expires_at</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="state" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">state</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="command_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">command_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="lease_generation" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">lease_generation</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="worker_generation" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">worker_generation</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="claim_decision_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">claim_decision_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="handoff_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">handoff_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="cutover_authorization_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">cutover_authorization_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="revoked_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">revoked_at</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="reason_code" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">reason_code</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="updated_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="211" HEIGHT="16">updated_at</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="tables/lite_lifecycle_release_execution.html"
+    target="_top"
+    tooltip="lite_lifecycle_release_execution"
+  ];
   "lite_lifecycle_service_delegations" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -1025,7 +1133,7 @@ digraph "largeImpliedRelationshipsDiagram" {
       <TR><TD PORT="boundary_revision" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="162" HEIGHT="16">boundary_revision</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="delegation_revision" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="162" HEIGHT="16">delegation_revision</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="authority_epoch" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="162" HEIGHT="16">authority_epoch</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
     </TABLE>>
     URL="tables/lite_lifecycle_workspace.html"
     target="_top"
@@ -1094,6 +1202,37 @@ digraph "largeImpliedRelationshipsDiagram" {
     URL="tables/lite_revision_events.html"
     target="_top"
     tooltip="lite_revision_events"
+  ];
+  "lite_runtime_identity_projection" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="215" HEIGHT="16"><B>lite_runtime_identity_projection</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="singleton_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">singleton_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="status" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">status</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="reason_code" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">reason_code</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="observed_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">observed_at</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="stale_after" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">stale_after</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="coordinated_generation" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">coordinated_generation</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="authenticated_source_commit" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">authenticated_source_commit</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="installed_artifact_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">installed_artifact_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="installed_source_inventory_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">installed_source_inventory_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="fastapi_process_identity_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">fastapi_process_identity_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="worker_process_identity_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">worker_process_identity_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="core_supervisor_identity_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">core_supervisor_identity_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="runtime_reconciler_identity_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">runtime_reconciler_identity_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="loaded_policy_revision" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">loaded_policy_revision</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="loaded_policy_module_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">loaded_policy_module_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="loaded_policy_data_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">loaded_policy_data_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="frontend_generation" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">frontend_generation</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="sqlite_schema_version" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">sqlite_schema_version</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="sqlite_migration_ledger_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">sqlite_migration_ledger_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="identity_sha256" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">identity_sha256</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="updated_at" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="240" HEIGHT="16">updated_at</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="tables/lite_runtime_identity_projection.html"
+    target="_top"
+    tooltip="lite_runtime_identity_projection"
   ];
   "lite_system_health_automation_attempts" [
    label=<
@@ -1544,7 +1683,7 @@ digraph "largeImpliedRelationshipsDiagram" {
       <TR><TD PORT="observed_filesystem_revision" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="201" HEIGHT="16">observed_filesystem_revision</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="observed_opa_revision" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="201" HEIGHT="16">observed_opa_revision</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="evidence_ref" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="201" HEIGHT="16">evidence_ref</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
     </TABLE>>
     URL="tables/policy_activation_operations.html"
     target="_top"
@@ -2300,9 +2439,17 @@ digraph "largeImpliedRelationshipsDiagram" {
   "identity_audit_events":"session_id":w -> "auth_sessions":"session_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_installed_release_identity":"schema_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_audit":"decision_id":w -> "policy_decision_details":"decision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
-  "lite_lifecycle_audit":"grant_id":w -> "lite_lifecycle_grants":"grant_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_boundary_scopes":"decision_id":w -> "policy_decision_details":"decision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_boundary_scopes":"owner_id":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "lite_lifecycle_candidate_consent":"decision_id":w -> "policy_decision_details":"decision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_candidate_consent":"owner_id":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "lite_lifecycle_candidate_consent":"workspace_id":w -> "lite_lifecycle_workspace":"workspace_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "lite_lifecycle_capability_activation":"capability_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_capability_activation":"claim_decision_id":w -> "policy_decision_details":"decision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_capability_activation":"decision_id":w -> "policy_decision_details":"decision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_capability_activation":"last_attempt_id":w -> "lite_system_health_automation_attempts":"attempt_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_capability_activation":"owner_id":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "lite_lifecycle_capability_activation":"workspace_id":w -> "lite_lifecycle_workspace":"workspace_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "lite_lifecycle_grants":"capability_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_grants":"configuration_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_grants":"decision_id":w -> "policy_decision_details":"decision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
@@ -2313,6 +2460,12 @@ digraph "largeImpliedRelationshipsDiagram" {
   "lite_lifecycle_grants":"root_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_grants":"trust_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_grants":"workspace_id":w -> "lite_lifecycle_workspace":"workspace_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "lite_lifecycle_policy_execution":"claim_decision_id":w -> "policy_decision_details":"decision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_policy_execution":"decision_id":w -> "policy_decision_details":"decision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_policy_execution":"operation_id":w -> "policy_activation_operations":"operation_id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "lite_lifecycle_policy_execution":"owner_id":w -> "human_identities":"human_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "lite_lifecycle_release_execution":"claim_decision_id":w -> "policy_decision_details":"decision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_lifecycle_release_execution":"decision_id":w -> "policy_decision_details":"decision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_service_delegations":"contract_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_lifecycle_service_delegations":"grant_id":w -> "lite_lifecycle_grants":"grant_id":e [arrowhead=none dir=back arrowtail=teeodot];
   "lite_lifecycle_service_delegations":"purpose":w -> "lite_lifecycle_boundary_scopes":"purpose":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
@@ -2322,6 +2475,7 @@ digraph "largeImpliedRelationshipsDiagram" {
   "lite_release_trust_receipts":"metadata_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=teeodot style=dashed];
   "lite_release_trust_receipts":"root_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_revision_events":"projection_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
+  "lite_runtime_identity_projection":"sqlite_schema_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_system_health_automation_attempts":"decision_id":w -> "policy_decision_details":"decision_id":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_system_health_automation_attempts":"policy_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];
   "lite_system_health_automation_policy":"configuration_version":w -> "schema_migrations":"version":e [arrowhead=none dir=back arrowtail=crowodot style=dashed];

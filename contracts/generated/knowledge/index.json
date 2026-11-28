@@ -7163,6 +7163,294 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Record Candidate Consent",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleRecordCandidateConsent",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/candidate/consent",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/candidate/consent",
+      "operation_id": "record_candidate_consent_api_lite_lifecycle_candidate_consent_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/candidate/consent",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Candidate Consent",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleReviewCandidateConsent",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/candidate/consent/review",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/candidate/consent/review",
+      "operation_id": "review_candidate_consent_api_lite_lifecycle_candidate_consent_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/candidate/consent/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Candidate Consent",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleRevokeCandidateConsent",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/candidate/consent/revoke",
+      "operation_id": "revoke_candidate_consent_api_lite_lifecycle_candidate_consent_revoke_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/candidate/consent/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Activate Capability",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleActivateCapability",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/capability/activation",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/capability/activation",
+      "operation_id": "activate_capability_api_lite_lifecycle_capability_activation_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/capability/activation",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Capability Activation",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleReviewCapabilityActivation",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/capability/activation/review",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/capability/activation/review",
+      "operation_id": "review_capability_activation_api_lite_lifecycle_capability_activation_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/capability/activation/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Capability",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleRevokeCapability",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/capability/activation/revoke",
+      "operation_id": "revoke_capability_api_lite_lifecycle_capability_activation_revoke_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/capability/activation/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Admit Policy Execution",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleAdmitPolicyExecution",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/policy/execution",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/policy/execution",
+      "operation_id": "admit_policy_execution_api_lite_lifecycle_policy_execution_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/policy/execution",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Policy Execution",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleReviewPolicyExecution",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/policy/execution/review",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/policy/execution/review",
+      "operation_id": "review_policy_execution_api_lite_lifecycle_policy_execution_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/policy/execution/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Policy Execution",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleRevokePolicyExecution",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/policy/execution/revoke",
+      "operation_id": "revoke_policy_execution_api_lite_lifecycle_policy_execution_revoke_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/policy/execution/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Review Preferences",
       "domain": "lifecycle",
       "frontend_clients": [
@@ -7192,6 +7480,102 @@
         "503"
       ],
       "route": "/api/lite/lifecycle/preferences/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Admit Release Preparation",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleAdmitReleasePreparation",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/release/preparation",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/release/preparation",
+      "operation_id": "admit_release_preparation_api_lite_lifecycle_release_preparation_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/release/preparation",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Release Preparation",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleReviewReleasePreparation",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/release/preparation/review",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/release/preparation/review",
+      "operation_id": "review_release_preparation_api_lite_lifecycle_release_preparation_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/release/preparation/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Release Preparation",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleRevokeReleasePreparation",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/release/preparation/revoke",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/release/preparation/revoke",
+      "operation_id": "revoke_release_preparation_api_lite_lifecycle_release_preparation_revoke_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/release/preparation/revoke",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -15538,6 +15922,106 @@
     },
     {
       "confidence": "source-derived",
+      "description": "An already-applied migration differs from the authenticated candidate, so the candidate is incompatible and cannot be admitted.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:applied_migration_changed",
+      "name": "applied_migration_changed",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The candidate changes an applied migration and cannot be admitted."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The installed SQLite schema ledger is incomplete, so the candidate cannot establish a trustworthy migration baseline.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:applied_schema_ledger_incomplete",
+      "name": "applied_schema_ledger_incomplete",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The installed database ledger needs review before this candidate can continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The installed SQLite schema ledger is invalid, so migration compatibility cannot be established safely.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:applied_schema_ledger_invalid",
+      "name": "applied_schema_ledger_invalid",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The installed database ledger is invalid; review the runtime before retrying."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The installed SQLite schema ledger could not be read, so migration compatibility is not verifiable.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:applied_schema_ledger_unavailable",
+      "name": "applied_schema_ledger_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The installed database ledger could not be read safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The installed SQLite schema generation is not independently confirmed, so admission remains blocked.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:applied_schema_unconfirmed",
+      "name": "applied_schema_unconfirmed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The installed database schema could not be independently confirmed."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "rules",
       "event_mapping": [],
@@ -16102,6 +16586,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The candidate migration checksum does not match the recorded applied checksum, so the candidate is rejected.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:candidate_applied_migration_checksum_mismatch",
+      "name": "candidate_applied_migration_checksum_mismatch",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The candidate database migration checksum does not match the installed ledger."
+    },
+    {
+      "confidence": "source-derived",
       "description": "The candidate did not satisfy the bounded trusted lifecycle contract, so it cannot advance review or recovery state.",
       "domain": "release-trust",
       "event_mapping": [],
@@ -16263,6 +16767,26 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Runtime Security Assurance could not continue safely."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The authenticated candidate could not prove a durable handoff to the coordinated runtime execution owner.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:coordinated_handoff_unproved",
+      "name": "coordinated_handoff_unproved",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The runtime handoff could not be verified; no cutover was declared."
     },
     {
       "confidence": "source-derived",
@@ -18214,6 +18738,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "An installed migration checksum differs from the recorded ledger, so runtime admission fails closed.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:installed_migration_checksum_mismatch",
+      "name": "installed_migration_checksum_mismatch",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The installed database migration checksum does not match its ledger."
+    },
+    {
+      "confidence": "source-derived",
       "description": "There is not enough safe storage for the operation.",
       "domain": "system",
       "event_mapping": [],
@@ -18520,6 +19064,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The local repository policy source needed to verify compatibility is unavailable, so policy admission is blocked.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:local_policy_source_unavailable",
+      "name": "local_policy_source_unavailable",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The local Safety Rules source is unavailable for verification."
+    },
+    {
+      "confidence": "source-derived",
       "description": "A restore point refers to a backup location that is not currently registered on the protected Server Phone.",
       "domain": "recovery",
       "event_mapping": [
@@ -18603,6 +19167,66 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "Only metadata was evaluated."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The installed migration baseline is not independently confirmed, so the candidate remains ineligible.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:migration_baseline_unconfirmed",
+      "name": "migration_baseline_unconfirmed",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The installed migration baseline needs independent verification."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The candidate requires the repository migration qualification contract before it can be considered for promotion.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:migration_qualification_required",
+      "name": "migration_qualification_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Run the required isolated migration qualification before continuing."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The authenticated candidate does not have independently verified migration rehearsal evidence.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:migration_rehearsal_unproved",
+      "name": "migration_rehearsal_unproved",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Migration rehearsal evidence is required before this candidate can continue."
     },
     {
       "confidence": "source-derived",
@@ -19714,6 +20338,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The loaded OPA module set is not independently known, so policy compatibility cannot be established.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:policy_module_set_unknown",
+      "name": "policy_module_set_unknown",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The loaded Safety Rules modules could not be verified."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Structured server-owned Identity/Rules outcome; inspect the owning API response for the bounded action-specific message.",
       "domain": "rules",
       "event_mapping": [],
@@ -20656,6 +21300,26 @@
     },
     {
       "confidence": "source-derived",
+      "description": "The prepared runtime identity is stale or cannot be bound to the currently observed execution owners.",
+      "domain": "runtime",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:runtime_identity_stale",
+      "name": "runtime_identity_stale",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Runtime identity is stale; wait for fresh verification before continuing."
+    },
+    {
+      "confidence": "source-derived",
       "description": "Managed Trivy intelligence exceeded its bounded freshness policy and a bounded refresh did not restore a valid revision.",
       "domain": "security",
       "event_mapping": [],
@@ -21169,6 +21833,106 @@
       "type": "reason-code",
       "ui_mapping": [],
       "user_interpretation": "The requested Identity or Rules action could not continue."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The trusted policy candidate did not satisfy independent admission authority or compatibility checks.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 403,
+      "id": "reason:trusted_policy_admission_denied",
+      "name": "trusted_policy_admission_denied",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Trusted Safety Rules admission was denied."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The candidate requires its exact trusted policy activation authorization before protected execution can continue.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:trusted_policy_execution_required",
+      "name": "trusted_policy_execution_required",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "warning",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Trusted Safety Rules activation authorization is required."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Trusted policy activation was interrupted before the runtime switch, so the operation remains fail-closed for reconciliation.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 409,
+      "id": "reason:trusted_policy_interrupted_before_switch",
+      "name": "trusted_policy_interrupted_before_switch",
+      "projection_mapping": [],
+      "retryable": true,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Trusted Safety Rules activation was interrupted before switching. Review recovery state."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "The trusted policy operation cannot prove its isolated execution owner or qualification boundary, so it is blocked.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:trusted_policy_isolation_unproved",
+      "name": "trusted_policy_isolation_unproved",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": true,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "The trusted Safety Rules execution boundary could not be verified."
+    },
+    {
+      "confidence": "source-derived",
+      "description": "Trusted policy rollback did not produce independently verified known-good runtime evidence, so the runtime remains uncertain.",
+      "domain": "rules",
+      "event_mapping": [],
+      "http_status": 503,
+      "id": "reason:trusted_policy_rollback_unproved",
+      "name": "trusted_policy_rollback_unproved",
+      "projection_mapping": [],
+      "retryable": false,
+      "severity": "error",
+      "source_refs": [
+        "contracts/generated/reason-codes.json",
+        "contracts/metadata/documentation-platform.json"
+      ],
+      "terminal": false,
+      "type": "reason-code",
+      "ui_mapping": [],
+      "user_interpretation": "Trusted Safety Rules rollback could not be verified. Review the runtime before retrying."
     },
     {
       "confidence": "source-derived",
@@ -28856,7 +29620,10 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -28880,7 +29647,10 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -29018,6 +29788,60 @@
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "control_plane",
+      "id": "table:lite_lifecycle_candidate_consent",
+      "indexes": [
+        "idx_lifecycle_candidate_consent_history",
+        "idx_lifecycle_candidate_consent_current",
+        "sqlite_autoindex_lite_lifecycle_candidate_consent_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql"
+      ],
+      "name": "lite_lifecycle_candidate_consent",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_lifecycle_capability_activation",
+      "indexes": [
+        "lite_lifecycle_capability_activation_history",
+        "lite_lifecycle_capability_activation_current",
+        "sqlite_autoindex_lite_lifecycle_capability_activation_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
+      ],
+      "name": "lite_lifecycle_capability_activation",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "terminal_evidence_sha256"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
       "id": "table:lite_lifecycle_grants",
       "indexes": [
         "idx_lifecycle_grants_purpose",
@@ -29049,6 +29873,32 @@
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "control_plane",
+      "id": "table:lite_lifecycle_policy_execution",
+      "indexes": [
+        "idx_lifecycle_policy_execution_owner",
+        "sqlite_autoindex_lite_lifecycle_policy_execution_2",
+        "sqlite_autoindex_lite_lifecycle_policy_execution_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql"
+      ],
+      "name": "lite_lifecycle_policy_execution",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
       "id": "table:lite_lifecycle_preferences",
       "indexes": [],
       "migration_sources": [
@@ -29062,6 +29912,36 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_lifecycle_release_execution",
+      "indexes": [
+        "lite_lifecycle_release_execution_history",
+        "lite_lifecycle_release_execution_single_flight",
+        "sqlite_autoindex_lite_lifecycle_release_execution_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0066_lifecycle_release_execution.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0069_lifecycle_release_execution_committed.sql"
+      ],
+      "name": "lite_lifecycle_release_execution",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "command_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0066_lifecycle_release_execution.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0069_lifecycle_release_execution_committed.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -29104,7 +29984,9 @@
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
       ],
       "name": "lite_lifecycle_workspace",
       "owner": "not a prepared projection",
@@ -29115,7 +29997,9 @@
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -29301,6 +30185,28 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_runtime_identity_projection",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0067_runtime_identity_projection.sql"
+      ],
+      "name": "lite_runtime_identity_projection",
+      "owner": "control_plane",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0067_runtime_identity_projection.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -30079,7 +30985,8 @@
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql"
       ],
       "name": "policy_activation_operations",
       "owner": "not a prepared projection",
@@ -30092,7 +30999,8 @@
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -31458,6 +32366,26 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_coordinated_release_package.py",
+      "name": "tests/backend/test_lite_coordinated_release_package.py",
+      "source_refs": [
+        "tests/backend/test_lite_coordinated_release_package.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_coordinated_runtime_promotion.py",
+      "name": "tests/backend/test_lite_coordinated_runtime_promotion.py",
+      "source_refs": [
+        "tests/backend/test_lite_coordinated_runtime_promotion.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_core_supervisor.py",
       "name": "tests/backend/test_lite_core_supervisor.py",
       "source_refs": [
@@ -31752,6 +32680,36 @@
       "name": "tests/backend/test_lite_isolated_qualification_lane.py",
       "source_refs": [
         "tests/backend/test_lite_isolated_qualification_lane.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_lifecycle_candidate_review.py",
+      "name": "tests/backend/test_lite_lifecycle_candidate_review.py",
+      "source_refs": [
+        "tests/backend/test_lite_lifecycle_candidate_review.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_lifecycle_policy_execution.py",
+      "name": "tests/backend/test_lite_lifecycle_policy_execution.py",
+      "source_refs": [
+        "tests/backend/test_lite_lifecycle_policy_execution.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_lifecycle_release_execution.py",
+      "name": "tests/backend/test_lite_lifecycle_release_execution.py",
+      "source_refs": [
+        "tests/backend/test_lite_lifecycle_release_execution.py"
       ],
       "type": "test"
     },
@@ -32278,10 +33236,30 @@
     {
       "confidence": "source-derived",
       "domain": "testing",
+      "id": "test:tests/backend/test_lite_release_trusted_time.py",
+      "name": "tests/backend/test_lite_release_trusted_time.py",
+      "source_refs": [
+        "tests/backend/test_lite_release_trusted_time.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
       "id": "test:tests/backend/test_lite_revision_sync_n4_n5.py",
       "name": "tests/backend/test_lite_revision_sync_n4_n5.py",
       "source_refs": [
         "tests/backend/test_lite_revision_sync_n4_n5.py"
+      ],
+      "type": "test"
+    },
+    {
+      "confidence": "source-derived",
+      "domain": "testing",
+      "id": "test:tests/backend/test_lite_runtime_identity.py",
+      "name": "tests/backend/test_lite_runtime_identity.py",
+      "source_refs": [
+        "tests/backend/test_lite_runtime_identity.py"
       ],
       "type": "test"
     },
@@ -36624,8 +37602,12 @@
         "table:lite_home_activity_read_cursors",
         "table:lite_lifecycle_audit",
         "table:lite_lifecycle_boundary_scopes",
+        "table:lite_lifecycle_candidate_consent",
+        "table:lite_lifecycle_capability_activation",
         "table:lite_lifecycle_grants",
+        "table:lite_lifecycle_policy_execution",
         "table:lite_lifecycle_preferences",
+        "table:lite_lifecycle_release_execution",
         "table:lite_lifecycle_service_delegations",
         "table:lite_lifecycle_workspace",
         "table:lite_release_trust_configuration",
@@ -36636,6 +37618,7 @@
         "table:lite_release_trust_transitions",
         "table:lite_release_trusted_time",
         "table:lite_revision_events",
+        "table:lite_runtime_identity_projection",
         "table:lite_system_health_activation_fence",
         "table:lite_system_health_automation_attempts",
         "table:lite_system_health_automation_policy",
@@ -37044,7 +38027,19 @@
         "api:post:/api/lite/lifecycle/boundary",
         "api:post:/api/lite/lifecycle/boundary/review",
         "api:post:/api/lite/lifecycle/boundary/revoke",
+        "api:post:/api/lite/lifecycle/candidate/consent",
+        "api:post:/api/lite/lifecycle/candidate/consent/review",
+        "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+        "api:post:/api/lite/lifecycle/capability/activation",
+        "api:post:/api/lite/lifecycle/capability/activation/review",
+        "api:post:/api/lite/lifecycle/capability/activation/revoke",
+        "api:post:/api/lite/lifecycle/policy/execution",
+        "api:post:/api/lite/lifecycle/policy/execution/review",
+        "api:post:/api/lite/lifecycle/policy/execution/revoke",
         "api:post:/api/lite/lifecycle/preferences/review",
+        "api:post:/api/lite/lifecycle/release/preparation",
+        "api:post:/api/lite/lifecycle/release/preparation/review",
+        "api:post:/api/lite/lifecycle/release/preparation/revoke",
         "api:put:/api/lite/lifecycle/preferences",
         "domain:lifecycle"
       ],
@@ -37415,6 +38410,7 @@
         "reason:exception_unusable",
         "reason:generic_policy_toggle_retired",
         "reason:independent_approval_satisfied",
+        "reason:local_policy_source_unavailable",
         "reason:owner_approval_policy_inconsistent",
         "reason:passkey_step_up_required",
         "reason:passkey_step_up_satisfied",
@@ -37430,6 +38426,7 @@
         "reason:policy_endpoint_not_loopback",
         "reason:policy_invalid_response",
         "reason:policy_known_good_unavailable",
+        "reason:policy_module_set_unknown",
         "reason:policy_parameter_invalid",
         "reason:policy_parameter_unknown",
         "reason:policy_parameters_invalid",
@@ -37456,6 +38453,11 @@
         "reason:rollback_pointer_failed",
         "reason:rollback_unproved",
         "reason:test_bypass_explicit",
+        "reason:trusted_policy_admission_denied",
+        "reason:trusted_policy_execution_required",
+        "reason:trusted_policy_interrupted_before_switch",
+        "reason:trusted_policy_isolation_unproved",
+        "reason:trusted_policy_rollback_unproved",
         "ui:literules"
       ],
       "runbook": [
@@ -37481,12 +38483,24 @@
       "runtime": [
         "api:get:/api/lite/runtime",
         "domain:runtime",
+        "reason:applied_migration_changed",
+        "reason:applied_schema_ledger_incomplete",
+        "reason:applied_schema_ledger_invalid",
+        "reason:applied_schema_ledger_unavailable",
+        "reason:applied_schema_unconfirmed",
+        "reason:candidate_applied_migration_checksum_mismatch",
+        "reason:coordinated_handoff_unproved",
         "reason:delivery_unconfirmed",
+        "reason:installed_migration_checksum_mismatch",
+        "reason:migration_baseline_unconfirmed",
+        "reason:migration_qualification_required",
+        "reason:migration_rehearsal_unproved",
         "reason:owner_reconciliation_not_verified",
         "reason:owner_restart_not_verified",
         "reason:owner_still_running",
         "reason:process_instance_unavailable",
         "reason:runtime_contract_unavailable",
+        "reason:runtime_identity_stale",
         "runtime:agent-supervisor",
         "runtime:architecture-runtime-verification",
         "runtime:caddy-routing",
@@ -37673,6 +38687,8 @@
         "test:tests/backend/test_lite_command_lifecycle_reconciliation.py",
         "test:tests/backend/test_lite_complete_documentation_platform.py",
         "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_coordinated_release_package.py",
+        "test:tests/backend/test_lite_coordinated_runtime_promotion.py",
         "test:tests/backend/test_lite_core_supervisor.py",
         "test:tests/backend/test_lite_database_restore_reconciliation.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -37703,6 +38719,9 @@
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
         "test:tests/backend/test_lite_idle_efficiency_runtime.py",
         "test:tests/backend/test_lite_isolated_qualification_lane.py",
+        "test:tests/backend/test_lite_lifecycle_candidate_review.py",
+        "test:tests/backend/test_lite_lifecycle_policy_execution.py",
+        "test:tests/backend/test_lite_lifecycle_release_execution.py",
         "test:tests/backend/test_lite_long_gate_android_resume.py",
         "test:tests/backend/test_lite_long_gate_checkpointing.py",
         "test:tests/backend/test_lite_long_gate_framework.py",
@@ -37755,7 +38774,9 @@
         "test:tests/backend/test_lite_queue_attribution_regression.py",
         "test:tests/backend/test_lite_recovery.py",
         "test:tests/backend/test_lite_recovery_r3_api_split.py",
+        "test:tests/backend/test_lite_release_trusted_time.py",
         "test:tests/backend/test_lite_revision_sync_n4_n5.py",
+        "test:tests/backend/test_lite_runtime_identity.py",
         "test:tests/backend/test_lite_runtime_phone_qualification.py",
         "test:tests/backend/test_lite_runtime_reconciler.py",
         "test:tests/backend/test_lite_security.py",
@@ -38359,7 +39380,19 @@
         "api:post:/api/lite/lifecycle/boundary",
         "api:post:/api/lite/lifecycle/boundary/review",
         "api:post:/api/lite/lifecycle/boundary/revoke",
+        "api:post:/api/lite/lifecycle/candidate/consent",
+        "api:post:/api/lite/lifecycle/candidate/consent/review",
+        "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+        "api:post:/api/lite/lifecycle/capability/activation",
+        "api:post:/api/lite/lifecycle/capability/activation/review",
+        "api:post:/api/lite/lifecycle/capability/activation/revoke",
+        "api:post:/api/lite/lifecycle/policy/execution",
+        "api:post:/api/lite/lifecycle/policy/execution/review",
+        "api:post:/api/lite/lifecycle/policy/execution/revoke",
         "api:post:/api/lite/lifecycle/preferences/review",
+        "api:post:/api/lite/lifecycle/release/preparation",
+        "api:post:/api/lite/lifecycle/release/preparation/review",
+        "api:post:/api/lite/lifecycle/release/preparation/revoke",
         "api:post:/api/lite/owner-operations/client-pairings",
         "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
         "api:post:/api/lite/owner-operations/client-pairings/challenge",
@@ -38604,6 +39637,11 @@
       "reason-code": [
         "reason:actor_not_authenticated",
         "reason:already_tuned",
+        "reason:applied_migration_changed",
+        "reason:applied_schema_ledger_incomplete",
+        "reason:applied_schema_ledger_invalid",
+        "reason:applied_schema_ledger_unavailable",
+        "reason:applied_schema_unconfirmed",
         "reason:approval_approver_role_required",
         "reason:approval_cancel_forbidden",
         "reason:approval_continuation_unavailable",
@@ -38632,6 +39670,7 @@
         "reason:backup_state_missing",
         "reason:battery_policy_threshold",
         "reason:bootstrap_transport_rejected",
+        "reason:candidate_applied_migration_checksum_mismatch",
         "reason:candidate_invalid",
         "reason:checkpoint_ineligible",
         "reason:claim_verified",
@@ -38640,6 +39679,7 @@
         "reason:configured_target_budget",
         "reason:confirmation_required",
         "reason:connection_failed",
+        "reason:coordinated_handoff_unproved",
         "reason:credential_expired",
         "reason:credential_identity_mismatch",
         "reason:credential_revocation_pending",
@@ -38732,6 +39772,7 @@
         "reason:independent_approval_satisfied",
         "reason:independent_provenance_and_qualification_required",
         "reason:independent_root_required",
+        "reason:installed_migration_checksum_mismatch",
         "reason:insufficient_storage",
         "reason:interrupted",
         "reason:invalid_backup_id",
@@ -38747,10 +39788,14 @@
         "reason:legacy_telemetry_value",
         "reason:local_candidate_or_root_missing",
         "reason:local_owner_required",
+        "reason:local_policy_source_unavailable",
         "reason:location_not_registered",
         "reason:maintenance_conflict_or_authority_changed",
         "reason:memory_pressure",
         "reason:metadata_only",
+        "reason:migration_baseline_unconfirmed",
+        "reason:migration_qualification_required",
+        "reason:migration_rehearsal_unproved",
         "reason:nats_fault_requires_active_assurance_run",
         "reason:nats_probe_failed",
         "reason:no_active_generation",
@@ -38806,6 +39851,7 @@
         "reason:policy_endpoint_not_loopback",
         "reason:policy_invalid_response",
         "reason:policy_known_good_unavailable",
+        "reason:policy_module_set_unknown",
         "reason:policy_parameter_invalid",
         "reason:policy_parameter_unknown",
         "reason:policy_parameters_invalid",
@@ -38853,6 +39899,7 @@
         "reason:root_pin_invalid",
         "reason:run_not_found",
         "reason:runtime_contract_unavailable",
+        "reason:runtime_identity_stale",
         "reason:scanner_intelligence_hard_expired",
         "reason:security_load_unknown",
         "reason:security_scan_conflict",
@@ -38878,6 +39925,11 @@
         "reason:thermal_policy_threshold",
         "reason:trust_contract_invalid",
         "reason:trusted_local_admin",
+        "reason:trusted_policy_admission_denied",
+        "reason:trusted_policy_execution_required",
+        "reason:trusted_policy_interrupted_before_switch",
+        "reason:trusted_policy_isolation_unproved",
+        "reason:trusted_policy_rollback_unproved",
         "reason:unregistered_domain",
         "reason:unsafe_live_media_import",
         "reason:unsupported_destination",
@@ -39211,8 +40263,12 @@
         "table:lite_installed_release_identity",
         "table:lite_lifecycle_audit",
         "table:lite_lifecycle_boundary_scopes",
+        "table:lite_lifecycle_candidate_consent",
+        "table:lite_lifecycle_capability_activation",
         "table:lite_lifecycle_grants",
+        "table:lite_lifecycle_policy_execution",
         "table:lite_lifecycle_preferences",
+        "table:lite_lifecycle_release_execution",
         "table:lite_lifecycle_service_delegations",
         "table:lite_lifecycle_workspace",
         "table:lite_release_trust_configuration",
@@ -39223,6 +40279,7 @@
         "table:lite_release_trust_transitions",
         "table:lite_release_trusted_time",
         "table:lite_revision_events",
+        "table:lite_runtime_identity_projection",
         "table:lite_system_health_activation_fence",
         "table:lite_system_health_automation_attempts",
         "table:lite_system_health_automation_policy",
@@ -39323,6 +40380,8 @@
         "test:tests/backend/test_lite_command_lifecycle_reconciliation.py",
         "test:tests/backend/test_lite_complete_documentation_platform.py",
         "test:tests/backend/test_lite_control_plane_sqlite_p3.py",
+        "test:tests/backend/test_lite_coordinated_release_package.py",
+        "test:tests/backend/test_lite_coordinated_runtime_promotion.py",
         "test:tests/backend/test_lite_core_supervisor.py",
         "test:tests/backend/test_lite_database_restore_reconciliation.py",
         "test:tests/backend/test_lite_development_documentation_platform.py",
@@ -39353,6 +40412,9 @@
         "test:tests/backend/test_lite_identity_rules_ui_projection.py",
         "test:tests/backend/test_lite_idle_efficiency_runtime.py",
         "test:tests/backend/test_lite_isolated_qualification_lane.py",
+        "test:tests/backend/test_lite_lifecycle_candidate_review.py",
+        "test:tests/backend/test_lite_lifecycle_policy_execution.py",
+        "test:tests/backend/test_lite_lifecycle_release_execution.py",
         "test:tests/backend/test_lite_long_gate_android_resume.py",
         "test:tests/backend/test_lite_long_gate_checkpointing.py",
         "test:tests/backend/test_lite_long_gate_framework.py",
@@ -39405,7 +40467,9 @@
         "test:tests/backend/test_lite_queue_attribution_regression.py",
         "test:tests/backend/test_lite_recovery.py",
         "test:tests/backend/test_lite_recovery_r3_api_split.py",
+        "test:tests/backend/test_lite_release_trusted_time.py",
         "test:tests/backend/test_lite_revision_sync_n4_n5.py",
+        "test:tests/backend/test_lite_runtime_identity.py",
         "test:tests/backend/test_lite_runtime_phone_qualification.py",
         "test:tests/backend/test_lite_runtime_reconciler.py",
         "test:tests/backend/test_lite_security.py",
@@ -41764,7 +42828,79 @@
           "type": "owns"
         }
       ],
+      "api:post:/api/lite/lifecycle/candidate/consent": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/candidate/consent/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/candidate/consent/revoke": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/capability/activation": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/capability/activation/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/capability/activation/revoke": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/policy/execution": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/policy/execution/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/policy/execution/revoke": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/lifecycle/preferences/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/release/preparation": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/release/preparation/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/release/preparation/revoke": [
         {
           "source": "domain:lifecycle",
           "type": "owns"
@@ -43622,6 +44758,36 @@
           "type": "owns"
         }
       ],
+      "reason:applied_migration_changed": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
+      "reason:applied_schema_ledger_incomplete": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
+      "reason:applied_schema_ledger_invalid": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
+      "reason:applied_schema_ledger_unavailable": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
+      "reason:applied_schema_unconfirmed": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
       "reason:approval_approver_role_required": [
         {
           "source": "domain:rules",
@@ -43790,6 +44956,12 @@
           "type": "owns"
         }
       ],
+      "reason:candidate_applied_migration_checksum_mismatch": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
       "reason:candidate_invalid": [
         {
           "source": "domain:release-trust",
@@ -43835,6 +45007,12 @@
       "reason:connection_failed": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:coordinated_handoff_unproved": [
+        {
+          "source": "domain:runtime",
           "type": "owns"
         }
       ],
@@ -44390,6 +45568,12 @@
           "type": "owns"
         }
       ],
+      "reason:installed_migration_checksum_mismatch": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
       "reason:insufficient_storage": [
         {
           "source": "domain:system",
@@ -44480,6 +45664,12 @@
           "type": "owns"
         }
       ],
+      "reason:local_policy_source_unavailable": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
       "reason:location_not_registered": [
         {
           "source": "domain:recovery",
@@ -44501,6 +45691,24 @@
       "reason:metadata_only": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:migration_baseline_unconfirmed": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
+      "reason:migration_qualification_required": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
+      "reason:migration_rehearsal_unproved": [
+        {
+          "source": "domain:runtime",
           "type": "owns"
         }
       ],
@@ -44834,6 +46042,12 @@
           "type": "owns"
         }
       ],
+      "reason:policy_module_set_unknown": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
       "reason:policy_parameter_invalid": [
         {
           "source": "domain:rules",
@@ -45116,6 +46330,12 @@
           "type": "owns"
         }
       ],
+      "reason:runtime_identity_stale": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
       "reason:scanner_intelligence_hard_expired": [
         {
           "source": "domain:security",
@@ -45263,6 +46483,36 @@
       "reason:trusted_local_admin": [
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "reason:trusted_policy_admission_denied": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:trusted_policy_execution_required": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:trusted_policy_interrupted_before_switch": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:trusted_policy_isolation_unproved": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:trusted_policy_rollback_unproved": [
+        {
+          "source": "domain:rules",
           "type": "owns"
         }
       ],
@@ -48042,13 +49292,37 @@
           "type": "owns"
         }
       ],
+      "table:lite_lifecycle_candidate_consent": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_capability_activation": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_lifecycle_grants": [
         {
           "source": "domain:control_plane",
           "type": "owns"
         }
       ],
+      "table:lite_lifecycle_policy_execution": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_lifecycle_preferences": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_release_execution": [
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -48109,6 +49383,12 @@
         }
       ],
       "table:lite_revision_events": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_runtime_identity_projection": [
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -49082,6 +50362,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_backend_runtime_promotion.py": [
+        {
+          "source": "reason:interrupted",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_complete_documentation_platform.py": [
         {
           "source": "domain:security",
@@ -49105,6 +50391,26 @@
         },
         {
           "source": "reason:already_tuned",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_migration_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_incomplete",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_unconfirmed",
           "type": "verified_by"
         },
         {
@@ -49220,6 +50526,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:candidate_applied_migration_checksum_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:candidate_invalid",
           "type": "verified_by"
         },
@@ -49249,6 +50559,10 @@
         },
         {
           "source": "reason:connection_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:coordinated_handoff_unproved",
           "type": "verified_by"
         },
         {
@@ -49620,6 +50934,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:installed_migration_checksum_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -49680,6 +50998,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:local_policy_source_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:location_not_registered",
           "type": "verified_by"
         },
@@ -49693,6 +51015,18 @@
         },
         {
           "source": "reason:metadata_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_baseline_unconfirmed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_qualification_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_rehearsal_unproved",
           "type": "verified_by"
         },
         {
@@ -49916,6 +51250,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_module_set_unknown",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_parameter_invalid",
           "type": "verified_by"
         },
@@ -50104,6 +51442,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:runtime_identity_stale",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:scanner_intelligence_hard_expired",
           "type": "verified_by"
         },
@@ -50201,6 +51543,26 @@
         },
         {
           "source": "reason:trusted_local_admin",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_admission_denied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_execution_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_interrupted_before_switch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_isolation_unproved",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_rollback_unproved",
           "type": "verified_by"
         },
         {
@@ -50383,6 +51745,12 @@
         },
         {
           "source": "reason:shutdown",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_coordinated_runtime_promotion.py": [
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         }
       ],
@@ -51322,7 +52690,55 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/lifecycle/candidate/consent",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/candidate/consent/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/capability/activation",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/capability/activation/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/policy/execution",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/policy/execution/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/lifecycle/preferences/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/release/preparation",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/release/preparation/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/release/preparation/revoke",
           "type": "verified_by"
         },
         {
@@ -52152,6 +53568,24 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_lifecycle_candidate_review.py": [
+        {
+          "source": "domain:validation",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_lifecycle_policy_execution.py": [
+        {
+          "source": "reason:actor_not_authenticated",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_lifecycle_release_execution.py": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_long_gate_checkpointing.py": [
         {
           "source": "reason:interrupted",
@@ -52691,6 +54125,16 @@
       "test:tests/backend/test_lite_revision_sync_n4_n5.py": [
         {
           "source": "component:frontend-state",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_runtime_identity.py": [
+        {
+          "source": "reason:identity_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:runtime_identity_stale",
           "type": "verified_by"
         }
       ],
@@ -54886,6 +56330,26 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:applied_migration_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_incomplete",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_unconfirmed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:approval_approver_role_required",
           "type": "verified_by"
         },
@@ -54998,6 +56462,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:candidate_applied_migration_checksum_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:candidate_invalid",
           "type": "verified_by"
         },
@@ -55027,6 +56495,10 @@
         },
         {
           "source": "reason:connection_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:coordinated_handoff_unproved",
           "type": "verified_by"
         },
         {
@@ -55398,6 +56870,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:installed_migration_checksum_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -55458,6 +56934,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:local_policy_source_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:location_not_registered",
           "type": "verified_by"
         },
@@ -55471,6 +56951,18 @@
         },
         {
           "source": "reason:metadata_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_baseline_unconfirmed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_qualification_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_rehearsal_unproved",
           "type": "verified_by"
         },
         {
@@ -55694,6 +57186,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_module_set_unknown",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_parameter_invalid",
           "type": "verified_by"
         },
@@ -55882,6 +57378,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:runtime_identity_stale",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:scanner_intelligence_hard_expired",
           "type": "verified_by"
         },
@@ -55979,6 +57479,26 @@
         },
         {
           "source": "reason:trusted_local_admin",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_admission_denied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_execution_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_interrupted_before_switch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_isolation_unproved",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_rollback_unproved",
           "type": "verified_by"
         },
         {
@@ -56196,6 +57716,26 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:applied_migration_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_incomplete",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_unconfirmed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:approval_approver_role_required",
           "type": "verified_by"
         },
@@ -56308,6 +57848,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:candidate_applied_migration_checksum_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:candidate_invalid",
           "type": "verified_by"
         },
@@ -56337,6 +57881,10 @@
         },
         {
           "source": "reason:connection_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:coordinated_handoff_unproved",
           "type": "verified_by"
         },
         {
@@ -56708,6 +58256,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:installed_migration_checksum_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -56768,6 +58320,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:local_policy_source_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:location_not_registered",
           "type": "verified_by"
         },
@@ -56781,6 +58337,18 @@
         },
         {
           "source": "reason:metadata_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_baseline_unconfirmed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_qualification_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_rehearsal_unproved",
           "type": "verified_by"
         },
         {
@@ -57004,6 +58572,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_module_set_unknown",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_parameter_invalid",
           "type": "verified_by"
         },
@@ -57192,6 +58764,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:runtime_identity_stale",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:scanner_intelligence_hard_expired",
           "type": "verified_by"
         },
@@ -57289,6 +58865,26 @@
         },
         {
           "source": "reason:trusted_local_admin",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_admission_denied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_execution_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_interrupted_before_switch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_isolation_unproved",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_rollback_unproved",
           "type": "verified_by"
         },
         {
@@ -58904,7 +60500,55 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/lifecycle/candidate/consent",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/candidate/consent/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/capability/activation",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/capability/activation/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/policy/execution",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/policy/execution/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/lifecycle/preferences/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/release/preparation",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/release/preparation/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/release/preparation/revoke",
           "type": "verified_by"
         },
         {
@@ -62458,7 +64102,127 @@
           "type": "verified_by"
         }
       ],
+      "api:post:/api/lite/lifecycle/candidate/consent": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/candidate/consent/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/candidate/consent/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/capability/activation": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/capability/activation/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/capability/activation/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/policy/execution": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/policy/execution/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/policy/execution/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:post:/api/lite/lifecycle/preferences/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/release/preparation": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/release/preparation/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/release/preparation/revoke": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -67470,11 +69234,27 @@
           "type": "owns"
         },
         {
+          "target": "table:lite_lifecycle_candidate_consent",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_capability_activation",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_lifecycle_grants",
           "type": "owns"
         },
         {
+          "target": "table:lite_lifecycle_policy_execution",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_lifecycle_preferences",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_release_execution",
           "type": "owns"
         },
         {
@@ -67515,6 +69295,10 @@
         },
         {
           "target": "table:lite_revision_events",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_runtime_identity_projection",
           "type": "owns"
         },
         {
@@ -69170,7 +70954,55 @@
           "type": "owns"
         },
         {
+          "target": "api:post:/api/lite/lifecycle/candidate/consent",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/candidate/consent/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/capability/activation",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/capability/activation/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/policy/execution",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/policy/execution/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+          "type": "owns"
+        },
+        {
           "target": "api:post:/api/lite/lifecycle/preferences/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/release/preparation",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/release/preparation/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/release/preparation/revoke",
           "type": "owns"
         },
         {
@@ -70372,6 +72204,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:local_policy_source_unavailable",
+          "type": "owns"
+        },
+        {
           "target": "reason:owner_approval_policy_inconsistent",
           "type": "owns"
         },
@@ -70429,6 +72265,10 @@
         },
         {
           "target": "reason:policy_known_good_unavailable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:policy_module_set_unknown",
           "type": "owns"
         },
         {
@@ -70536,6 +72376,26 @@
           "type": "owns"
         },
         {
+          "target": "reason:trusted_policy_admission_denied",
+          "type": "owns"
+        },
+        {
+          "target": "reason:trusted_policy_execution_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:trusted_policy_interrupted_before_switch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:trusted_policy_isolation_unproved",
+          "type": "owns"
+        },
+        {
+          "target": "reason:trusted_policy_rollback_unproved",
+          "type": "owns"
+        },
+        {
           "target": "ui:literules",
           "type": "owns"
         },
@@ -70628,7 +72488,51 @@
           "type": "owns"
         },
         {
+          "target": "reason:applied_migration_changed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:applied_schema_ledger_incomplete",
+          "type": "owns"
+        },
+        {
+          "target": "reason:applied_schema_ledger_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:applied_schema_ledger_unavailable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:applied_schema_unconfirmed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:candidate_applied_migration_checksum_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:coordinated_handoff_unproved",
+          "type": "owns"
+        },
+        {
           "target": "reason:delivery_unconfirmed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:installed_migration_checksum_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:migration_baseline_unconfirmed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:migration_qualification_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:migration_rehearsal_unproved",
           "type": "owns"
         },
         {
@@ -70649,6 +72553,10 @@
         },
         {
           "target": "reason:runtime_contract_unavailable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:runtime_identity_stale",
           "type": "owns"
         }
       ],
@@ -71641,6 +73549,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_lifecycle_candidate_review.py",
           "type": "verified_by"
         },
         {
@@ -72944,6 +74856,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_lifecycle_policy_execution.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -72953,6 +74869,76 @@
         }
       ],
       "reason:already_tuned": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:applied_migration_changed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:applied_schema_ledger_incomplete": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:applied_schema_ledger_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:applied_schema_ledger_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:applied_schema_unconfirmed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -73438,6 +75424,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:candidate_applied_migration_checksum_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:candidate_invalid": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -73557,6 +75557,20 @@
         }
       ],
       "reason:connection_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:coordinated_handoff_unproved": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -74030,6 +76044,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_coordinated_runtime_promotion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_enterprise_identity_p2.py",
           "type": "verified_by"
         },
@@ -74047,6 +76065,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_lifecycle_release_execution.py",
           "type": "verified_by"
         },
         {
@@ -75192,6 +77214,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_runtime_identity.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security.py",
           "type": "verified_by"
         },
@@ -75286,6 +77312,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:installed_migration_checksum_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:insufficient_storage": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -75305,6 +77345,10 @@
         }
       ],
       "reason:interrupted": [
+        {
+          "target": "test:tests/backend/test_lite_backend_runtime_promotion.py",
+          "type": "verified_by"
+        },
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -75576,6 +77620,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:local_policy_source_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:location_not_registered": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -75633,6 +77691,48 @@
         },
         {
           "target": "test:tests/backend/test_lite_pm2_runtime_contract.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:migration_baseline_unconfirmed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:migration_qualification_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:migration_rehearsal_unproved": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -76473,6 +78573,20 @@
         }
       ],
       "reason:policy_known_good_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:policy_module_set_unknown": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -77352,6 +79466,24 @@
           "type": "verified_by"
         }
       ],
+      "reason:runtime_identity_stale": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_runtime_identity.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:scanner_intelligence_hard_expired": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -77797,6 +79929,76 @@
         }
       ],
       "reason:trusted_local_admin": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:trusted_policy_admission_denied": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:trusted_policy_execution_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:trusted_policy_interrupted_before_switch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:trusted_policy_isolation_unproved": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:trusted_policy_rollback_unproved": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -78875,6 +81077,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:006d26e7397354bb",
+      "source": "domain:rules",
+      "target": "reason:trusted_policy_interrupted_before_switch",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:00957ba631ead242",
@@ -79244,6 +81455,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:021e91fd26418307",
+      "source": "api:post:/api/lite/lifecycle/policy/execution/review",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:022fbe9b33e1dbfc",
@@ -79278,6 +81498,15 @@
       "source": "api:get:/api/lite/security/summary",
       "target": "table:security_maintenance_runs",
       "type": "reads"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:02d208009ebacf2d",
+      "source": "api:post:/api/lite/lifecycle/release/preparation",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -79977,6 +82206,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:06ef72bdc3191f9e",
+      "source": "domain:runtime",
+      "target": "reason:migration_rehearsal_unproved",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:071629345a2151bd",
@@ -80194,6 +82432,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:08474f3477ebc204",
+      "source": "reason:trusted_policy_rollback_unproved",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "src/lite/LiteCatalog.jsx"
       ],
       "id": "rel:08677d17344daaef",
@@ -80401,6 +82648,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:09f1186a6abd42de",
+      "source": "reason:trusted_policy_rollback_unproved",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_system_health.py"
       ],
       "id": "rel:09f607789aa209a8",
@@ -80572,6 +82828,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:0b52e5cfbf84675a",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/capability/activation/review",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_photo_backup.py"
       ],
       "id": "rel:0b595539db754517",
@@ -80721,6 +82986,15 @@
       "id": "rel:0c49d9e97df84e0c",
       "source": "requirement:architecture-06",
       "target": "test:tests/backend/test_lite_termux_runtime_documentation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:0c578f56513808ef",
+      "source": "api:post:/api/lite/lifecycle/candidate/consent",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -80968,6 +83242,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:0d5fb3e971130fc4",
+      "source": "reason:applied_migration_changed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:0d6937ad729c47e8",
@@ -81179,6 +83462,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:0ec1cfb95224d752",
+      "source": "domain:rules",
+      "target": "reason:trusted_policy_rollback_unproved",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:0ec468a0f78d7a29",
@@ -81323,6 +83615,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:0fcef9efa3e1b4be",
+      "source": "reason:trusted_policy_admission_denied",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:0fde6f79546f9996",
@@ -81437,6 +83738,15 @@
       "source": "requirement:architecture-09",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:10aca20a396f7d17",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_candidate_consent",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -81732,6 +84042,15 @@
       ],
       "id": "rel:1219c56d9d2f8943",
       "source": "reason:legacy_gitops_api_retired",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:1250f3b02d4f464e",
+      "source": "reason:trusted_policy_interrupted_before_switch",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
@@ -82432,6 +84751,15 @@
       "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
+      "id": "rel:164b1a9b221ffd11",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/policy/execution",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
       "id": "rel:164f6f36483dbeb7",
       "source": "domain:harness",
       "target": "api:get:/api/lite/harness/security-assurance/runs/{run_id}/events",
@@ -82454,6 +84782,15 @@
       "source": "domain:validation",
       "target": "reason:run_not_found",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:16723ae9fee52fc2",
+      "source": "reason:installed_migration_checksum_mismatch",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -82618,6 +84955,15 @@
       "id": "rel:17ae19930a796af5",
       "source": "component:recovery-state",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:17b86de2af913aee",
+      "source": "reason:trusted_policy_admission_denied",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -83269,6 +85615,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:1b663033fcebd611",
+      "source": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:1b76666321faa396",
@@ -83485,6 +85840,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:1ce0cebc595fc407",
+      "source": "reason:applied_migration_changed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_identity_rules_authorization.py"
       ],
       "id": "rel:1d0413c3a89cd015",
@@ -83625,6 +85989,15 @@
       "id": "rel:1db783b8d64273be",
       "source": "reason:fault_recovery_timeout",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:1dba4f1e4287243a",
+      "source": "reason:applied_schema_unconfirmed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -84030,11 +86403,29 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:20928ff03d9f4657",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_policy_source_reconciliation.py"
       ],
       "id": "rel:209e1296c3d8abc2",
       "source": "reason:owner_approval_policy_inconsistent",
       "target": "test:tests/backend/test_policy_source_reconciliation.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:20c9bb97b0d0141c",
+      "source": "reason:migration_baseline_unconfirmed",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -85178,6 +87569,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:279da79f653ed13e",
+      "source": "reason:migration_qualification_required",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:27a42c50eab1e51f",
@@ -85466,6 +87866,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:28fe32835ac24a7b",
+      "source": "domain:runtime",
+      "target": "reason:applied_schema_ledger_unavailable",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_security_assurance_controls.py"
       ],
       "id": "rel:29430c1376adfa90",
@@ -85507,6 +87916,15 @@
       "id": "rel:295b22cb2869f396",
       "source": "reason:policy_simulation_invalid",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:2965f90ba07122d0",
+      "source": "reason:installed_migration_checksum_mismatch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -86016,6 +88434,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:2cf53c3043002d4c",
+      "source": "reason:policy_module_set_unknown",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "runbooks/backup_restore_verify.yaml",
         "src/lite/LiteRecovery.jsx"
       ],
@@ -86086,6 +88513,15 @@
       "source": "domain:devices",
       "target": "reason:device_role_assignment_unauthorized",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:2db7d056d98ecebe",
+      "source": "reason:runtime_identity_stale",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -86748,6 +89184,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_runtime_identity.py"
+      ],
+      "id": "rel:326251c3e52768ce",
+      "source": "reason:runtime_identity_stale",
+      "target": "test:tests/backend/test_lite_runtime_identity.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:32675e26fe51bc7d",
@@ -87045,6 +89490,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:34611e6cdde49cda",
+      "source": "api:post:/api/lite/lifecycle/candidate/consent",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/parity/accepted-limitations.json"
       ],
       "id": "rel:3471d1cd2bba9174",
@@ -87214,6 +89668,15 @@
       "source": "ui:literules",
       "target": "api:get:/api/lite/policy",
       "type": "calls"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:35dd940181b7e451",
+      "source": "reason:applied_schema_ledger_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -87510,6 +89973,15 @@
       "id": "rel:37332896b249ad06",
       "source": "component:caddy",
       "target": "test:tests/backend/test_lite_qualification_owner.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:37390b7abcf75822",
+      "source": "reason:candidate_applied_migration_checksum_mismatch",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -87943,6 +90415,15 @@
       "id": "rel:392e4658e82a943e",
       "source": "domain:devices",
       "target": "reason:device_role_not_joinable",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:392ee71786024e52",
+      "source": "domain:rules",
+      "target": "reason:policy_module_set_unknown",
       "type": "owns"
     },
     {
@@ -88823,6 +91304,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:3e480bd578a47a6a",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/release/preparation",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_policy_analysis_p2_3.py"
       ],
       "id": "rel:3e65938cefa54af7",
@@ -89469,6 +91959,15 @@
       "source": "reason:pm2_worker_missing",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:41c8c9bb9b84d0b9",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/candidate/consent",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -90316,6 +92815,15 @@
       "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
+      "id": "rel:46cfb6062849115b",
+      "source": "reason:migration_rehearsal_unproved",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
       "id": "rel:46e1ae9674d21ddd",
       "source": "reason:backup_binding_invalid",
       "target": "test:tests/docs/test_operational_health_bridge.py",
@@ -90419,6 +92927,15 @@
       "source": "domain:apps",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:47a24f5f34175eb6",
+      "source": "domain:rules",
+      "target": "reason:local_policy_source_unavailable",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -90616,6 +93133,15 @@
       "id": "rel:49005d1db9d3ff66",
       "source": "api:post:/api/lite/enterprise/rules/exceptions",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:4906798ecde09fc8",
+      "source": "reason:local_policy_source_unavailable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -90854,6 +93380,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:4a079fe15cceec71",
+      "source": "domain:runtime",
+      "target": "reason:applied_schema_unconfirmed",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:4a47092c6fe7c592",
@@ -90976,6 +93511,15 @@
       "id": "rel:4b1dc28a3cc9d5b4",
       "source": "reason:authentication_required",
       "target": "test:tests/backend/test_lite_qualification_owner.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:4b226c026fb823dd",
+      "source": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -91588,6 +94132,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:4f08ecc1a4059b29",
+      "source": "reason:trusted_policy_rollback_unproved",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:4f1c8ce605b6918a",
@@ -91801,6 +94354,15 @@
       "id": "rel:500fade5ee4ad394",
       "source": "component:app-catalog",
       "target": "test:tests/e2e/lite-content-stress.spec.ts",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:5024438e9f66baf7",
+      "source": "reason:installed_migration_checksum_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -92238,6 +94800,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:5376ef00a35964fa",
+      "source": "domain:rules",
+      "target": "reason:trusted_policy_isolation_unproved",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:53840ce6fda08c6a",
@@ -92325,6 +94896,15 @@
       "source": "reason:nats_fault_requires_active_assurance_run",
       "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:543dad5c09d46ee6",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_release_execution",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -92481,6 +95061,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:554bc44c9bfa1d87",
+      "source": "api:post:/api/lite/lifecycle/release/preparation/revoke",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "architecture/metadata/pocket-lab-architecture.json"
       ],
       "id": "rel:5556b8199f2d3e58",
@@ -92590,6 +95179,15 @@
       "id": "rel:55cfee3ffb3045ea",
       "source": "reason:webauthn_credential_mismatch",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:55e60ddddf64adfe",
+      "source": "reason:trusted_policy_admission_denied",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -92708,6 +95306,15 @@
       "source": "domain:platform",
       "target": "test:tests/docs/test_enterprise_completion.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:568cd1fa3f594a6e",
+      "source": "domain:runtime",
+      "target": "reason:runtime_identity_stale",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -93166,6 +95773,15 @@
       "id": "rel:5967892c1666290c",
       "source": "api:get:/api/lite/devices/{node_id}/photo-backup",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_coordinated_runtime_promotion.py"
+      ],
+      "id": "rel:59690bbce4a26356",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_coordinated_runtime_promotion.py",
       "type": "verified_by"
     },
     {
@@ -94419,6 +97035,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:61cf3974d8424e39",
+      "source": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_e1_e3_e4_transactional_prepared_scheduler.py"
       ],
       "id": "rel:61d084825a51886d",
@@ -94542,6 +97167,15 @@
       "source": "domain:identity",
       "target": "limitation:identity:gap-2",
       "type": "affected_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:62de871cfb70abfa",
+      "source": "reason:trusted_policy_interrupted_before_switch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -95504,6 +98138,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:68b90c95a96fa8bd",
+      "source": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:68e9090e4074a038",
@@ -95586,6 +98229,24 @@
       "source": "domain:owner-operations",
       "target": "api:post:/api/lite/owner-operations/client-pairings/challenge",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:69ca98b96c4a53ab",
+      "source": "reason:applied_schema_ledger_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:69d1c5b22a43e56f",
+      "source": "reason:applied_schema_ledger_unavailable",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -95694,6 +98355,15 @@
       "source": "journey:app-installation",
       "target": "component:app-catalog",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:6a4bb01f56e878ff",
+      "source": "reason:trusted_policy_execution_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -96062,6 +98732,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:6c57c8e6cfd3062e",
+      "source": "reason:candidate_applied_migration_checksum_mismatch",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:6c5b0c06f986cf21",
@@ -96280,10 +98959,28 @@
       "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
+      "id": "rel:6d7f678f76222c5f",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/release/preparation/review",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
       "id": "rel:6d7f77f3c67c0aa3",
       "source": "domain:identity",
       "target": "api:post:/api/lite/identity/owner-claim/passkey/options",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:6d96029380c57342",
+      "source": "reason:policy_module_set_unknown",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -96292,6 +98989,15 @@
       "id": "rel:6daf3f265ab2b30a",
       "source": "journey:device-reconnect",
       "target": "test:tests/docs/test_documentation_presentation_polish.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:6db75d8db109d29d",
+      "source": "reason:applied_migration_changed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -96744,6 +99450,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:7048d97ef8ad74c8",
+      "source": "reason:runtime_identity_stale",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/e2e/lite-identity-premium-refinement.spec.ts"
       ],
       "id": "rel:7054298be55eac6c",
@@ -96956,6 +99671,15 @@
       "id": "rel:7117c76a16cfe6cb",
       "source": "reason:source_fixture_invalid",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:7119df5f096d7a88",
+      "source": "api:post:/api/lite/lifecycle/policy/execution/review",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -97995,6 +100719,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:77f0e26c46126c95",
+      "source": "reason:applied_schema_ledger_incomplete",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:77f64e55d1ff8c2e",
@@ -98046,6 +100779,15 @@
       "source": "component:device-state",
       "target": "table:device_health_current",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:7866ace59d0cd00c",
+      "source": "domain:runtime",
+      "target": "reason:migration_baseline_unconfirmed",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -98220,6 +100962,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:79b7720dff6231cd",
+      "source": "reason:trusted_policy_execution_required",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:79c94995e8f042e1",
@@ -98355,6 +101106,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:7a9c5c8746d41e40",
+      "source": "reason:local_policy_source_unavailable",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-sqlite-schema.json"
       ],
       "id": "rel:7aadb841db92411a",
@@ -98433,6 +101193,15 @@
       "source": "api:get:/api/lite/enterprise/rules/source-sync/status",
       "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:7bb768159b5a421d",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/capability/activation",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -99511,6 +102280,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:82b0265e53acaa01",
+      "source": "api:post:/api/lite/lifecycle/candidate/consent/review",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_enterprise_identity_p2.py"
       ],
       "id": "rel:82d5150d2857ac85",
@@ -99696,6 +102474,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:846600452315b984",
+      "source": "reason:coordinated_handoff_unproved",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_phase4_phase5_adaptive_runtime.py"
       ],
       "id": "rel:846b73456121be02",
@@ -99765,6 +102552,15 @@
       "source": "component:invite-state",
       "target": "table:device_identity_guards",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:84b33509ae31742c",
+      "source": "api:post:/api/lite/lifecycle/policy/execution",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -100049,6 +102845,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:86d04b6d4528eb42",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-asyncapi.json"
       ],
       "id": "rel:86d18beae72e7027",
@@ -100126,6 +102931,15 @@
       "id": "rel:874ad259084cfd68",
       "source": "reason:device_role_change_blocked_by_dependency",
       "target": "test:tests/backend/test_lite_fleet_multi_role_authorization.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:876f037b14f7e1ba",
+      "source": "reason:coordinated_handoff_unproved",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -100378,6 +103192,15 @@
       "id": "rel:891dd172e90fc372",
       "source": "reason:enterprise_final_owner_protected",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:893c935450974074",
+      "source": "reason:migration_baseline_unconfirmed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -100784,6 +103607,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:8b31c38334516fbc",
+      "source": "reason:runtime_identity_stale",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:8b32ab0d22a73088",
@@ -101127,6 +103959,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:8db8f0ef54b59103",
+      "source": "api:post:/api/lite/lifecycle/release/preparation",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/generated/lite-openapi.json"
       ],
       "id": "rel:8dc83b5c725fd26c",
@@ -101361,6 +104202,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:8f2bfaf95a04c24b",
+      "source": "reason:applied_schema_ledger_incomplete",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:8f3bf264b8e64cc3",
@@ -101421,6 +104271,15 @@
       "source": "reason:exception_action_invalid",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:8f6e5a139c5acc91",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -101645,6 +104504,15 @@
       "id": "rel:90f5641ea56107bc",
       "source": "reason:request_not_found",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:910015f4d9a18fe7",
+      "source": "reason:trusted_policy_isolation_unproved",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
     },
     {
@@ -102001,6 +104869,15 @@
       "id": "rel:939d043bf4aba935",
       "source": "reason:webauthn_counter_replay",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:93b87db87a0235e6",
+      "source": "reason:local_policy_source_unavailable",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -102419,6 +105296,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:968074591c1ba203",
+      "source": "reason:candidate_applied_migration_checksum_mismatch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/parity/parity-model.json",
         "src/lib/liteOfflineDb.js",
         "src/lib/liteQueryClient.js",
@@ -102465,6 +105351,15 @@
       "source": "domain:system-health",
       "target": "api:get:/api/lite/system-health/repairs",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:9698f1c6c23c613c",
+      "source": "reason:applied_schema_ledger_incomplete",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -102798,6 +105693,15 @@
       "id": "rel:995ee3a5e6e8d816",
       "source": "reason:approval_step_up_required",
       "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:99658715ac4f3d34",
+      "source": "reason:trusted_policy_execution_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -103252,6 +106156,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:9c9c58b0fe546b8c",
+      "source": "api:post:/api/lite/lifecycle/capability/activation",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_workload_admission.py"
       ],
       "id": "rel:9cd2f927cc9e1384",
@@ -103580,6 +106493,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:9e7c003d63165221",
+      "source": "domain:runtime",
+      "target": "reason:candidate_applied_migration_checksum_mismatch",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/docs/test_enterprise_completion.py"
       ],
       "id": "rel:9e9513704a9df107",
@@ -103865,6 +106787,15 @@
       "source": "reason:identity_login_throttled",
       "target": "test:tests/backend/test_lite_identity_rules_authorization.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:a08ac2db654639d7",
+      "source": "domain:rules",
+      "target": "reason:trusted_policy_admission_denied",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -104325,6 +107256,15 @@
       "source": "domain:rules",
       "target": "reason:policy_activation_in_progress",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:a397ce4be3150310",
+      "source": "reason:trusted_policy_isolation_unproved",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -104927,6 +107867,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:a6d4d4568e5ba29e",
+      "source": "reason:migration_baseline_unconfirmed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "contracts/metadata/knowledge-base.json"
       ],
       "id": "rel:a6e9be3fa370adaa",
@@ -105328,6 +108277,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:a9cb4ff2ad329f76",
+      "source": "api:post:/api/lite/lifecycle/capability/activation",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:a9f290d4c35aa7ea",
@@ -105611,6 +108569,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:ab7360d8e9269a3b",
+      "source": "domain:control_plane",
+      "target": "table:lite_runtime_identity_projection",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "contracts/generated/reason-codes.json"
       ],
       "id": "rel:ab756c03ab775de1",
@@ -105764,6 +108731,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_lifecycle_release_execution.py"
+      ],
+      "id": "rel:acc9ba0c8879b4fb",
+      "source": "reason:disabled",
+      "target": "test:tests/backend/test_lite_lifecycle_release_execution.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:acdc3bff9aa988a7",
@@ -105906,6 +108882,15 @@
       "source": "component:agent-recovery",
       "target": "subject:pocketlab.events.fleet.node_telemetry",
       "type": "publishes"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:ad683dda0da62cb8",
+      "source": "reason:migration_qualification_required",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -106116,6 +109101,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:aea20506aa56ed08",
+      "source": "api:post:/api/lite/lifecycle/release/preparation/review",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_living_knowledgebase.py"
       ],
       "id": "rel:aeaa387313f37c31",
@@ -106283,6 +109277,15 @@
       "id": "rel:afd80fb49d515758",
       "source": "component:agent-recovery",
       "target": "test:tests/docs/test_enterprise_completion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_lifecycle_candidate_review.py"
+      ],
+      "id": "rel:aff4138a69b84302",
+      "source": "domain:validation",
+      "target": "test:tests/backend/test_lite_lifecycle_candidate_review.py",
       "type": "verified_by"
     },
     {
@@ -106563,6 +109566,15 @@
       "id": "rel:b1a79fd8dcbe4316",
       "source": "reason:policy_source_contract_invalid",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:b1c89163553e1144",
+      "source": "reason:applied_schema_ledger_invalid",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -106911,6 +109923,15 @@
       "id": "rel:b3b8834f64b7c592",
       "source": "api:get:/api/lite/system-health/infrastructure",
       "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:b3c592a42efee1ca",
+      "source": "reason:migration_rehearsal_unproved",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -107815,6 +110836,15 @@
       "id": "rel:ba3b29d14d291b50",
       "source": "reason:legacy_observability_stack_retired",
       "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:ba3ed98c148e567f",
+      "source": "api:post:/api/lite/lifecycle/release/preparation/revoke",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
       "type": "verified_by"
     },
     {
@@ -108849,6 +111879,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:c1371e95069dd766",
+      "source": "reason:applied_schema_ledger_invalid",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_operational_health_bridge.py"
       ],
       "id": "rel:c1374355a46644a7",
@@ -108912,6 +111951,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:c1c1d46b7ffc55d3",
+      "source": "domain:rules",
+      "target": "reason:trusted_policy_execution_required",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_system_health.py"
       ],
       "id": "rel:c1d500a83a3b8bc3",
@@ -108927,6 +111975,15 @@
       "source": "domain:security",
       "target": "api:get:/api/lite/security/summary",
       "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:c1e1d48d828db7b7",
+      "source": "reason:trusted_policy_interrupted_before_switch",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -109058,6 +112115,15 @@
       "source": "component:pm2",
       "target": "test:tests/backend/test_lite_native_control_plane_retirement.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:c3016dc375c65242",
+      "source": "domain:runtime",
+      "target": "reason:migration_qualification_required",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -110842,6 +113908,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:ceab7a30fe1676fc",
+      "source": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/parity/test_api_contract_fences.py"
       ],
       "id": "rel:ceca29dba2549aaa",
@@ -111001,6 +114076,15 @@
       "source": "component:agent-signals",
       "target": "test:tests/backend/test_lite_devices_production_readiness.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:cfa6cd82580e10c9",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_capability_activation",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -111652,6 +114736,15 @@
       "id": "rel:d3c11fc6661bd4b1",
       "source": "api:post:/api/lite/harness/recovery/authorize",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:d3cbdfddc8749f46",
+      "source": "api:post:/api/lite/lifecycle/candidate/consent/review",
+      "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
     },
     {
@@ -112378,6 +115471,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:d836042e9735533c",
+      "source": "reason:policy_module_set_unknown",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/e2e/lite-identity-premium-refinement.spec.ts"
       ],
       "id": "rel:d846247f1589f0e6",
@@ -112647,6 +115749,15 @@
       "id": "rel:d9935a3c9a1c8f4a",
       "source": "reason:policy_recovery_not_rollback",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_runtime_identity.py"
+      ],
+      "id": "rel:d9936a88cbe02ff1",
+      "source": "reason:identity_unavailable",
+      "target": "test:tests/backend/test_lite_runtime_identity.py",
       "type": "verified_by"
     },
     {
@@ -113183,6 +116294,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:dd3c67bff5a6348c",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/candidate/consent/review",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_api.py"
       ],
       "id": "rel:dd3e440eb4a5028f",
@@ -113497,6 +116617,15 @@
       "source": "api:get:/api/lite/recovery",
       "target": "table:recovery_backup_location_events",
       "type": "reads"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:dfa8f1a5fe830cfc",
+      "source": "reason:coordinated_handoff_unproved",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -114134,6 +117263,24 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:e3fdc2d4b2a17b91",
+      "source": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:e41393da0f58081c",
+      "source": "reason:migration_rehearsal_unproved",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py",
         "src/lite/LiteDevices.jsx"
       ],
@@ -114303,6 +117450,15 @@
       "id": "rel:e5176f443f0fc902",
       "source": "api:get:/api/lite/enterprise/identity/enrollment/status",
       "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:e52a3bca2b7a6d3f",
+      "source": "reason:applied_schema_ledger_invalid",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
       "type": "verified_by"
     },
     {
@@ -114723,6 +117879,15 @@
       "source": "reason:exception_expiry_invalid",
       "target": "test:tests/docs/test_living_knowledgebase.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:e75f922af9fcdf97",
+      "source": "domain:runtime",
+      "target": "reason:applied_schema_ledger_incomplete",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -115463,6 +118628,15 @@
     },
     {
       "evidence": [
+        "tests/backend/test_lite_backend_runtime_promotion.py"
+      ],
+      "id": "rel:ec0e532ec4fe288f",
+      "source": "reason:interrupted",
+      "target": "test:tests/backend/test_lite_backend_runtime_promotion.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:ec24eafc57bc75eb",
@@ -115708,6 +118882,15 @@
       "source": "reason:shutdown",
       "target": "test:tests/backend/test_lite_phase3a_apps_recovery_semantic_revisions.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:ed9974b9560fe948",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/release/preparation/revoke",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -116033,6 +119216,15 @@
       "source": "component:app-recovery-update",
       "target": "api:post:/api/lite/apps/{app_id}/backup",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:ef9500402370f154",
+      "source": "api:post:/api/lite/lifecycle/capability/activation/review",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -117163,6 +120355,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/lite-sqlite-schema.json"
+      ],
+      "id": "rel:f6e7f7028599449b",
+      "source": "domain:control_plane",
+      "target": "table:lite_lifecycle_policy_execution",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_database_restore_reconciliation.py"
       ],
       "id": "rel:f70291a979e209ce",
@@ -117694,6 +120895,15 @@
     },
     {
       "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:f9ed53e69fc7b2aa",
+      "source": "api:post:/api/lite/lifecycle/policy/execution",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_development_documentation_platform.py"
       ],
       "id": "rel:f9f66c4ff52157b4",
@@ -117790,6 +121000,33 @@
       "source": "journey:rules-authorization",
       "target": "component:api-guards",
       "type": "uses"
+    },
+    {
+      "evidence": [
+        "tests/docs/test_operational_health_bridge.py"
+      ],
+      "id": "rel:fa8eb0da14421f9e",
+      "source": "reason:applied_schema_unconfirmed",
+      "target": "test:tests/docs/test_operational_health_bridge.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
+      "id": "rel:faa53204902c1eec",
+      "source": "reason:trusted_policy_isolation_unproved",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/parity/test_api_contract_fences.py"
+      ],
+      "id": "rel:faa63cc745860b9e",
+      "source": "api:post:/api/lite/lifecycle/capability/activation/review",
+      "target": "test:tests/parity/test_api_contract_fences.py",
+      "type": "verified_by"
     },
     {
       "evidence": [
@@ -117906,6 +121143,15 @@
       "id": "rel:fbab7aaf7f1a9d0b",
       "source": "reason:not_found_in_restored_snapshot",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_lifecycle_policy_execution.py"
+      ],
+      "id": "rel:fbddea765827c7bd",
+      "source": "reason:actor_not_authenticated",
+      "target": "test:tests/backend/test_lite_lifecycle_policy_execution.py",
       "type": "verified_by"
     },
     {
@@ -118090,6 +121336,15 @@
     },
     {
       "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:fcaf520637d1ce7b",
+      "source": "domain:runtime",
+      "target": "reason:applied_migration_changed",
+      "type": "owns"
+    },
+    {
+      "evidence": [
         "tests/backend/test_lite_long_gate_group2_reporting.py"
       ],
       "id": "rel:fcbdce3e9e1bddc8",
@@ -118173,6 +121428,15 @@
       "evidence": [
         "tests/backend/test_lite_complete_documentation_platform.py"
       ],
+      "id": "rel:fd746ac166d76da2",
+      "source": "reason:migration_qualification_required",
+      "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_complete_documentation_platform.py"
+      ],
       "id": "rel:fd7eab48d7484bf8",
       "source": "reason:historical_record",
       "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -118195,6 +121459,15 @@
       "source": "api:get:/api/lite/enterprise/rules/analysis",
       "target": "test:tests/parity/test_api_contract_fences.py",
       "type": "verified_by"
+    },
+    {
+      "evidence": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "id": "rel:fdb898e74b49c75c",
+      "source": "domain:lifecycle",
+      "target": "api:post:/api/lite/lifecycle/policy/execution/review",
+      "type": "owns"
     },
     {
       "evidence": [
@@ -118225,6 +121498,15 @@
     },
     {
       "evidence": [
+        "tests/docs/test_living_knowledgebase.py"
+      ],
+      "id": "rel:fe01872a5eccdcc5",
+      "source": "reason:applied_schema_unconfirmed",
+      "target": "test:tests/docs/test_living_knowledgebase.py",
+      "type": "verified_by"
+    },
+    {
+      "evidence": [
         "tests/docs/test_documentation_intelligence.py"
       ],
       "id": "rel:fe1b4bae4e0bd583",
@@ -118248,6 +121530,15 @@
       "id": "rel:fe3179d83d27e5fd",
       "source": "domain:rules",
       "target": "reason:approval_cancel_forbidden",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:fe3bc9337e170b97",
+      "source": "domain:runtime",
+      "target": "reason:applied_schema_ledger_invalid",
       "type": "owns"
     },
     {
@@ -118474,36 +121765,63 @@
       "source": "component:bounded-reconciliation",
       "target": "table:projection_dirty_signals",
       "type": "depends_on"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ffde4b70d6bd0290",
+      "source": "domain:runtime",
+      "target": "reason:installed_migration_checksum_mismatch",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "contracts/generated/reason-codes.json"
+      ],
+      "id": "rel:ffe0931189a9a385",
+      "source": "domain:runtime",
+      "target": "reason:coordinated_handoff_unproved",
+      "type": "owns"
+    },
+    {
+      "evidence": [
+        "tests/backend/test_lite_development_documentation_platform.py"
+      ],
+      "id": "rel:ffe46e4178a34777",
+      "source": "api:post:/api/lite/lifecycle/release/preparation/review",
+      "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+      "type": "verified_by"
     }
   ],
   "schema_version": "1.0.0",
-  "source_fingerprint": "1f30b69222bc5131517d56b80bd58de986f7f8fec42139920f80daaf5e708fef",
+  "source_fingerprint": "bf2266ffb6cbc79243fabbd151accbf28fe8f4149e9a8f975bb2fbe712f1fab9",
   "statistics": {
-    "entity_count": 1576,
+    "entity_count": 1619,
     "entity_type_counts": {
       "adr": 6,
-      "api": 286,
+      "api": 298,
       "capability": 5,
       "component": 58,
       "domain": 52,
       "glossary": 16,
       "journey": 24,
       "limitation": 18,
-      "reason-code": 307,
+      "reason-code": 326,
       "release": 3,
       "requirement": 10,
       "runbook": 4,
       "runtime-topology": 9,
       "subject": 219,
-      "table": 121,
-      "test": 342,
+      "table": 126,
+      "test": 349,
       "threat-boundary": 9,
       "threat-model": 9,
       "troubleshooting": 27,
       "ui": 12,
       "vocabulary": 39
     },
-    "relation_count": 4375,
-    "source_count": 378
+    "relation_count": 4499,
+    "source_count": 385
   }
 }

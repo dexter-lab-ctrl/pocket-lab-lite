@@ -957,9 +957,57 @@
         "title": "POST /api/lite/lifecycle/boundary/revoke",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-boundary-revoke"
       },
+      "endpoint:POST:/api/lite/lifecycle/candidate/consent": {
+        "title": "POST /api/lite/lifecycle/candidate/consent",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-candidate-consent"
+      },
+      "endpoint:POST:/api/lite/lifecycle/candidate/consent/review": {
+        "title": "POST /api/lite/lifecycle/candidate/consent/review",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-candidate-consent-review"
+      },
+      "endpoint:POST:/api/lite/lifecycle/candidate/consent/revoke": {
+        "title": "POST /api/lite/lifecycle/candidate/consent/revoke",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-candidate-consent-revoke"
+      },
+      "endpoint:POST:/api/lite/lifecycle/capability/activation": {
+        "title": "POST /api/lite/lifecycle/capability/activation",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-capability-activation"
+      },
+      "endpoint:POST:/api/lite/lifecycle/capability/activation/review": {
+        "title": "POST /api/lite/lifecycle/capability/activation/review",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-capability-activation-review"
+      },
+      "endpoint:POST:/api/lite/lifecycle/capability/activation/revoke": {
+        "title": "POST /api/lite/lifecycle/capability/activation/revoke",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-capability-activation-revoke"
+      },
+      "endpoint:POST:/api/lite/lifecycle/policy/execution": {
+        "title": "POST /api/lite/lifecycle/policy/execution",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-policy-execution"
+      },
+      "endpoint:POST:/api/lite/lifecycle/policy/execution/review": {
+        "title": "POST /api/lite/lifecycle/policy/execution/review",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-policy-execution-review"
+      },
+      "endpoint:POST:/api/lite/lifecycle/policy/execution/revoke": {
+        "title": "POST /api/lite/lifecycle/policy/execution/revoke",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-policy-execution-revoke"
+      },
       "endpoint:POST:/api/lite/lifecycle/preferences/review": {
         "title": "POST /api/lite/lifecycle/preferences/review",
         "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-preferences-review"
+      },
+      "endpoint:POST:/api/lite/lifecycle/release/preparation": {
+        "title": "POST /api/lite/lifecycle/release/preparation",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-release-preparation"
+      },
+      "endpoint:POST:/api/lite/lifecycle/release/preparation/review": {
+        "title": "POST /api/lite/lifecycle/release/preparation/review",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-release-preparation-review"
+      },
+      "endpoint:POST:/api/lite/lifecycle/release/preparation/revoke": {
+        "title": "POST /api/lite/lifecycle/release/preparation/revoke",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-lifecycle-release-preparation-revoke"
       },
       "endpoint:POST:/api/lite/owner-operations/client-pairings": {
         "title": "POST /api/lite/owner-operations/client-pairings",
@@ -2093,6 +2141,26 @@
         "title": "already_tuned",
         "url": "../../docs/generated/development/reason-codes.md#already-tuned"
       },
+      "reason:applied_migration_changed": {
+        "title": "applied_migration_changed",
+        "url": "../../docs/generated/development/reason-codes.md#applied-migration-changed"
+      },
+      "reason:applied_schema_ledger_incomplete": {
+        "title": "applied_schema_ledger_incomplete",
+        "url": "../../docs/generated/development/reason-codes.md#applied-schema-ledger-incomplete"
+      },
+      "reason:applied_schema_ledger_invalid": {
+        "title": "applied_schema_ledger_invalid",
+        "url": "../../docs/generated/development/reason-codes.md#applied-schema-ledger-invalid"
+      },
+      "reason:applied_schema_ledger_unavailable": {
+        "title": "applied_schema_ledger_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#applied-schema-ledger-unavailable"
+      },
+      "reason:applied_schema_unconfirmed": {
+        "title": "applied_schema_unconfirmed",
+        "url": "../../docs/generated/development/reason-codes.md#applied-schema-unconfirmed"
+      },
       "reason:approval_approver_role_required": {
         "title": "approval_approver_role_required",
         "url": "../../docs/generated/development/reason-codes.md#approval-approver-role-required"
@@ -2205,6 +2273,10 @@
         "title": "bootstrap_transport_rejected",
         "url": "../../docs/generated/development/reason-codes.md#bootstrap-transport-rejected"
       },
+      "reason:candidate_applied_migration_checksum_mismatch": {
+        "title": "candidate_applied_migration_checksum_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#candidate-applied-migration-checksum-mismatch"
+      },
       "reason:candidate_invalid": {
         "title": "candidate_invalid",
         "url": "../../docs/generated/development/reason-codes.md#candidate-invalid"
@@ -2236,6 +2308,10 @@
       "reason:connection_failed": {
         "title": "connection_failed",
         "url": "../../docs/generated/development/reason-codes.md#connection-failed"
+      },
+      "reason:coordinated_handoff_unproved": {
+        "title": "coordinated_handoff_unproved",
+        "url": "../../docs/generated/development/reason-codes.md#coordinated-handoff-unproved"
       },
       "reason:credential_expired": {
         "title": "credential_expired",
@@ -2605,6 +2681,10 @@
         "title": "independent_root_required",
         "url": "../../docs/generated/development/reason-codes.md#independent-root-required"
       },
+      "reason:installed_migration_checksum_mismatch": {
+        "title": "installed_migration_checksum_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#installed-migration-checksum-mismatch"
+      },
       "reason:insufficient_storage": {
         "title": "insufficient_storage",
         "url": "../../docs/generated/development/reason-codes.md#insufficient-storage"
@@ -2665,6 +2745,10 @@
         "title": "local_owner_required",
         "url": "../../docs/generated/development/reason-codes.md#local-owner-required"
       },
+      "reason:local_policy_source_unavailable": {
+        "title": "local_policy_source_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#local-policy-source-unavailable"
+      },
       "reason:location_not_registered": {
         "title": "location_not_registered",
         "url": "../../docs/generated/development/reason-codes.md#location-not-registered"
@@ -2680,6 +2764,18 @@
       "reason:metadata_only": {
         "title": "metadata_only",
         "url": "../../docs/generated/development/reason-codes.md#metadata-only"
+      },
+      "reason:migration_baseline_unconfirmed": {
+        "title": "migration_baseline_unconfirmed",
+        "url": "../../docs/generated/development/reason-codes.md#migration-baseline-unconfirmed"
+      },
+      "reason:migration_qualification_required": {
+        "title": "migration_qualification_required",
+        "url": "../../docs/generated/development/reason-codes.md#migration-qualification-required"
+      },
+      "reason:migration_rehearsal_unproved": {
+        "title": "migration_rehearsal_unproved",
+        "url": "../../docs/generated/development/reason-codes.md#migration-rehearsal-unproved"
       },
       "reason:nats_fault_requires_active_assurance_run": {
         "title": "nats_fault_requires_active_assurance_run",
@@ -2901,6 +2997,10 @@
         "title": "policy_known_good_unavailable",
         "url": "../../docs/generated/development/reason-codes.md#policy-known-good-unavailable"
       },
+      "reason:policy_module_set_unknown": {
+        "title": "policy_module_set_unknown",
+        "url": "../../docs/generated/development/reason-codes.md#policy-module-set-unknown"
+      },
       "reason:policy_parameter_invalid": {
         "title": "policy_parameter_invalid",
         "url": "../../docs/generated/development/reason-codes.md#policy-parameter-invalid"
@@ -3089,6 +3189,10 @@
         "title": "runtime_contract_unavailable",
         "url": "../../docs/generated/development/reason-codes.md#runtime-contract-unavailable"
       },
+      "reason:runtime_identity_stale": {
+        "title": "runtime_identity_stale",
+        "url": "../../docs/generated/development/reason-codes.md#runtime-identity-stale"
+      },
       "reason:scanner_intelligence_hard_expired": {
         "title": "scanner_intelligence_hard_expired",
         "url": "../../docs/generated/development/reason-codes.md#scanner-intelligence-hard-expired"
@@ -3188,6 +3292,26 @@
       "reason:trusted_local_admin": {
         "title": "trusted_local_admin",
         "url": "../../docs/generated/development/reason-codes.md#trusted-local-admin"
+      },
+      "reason:trusted_policy_admission_denied": {
+        "title": "trusted_policy_admission_denied",
+        "url": "../../docs/generated/development/reason-codes.md#trusted-policy-admission-denied"
+      },
+      "reason:trusted_policy_execution_required": {
+        "title": "trusted_policy_execution_required",
+        "url": "../../docs/generated/development/reason-codes.md#trusted-policy-execution-required"
+      },
+      "reason:trusted_policy_interrupted_before_switch": {
+        "title": "trusted_policy_interrupted_before_switch",
+        "url": "../../docs/generated/development/reason-codes.md#trusted-policy-interrupted-before-switch"
+      },
+      "reason:trusted_policy_isolation_unproved": {
+        "title": "trusted_policy_isolation_unproved",
+        "url": "../../docs/generated/development/reason-codes.md#trusted-policy-isolation-unproved"
+      },
+      "reason:trusted_policy_rollback_unproved": {
+        "title": "trusted_policy_rollback_unproved",
+        "url": "../../docs/generated/development/reason-codes.md#trusted-policy-rollback-unproved"
       },
       "reason:unregistered_domain": {
         "title": "unregistered_domain",
@@ -3566,15 +3690,35 @@
         "schema_url": "../../docs/generated/schemaspy/tables/lite_lifecycle_boundary_scopes.html",
         "title": "lite_lifecycle_boundary_scopes"
       },
+      "table:lite_lifecycle_candidate_consent": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-lifecycle-candidate-consent",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_lifecycle_candidate_consent.html",
+        "title": "lite_lifecycle_candidate_consent"
+      },
+      "table:lite_lifecycle_capability_activation": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-lifecycle-capability-activation",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_lifecycle_capability_activation.html",
+        "title": "lite_lifecycle_capability_activation"
+      },
       "table:lite_lifecycle_grants": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-lifecycle-grants",
         "schema_url": "../../docs/generated/schemaspy/tables/lite_lifecycle_grants.html",
         "title": "lite_lifecycle_grants"
       },
+      "table:lite_lifecycle_policy_execution": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-lifecycle-policy-execution",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_lifecycle_policy_execution.html",
+        "title": "lite_lifecycle_policy_execution"
+      },
       "table:lite_lifecycle_preferences": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-lifecycle-preferences",
         "schema_url": "../../docs/generated/schemaspy/tables/lite_lifecycle_preferences.html",
         "title": "lite_lifecycle_preferences"
+      },
+      "table:lite_lifecycle_release_execution": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-lifecycle-release-execution",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_lifecycle_release_execution.html",
+        "title": "lite_lifecycle_release_execution"
       },
       "table:lite_lifecycle_service_delegations": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-lifecycle-service-delegations",
@@ -3625,6 +3769,11 @@
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-revision-events",
         "schema_url": "../../docs/generated/schemaspy/tables/lite_revision_events.html",
         "title": "lite_revision_events"
+      },
+      "table:lite_runtime_identity_projection": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-runtime-identity-projection",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_runtime_identity_projection.html",
+        "title": "lite_runtime_identity_projection"
       },
       "table:lite_system_health_activation_fence": {
         "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-system-health-activation-fence",
@@ -3949,7 +4098,7 @@
     }
   },
   "metadata": {
-    "aggregate_fingerprint": "fbd51fd9651fdacba61c8042b3ecee999a95bad8e4f89edf86e3b9f033d01176",
+    "aggregate_fingerprint": "cf5ec22027e54f112458e328c2dc35874261513398f91e48e9772244e32b935b",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -3959,9 +4108,9 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "836ffc0f09712aede0ff821c8f18e47c6da3a03acd3e1bf2f2d05061045266e2",
+      "contracts/generated/lite-openapi.json": "582181f99288a3870935f77fa0289bf1a5cd6b91f63d92a8fc03f617ef6a6cf3",
       "contracts/metadata/documentation-platform.json": "b8d66469fc3ab5b0b2b2ed610617a35c091810bc2d564d81075cce898682ddda",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "3b34f0debcf38e177dca50b99dea00a9b2710c4889dcb2b706d688ce0a9fcd9e",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "b7a3f249e30c6b29db8bf4b2d65e54d0b5ea15108fedf22be5f314b0fc1f486e",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -4025,6 +4174,12 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0061_lifecycle_trust_configuration.sql": "457addf945f97299e0e411b67bf3ec62aa6a48de3ec5d2ae463617b94d80416b",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql": "d60304c98266721039a6123f25dd2c050cb4acb2baa18a8b94fa86118661368a",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0063_lifecycle_audit_links.sql": "6b303946ec4bcdfdc33fea53b0d7d6b7a064cb4d09e936a852e8e236bbdfc61b",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql": "953ffe5b8cc86c8657cd3faa6d1804c94e0034e5da7cea6b52e9036522ebb024",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql": "fe24afffab30c721feb1a845c2ba6baa7e1a116e1d995323803a7eb8092ac47a",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0066_lifecycle_release_execution.sql": "79acbfba9a8a6c24d8051c69f84304536d71393fd4e00757bc259f76baf75701",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0067_runtime_identity_projection.sql": "029ce6b0e212749c1febb2165441407782b66eb2f3782094a34b8ccb42833a43",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql": "699175d83120ae29ebca2d53d81bf650110b0129b8a139b34c57ee03cae8588e",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0069_lifecycle_release_execution_committed.sql": "3f9927269b4642440387558f1b8bfe432c1b075eadb973fa3e7231cc71b2f7fc",
       "scripts/docs/lite/generate_platform_catalogs.py": "03d45e1757f6eff0622b0bac8d53108a7229b00c2c746bf158a746224499fd08"
     },
     "validation_state": "generated"

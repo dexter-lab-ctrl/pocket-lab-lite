@@ -6965,6 +6965,294 @@
     },
     {
       "confidence": "contract-derived",
+      "description": "Record Candidate Consent",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleRecordCandidateConsent",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/candidate/consent",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/candidate/consent",
+      "operation_id": "record_candidate_consent_api_lite_lifecycle_candidate_consent_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/candidate/consent",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Candidate Consent",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleReviewCandidateConsent",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/candidate/consent/review",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/candidate/consent/review",
+      "operation_id": "review_candidate_consent_api_lite_lifecycle_candidate_consent_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/candidate/consent/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Candidate Consent",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleRevokeCandidateConsent",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/candidate/consent/revoke",
+      "operation_id": "revoke_candidate_consent_api_lite_lifecycle_candidate_consent_revoke_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/candidate/consent/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Activate Capability",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleActivateCapability",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/capability/activation",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/capability/activation",
+      "operation_id": "activate_capability_api_lite_lifecycle_capability_activation_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/capability/activation",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Capability Activation",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleReviewCapabilityActivation",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/capability/activation/review",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/capability/activation/review",
+      "operation_id": "review_capability_activation_api_lite_lifecycle_capability_activation_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/capability/activation/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Capability",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleRevokeCapability",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/capability/activation/revoke",
+      "operation_id": "revoke_capability_api_lite_lifecycle_capability_activation_revoke_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/capability/activation/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Admit Policy Execution",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleAdmitPolicyExecution",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/policy/execution",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/policy/execution",
+      "operation_id": "admit_policy_execution_api_lite_lifecycle_policy_execution_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/policy/execution",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Policy Execution",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleReviewPolicyExecution",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/policy/execution/review",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/policy/execution/review",
+      "operation_id": "review_policy_execution_api_lite_lifecycle_policy_execution_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/policy/execution/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Policy Execution",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleRevokePolicyExecution",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/policy/execution/revoke",
+      "operation_id": "revoke_policy_execution_api_lite_lifecycle_policy_execution_revoke_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/policy/execution/revoke",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
       "description": "Review Preferences",
       "domain": "lifecycle",
       "frontend_clients": [
@@ -6994,6 +7282,102 @@
         "503"
       ],
       "route": "/api/lite/lifecycle/preferences/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Admit Release Preparation",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleAdmitReleasePreparation",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/release/preparation",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/release/preparation",
+      "operation_id": "admit_release_preparation_api_lite_lifecycle_release_preparation_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/release/preparation",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Review Release Preparation",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleReviewReleasePreparation",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/release/preparation/review",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/release/preparation/review",
+      "operation_id": "review_release_preparation_api_lite_lifecycle_release_preparation_review_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/release/preparation/review",
+      "source_refs": [
+        "contracts/generated/lite-openapi.json"
+      ],
+      "tags": [
+        "lite-trusted-lifecycle"
+      ],
+      "type": "api"
+    },
+    {
+      "confidence": "contract-derived",
+      "description": "Revoke Release Preparation",
+      "domain": "lifecycle",
+      "frontend_clients": [
+        {
+          "mocked": false,
+          "owner": "liteApi.lifecycleRevokeReleasePreparation",
+          "resolved": true,
+          "source_module": "src/lite/components/TrustedLifecyclePanel.jsx",
+          "usage": "mutation"
+        }
+      ],
+      "id": "api:post:/api/lite/lifecycle/release/preparation/revoke",
+      "method": "POST",
+      "name": "POST /api/lite/lifecycle/release/preparation/revoke",
+      "operation_id": "revoke_release_preparation_api_lite_lifecycle_release_preparation_revoke_post",
+      "response_statuses": [
+        "200",
+        "409",
+        "422",
+        "503"
+      ],
+      "route": "/api/lite/lifecycle/release/preparation/revoke",
       "source_refs": [
         "contracts/generated/lite-openapi.json"
       ],
@@ -8754,6 +9138,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1f30b69222bc5131517d56b80bd58de986f7f8fec42139920f80daaf5e708fef"
+    "source_fingerprint": "bf2266ffb6cbc79243fabbd151accbf28fe8f4149e9a8f975bb2fbe712f1fab9"
   }
 }

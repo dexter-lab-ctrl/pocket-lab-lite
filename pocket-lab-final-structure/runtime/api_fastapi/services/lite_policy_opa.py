@@ -50,6 +50,12 @@ PROTECTED_ACTIONS = frozenset(
         "system_health.automatic",
         "lifecycle.preferences.manage",
         "lifecycle.authority.manage",
+        "lifecycle.policy.activate",
+        "lifecycle.policy.claim",
+        "lifecycle.release.prepare",
+        "lifecycle.release.claim",
+        "lifecycle.capability.activate",
+        "lifecycle.capability.claim",
     }
 )
 
@@ -150,7 +156,7 @@ def _policy_consistency() -> tuple[bool, str, str | None]:
     except Exception:
         return False, "policy_source_validation_unavailable", observed
     repository_revision = str(source.get("repository_revision") or "")
-    if source.get("durable") and repository_revision and repository_revision != expected:
+    if source.get("durable") and repository_revision and repository_revision != expected and not source.get("compatible_trusted_revision"):
         return False, "policy_source_update_pending", observed
     return True, "", observed
 

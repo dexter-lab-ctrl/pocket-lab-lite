@@ -45,6 +45,15 @@ def fence_staged_restore(staged, checkpoint):
         # partial fixture, and fail closed if scoped authority would otherwise
         # survive without its identity store.
         staged_tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        if "lite_lifecycle_policy_execution" in staged_tables:
+            db.execute("UPDATE lite_lifecycle_policy_execution SET revoked_at=COALESCE(revoked_at,?)", (stamp,))
+            db.execute("UPDATE policy_activation_operations SET state='uncertain',reason_code='trusted_policy_restore_review_required' WHERE operation_id IN (SELECT operation_id FROM lite_lifecycle_policy_execution) AND state IN ('pending','validating','switching','restarting','verifying','rolling_back')")
+        if "lite_lifecycle_release_execution" in staged_tables:
+            db.execute("""UPDATE lite_lifecycle_release_execution SET revoked_at=COALESCE(revoked_at,?),updated_at=?,
+                state=CASE WHEN state='cutover_claimed' THEN state ELSE 'revoked' END
+                WHERE state IN ('pending','claimed','prepared','cutover_claimed')""", (stamp,stamp))
+        if "lite_lifecycle_candidate_consent" in staged_tables:
+            db.execute("UPDATE lite_lifecycle_candidate_consent SET revoked_at=COALESCE(revoked_at,?)", (stamp,))
         if "lite_lifecycle_boundary_scopes" in staged_tables:
             if "human_identities" in staged_tables:
                 db.execute("DELETE FROM lite_lifecycle_boundary_scopes")

@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "qualification": "isolated-dev-pc-coordinated-runtime-preflight",
+  "candidate_sha": "3d88dff920c4bd434188ca745d212f155eb6959b",
+  "run_id": "43b4ab3f1ce95643cb1ccfac",
+  "sanitized": true,
+  "overall_status": "BLOCKED",
+  "environment": {
+    "host": "DEV-PC WSL2",
+    "state": "disposable run-owned state, PM2 namespace, loopback ports, database, OPA policy directory and PWA generation",
+    "production_execution": false
+  },
+  "package": {
+    "status": "PASS",
+    "source_commit": "3d88dff920c4bd434188ca745d212f155eb6959b",
+    "artifact_sha256": "6b0e4d8b2ab19d3f8e18d25c190d977c47be158292252610f97bb008a4263c17",
+    "payload_sha256": "161ea8dce3fcf5582b72270b89c9e0441603f73ae70e2d2c7e73885605e03dbf",
+    "artifact_size_bytes": 1469179,
+    "entry_count": 342,
+    "required_schema": 69,
+    "feature_migrations": [43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69]
+  },
+  "pwa": {
+    "status": "PASS",
+    "source_commit": "3d88dff920c4bd434188ca745d212f155eb6959b",
+    "artifact_sha256": "3bf992ae5db86ac89249c6931d28ad30a2063b92ee6d9768ae4fedfb32671fa2",
+    "release_tag": "lite-2026.11.28.663"
+  },
+  "policy_baseline": {
+    "status": "PASS",
+    "revision": "plr-f6ae06aac321d63dbea96d9547b18137",
+    "content_sha256": "49a1aa13a09fb15820bba8bc3ed069afade07620a37443850802a80d0b02b2f6"
+  },
+  "runtime_identity": {
+    "status": "PASS",
+    "api_status": 200,
+    "health_status": 200,
+    "ready_status": 200,
+    "reason_code": "converged",
+    "converged": true,
+    "execution_eligible": true,
+    "coordinated_generation": "runtime-63bffb1f14533eb765bc88a9936503e8",
+    "authenticated_source_commit": "3d88dff920c4bd434188ca745d212f155eb6959b",
+    "installed_artifact_sha256": "6b0e4d8b2ab19d3f8e18d25c190d977c47be158292252610f97bb008a4263c17",
+    "installed_source_inventory_sha256": "161ea8dce3fcf5582b72270b89c9e0441603f73ae70e2d2c7e73885605e03dbf",
+    "fastapi_process_identity_sha256": "9935824f49f167c108dd3db4c3cab0e347a986d2ae76d91f54ef96817d27505d",
+    "worker_process_identity_sha256": "910d3cf6c0e48a41dc11488a92b68dd47d676dd251e2edb8046b5cf3332aca3d",
+    "core_supervisor_identity_sha256": "5f0df55afbf3719d76d89b4582107e85a229ab7fe3f8311e42922adafd441dc6",
+    "runtime_reconciler_identity_sha256": "a04ffd507c0a2e92a83202a499053af0c8a2aae4f7cd98b5223c2f161e96d2a6",
+    "loaded_policy_revision": "plr-f6ae06aac321d63dbea96d9547b18137",
+    "loaded_policy_module_sha256": "95cef678796fe5e215d29e48f8a4b045a6eb68ea60c947f8129f65e9da6a0bd2",
+    "loaded_policy_data_sha256": "a4dfa3249537f83055c80a2bdd5587a786911b432941e22f800be47acd7f3153",
+    "frontend_generation": "lite-2026.11.28.663",
+    "sqlite_schema_version": 69,
+    "sqlite_migration_ledger_sha256": "5cbe5dddd9111a12a9c8948c39bbe39b87b4f51dde033d03ea158ad1f843af43",
+    "identity_sha256": "9423f897761720867b705c2bf2adc3f213d724d6046cf9126f6c1ea32b84557d",
+    "observed_at": "2026-11-28T09:23:16.482658Z"
+  },
+  "services": {
+    "all_required_online": true,
+    "run_owned": true,
+    "services": [
+      "pocket-nats",
+      "pocket-opa",
+      "pocket-worker",
+      "pocket-api",
+      "pocket-node-agent",
+      "caddy-proxy",
+      "pocket-telemetry",
+      "pocketlab-core-supervisor",
+      "pocketlab-runtime-reconciler"
+    ]
+  },
+  "cutover": {
+    "status": "BLOCKED",
+    "attempted": false,
+    "reason_code": "human_owner_authorization_required"
+  },
+  "recovery": {
+    "status": "NOT_RUN",
+    "reason_code": "cutover_not_authorized"
+  },
+  "physical_android": {
+    "status": "NOT_RUN",
+    "reason_code": "this_driver_is_dev_pc_only"
+  },
+  "cleanup": {
+    "status": "PASS",
+    "run_owned_services_stopped": true,
+    "root_removed": true
+  }
+}

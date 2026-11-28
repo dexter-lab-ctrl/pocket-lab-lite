@@ -269,6 +269,11 @@ def test_runtime_reconciler_sanitizes_all_pm2_child_metadata():
         assert key not in sanitized
 
 
+def test_runtime_identity_reads_dependency_complete_backend_manifest_bound():
+    source = (SUPERVISORS / "pocketlab_runtime_reconciler.py").read_text(encoding="utf-8")
+    assert '_bounded_json(release_root / "artifact-manifest.json", limit=512 * 1024)' in source
+
+
 def test_runtime_reconciler_strips_stale_runtime_path_overrides_from_child_env():
     source = (SUPERVISORS / "pocketlab_runtime_reconciler.py").read_text(encoding="utf-8")
     repair = source[source.index("    def _repair("):source.index("    def tick(", source.index("    def _repair("))]

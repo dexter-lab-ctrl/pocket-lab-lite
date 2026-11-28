@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from .. import deps
 from ..services import lite_lifecycle_authority as lifecycle
 from ..services import lite_policy_opa
+from ..services import lite_lifecycle_candidate_consent as candidate
 
 router = APIRouter(prefix="/api/lite/lifecycle", tags=["lite-trusted-lifecycle"])
 
@@ -69,3 +70,72 @@ def issue_boundary(payload: lifecycle.GrantRequest, request: Request, response: 
 @router.post("/boundary/revoke")
 def revoke_boundary(payload: lifecycle.RevokeRequest, request: Request, response: Response):
     return _call(request, response, lifecycle.revoke, payload, write=True)
+
+
+@router.post("/candidate/consent/review")
+def review_candidate_consent(payload: candidate.CandidateConsentRequest, request: Request, response: Response):
+    return _call(request, response, candidate.preview, payload, write=True)
+
+
+@router.post("/candidate/consent")
+def record_candidate_consent(payload: candidate.CandidateConsentRequest, request: Request, response: Response):
+    return _call(request, response, candidate.record, payload, write=True)
+
+
+@router.post("/candidate/consent/revoke")
+def revoke_candidate_consent(payload: candidate.CandidateRevokeRequest, request: Request, response: Response):
+    return _call(request, response, candidate.revoke, payload, write=True)
+
+
+from ..services import lite_lifecycle_policy_execution as execution
+
+
+@router.post("/policy/execution/review")
+def review_policy_execution(payload: execution.PolicyExecutionRequest, request: Request, response: Response):
+    return _call(request, response, execution.preview, payload, write=True)
+
+
+@router.post("/policy/execution")
+def admit_policy_execution(payload: execution.PolicyExecutionRequest, request: Request, response: Response):
+    return _call(request, response, execution.admit, payload, write=True)
+
+
+@router.post("/policy/execution/revoke")
+def revoke_policy_execution(payload: execution.PolicyExecutionRevoke, request: Request, response: Response):
+    return _call(request, response, execution.revoke, payload, write=True)
+
+
+from ..services import lite_lifecycle_release_execution as release_execution
+
+
+@router.post("/release/preparation/review")
+def review_release_preparation(payload: release_execution.ReleasePreparationRequest, request: Request, response: Response):
+    return _call(request, response, release_execution.preview, payload, write=True)
+
+
+@router.post("/release/preparation")
+def admit_release_preparation(payload: release_execution.ReleasePreparationRequest, request: Request, response: Response):
+    return _call(request, response, release_execution.admit, payload, write=True)
+
+
+@router.post("/release/preparation/revoke")
+def revoke_release_preparation(payload: release_execution.ReleasePreparationRevoke, request: Request, response: Response):
+    return _call(request, response, release_execution.revoke, payload, write=True)
+
+
+from ..services import lite_lifecycle_capability_activation as capability_activation
+
+
+@router.post("/capability/activation/review")
+def review_capability_activation(payload: capability_activation.CapabilityActivationRequest, request: Request, response: Response):
+    return _call(request, response, capability_activation.preview, payload, write=True)
+
+
+@router.post("/capability/activation")
+def activate_capability(payload: capability_activation.CapabilityActivationRequest, request: Request, response: Response):
+    return _call(request, response, capability_activation.activate, payload, write=True)
+
+
+@router.post("/capability/activation/revoke")
+def revoke_capability(payload: capability_activation.CapabilityActivationRevoke, request: Request, response: Response):
+    return _call(request, response, capability_activation.revoke, payload, write=True)

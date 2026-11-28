@@ -163,7 +163,22 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="lite_lifecycle_candidate_consent.[owner_id, workspace_id] references lite_lifecycle_workspace.[human_id, workspace_id] via "><a href='lite_lifecycle_candidate_consent.html'>lite_lifecycle_candidate_consent</a><span class='relatedKey'>.owner_id</span></td>
+                                                <td class="constraint detail"></td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="lite_lifecycle_capability_activation.[owner_id, workspace_id] references lite_lifecycle_workspace.[human_id, workspace_id] via "><a href='lite_lifecycle_capability_activation.html'>lite_lifecycle_capability_activation</a><span class='relatedKey'>.owner_id</span></td>
+                                                <td class="constraint detail"></td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="lite_lifecycle_grants.[owner_id, workspace_id] references lite_lifecycle_workspace.[human_id, workspace_id] via "><a href='lite_lifecycle_grants.html'>lite_lifecycle_grants</a><span class='relatedKey'>.owner_id</span></td>
+                                                <td class="constraint detail"></td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="lite_lifecycle_policy_execution.[owner_id, operation_id] references policy_activation_operations.[human_id, operation_id] via "><a href='lite_lifecycle_policy_execution.html'>lite_lifecycle_policy_execution</a><span class='relatedKey'>.owner_id</span></td>
                                                 <td class="constraint detail"></td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -442,146 +457,158 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="538,4040,766,4310">
-<area shape="rect" id="node2" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,2381,421,2689">
-<area shape="rect" id="node3" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="499,5,805,187">
-<area shape="rect" id="node4" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="499,205,805,505">
-<area shape="rect" id="node5" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="526,523,778,705">
-<area shape="rect" id="node6" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="494,723,810,1051">
-<area shape="rect" id="node7" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="473,1069,831,1251">
-<area shape="rect" id="node8" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="501,1269,803,1803">
-<area shape="rect" id="node9" href="owner_approved_operations.html" target="_top" title="owner_approved_operations" alt="" coords="884,1783,1222,2229">
-<area shape="rect" id="node10" href="owner_operation_clients.html" target="_top" title="owner_operation_clients" alt="" coords="501,1821,803,2091">
-<area shape="rect" id="node11" href="owner_operation_client_pairings.html" target="_top" title="owner_operation_client_pairings" alt="" coords="465,2144,839,2473">
-<area shape="rect" id="node12" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="883,2428,1223,2727">
-<area shape="rect" id="node13" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="506,2525,798,2825">
-<area shape="rect" id="node14" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="485,2877,819,3353">
-<area shape="rect" id="node15" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1267,2569,1598,2810">
-<area shape="rect" id="node16" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="480,3371,824,3787">
-<area shape="rect" id="node17" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="506,3805,798,3987">
-<area shape="rect" id="node18" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="914,3897,1192,4226">
-<area shape="rect" id="node19" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="510,4328,794,4539">
-<area shape="rect" id="node20" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="537,4557,767,4710">
+<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="545,2569,773,2839">
+<area shape="rect" id="node2" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,2811,421,3119">
+<area shape="rect" id="node3" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="506,59,812,241">
+<area shape="rect" id="node4" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="506,259,812,559">
+<area shape="rect" id="node5" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="533,577,786,759">
+<area shape="rect" id="node6" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="501,777,818,1105">
+<area shape="rect" id="node7" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="480,1123,838,1305">
+<area shape="rect" id="node8" href="lite_lifecycle_candidate_consent.html" target="_top" title="lite_lifecycle_candidate_consent" alt="" coords="474,1323,845,1623">
+<area shape="rect" id="node9" href="lite_lifecycle_capability_activation.html" target="_top" title="lite_lifecycle_capability_activation" alt="" coords="465,1641,854,1999">
+<area shape="rect" id="node10" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="508,2017,811,2551">
+<area shape="rect" id="node11" href="lite_lifecycle_policy_execution.html" target="_top" title="lite_lifecycle_policy_execution" alt="" coords="1282,3363,1634,3633">
+<area shape="rect" id="node12" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="898,3971,1238,4271">
+<area shape="rect" id="node16" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="513,4089,805,4388">
+<area shape="rect" id="node13" href="owner_approved_operations.html" target="_top" title="owner_approved_operations" alt="" coords="899,2891,1236,3337">
+<area shape="rect" id="node14" href="owner_operation_clients.html" target="_top" title="owner_operation_clients" alt="" coords="508,2891,810,3161">
+<area shape="rect" id="node15" href="owner_operation_client_pairings.html" target="_top" title="owner_operation_client_pairings" alt="" coords="472,3214,846,3543">
+<area shape="rect" id="node17" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="492,3595,827,4071">
+<area shape="rect" id="node18" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1292,4441,1624,4681">
+<area shape="rect" id="node19" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="487,4406,832,4823">
+<area shape="rect" id="node20" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="514,4841,805,5023">
+<area shape="rect" id="node21" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="929,1173,1206,1501">
+<area shape="rect" id="node22" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="517,5075,801,5287">
+<area shape="rect" id="node23" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="544,5305,774,5457">
 </map>
                                         <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/human_identities.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="auth_session_assurance.html" target="_top" title="auth_session_assurance" alt="" coords="950,1781,1250,1875">
-<area shape="rect" id="node2" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="510,1685,794,1897">
-<area shape="rect" id="node3" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="548,1915,756,2009">
-<area shape="rect" id="node4" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,2614,421,2922">
-<area shape="rect" id="node5" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="499,2344,805,2526">
-<area shape="rect" id="node6" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="499,2544,805,2843">
-<area shape="rect" id="node7" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="526,2861,778,3043">
-<area shape="rect" id="node8" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="494,3061,810,3390">
-<area shape="rect" id="node9" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="473,3408,831,3590">
-<area shape="rect" id="node10" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="501,5,803,539">
-<area shape="rect" id="node11" href="lite_lifecycle_workspace.html" target="_top" title="lite_lifecycle_workspace" alt="" coords="63,37,363,131">
-<area shape="rect" id="node12" href="lite_lifecycle_service_delegations.html" target="_top" title="lite_lifecycle_service_delegations" alt="" coords="909,8,1290,102">
-<area shape="rect" id="node13" href="owner_approved_operations.html" target="_top" title="owner_approved_operations" alt="" coords="931,3607,1268,3701">
-<area shape="rect" id="node14" href="owner_operation_clients.html" target="_top" title="owner_operation_clients" alt="" coords="501,3643,803,3737">
-<area shape="rect" id="node15" href="owner_operation_client_pairing_events.html" target="_top" title="owner_operation_client_pairing_events" alt="" coords="883,3757,1316,3851">
-<area shape="rect" id="node16" href="owner_operation_client_pairings.html" target="_top" title="owner_operation_client_pairings" alt="" coords="465,3755,839,4083">
-<area shape="rect" id="node17" href="owner_operation_events.html" target="_top" title="owner_operation_events" alt="" coords="1374,3604,1678,3698">
-<area shape="rect" id="node18" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="930,4156,1270,4250">
-<area shape="rect" id="node19" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="539,4101,765,4195">
-<area shape="rect" id="node20" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="485,557,819,1033">
-<area shape="rect" id="node21" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1360,4192,1692,4286">
-<area shape="rect" id="node22" href="policy_runtime_state.html" target="_top" title="policy_runtime_state" alt="" coords="964,4044,1235,4138">
-<area shape="rect" id="node23" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="480,1051,824,1467">
-<area shape="rect" id="node24" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="506,1485,798,1667">
-<area shape="rect" id="node25" href="recovery_codes.html" target="_top" title="recovery_codes" alt="" coords="988,1488,1211,1582">
-<area shape="rect" id="node26" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="961,1988,1238,2082">
-<area shape="rect" id="node27" href="owner_claims.html" target="_top" title="owner_claims" alt="" coords="550,2061,754,2155">
-<area shape="rect" id="node28" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="537,2173,767,2326">
+<area shape="rect" id="node1" href="auth_session_assurance.html" target="_top" title="auth_session_assurance" alt="" coords="964,3597,1264,3691">
+<area shape="rect" id="node2" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="517,3459,801,3670">
+<area shape="rect" id="node3" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="555,3688,764,3782">
+<area shape="rect" id="node4" href="human_identities.html" target="_top" title="human_identities" alt="" coords="5,2938,421,3246">
+<area shape="rect" id="node5" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="506,3800,812,3982">
+<area shape="rect" id="node6" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="506,4147,812,4446">
+<area shape="rect" id="node7" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="533,4464,786,4646">
+<area shape="rect" id="node8" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="501,4664,818,4993">
+<area shape="rect" id="node9" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="480,1251,838,1433">
+<area shape="rect" id="node10" href="lite_lifecycle_candidate_consent.html" target="_top" title="lite_lifecycle_candidate_consent" alt="" coords="474,557,845,857">
+<area shape="rect" id="node11" href="lite_lifecycle_workspace.html" target="_top" title="lite_lifecycle_workspace" alt="" coords="63,589,363,683">
+<area shape="rect" id="node12" href="lite_lifecycle_capability_activation.html" target="_top" title="lite_lifecycle_capability_activation" alt="" coords="465,875,854,1233">
+<area shape="rect" id="node13" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="508,5,811,539">
+<area shape="rect" id="node14" href="lite_lifecycle_policy_execution.html" target="_top" title="lite_lifecycle_policy_execution" alt="" coords="1375,1824,1728,1918">
+<area shape="rect" id="node15" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="944,1595,1284,1689">
+<area shape="rect" id="node22" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="546,1485,772,1579">
+<area shape="rect" id="node16" href="lite_lifecycle_service_delegations.html" target="_top" title="lite_lifecycle_service_delegations" alt="" coords="924,8,1305,102">
+<area shape="rect" id="node17" href="owner_approved_operations.html" target="_top" title="owner_approved_operations" alt="" coords="946,3224,1283,3318">
+<area shape="rect" id="node18" href="owner_operation_clients.html" target="_top" title="owner_operation_clients" alt="" coords="508,3347,810,3441">
+<area shape="rect" id="node19" href="owner_operation_client_pairing_events.html" target="_top" title="owner_operation_client_pairing_events" alt="" coords="898,1707,1331,1801">
+<area shape="rect" id="node20" href="owner_operation_client_pairings.html" target="_top" title="owner_operation_client_pairings" alt="" coords="472,1632,846,1961">
+<area shape="rect" id="node21" href="owner_operation_events.html" target="_top" title="owner_operation_events" alt="" coords="1400,3221,1703,3315">
+<area shape="rect" id="node23" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="492,2013,827,2489">
+<area shape="rect" id="node24" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1386,1503,1717,1597">
+<area shape="rect" id="node25" href="policy_runtime_state.html" target="_top" title="policy_runtime_state" alt="" coords="979,1483,1250,1577">
+<area shape="rect" id="node26" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="487,2707,832,3123">
+<area shape="rect" id="node27" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="514,2507,805,2689">
+<area shape="rect" id="node28" href="recovery_codes.html" target="_top" title="recovery_codes" alt="" coords="1003,2509,1226,2603">
+<area shape="rect" id="node29" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="976,3961,1253,4055">
+<area shape="rect" id="node30" href="owner_claims.html" target="_top" title="owner_claims" alt="" coords="557,4035,762,4129">
+<area shape="rect" id="node31" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="544,3176,774,3329">
 </map>
                                         <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/human_identities.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="oneimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagramImplied" name="oneDegreeRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="831,4043,1059,4313">
-<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,321,262,445">
-<area shape="rect" id="node3" href="human_identities.html" target="_top" title="human_identities" alt="" coords="306,2166,722,2474">
-<area shape="rect" id="node4" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="792,436,1098,618">
-<area shape="rect" id="node5" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="792,636,1098,935">
-<area shape="rect" id="node6" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="818,1911,1072,2093">
-<area shape="rect" id="node7" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="786,2111,1104,2439">
-<area shape="rect" id="node8" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="766,2880,1124,3062">
-<area shape="rect" id="node9" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="1204,5,1507,539">
-<area shape="rect" id="node10" href="owner_approved_operations.html" target="_top" title="owner_approved_operations" alt="" coords="1187,720,1524,1166">
-<area shape="rect" id="node11" href="owner_operation_clients.html" target="_top" title="owner_operation_clients" alt="" coords="794,1623,1096,1893">
-<area shape="rect" id="node12" href="owner_operation_client_pairings.html" target="_top" title="owner_operation_client_pairings" alt="" coords="1168,1833,1542,2162">
-<area shape="rect" id="node13" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="1186,2420,1525,2719">
-<area shape="rect" id="node14" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="799,2528,1091,2827">
-<area shape="rect" id="node15" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="778,3549,1112,4025">
-<area shape="rect" id="node16" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1586,2577,1918,2818">
-<area shape="rect" id="node17" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="772,3115,1118,3531">
-<area shape="rect" id="node18" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="799,988,1091,1170">
-<area shape="rect" id="node19" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="1217,2948,1494,3277">
-<area shape="rect" id="node20" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="803,1223,1087,1434">
-<area shape="rect" id="node21" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="830,1452,1060,1605">
+<area shape="rect" id="node1" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="846,4325,1074,4595">
+<area shape="rect" id="node2" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,491,262,614">
+<area shape="rect" id="node3" href="human_identities.html" target="_top" title="human_identities" alt="" coords="306,2024,722,2332">
+<area shape="rect" id="node4" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="807,364,1114,546">
+<area shape="rect" id="node5" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="807,564,1114,863">
+<area shape="rect" id="node6" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="834,1504,1087,1686">
+<area shape="rect" id="node7" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="802,1704,1119,2033">
+<area shape="rect" id="node8" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="781,952,1140,1134">
+<area shape="rect" id="node9" href="lite_lifecycle_candidate_consent.html" target="_top" title="lite_lifecycle_candidate_consent" alt="" coords="774,3444,1146,3743">
+<area shape="rect" id="node10" href="lite_lifecycle_capability_activation.html" target="_top" title="lite_lifecycle_capability_activation" alt="" coords="766,4613,1155,4971">
+<area shape="rect" id="node11" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="1235,5,1537,539">
+<area shape="rect" id="node12" href="lite_lifecycle_policy_execution.html" target="_top" title="lite_lifecycle_policy_execution" alt="" coords="1617,2484,1970,2754">
+<area shape="rect" id="node13" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="1216,1075,1556,1374">
+<area shape="rect" id="node17" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="814,1187,1106,1486">
+<area shape="rect" id="node14" href="owner_approved_operations.html" target="_top" title="owner_approved_operations" alt="" coords="1218,4331,1554,4777">
+<area shape="rect" id="node15" href="owner_operation_clients.html" target="_top" title="owner_operation_clients" alt="" coords="809,2121,1112,2391">
+<area shape="rect" id="node16" href="owner_operation_client_pairings.html" target="_top" title="owner_operation_client_pairings" alt="" coords="1199,2092,1573,2421">
+<area shape="rect" id="node18" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="793,3832,1128,4307">
+<area shape="rect" id="node19" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1628,1045,1960,1286">
+<area shape="rect" id="node20" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="788,2409,1133,2826">
+<area shape="rect" id="node21" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="814,2844,1106,3026">
+<area shape="rect" id="node22" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="1248,1745,1524,2074">
+<area shape="rect" id="node23" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="818,3044,1102,3255">
+<area shape="rect" id="node24" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="845,3273,1076,3426">
 </map>
                                         <a name='diagram'><img id="oneimpliedDegreeImg" src="../diagrams/tables/human_identities.implied1degrees.png" usemap="#oneDegreeRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twoimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagramImplied" name="twoDegreesRelationshipsDiagramImplied">
-<area shape="rect" id="node1" href="app_credential_metadata.html" target="_top" title="app_credential_metadata" alt="" coords="1350,1901,1660,1995">
-<area shape="rect" id="node2" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="813,1904,1172,1998">
-<area shape="rect" id="node10" href="human_identities.html" target="_top" title="human_identities" alt="" coords="306,2382,722,2690">
-<area shape="rect" id="node25" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="370,864,658,958">
-<area shape="rect" id="node3" href="app_current_state.html" target="_top" title="app_current_state" alt="" coords="391,1697,637,1791">
-<area shape="rect" id="node4" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,953,262,1047">
-<area shape="rect" id="node5" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="1394,2133,1616,2227">
-<area shape="rect" id="node6" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="860,2451,1124,2545">
-<area shape="rect" id="node7" href="auth_session_assurance.html" target="_top" title="auth_session_assurance" alt="" coords="1355,1677,1654,1771">
-<area shape="rect" id="node8" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="850,1675,1134,1886">
-<area shape="rect" id="node9" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="888,1245,1097,1339">
-<area shape="rect" id="node11" href="device_role_assignments.html" target="_top" title="device_role_assignments" alt="" coords="360,2708,668,2802">
-<area shape="rect" id="node12" href="device_role_change_operations.html" target="_top" title="device_role_change_operations" alt="" coords="332,2820,696,2914">
-<area shape="rect" id="node13" href="device_supervisor_state.html" target="_top" title="device_supervisor_state" alt="" coords="364,2932,664,3026">
-<area shape="rect" id="node14" href="device_system_profiles.html" target="_top" title="device_system_profiles" alt="" coords="369,3863,659,3957">
-<area shape="rect" id="node15" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="839,3711,1146,3805">
-<area shape="rect" id="node16" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="839,3599,1146,3693">
-<area shape="rect" id="node17" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="1366,2257,1644,2351">
-<area shape="rect" id="node18" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="1375,2393,1634,2487">
-<area shape="rect" id="node19" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="1385,2016,1624,2110">
-<area shape="rect" id="node20" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="866,2945,1119,3127">
-<area shape="rect" id="node21" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="834,3145,1151,3474">
-<area shape="rect" id="node22" href="identity_audit_events.html" target="_top" title="identity_audit_events" alt="" coords="1366,1356,1643,1450">
-<area shape="rect" id="node23" href="lite_installed_release_identity.html" target="_top" title="lite_installed_release_identity" alt="" coords="338,3975,690,4069">
-<area shape="rect" id="node24" href="lite_lifecycle_audit.html" target="_top" title="lite_lifecycle_audit" alt="" coords="1882,525,2132,619">
-<area shape="rect" id="node26" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="1374,481,1636,575">
-<area shape="rect" id="node27" href="lite_lifecycle_workspace.html" target="_top" title="lite_lifecycle_workspace" alt="" coords="842,660,1142,754">
-<area shape="rect" id="node28" href="lite_lifecycle_service_delegations.html" target="_top" title="lite_lifecycle_service_delegations" alt="" coords="1816,731,2198,825">
-<area shape="rect" id="node29" href="lite_release_trust_floor.html" target="_top" title="lite_release_trust_floor" alt="" coords="370,5,659,99">
-<area shape="rect" id="node30" href="lite_release_trust_pin.html" target="_top" title="lite_release_trust_pin" alt="" coords="376,117,652,211">
-<area shape="rect" id="node31" href="lite_release_trust_receipts.html" target="_top" title="lite_release_trust_receipts" alt="" coords="354,229,674,323">
-<area shape="rect" id="node32" href="lite_revision_events.html" target="_top" title="lite_revision_events" alt="" coords="384,341,645,435">
-<area shape="rect" id="node33" href="lite_system_health_automation_attempts.html" target="_top" title="lite_system_health_automation_attempts" alt="" coords="766,548,1219,642">
-<area shape="rect" id="node34" href="lite_system_health_automation_policy.html" target="_top" title="lite_system_health_automation_policy" alt="" coords="780,951,1204,1045">
-<area shape="rect" id="node35" href="lite_system_health_maintenance__317c4e5a.html" target="_top" title="lite_system_health_maintenance_admissions" alt="" coords="1263,1209,1746,1303">
-<area shape="rect" id="node36" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="1292,1060,1717,1154">
-<area shape="rect" id="node37" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="876,1063,1109,1157">
-<area shape="rect" id="node38" href="lite_system_health_request_authority.html" target="_top" title="lite_system_health_request_authority" alt="" coords="1797,1133,2217,1227">
-<area shape="rect" id="node39" href="owner_approved_operations.html" target="_top" title="owner_approved_operations" alt="" coords="1336,3792,1673,3886">
-<area shape="rect" id="node40" href="owner_operation_clients.html" target="_top" title="owner_operation_clients" alt="" coords="841,2833,1144,2927">
-<area shape="rect" id="node41" href="owner_operation_challenges.html" target="_top" title="owner_operation_challenges" alt="" coords="1335,2827,1674,2921">
-<area shape="rect" id="node42" href="owner_operation_client_pairing_events.html" target="_top" title="owner_operation_client_pairing_events" alt="" coords="1790,3177,2224,3271">
-<area shape="rect" id="node43" href="owner_operation_client_pairings.html" target="_top" title="owner_operation_client_pairings" alt="" coords="1318,3180,1692,3274">
-<area shape="rect" id="node44" href="owner_operation_events.html" target="_top" title="owner_operation_events" alt="" coords="1855,3789,2159,3883">
-<area shape="rect" id="node45" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="1837,2524,2177,2618">
-<area shape="rect" id="node46" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="1392,2597,1618,2691">
-<area shape="rect" id="node47" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="2268,2597,2599,2691">
-<area shape="rect" id="node48" href="policy_runtime_state.html" target="_top" title="policy_runtime_state" alt="" coords="1872,2671,2142,2765">
-<area shape="rect" id="node49" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="820,2016,1165,2433">
-<area shape="rect" id="node50" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="846,2633,1138,2815">
-<area shape="rect" id="node51" href="recovery_codes.html" target="_top" title="recovery_codes" alt="" coords="1394,2709,1616,2803">
-<area shape="rect" id="node52" href="release_runtime_projection.html" target="_top" title="release_runtime_projection" alt="" coords="350,453,678,547">
-<area shape="rect" id="node53" href="security_database_backups.html" target="_top" title="security_database_backups" alt="" coords="349,565,679,659">
-<area shape="rect" id="node54" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="1366,1468,1643,1562">
-<area shape="rect" id="node55" href="owner_claims.html" target="_top" title="owner_claims" alt="" coords="890,1357,1095,1451">
-<area shape="rect" id="node56" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="877,1504,1108,1657">
+<area shape="rect" id="node1" href="app_credential_metadata.html" target="_top" title="app_credential_metadata" alt="" coords="1350,2880,1660,2974">
+<area shape="rect" id="node2" href="lite_lifecycle_boundary_scopes.html" target="_top" title="lite_lifecycle_boundary_scopes" alt="" coords="813,3033,1172,3127">
+<area shape="rect" id="node10" href="human_identities.html" target="_top" title="human_identities" alt="" coords="306,1946,722,2254">
+<area shape="rect" id="node24" href="policy_decision_details.html" target="_top" title="policy_decision_details" alt="" coords="370,2987,658,3081">
+<area shape="rect" id="node3" href="app_current_state.html" target="_top" title="app_current_state" alt="" coords="391,996,637,1090">
+<area shape="rect" id="node4" href="schema_migrations.html" target="_top" title="schema_migrations" alt="" coords="5,2801,262,2895">
+<area shape="rect" id="node5" href="assurance_runs.html" target="_top" title="assurance_runs" alt="" coords="1394,3027,1616,3121">
+<area shape="rect" id="node6" href="synthetic_principals.html" target="_top" title="synthetic_principals" alt="" coords="382,2875,646,2969">
+<area shape="rect" id="node7" href="auth_session_assurance.html" target="_top" title="auth_session_assurance" alt="" coords="1355,2211,1654,2305">
+<area shape="rect" id="node8" href="webauthn_credentials.html" target="_top" title="webauthn_credentials" alt="" coords="850,2168,1134,2379">
+<area shape="rect" id="node9" href="auth_sessions.html" target="_top" title="auth_sessions" alt="" coords="888,2056,1097,2150">
+<area shape="rect" id="node11" href="device_role_assignments.html" target="_top" title="device_role_assignments" alt="" coords="360,1835,668,1929">
+<area shape="rect" id="node12" href="device_role_change_operations.html" target="_top" title="device_role_change_operations" alt="" coords="332,2580,696,2674">
+<area shape="rect" id="node13" href="device_supervisor_state.html" target="_top" title="device_supervisor_state" alt="" coords="364,2692,664,2786">
+<area shape="rect" id="node14" href="device_system_profiles.html" target="_top" title="device_system_profiles" alt="" coords="369,5,659,99">
+<area shape="rect" id="node15" href="enterprise_configuration.html" target="_top" title="enterprise_configuration" alt="" coords="839,2815,1146,2909">
+<area shape="rect" id="node16" href="enterprise_memberships.html" target="_top" title="enterprise_memberships" alt="" coords="839,751,1146,845">
+<area shape="rect" id="node17" href="harness_audit_events.html" target="_top" title="harness_audit_events" alt="" coords="1366,3251,1644,3345">
+<area shape="rect" id="node18" href="harness_challenges.html" target="_top" title="harness_challenges" alt="" coords="1375,3139,1634,3233">
+<area shape="rect" id="node19" href="harness_sessions.html" target="_top" title="harness_sessions" alt="" coords="1385,2768,1624,2862">
+<area shape="rect" id="node20" href="human_credentials.html" target="_top" title="human_credentials" alt="" coords="866,2468,1119,2650">
+<area shape="rect" id="node21" href="human_enrollment_claims.html" target="_top" title="human_enrollment_claims" alt="" coords="834,1009,1151,1338">
+<area shape="rect" id="node22" href="identity_audit_events.html" target="_top" title="identity_audit_events" alt="" coords="1366,2099,1643,2193">
+<area shape="rect" id="node23" href="lite_installed_release_identity.html" target="_top" title="lite_installed_release_identity" alt="" coords="338,3099,690,3193">
+<area shape="rect" id="node25" href="lite_lifecycle_candidate_consent.html" target="_top" title="lite_lifecycle_candidate_consent" alt="" coords="1319,3413,1690,3713">
+<area shape="rect" id="node26" href="lite_lifecycle_workspace.html" target="_top" title="lite_lifecycle_workspace" alt="" coords="842,3447,1142,3541">
+<area shape="rect" id="node27" href="lite_lifecycle_capability_activation.html" target="_top" title="lite_lifecycle_capability_activation" alt="" coords="1310,3731,1699,3825">
+<area shape="rect" id="node28" href="lite_system_health_automation_attempts.html" target="_top" title="lite_system_health_automation_attempts" alt="" coords="766,3645,1219,3739">
+<area shape="rect" id="node29" href="lite_lifecycle_grants.html" target="_top" title="lite_lifecycle_grants" alt="" coords="1374,3877,1636,3971">
+<area shape="rect" id="node30" href="lite_lifecycle_policy_execution.html" target="_top" title="lite_lifecycle_policy_execution" alt="" coords="1830,3013,2184,3107">
+<area shape="rect" id="node31" href="policy_activation_operations.html" target="_top" title="policy_activation_operations" alt="" coords="1335,2397,1674,2491">
+<area shape="rect" id="node49" href="policy_revisions.html" target="_top" title="policy_revisions" alt="" coords="879,2668,1106,2762">
+<area shape="rect" id="node32" href="lite_lifecycle_service_delegations.html" target="_top" title="lite_lifecycle_service_delegations" alt="" coords="1816,3801,2198,3895">
+<area shape="rect" id="node33" href="lite_release_trust_floor.html" target="_top" title="lite_release_trust_floor" alt="" coords="370,3281,659,3375">
+<area shape="rect" id="node34" href="lite_release_trust_pin.html" target="_top" title="lite_release_trust_pin" alt="" coords="376,3393,652,3487">
+<area shape="rect" id="node35" href="lite_release_trust_receipts.html" target="_top" title="lite_release_trust_receipts" alt="" coords="354,3505,674,3599">
+<area shape="rect" id="node36" href="lite_revision_events.html" target="_top" title="lite_revision_events" alt="" coords="384,3617,645,3711">
+<area shape="rect" id="node37" href="lite_runtime_identity_projection.html" target="_top" title="lite_runtime_identity_projection" alt="" coords="329,3764,699,3858">
+<area shape="rect" id="node38" href="lite_system_health_automation_policy.html" target="_top" title="lite_system_health_automation_policy" alt="" coords="780,204,1204,298">
+<area shape="rect" id="node39" href="lite_system_health_maintenance__317c4e5a.html" target="_top" title="lite_system_health_maintenance_admissions" alt="" coords="1263,2509,1746,2603">
+<area shape="rect" id="node40" href="lite_system_health_recovery_requests.html" target="_top" title="lite_system_health_recovery_requests" alt="" coords="1292,1799,1717,1893">
+<area shape="rect" id="node41" href="policy_approvals.html" target="_top" title="policy_approvals" alt="" coords="876,1761,1109,1855">
+<area shape="rect" id="node42" href="lite_system_health_request_authority.html" target="_top" title="lite_system_health_request_authority" alt="" coords="1797,1799,2217,1893">
+<area shape="rect" id="node43" href="owner_approved_operations.html" target="_top" title="owner_approved_operations" alt="" coords="1336,72,1673,166">
+<area shape="rect" id="node44" href="owner_operation_clients.html" target="_top" title="owner_operation_clients" alt="" coords="841,897,1144,991">
+<area shape="rect" id="node45" href="owner_operation_challenges.html" target="_top" title="owner_operation_challenges" alt="" coords="1335,1341,1674,1435">
+<area shape="rect" id="node46" href="owner_operation_client_pairing_events.html" target="_top" title="owner_operation_client_pairing_events" alt="" coords="1790,1005,2224,1099">
+<area shape="rect" id="node47" href="owner_operation_client_pairings.html" target="_top" title="owner_operation_client_pairings" alt="" coords="1318,1008,1692,1102">
+<area shape="rect" id="node48" href="owner_operation_events.html" target="_top" title="owner_operation_events" alt="" coords="1855,69,2159,163">
+<area shape="rect" id="node50" href="policy_recovery_resolutions.html" target="_top" title="policy_recovery_resolutions" alt="" coords="1841,2324,2173,2418">
+<area shape="rect" id="node51" href="policy_runtime_state.html" target="_top" title="policy_runtime_state" alt="" coords="1370,2621,1640,2715">
+<area shape="rect" id="node52" href="policy_temporary_exceptions.html" target="_top" title="policy_temporary_exceptions" alt="" coords="820,316,1165,733">
+<area shape="rect" id="node53" href="recovery_code_batches.html" target="_top" title="recovery_code_batches" alt="" coords="846,1561,1138,1743">
+<area shape="rect" id="node54" href="recovery_codes.html" target="_top" title="recovery_codes" alt="" coords="1394,1564,1616,1658">
+<area shape="rect" id="node55" href="release_runtime_projection.html" target="_top" title="release_runtime_projection" alt="" coords="350,168,678,262">
+<area shape="rect" id="node56" href="security_database_backups.html" target="_top" title="security_database_backups" alt="" coords="349,280,679,374">
+<area shape="rect" id="node57" href="webauthn_challenges.html" target="_top" title="webauthn_challenges" alt="" coords="1366,1948,1643,2042">
+<area shape="rect" id="node58" href="owner_claims.html" target="_top" title="owner_claims" alt="" coords="890,1944,1095,2038">
+<area shape="rect" id="node59" href="webauthn_users.html" target="_top" title="webauthn_users" alt="" coords="877,1391,1108,1543">
 </map>
                                         <a name='diagram'><img id="twoimpliedDegreeImg" src="../diagrams/tables/human_identities.implied2degrees.png" usemap="#twoDegreesRelationshipsDiagramImplied" class="diagram" border="0" align="left"></a>
                                     </div>

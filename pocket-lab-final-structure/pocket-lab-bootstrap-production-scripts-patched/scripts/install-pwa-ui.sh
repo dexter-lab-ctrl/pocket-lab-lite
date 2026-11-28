@@ -11,6 +11,9 @@ RELEASES_DIR="${POCKETLAB_LITE_PWA_RELEASES_DIR:-$PWA_DIR/releases}"
 CURRENT_LINK="${POCKETLAB_LITE_PWA_CURRENT_LINK:-$PWA_DIR/current}"
 TMP_DIR="$TMP_ROOT/pwa-release.$$"
 LOCAL_DIST_ZIP="${POCKETLAB_LOCAL_DIST_ZIP:-${POCKET_LAB_LOCAL_DIST_ZIP:-}}"
+LOCAL_RELEASE_MANIFEST="${POCKETLAB_LOCAL_RELEASE_MANIFEST:-}"
+LOCAL_RELEASE_CHECKSUMS="${POCKETLAB_LOCAL_RELEASE_CHECKSUMS:-}"
+LOCAL_RELEASE_TAG="${POCKETLAB_LOCAL_RELEASE_TAG:-}"
 RUNTIME_DIR="$(CDPATH='' cd -- "$SCRIPT_DIR/../../runtime" && pwd)"
 export_lite_runtime_paths
 
@@ -305,8 +308,21 @@ PYREPO
   local tag archive="$TMP_DIR/dist.zip" manifest="$TMP_DIR/pocketlab-lite-release.json" checksums="$TMP_DIR/checksums.txt"
   if [[ -n "$LOCAL_DIST_ZIP" ]]; then
     [[ -r "$LOCAL_DIST_ZIP" ]] || die "Local dist.zip is not readable"
-    tag="source-bootstrap-$(date -u +%Y%m%d%H%M%S)"
+    if [[ -n "$LOCAL_RELEASE_MANIFEST" || -n "$LOCAL_RELEASE_CHECKSUMS" || -n "$LOCAL_RELEASE_TAG" ]]; then
+      [[ -n "$LOCAL_RELEASE_MANIFEST" && -n "$LOCAL_RELEASE_CHECKSUMS" && -n "$LOCAL_RELEASE_TAG" ]] || die "Exact local release assets are incomplete"
+      [[ -f "$LOCAL_RELEASE_MANIFEST" && ! -L "$LOCAL_RELEASE_MANIFEST" ]] || die "Local release manifest is not a regular file"
+      [[ -f "$LOCAL_RELEASE_CHECKSUMS" && ! -L "$LOCAL_RELEASE_CHECKSUMS" ]] || die "Local release checksums are not a regular file"
+      tag="$LOCAL_RELEASE_TAG"
+      cp -- "$LOCAL_RELEASE_MANIFEST" "$manifest"
+      cp -- "$LOCAL_RELEASE_CHECKSUMS" "$checksums"
+      chmod 600 "$manifest" "$checksums"
+    else
+      tag="source-bootstrap-$(date -u +%Y%m%d%H%M%S)"
+    fi
     cp "$LOCAL_DIST_ZIP" "$archive"
+    if [[ "$tag" == lite-* ]]; then
+      validate_manifest "$tag" "$manifest" "$checksums" "$archive"
+    fi
   else
     local metadata="$TMP_DIR/releases.json" candidates=() selected_urls=()
     download_https "https://api.github.com/repos/$REPO/releases?per_page=100" "$metadata" 2097152

@@ -1500,7 +1500,10 @@
             <child column="created_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_enrollment_claims"/>
             <child column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_enrollment_claims"/>
             <child column="owner_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_lifecycle_boundary_scopes"/>
+            <child column="owner_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_lifecycle_candidate_consent"/>
+            <child column="owner_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_lifecycle_capability_activation"/>
             <child column="owner_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_lifecycle_grants"/>
+            <child column="owner_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_lifecycle_policy_execution"/>
             <child column="approved_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="owner_approved_operations"/>
             <child column="reviewed_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="owner_operation_client_pairings"/>
             <child column="created_by_human_id" foreignKey="" implied="false" onDeleteCascade="false" table="owner_operation_clients"/>
@@ -1611,9 +1614,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="decision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <parent column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_decision_details"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="grant_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
-            <parent column="grant_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_grants"/>
-         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="grant_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
          <primaryKey column="event_id" sequenceNumberInPK="1"/>
          <index name="lite_lifecycle_audit_s_pk" unique="true">
@@ -1657,9 +1658,95 @@
             <column ascending="true" name="purpose"/>
          </index>
       </table>
+      <table name="lite_lifecycle_candidate_consent" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="consent_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="workspace_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="workspace_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_lifecycle_workspace"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="owner_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="capability_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="metadata_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="scope_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="scope_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="binding_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="disposition" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="decision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_decision_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="issued_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="consent_id" sequenceNumberInPK="1"/>
+         <index name="lite_lifecycle_candidate_consent_s_pk" unique="true">
+            <column ascending="true" name="consent_id"/>
+         </index>
+         <index name="idx_lifecycle_candidate_consent_current" unique="true">
+            <column ascending="true" name="workspace_id"/>
+            <column ascending="true" name="metadata_sha256"/>
+            <column ascending="true" name="capability_id"/>
+         </index>
+         <index name="idx_lifecycle_candidate_consent_history" unique="false">
+            <column ascending="true" name="issued_at"/>
+         </index>
+         <index name="sqlite_autoindex_lite_lifecycle_candidate_consent_1" unique="true">
+            <column ascending="true" name="consent_id"/>
+         </index>
+      </table>
+      <table name="lite_lifecycle_capability_activation" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="activation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="workspace_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="workspace_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_lifecycle_workspace"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="owner_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="capability_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="capability_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="metadata_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="scope_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="scope_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="binding_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="binding_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="decision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_decision_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="issued_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="authority_epoch" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="policy_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="execution_owner" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="claimed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="claim_decision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_decision_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="last_attempt_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="attempt_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_system_health_automation_attempts"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="terminal_evidence_sha256" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="21" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="activation_id" sequenceNumberInPK="1"/>
+         <index name="lite_lifecycle_capability_activation_s_pk" unique="true">
+            <column ascending="true" name="activation_id"/>
+         </index>
+         <index name="lite_lifecycle_capability_activation_current" unique="true">
+            <column ascending="true" name="workspace_id"/>
+            <column ascending="true" name="capability_id"/>
+         </index>
+         <index name="lite_lifecycle_capability_activation_history" unique="false">
+            <column ascending="true" name="issued_at"/>
+         </index>
+         <index name="sqlite_autoindex_lite_lifecycle_capability_activation_1" unique="true">
+            <column ascending="true" name="activation_id"/>
+         </index>
+      </table>
       <table name="lite_lifecycle_grants" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="grant_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
-            <child column="grant_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_audit"/>
             <child column="grant_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_lifecycle_service_delegations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="workspace_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
@@ -1728,6 +1815,43 @@
             <column ascending="true" name="purpose"/>
          </index>
       </table>
+      <table name="lite_lifecycle_policy_execution" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="operation_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_activation_operations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="grant_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="owner_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="human_id" foreignKey="" implied="false" onDeleteCascade="false" table="human_identities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="executor_principal" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="binding_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="binding_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="decision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_decision_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="issued_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="claimed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="claim_decision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_decision_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="proof_sha256" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="operation_id" sequenceNumberInPK="1"/>
+         <index name="lite_lifecycle_policy_execution_s_pk" unique="true">
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="idx_lifecycle_policy_execution_owner" unique="false">
+            <column ascending="true" name="owner_id"/>
+            <column ascending="true" name="issued_at"/>
+         </index>
+         <index name="sqlite_autoindex_lite_lifecycle_policy_execution_1" unique="true">
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="sqlite_autoindex_lite_lifecycle_policy_execution_2" unique="true">
+            <column ascending="true" name="grant_id"/>
+         </index>
+      </table>
       <table name="lite_lifecycle_preferences" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="singleton_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
@@ -1737,6 +1861,44 @@
          <primaryKey column="singleton_id" sequenceNumberInPK="1"/>
          <index name="lite_lifecycle_preferences_s_pk" unique="true">
             <column ascending="true" name="singleton_id"/>
+         </index>
+      </table>
+      <table name="lite_lifecycle_release_execution" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="grant_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="owner_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="metadata_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="executor_principal" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="binding_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="binding_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="decision_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_decision_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="issued_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="expires_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="command_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="lease_generation" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="worker_generation" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="claim_decision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="policy_decision_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="handoff_sha256" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="cutover_authorization_sha256" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="revoked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="17" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="grant_id" sequenceNumberInPK="1"/>
+         <index name="lite_lifecycle_release_execution_s_pk" unique="true">
+            <column ascending="true" name="grant_id"/>
+         </index>
+         <index name="lite_lifecycle_release_execution_history" unique="false">
+            <column ascending="true" name="issued_at"/>
+         </index>
+         <index name="lite_lifecycle_release_execution_single_flight" unique="true">
+            <column ascending="true" name="executor_principal"/>
+         </index>
+         <index name="sqlite_autoindex_lite_lifecycle_release_execution_1" unique="true">
+            <column ascending="true" name="grant_id"/>
          </index>
       </table>
       <table name="lite_lifecycle_service_delegations" remarks="" type="TABLE">
@@ -1770,6 +1932,8 @@
       <table name="lite_lifecycle_workspace" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="singleton_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="workspace_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="workspace_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_lifecycle_candidate_consent"/>
+            <child column="workspace_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_lifecycle_capability_activation"/>
             <child column="workspace_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_lifecycle_grants"/>
          </column>
          <column autoUpdated="false" defaultValue="0" digits="0" id="2" name="boundary_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
@@ -1904,6 +2068,35 @@
             <column ascending="true" name="event_id"/>
          </index>
       </table>
+      <table name="lite_runtime_identity_projection" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="singleton_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="observed_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="stale_after" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="coordinated_generation" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="authenticated_source_commit" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="installed_artifact_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="installed_source_inventory_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="fastapi_process_identity_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="worker_process_identity_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="core_supervisor_identity_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="runtime_reconciler_identity_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="loaded_policy_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="loaded_policy_module_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="loaded_policy_data_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="frontend_generation" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="sqlite_schema_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="sqlite_migration_ledger_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="identity_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="singleton_id" sequenceNumberInPK="1"/>
+         <index name="lite_runtime_identity_projection_s_pk" unique="true">
+            <column ascending="true" name="singleton_id"/>
+         </index>
+      </table>
       <table name="lite_system_health_activation_fence" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="singleton_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
          <column autoUpdated="false" defaultValue="''" digits="0" id="1" name="assisted_source_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
@@ -1919,7 +2112,9 @@
          </index>
       </table>
       <table name="lite_system_health_automation_attempts" remarks="" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="attempt_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="attempt_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="last_attempt_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_capability_activation"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="policy_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
             <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
          </column>
@@ -2715,6 +2910,7 @@
       </table>
       <table name="policy_activation_operations" remarks="" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="operation_id" foreignKey="" implied="false" onDeleteCascade="false" table="lite_lifecycle_policy_execution"/>
             <child column="operation_id" foreignKey="" implied="false" onDeleteCascade="false" table="policy_recovery_resolutions"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="requested_by_human_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
@@ -2837,7 +3033,14 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="decision_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
             <child column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_audit"/>
             <child column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_boundary_scopes"/>
+            <child column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_candidate_consent"/>
+            <child column="claim_decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_capability_activation"/>
+            <child column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_capability_activation"/>
             <child column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_grants"/>
+            <child column="claim_decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_policy_execution"/>
+            <child column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_policy_execution"/>
+            <child column="claim_decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_release_execution"/>
+            <child column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_release_execution"/>
             <child column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_system_health_automation_attempts"/>
             <child column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_system_health_automation_policy"/>
             <child column="decision_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_system_health_maintenance_admissions"/>
@@ -3346,6 +3549,7 @@
             <child column="authorization_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="enterprise_memberships"/>
             <child column="auth_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="human_identities"/>
             <child column="schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_installed_release_identity"/>
+            <child column="capability_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_capability_activation"/>
             <child column="capability_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_grants"/>
             <child column="configuration_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_grants"/>
             <child column="membership_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_lifecycle_grants"/>
@@ -3359,6 +3563,7 @@
             <child column="metadata_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_release_trust_receipts"/>
             <child column="root_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_release_trust_receipts"/>
             <child column="projection_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_revision_events"/>
+            <child column="sqlite_schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_runtime_identity_projection"/>
             <child column="policy_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_system_health_automation_attempts"/>
             <child column="configuration_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_system_health_automation_policy"/>
             <child column="membership_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_system_health_automation_policy"/>

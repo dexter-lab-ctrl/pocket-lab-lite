@@ -68,7 +68,7 @@ def _workspace(conn):
     return conn.execute("SELECT workspace_id,boundary_revision,delegation_revision,authority_epoch FROM lite_lifecycle_workspace WHERE singleton_id=1").fetchone()
 
 
-def _trust(conn):
+def _trust(conn, *, release_lease=None):
     row = conn.execute("""SELECT f.metadata_version,f.root_version,o.review_json,f.metadata_sha256
         FROM lite_release_trust_floor f JOIN lite_release_trust_observation o
         ON o.singleton_id=1 AND o.release_tag=f.release_tag
@@ -77,9 +77,18 @@ def _trust(conn):
         return None
     review = json.loads(row["review_json"])
     now = trust_config.prepared_now(conn, review)
-    release = conn.execute("SELECT latest_tag,status FROM release_runtime_projection WHERE owner='release'").fetchone()
-    if not release or release["status"] != "healthy" or release["latest_tag"] != review.get("release_tag"):
+    release = conn.execute("SELECT latest_tag,status,active_generation,active_command_id,worker_generation,lease_expires_epoch_ms FROM release_runtime_projection WHERE owner='release'").fetchone()
+    if not release or release["latest_tag"] != review.get("release_tag"):
         return None
+    if release["status"] != "healthy":
+        if not release_lease or release["status"] != "running":
+            return None
+        import time
+        if (release["active_generation"] != release_lease["generation"]
+                or release["active_command_id"] != release_lease["command_id"]
+                or release["worker_generation"] != release_lease["worker_generation"]
+                or release["lease_expires_epoch_ms"] < int(time.time()*1000)):
+            return None
     if (review.get("metadata_sha256") != row["metadata_sha256"] or review.get("channel") != "stable"
         or review.get("provenance") != "verified" or review.get("authenticity") != "verified"
         or review.get("integrity") != "verified" or not trust_config.future(review.get("expires"), now)
@@ -124,6 +133,23 @@ def _invalidate(conn, workspace):
     conn.execute("UPDATE lite_lifecycle_workspace SET authority_epoch=authority_epoch+1 WHERE singleton_id=1")
     conn.execute("UPDATE lite_lifecycle_grants SET revoked_at=? WHERE revoked_at IS NULL", (_iso(),))
     conn.execute("DELETE FROM lite_lifecycle_boundary_scopes")
+    # Keep the authority reducer compatible with a database paused between
+    # append-only lifecycle migrations.  Normal startup applies all migrations;
+    # a partially upgraded isolated database must still invalidate the tables
+    # that actually exist rather than failing open or hiding the revision bump.
+    tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if "lite_lifecycle_candidate_consent" in tables:
+        conn.execute("UPDATE lite_lifecycle_candidate_consent SET revoked_at=? WHERE revoked_at IS NULL", (_iso(),))
+    if "lite_lifecycle_policy_execution" in tables:
+        conn.execute("UPDATE lite_lifecycle_policy_execution SET revoked_at=? WHERE revoked_at IS NULL AND proof_sha256 IS NULL", (_iso(),))
+    if "lite_lifecycle_release_execution" in tables:
+        conn.execute("""UPDATE lite_lifecycle_release_execution SET revoked_at=?,updated_at=?,
+            state=CASE WHEN state='cutover_claimed' THEN state ELSE 'revoked' END
+            WHERE revoked_at IS NULL AND state IN ('pending','claimed','prepared','cutover_claimed')""", (_iso(),_iso()))
+    if "lite_lifecycle_capability_activation" in tables:
+        conn.execute("""UPDATE lite_lifecycle_capability_activation SET state='revoked',
+            reason_code='authority_epoch_invalidated',updated_at=?
+            WHERE state IN ('activated','blocked')""", (_iso(),))
     return rev
 
 
@@ -141,6 +167,18 @@ def _change(conn, context, action, payload):
                "delegation_revision": ws["delegation_revision"], "owner": owner, "versions": versions,
                "profile_revision": _prefs(conn)["revision"], "registry_revision": registry_revision(),
                "trust": dict(trust) if trust else None, "policy_revision": policy}
+    from .lite_lifecycle_candidate_consent import CandidateConsentRequest, binding_fields
+    if isinstance(payload, CandidateConsentRequest):
+        binding["candidate"] = binding_fields(conn, payload)
+    from .lite_lifecycle_policy_execution import PolicyExecutionRequest, binding_fields as execution_binding
+    if isinstance(payload, PolicyExecutionRequest):
+        binding["policy_execution"] = execution_binding(conn, payload)
+    from .lite_lifecycle_release_execution import ReleasePreparationRequest, binding_fields as release_binding
+    if isinstance(payload, ReleasePreparationRequest):
+        binding["release_preparation"] = release_binding(conn, payload)
+    from .lite_lifecycle_capability_activation import CapabilityActivationRequest, binding_fields as capability_binding
+    if isinstance(payload, CapabilityActivationRequest):
+        binding["capability_activation"] = capability_binding(conn, payload)
     return owner, binding, digest(binding)
 
 
@@ -166,10 +204,23 @@ def preview(context, action, payload):
 def _authorize(context, action, payload):
     with read_connection() as conn:
         owner, binding, fingerprint = _change(conn, context, action, payload)
+    policy_execution = "policy_execution" in binding
+    release_preparation = "release_preparation" in binding
+    capability_activation = "capability_activation" in binding
+    execution = policy_execution or release_preparation or capability_activation
+    target_type = ("lifecycle_policy_execution" if policy_execution else
+                   "lifecycle_release_preparation" if release_preparation else
+                   "lifecycle_capability_activation" if capability_activation else
+                   "lifecycle_consent")
     decision = opa.evaluate_authorization(
-        auth_context=context, action_id=action, target_type="lifecycle_consent",
+        auth_context=context, action_id=action, target_type=target_type,
         target_id="local_workspace", target_revision=fingerprint,
-        target={"change_digest": fingerprint, "contract_version": 1, "execution_enabled": False},
+        target={"change_digest": fingerprint, "contract_version": 1, "execution_enabled": execution,
+                **({"purpose": "policy-reconciler" if policy_execution else
+                   "release-reconciler" if release_preparation else
+                   "system-health-scheduler"} if execution else {}),
+                **({"capability_id": binding["capability_activation"]["capability_id"]}
+                   if capability_activation else {})},
         request_context={"confirmation_present": True},
     )
     if not decision.get("allow") or decision.get("policy_revision") != binding["policy_revision"]:
@@ -198,7 +249,13 @@ def _consume(conn, context, action, payload, authorized):
             or decision.get("observed_policy_revision") != binding["policy_revision"]):
         raise PermissionError("policy_decision_binding_changed")
     session = context["session"]["session_id"]
-    if isinstance(payload, GrantRequest):
+    from .lite_lifecycle_candidate_consent import CandidateConsentRequest
+    from .lite_lifecycle_policy_execution import PolicyExecutionRequest
+    from .lite_lifecycle_release_execution import ReleasePreparationRequest
+    from .lite_lifecycle_capability_activation import CapabilityActivationRequest
+    trusted_consent = isinstance(payload, (GrantRequest, CandidateConsentRequest, PolicyExecutionRequest,
+                                           ReleasePreparationRequest, CapabilityActivationRequest))
+    if trusted_consent:
         now = _trusted_now(conn)
         current_session = conn.execute("SELECT idle_expires_at,absolute_expires_at FROM auth_sessions WHERE session_id=?", (session,)).fetchone()
         if not current_session or not all(trust_config.future(current_session[key], now) for key in ("idle_expires_at","absolute_expires_at")):
@@ -210,7 +267,7 @@ def _consume(conn, context, action, payload, authorized):
         ORDER BY a.satisfied_at DESC LIMIT 1""",
         (session, "lifecycle:" + fingerprint, owner)).fetchone()
     if (not row or not authority._future(row["expires_at"])
-            or (isinstance(payload, GrantRequest) and not trust_config.future(row["expires_at"], _trusted_now(conn)))):
+            or (trusted_consent and not trust_config.future(row["expires_at"], _trusted_now(conn)))):
         raise PermissionError("exact_passkey_confirmation_required")
     conn.execute("DELETE FROM auth_session_assurance WHERE assurance_id=?", (row["assurance_id"],))
     return owner, binding, decision
@@ -388,12 +445,25 @@ def summary(context):
             raise PermissionError("human_required")
         is_owner = current["role"] == "Owner"
         enterprise = current["enterprise_enabled"]
-        versions = _owner(conn, context)[1] if is_owner else (None, None, None)
+        owner, versions, _ = _owner(conn, context) if is_owner else (None, (None, None, None), enterprise)
         ws = _workspace(conn)
         prefs = _prefs(conn)
         receipt = conn.execute("SELECT receipt_id,release_tag,checked_at,receipt_json FROM lite_release_trust_receipts ORDER BY metadata_version DESC LIMIT 1").fetchone()
         trust_observation = conn.execute("SELECT state,reason_code,review_json FROM lite_release_trust_observation WHERE singleton_id=1").fetchone()
         evaluation = (ws, prefs, _trust(conn), _trusted_now(conn), _policy(conn))
+        from .lite_lifecycle_candidate_consent import summary as candidate_summary
+        from .lite_lifecycle_policy_execution import summary as policy_execution_summary, gate as policy_execution_gate
+        from .lite_policy_candidate_differential import supported_differential
+        policy_executions = policy_execution_summary(conn) if is_owner else []
+        from . import lite_lifecycle_release_execution as release_execution
+        release_preparations = release_execution.summary(conn) if is_owner else []
+        from . import lite_lifecycle_capability_activation as capability_activation
+        capability_activations = capability_activation.summary(conn) if is_owner else []
+        release_preparation_enabled = bool(is_owner and release_execution.gate())
+        release_preparation_available = False
+
+        candidate_consents = candidate_summary(conn, ws=ws, prefs=prefs, trust=evaluation[2], now=evaluation[3],
+            policy=evaluation[4], owner=owner, versions=versions, enterprise=enterprise) if is_owner else []
         rows = conn.execute("""SELECT g.*,d.delegation_id FROM lite_lifecycle_grants g LEFT JOIN lite_lifecycle_service_delegations d ON d.grant_id=g.grant_id ORDER BY (g.revoked_at IS NULL) DESC,boundary_revision DESC LIMIT 20""").fetchall() if is_owner else []
         grants = [{"grant_id": row["grant_id"], "purpose": row["purpose"], "capability_id": row["capability_id"],
                    "capability_version": row["capability_version"], "expires_at": row["expires_at"],
@@ -409,13 +479,31 @@ def summary(context):
         fence = conn.execute("SELECT * FROM lite_system_health_activation_fence WHERE singleton_id=1").fetchone()
         floor = conn.execute("SELECT metadata_version,root_version FROM lite_release_trust_floor WHERE singleton_id=1").fetchone()
         eligible_to_record = is_owner and bool(evaluation[2]) and bool(evaluation[4]) and not enterprise and prefs["profile"] == "recommended"
+        if release_preparation_enabled and eligible_to_record:
+            try:
+                review = release_execution._receipt(conn)
+                release_execution.binding_fields(conn, release_execution.ReleasePreparationRequest(
+                    expected_revision=ws["boundary_revision"],metadata_sha256=review.get("metadata_sha256"),confirm=True))
+                release_preparation_available = not any(item["state"] in ("pending","claimed","prepared","cutover_claimed") and not item["revoked_at"] for item in release_preparations)
+            except (PermissionError, ValueError, KeyError, TypeError):
+                pass
         trust_setup = trust_config.configuration(conn)
         now = evaluation[3]
         transitions = [dict(row) for row in conn.execute("SELECT event_id,state,reason_code,occurred_at,release_tag FROM lite_release_trust_transitions ORDER BY event_id DESC LIMIT 20")] if is_owner else []
         identity = dict(identity) if identity else {}
+        from . import lite_runtime_identity
+        runtime_identity = lite_runtime_identity.public_projection(conn)
         revisions = RevisionIdentities(
             release_source_commit=identity["source_commit"] or None if identity else None,
             frontend_artifact_sha256=identity["artifact_sha256"] or None if identity else None,
+            installed_source_inventory_sha256=runtime_identity.get("installed_source_inventory_sha256"),
+            fastapi_process_identity_sha256=runtime_identity.get("fastapi_process_identity_sha256"),
+            worker_process_identity_sha256=runtime_identity.get("worker_process_identity_sha256"),
+            core_supervisor_identity_sha256=runtime_identity.get("core_supervisor_identity_sha256"),
+            runtime_reconciler_identity_sha256=runtime_identity.get("runtime_reconciler_identity_sha256"),
+            coordinated_runtime_generation=runtime_identity.get("coordinated_generation"),
+            frontend_generation=runtime_identity.get("frontend_generation"),
+            sqlite_migration_ledger_sha256=runtime_identity.get("sqlite_migration_ledger_sha256"),
             policy_content_sha256=policy["content_hash"] if policy else None,
             policy_contract_version=policy["template_version"] if policy else None,
             # DB active revision is not an independently observed loaded OPA revision.
@@ -439,6 +527,12 @@ def summary(context):
             history.append({"receipt_id": item["receipt_id"], **{key: raw.get(key) for key in
                 ("release_tag","checked_at","expires","authenticity","integrity","provenance","compatibility","impact")}})
     latest = json.loads(trust_observation["review_json"]) if trust_observation else {}
+    from .lite_capability_review import public_review
+    candidate_review = public_review(latest.get("capability_review")) if is_owner else None
+    policy_review = dict(latest.get("policy_review") or {})
+    if isinstance(policy_review.get("differential"), dict):
+        policy_review["differential"] = {key: val for key, val in policy_review["differential"].items()
+                                         if key != "note_suffixes"}
     raw = latest or (json.loads(receipt["receipt_json"]) if receipt else {})
     historical = {key: raw.get(key) for key in ("release_tag","checked_at","expires","root_expires","authenticity","integrity","provenance","compatibility","impact","reason_code")} if raw else None
     state = trust_observation["state"] if trust_observation else "trust_setup_required"
@@ -453,6 +547,21 @@ def summary(context):
             "revisions": revisions.model_dump() if is_owner else {},
             "historical_loaded_policy": dict(observed_policy) if observed_policy and is_owner else None,
             "assessment": latest.get("assessment"),
+            "candidate_consents": candidate_consents,
+            "policy_executions": policy_executions,
+            "release_preparations": release_preparations,
+            "capability_activations": capability_activations,
+            "release_preparation_qualification_enabled": release_preparation_enabled,
+            "release_preparation_review_available": release_preparation_available,
+            "runtime_identity": runtime_identity,
+            "policy_execution_qualification_enabled": bool(is_owner and policy_execution_gate()),
+            "policy_execution_review_available": bool(eligible_to_record and policy_execution_gate()
+                and latest.get("provenance") == "verified"
+                and supported_differential(policy_review.get("differential") or {})
+                and (latest.get("capability_review") or {}).get("total") == 0),
+            "candidate_review": ({key: latest.get(key) for key in
+                ("release_tag", "checked_at", "metadata_sha256", "source_package", "policy_review", "policy_runtime_observation", "migration_review", "coordinated_preflight")} | {"capability_review": candidate_review, "policy_review": policy_review}
+                if is_owner and latest.get("provenance") == "verified" else None),
             "services": [{"purpose": item.purpose,"category": item.category,"grantable": item.grantable,
                           "version": item.version,"execution_eligible": False} for item in SERVICES],
             "can_record_consent": eligible_to_record, "grants": grants if is_owner else [], "audit": audit if is_owner else [],

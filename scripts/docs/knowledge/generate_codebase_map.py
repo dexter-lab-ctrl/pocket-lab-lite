@@ -79,17 +79,13 @@ CRITICAL_PREFIXES = (
 MAX_PARSE_BYTES = 1_000_000
 MAX_PURPOSE = 280
 MAX_SYMBOLS_PER_FILE = 200
-# Keep the static browser projection under its existing 10 MB contract as the
-# tracked repository grows. The path and high-value labels are emitted first;
-# the bounded tail is only a compact search aid, not canonical source evidence.
-# Keep enough path, role, ownership and symbol terms for the static inspector
-# while leaving headroom for ordinary source additions before the 10 MB gate.
-# Keep the static browser projection below its compactness guard as tracked
-# visual evidence and generated artifacts grow. Paths and primary labels are
-# emitted before this bounded search-only tail.
-# Keep additional headroom for generated schema/documentation artifacts that
-# are intentionally present in the canonical map but add little search value.
-MAX_BROWSER_SEARCH_CHARS = 120
+# Keep the static browser projection below its existing 10 MB contract as the
+# tracked repository grows. Paths and primary labels are emitted before this
+# bounded search-only tail; the tail is not canonical source evidence. The
+# eight-character reduction from the previous 104-character bound removes
+# redundant suffix text across the per-node search index while preserving the
+# path, role, ownership and leading symbol terms used by the browser inspector.
+MAX_BROWSER_SEARCH_CHARS = 96
 MAX_BROWSER_SYMBOLS_PER_FILE = 70
 
 

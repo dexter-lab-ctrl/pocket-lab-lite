@@ -608,7 +608,19 @@
         "api:post:/api/lite/lifecycle/boundary",
         "api:post:/api/lite/lifecycle/boundary/review",
         "api:post:/api/lite/lifecycle/boundary/revoke",
+        "api:post:/api/lite/lifecycle/candidate/consent",
+        "api:post:/api/lite/lifecycle/candidate/consent/review",
+        "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+        "api:post:/api/lite/lifecycle/capability/activation",
+        "api:post:/api/lite/lifecycle/capability/activation/review",
+        "api:post:/api/lite/lifecycle/capability/activation/revoke",
+        "api:post:/api/lite/lifecycle/policy/execution",
+        "api:post:/api/lite/lifecycle/policy/execution/review",
+        "api:post:/api/lite/lifecycle/policy/execution/revoke",
         "api:post:/api/lite/lifecycle/preferences/review",
+        "api:post:/api/lite/lifecycle/release/preparation",
+        "api:post:/api/lite/lifecycle/release/preparation/review",
+        "api:post:/api/lite/lifecycle/release/preparation/revoke",
         "api:post:/api/lite/owner-operations/client-pairings",
         "api:post:/api/lite/owner-operations/client-pairings/cancel-challenge",
         "api:post:/api/lite/owner-operations/client-pairings/challenge",
@@ -797,8 +809,12 @@
         "table:lite_installed_release_identity",
         "table:lite_lifecycle_audit",
         "table:lite_lifecycle_boundary_scopes",
+        "table:lite_lifecycle_candidate_consent",
+        "table:lite_lifecycle_capability_activation",
         "table:lite_lifecycle_grants",
+        "table:lite_lifecycle_policy_execution",
         "table:lite_lifecycle_preferences",
+        "table:lite_lifecycle_release_execution",
         "table:lite_lifecycle_service_delegations",
         "table:lite_lifecycle_workspace",
         "table:lite_release_trust_configuration",
@@ -809,6 +825,7 @@
         "table:lite_release_trust_transitions",
         "table:lite_release_trusted_time",
         "table:lite_revision_events",
+        "table:lite_runtime_identity_projection",
         "table:lite_system_health_activation_fence",
         "table:lite_system_health_automation_attempts",
         "table:lite_system_health_automation_policy",
@@ -903,6 +920,11 @@
       "entities": [
         "reason:actor_not_authenticated",
         "reason:already_tuned",
+        "reason:applied_migration_changed",
+        "reason:applied_schema_ledger_incomplete",
+        "reason:applied_schema_ledger_invalid",
+        "reason:applied_schema_ledger_unavailable",
+        "reason:applied_schema_unconfirmed",
         "reason:approval_approver_role_required",
         "reason:approval_cancel_forbidden",
         "reason:approval_continuation_unavailable",
@@ -931,6 +953,7 @@
         "reason:backup_state_missing",
         "reason:battery_policy_threshold",
         "reason:bootstrap_transport_rejected",
+        "reason:candidate_applied_migration_checksum_mismatch",
         "reason:candidate_invalid",
         "reason:checkpoint_ineligible",
         "reason:claim_verified",
@@ -939,6 +962,7 @@
         "reason:configured_target_budget",
         "reason:confirmation_required",
         "reason:connection_failed",
+        "reason:coordinated_handoff_unproved",
         "reason:credential_expired",
         "reason:credential_identity_mismatch",
         "reason:credential_revocation_pending",
@@ -1031,6 +1055,7 @@
         "reason:independent_approval_satisfied",
         "reason:independent_provenance_and_qualification_required",
         "reason:independent_root_required",
+        "reason:installed_migration_checksum_mismatch",
         "reason:insufficient_storage",
         "reason:interrupted",
         "reason:invalid_backup_id",
@@ -1046,10 +1071,14 @@
         "reason:legacy_telemetry_value",
         "reason:local_candidate_or_root_missing",
         "reason:local_owner_required",
+        "reason:local_policy_source_unavailable",
         "reason:location_not_registered",
         "reason:maintenance_conflict_or_authority_changed",
         "reason:memory_pressure",
         "reason:metadata_only",
+        "reason:migration_baseline_unconfirmed",
+        "reason:migration_qualification_required",
+        "reason:migration_rehearsal_unproved",
         "reason:nats_fault_requires_active_assurance_run",
         "reason:nats_probe_failed",
         "reason:no_active_generation",
@@ -1105,6 +1134,7 @@
         "reason:policy_endpoint_not_loopback",
         "reason:policy_invalid_response",
         "reason:policy_known_good_unavailable",
+        "reason:policy_module_set_unknown",
         "reason:policy_parameter_invalid",
         "reason:policy_parameter_unknown",
         "reason:policy_parameters_invalid",
@@ -1152,6 +1182,7 @@
         "reason:root_pin_invalid",
         "reason:run_not_found",
         "reason:runtime_contract_unavailable",
+        "reason:runtime_identity_stale",
         "reason:scanner_intelligence_hard_expired",
         "reason:security_load_unknown",
         "reason:security_scan_conflict",
@@ -1177,6 +1208,11 @@
         "reason:thermal_policy_threshold",
         "reason:trust_contract_invalid",
         "reason:trusted_local_admin",
+        "reason:trusted_policy_admission_denied",
+        "reason:trusted_policy_execution_required",
+        "reason:trusted_policy_interrupted_before_switch",
+        "reason:trusted_policy_isolation_unproved",
+        "reason:trusted_policy_rollback_unproved",
         "reason:unregistered_domain",
         "reason:unsafe_live_media_import",
         "reason:unsupported_destination",
@@ -1294,6 +1330,11 @@
         "capability:security-scanner",
         "reason:actor_not_authenticated",
         "reason:already_tuned",
+        "reason:applied_migration_changed",
+        "reason:applied_schema_ledger_incomplete",
+        "reason:applied_schema_ledger_invalid",
+        "reason:applied_schema_ledger_unavailable",
+        "reason:applied_schema_unconfirmed",
         "reason:approval_approver_role_required",
         "reason:approval_cancel_forbidden",
         "reason:approval_continuation_unavailable",
@@ -1322,6 +1363,7 @@
         "reason:backup_state_missing",
         "reason:battery_policy_threshold",
         "reason:bootstrap_transport_rejected",
+        "reason:candidate_applied_migration_checksum_mismatch",
         "reason:candidate_invalid",
         "reason:checkpoint_ineligible",
         "reason:claim_verified",
@@ -1330,6 +1372,7 @@
         "reason:configured_target_budget",
         "reason:confirmation_required",
         "reason:connection_failed",
+        "reason:coordinated_handoff_unproved",
         "reason:credential_expired",
         "reason:credential_identity_mismatch",
         "reason:credential_revocation_pending",
@@ -1422,6 +1465,7 @@
         "reason:independent_approval_satisfied",
         "reason:independent_provenance_and_qualification_required",
         "reason:independent_root_required",
+        "reason:installed_migration_checksum_mismatch",
         "reason:insufficient_storage",
         "reason:interrupted",
         "reason:invalid_backup_id",
@@ -1437,10 +1481,14 @@
         "reason:legacy_telemetry_value",
         "reason:local_candidate_or_root_missing",
         "reason:local_owner_required",
+        "reason:local_policy_source_unavailable",
         "reason:location_not_registered",
         "reason:maintenance_conflict_or_authority_changed",
         "reason:memory_pressure",
         "reason:metadata_only",
+        "reason:migration_baseline_unconfirmed",
+        "reason:migration_qualification_required",
+        "reason:migration_rehearsal_unproved",
         "reason:nats_fault_requires_active_assurance_run",
         "reason:nats_probe_failed",
         "reason:no_active_generation",
@@ -1496,6 +1544,7 @@
         "reason:policy_endpoint_not_loopback",
         "reason:policy_invalid_response",
         "reason:policy_known_good_unavailable",
+        "reason:policy_module_set_unknown",
         "reason:policy_parameter_invalid",
         "reason:policy_parameter_unknown",
         "reason:policy_parameters_invalid",
@@ -1543,6 +1592,7 @@
         "reason:root_pin_invalid",
         "reason:run_not_found",
         "reason:runtime_contract_unavailable",
+        "reason:runtime_identity_stale",
         "reason:scanner_intelligence_hard_expired",
         "reason:security_load_unknown",
         "reason:security_scan_conflict",
@@ -1568,6 +1618,11 @@
         "reason:thermal_policy_threshold",
         "reason:trust_contract_invalid",
         "reason:trusted_local_admin",
+        "reason:trusted_policy_admission_denied",
+        "reason:trusted_policy_execution_required",
+        "reason:trusted_policy_interrupted_before_switch",
+        "reason:trusted_policy_isolation_unproved",
+        "reason:trusted_policy_rollback_unproved",
         "reason:unregistered_domain",
         "reason:unsafe_live_media_import",
         "reason:unsupported_destination",
@@ -2345,6 +2400,48 @@
         "table:lite_lifecycle_audit"
       ],
       "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0063_lifecycle_audit_links.sql"
+    },
+    {
+      "entities": [
+        "table:human_identities",
+        "table:lite_lifecycle_candidate_consent",
+        "table:lite_lifecycle_workspace"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql"
+    },
+    {
+      "entities": [
+        "table:human_identities",
+        "table:lite_lifecycle_policy_execution",
+        "table:policy_activation_operations"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql"
+    },
+    {
+      "entities": [
+        "table:lite_lifecycle_release_execution"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0066_lifecycle_release_execution.sql"
+    },
+    {
+      "entities": [
+        "table:lite_runtime_identity_projection"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0067_runtime_identity_projection.sql"
+    },
+    {
+      "entities": [
+        "table:human_identities",
+        "table:lite_lifecycle_capability_activation",
+        "table:lite_lifecycle_workspace"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
+    },
+    {
+      "entities": [
+        "table:lite_lifecycle_release_execution"
+      ],
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0069_lifecycle_release_execution_committed.sql"
     },
     {
       "entities": [
@@ -3397,6 +3494,18 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_coordinated_release_package.py"
+      ],
+      "source": "tests/backend/test_lite_coordinated_release_package.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_coordinated_runtime_promotion.py"
+      ],
+      "source": "tests/backend/test_lite_coordinated_runtime_promotion.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_core_supervisor.py"
       ],
       "source": "tests/backend/test_lite_core_supervisor.py"
@@ -3574,6 +3683,24 @@
         "test:tests/backend/test_lite_isolated_qualification_lane.py"
       ],
       "source": "tests/backend/test_lite_isolated_qualification_lane.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_lifecycle_candidate_review.py"
+      ],
+      "source": "tests/backend/test_lite_lifecycle_candidate_review.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_lifecycle_policy_execution.py"
+      ],
+      "source": "tests/backend/test_lite_lifecycle_policy_execution.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_lifecycle_release_execution.py"
+      ],
+      "source": "tests/backend/test_lite_lifecycle_release_execution.py"
     },
     {
       "entities": [
@@ -3889,9 +4016,21 @@
     },
     {
       "entities": [
+        "test:tests/backend/test_lite_release_trusted_time.py"
+      ],
+      "source": "tests/backend/test_lite_release_trusted_time.py"
+    },
+    {
+      "entities": [
         "test:tests/backend/test_lite_revision_sync_n4_n5.py"
       ],
       "source": "tests/backend/test_lite_revision_sync_n4_n5.py"
+    },
+    {
+      "entities": [
+        "test:tests/backend/test_lite_runtime_identity.py"
+      ],
+      "source": "tests/backend/test_lite_runtime_identity.py"
     },
     {
       "entities": [
@@ -5250,6 +5389,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1f30b69222bc5131517d56b80bd58de986f7f8fec42139920f80daaf5e708fef"
+    "source_fingerprint": "bf2266ffb6cbc79243fabbd151accbf28fe8f4149e9a8f975bb2fbe712f1fab9"
   }
 }

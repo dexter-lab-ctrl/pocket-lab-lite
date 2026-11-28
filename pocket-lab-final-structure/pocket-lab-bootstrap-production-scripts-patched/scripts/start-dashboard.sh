@@ -312,11 +312,21 @@ write_nats_config(){
   ensure_nats_credentials
   mkdir -p "$STATE_DIR/nats/store"
   local nats_config="$STATE_DIR/nats/nats-server.conf"
+  local nats_listen_host="${POCKETLAB_NATS_LISTEN_HOST:-0.0.0.0}"
+  local nats_port="${POCKETLAB_LITE_NATS_PORT:-${POCKETLAB_PUBLIC_NATS_PORT:-4222}}"
+  local nats_monitor_port="${POCKETLAB_LITE_NATS_MONITOR_PORT:-${POCKETLAB_PUBLIC_NATS_MONITOR_PORT:-8222}}"
+  [[ "$nats_listen_host" == "0.0.0.0" || "$nats_listen_host" == "127.0.0.1" ]] || die "NATS listen host must be loopback or the production wildcard"
+  [[ "$nats_port" =~ ^[0-9]+$ ]] && (( nats_port >= 1024 && nats_port <= 65535 )) || die "NATS port is invalid"
+  [[ "$nats_monitor_port" =~ ^[0-9]+$ ]] && (( nats_monitor_port >= 1024 && nats_monitor_port <= 65535 )) || die "NATS monitor port is invalid"
+  [[ "$nats_port" != "$nats_monitor_port" ]] || die "NATS client and monitor ports must differ"
+  if [[ "${POCKETLAB_ENVIRONMENT:-production}" == "qualification" ]]; then
+    [[ "$nats_listen_host" == "127.0.0.1" ]] || die "Qualification NATS must bind to loopback"
+  fi
   log INFO "Writing production NATS/JetStream config with auth, localhost monitoring, and durable storage"
   cat > "$nats_config" <<EOF
 server_name: pocketlab-nats
-listen: 0.0.0.0:4222
-http: 127.0.0.1:8222
+listen: $nats_listen_host:$nats_port
+http: 127.0.0.1:$nats_monitor_port
 jetstream {
   store_dir: "$STATE_DIR/nats/store"
   max_mem_store: 64MB
@@ -812,7 +822,8 @@ PYD
   chmod +x "$HARDWARE_DAEMON"
 }
 wait_for_nats_ready(){
-  local url="http://127.0.0.1:8222/healthz"
+  local monitor_port="${POCKETLAB_LITE_NATS_MONITOR_PORT:-${POCKETLAB_PUBLIC_NATS_MONITOR_PORT:-8222}}"
+  local url="http://127.0.0.1:${monitor_port}/healthz"
   local i
   for i in $(seq 1 30); do
     if curl -fsS "$url" >/dev/null 2>&1; then

@@ -1,7 +1,7 @@
 {
   "lite_sqlite_schema": {
     "database": "temporary data-free SQLite",
-    "migration_count": 63,
+    "migration_count": 69,
     "objects": [
       {
         "checks": [],
@@ -7010,7 +7010,10 @@
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
         ],
         "name": "human_identities",
         "projection_owner": "not a prepared projection",
@@ -7541,6 +7544,408 @@
       },
       {
         "checks": [
+          "disposition IN ('accepted_for_review','declined','deferred'"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "consent_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "workspace_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "owner_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "capability_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "metadata_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "scope_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "scope_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "binding_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "disposition",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "decision_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "issued_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "revoked_at",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "owner_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          },
+          {
+            "from": "workspace_id",
+            "id": 1,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "lite_lifecycle_workspace",
+            "sequence": 0,
+            "to": "workspace_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "issued_at"
+            ],
+            "name": "idx_lifecycle_candidate_consent_history",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "workspace_id",
+              "metadata_sha256",
+              "capability_id"
+            ],
+            "name": "idx_lifecycle_candidate_consent_current",
+            "origin": "c",
+            "partial": true,
+            "unique": true
+          },
+          {
+            "columns": [
+              "consent_id"
+            ],
+            "name": "sqlite_autoindex_lite_lifecycle_candidate_consent_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql"
+        ],
+        "name": "lite_lifecycle_candidate_consent",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE lite_lifecycle_candidate_consent (\n    consent_id TEXT PRIMARY KEY,\n    workspace_id TEXT NOT NULL REFERENCES lite_lifecycle_workspace(workspace_id),\n    owner_id TEXT NOT NULL REFERENCES human_identities(human_id),\n    capability_id TEXT NOT NULL,\n    metadata_sha256 TEXT NOT NULL,\n    scope_sha256 TEXT NOT NULL,\n    scope_json TEXT NOT NULL,\n    binding_json TEXT NOT NULL,\n    disposition TEXT NOT NULL CHECK(disposition IN ('accepted_for_review','declined','deferred')),\n    decision_id TEXT NOT NULL,\n    issued_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    revoked_at TEXT\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "capability_id='system.activity_history.reconcile.activate'",
+          "capability_version=1",
+          "execution_owner='projection_scheduler'",
+          "state IN ('activated','declined','deferred','revoked','expired','blocked','completed'"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "activation_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "workspace_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "owner_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "capability_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "capability_version",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "metadata_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "scope_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "scope_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "binding_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "binding_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "decision_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "issued_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "authority_epoch",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "policy_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "execution_owner",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "state",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "claimed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "claim_decision_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "last_attempt_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "terminal_evidence_sha256",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "reason_code",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "owner_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          },
+          {
+            "from": "workspace_id",
+            "id": 1,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "lite_lifecycle_workspace",
+            "sequence": 0,
+            "to": "workspace_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "issued_at"
+            ],
+            "name": "lite_lifecycle_capability_activation_history",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "workspace_id",
+              "capability_id"
+            ],
+            "name": "lite_lifecycle_capability_activation_current",
+            "origin": "c",
+            "partial": true,
+            "unique": true
+          },
+          {
+            "columns": [
+              "activation_id"
+            ],
+            "name": "sqlite_autoindex_lite_lifecycle_capability_activation_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
+        ],
+        "name": "lite_lifecycle_capability_activation",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "terminal_evidence_sha256"
+        ],
+        "sql": "CREATE TABLE lite_lifecycle_capability_activation (\n    activation_id TEXT PRIMARY KEY,\n    workspace_id TEXT NOT NULL REFERENCES lite_lifecycle_workspace(workspace_id),\n    owner_id TEXT NOT NULL REFERENCES human_identities(human_id),\n    capability_id TEXT NOT NULL CHECK(capability_id='system.activity_history.reconcile.activate'),\n    capability_version INTEGER NOT NULL CHECK(capability_version=1),\n    metadata_sha256 TEXT NOT NULL,\n    scope_sha256 TEXT NOT NULL,\n    scope_json TEXT NOT NULL,\n    binding_json TEXT NOT NULL,\n    binding_sha256 TEXT NOT NULL,\n    decision_id TEXT NOT NULL,\n    issued_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    authority_epoch INTEGER NOT NULL,\n    policy_revision TEXT NOT NULL,\n    execution_owner TEXT NOT NULL CHECK(execution_owner='projection_scheduler'),\n    state TEXT NOT NULL CHECK(state IN ('activated','declined','deferred','revoked','expired','blocked','completed')),\n    claimed_at TEXT,\n    claim_decision_id TEXT,\n    last_attempt_id TEXT,\n    terminal_evidence_sha256 TEXT,\n    reason_code TEXT NOT NULL DEFAULT '',\n    updated_at TEXT NOT NULL\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
           "boundary_revision>0",
           "channel='stable'"
         ],
@@ -7792,6 +8197,169 @@
       },
       {
         "checks": [
+          "executor_principal='policy-reconciler'"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "operation_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "grant_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "owner_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "executor_principal",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "binding_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "binding_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "decision_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "issued_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "revoked_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "claimed_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "claim_decision_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "proof_sha256",
+            "nullable": true,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [
+          {
+            "from": "owner_id",
+            "id": 0,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "human_identities",
+            "sequence": 0,
+            "to": "human_id"
+          },
+          {
+            "from": "operation_id",
+            "id": 1,
+            "on_delete": "NO ACTION",
+            "on_update": "NO ACTION",
+            "parent_table": "policy_activation_operations",
+            "sequence": 0,
+            "to": "operation_id"
+          }
+        ],
+        "indexes": [
+          {
+            "columns": [
+              "owner_id",
+              "issued_at"
+            ],
+            "name": "idx_lifecycle_policy_execution_owner",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "grant_id"
+            ],
+            "name": "sqlite_autoindex_lite_lifecycle_policy_execution_2",
+            "origin": "u",
+            "partial": false,
+            "unique": true
+          },
+          {
+            "columns": [
+              "operation_id"
+            ],
+            "name": "sqlite_autoindex_lite_lifecycle_policy_execution_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql"
+        ],
+        "name": "lite_lifecycle_policy_execution",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE lite_lifecycle_policy_execution (\n    operation_id TEXT PRIMARY KEY REFERENCES policy_activation_operations(operation_id),\n    grant_id TEXT NOT NULL UNIQUE,\n    owner_id TEXT NOT NULL REFERENCES human_identities(human_id),\n    executor_principal TEXT NOT NULL CHECK(executor_principal='policy-reconciler'),\n    binding_json TEXT NOT NULL,\n    binding_sha256 TEXT NOT NULL,\n    decision_id TEXT NOT NULL,\n    issued_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    revoked_at TEXT,\n    claimed_at TEXT,\n    claim_decision_id TEXT,\n    proof_sha256 TEXT\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
           "singleton_id=1",
           "revision>0",
           "profile IN ('notify','security','recommended','enterprise_managed'"
@@ -7848,6 +8416,195 @@
         "semantic_status": "inferred",
         "sensitive_fields": [],
         "sql": "CREATE TABLE lite_lifecycle_preferences (\n    singleton_id INTEGER PRIMARY KEY CHECK(singleton_id=1),\n    revision INTEGER NOT NULL CHECK(revision>0),\n    profile TEXT NOT NULL CHECK(profile IN ('notify','security','recommended','enterprise_managed')),\n    updated_at TEXT NOT NULL,\n    owner_id TEXT NOT NULL\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "executor_principal='release-reconciler'",
+          "state IN ('pending','claimed','prepared','cutover_claimed','rehearsed','committed','failed','revoked'"
+        ],
+        "classification": "restricted operational metadata",
+        "columns": [
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "grant_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "owner_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "metadata_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "executor_principal",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "binding_json",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "binding_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "decision_id",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "issued_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "expires_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "state",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "command_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "lease_generation",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "worker_generation",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "claim_decision_id",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "handoff_sha256",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "cutover_authorization_sha256",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "revoked_at",
+            "nullable": true,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": "''",
+            "name": "reason_code",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [
+          {
+            "columns": [
+              "issued_at"
+            ],
+            "name": "lite_lifecycle_release_execution_history",
+            "origin": "c",
+            "partial": false,
+            "unique": false
+          },
+          {
+            "columns": [
+              "executor_principal"
+            ],
+            "name": "lite_lifecycle_release_execution_single_flight",
+            "origin": "c",
+            "partial": true,
+            "unique": true
+          },
+          {
+            "columns": [
+              "grant_id"
+            ],
+            "name": "sqlite_autoindex_lite_lifecycle_release_execution_1",
+            "origin": "pk",
+            "partial": false,
+            "unique": true
+          }
+        ],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0066_lifecycle_release_execution.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0069_lifecycle_release_execution_committed.sql"
+        ],
+        "name": "lite_lifecycle_release_execution",
+        "projection_owner": "not a prepared projection",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [
+          "command_id"
+        ],
+        "sql": "CREATE TABLE lite_lifecycle_release_execution (\n    grant_id TEXT PRIMARY KEY,\n    owner_id TEXT NOT NULL,\n    metadata_sha256 TEXT NOT NULL,\n    executor_principal TEXT NOT NULL CHECK(executor_principal='release-reconciler'),\n    binding_json TEXT NOT NULL,\n    binding_sha256 TEXT NOT NULL,\n    decision_id TEXT NOT NULL,\n    issued_at TEXT NOT NULL,\n    expires_at TEXT NOT NULL,\n    state TEXT NOT NULL CHECK(state IN ('pending','claimed','prepared','cutover_claimed','rehearsed','committed','failed','revoked')),\n    command_id TEXT,\n    lease_generation INTEGER,\n    worker_generation TEXT,\n    claim_decision_id TEXT,\n    handoff_sha256 TEXT,\n    cutover_authorization_sha256 TEXT,\n    revoked_at TEXT,\n    reason_code TEXT NOT NULL DEFAULT '',\n    updated_at TEXT NOT NULL\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -8016,7 +8773,9 @@
         "migration_sources": [
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
         ],
         "name": "lite_lifecycle_workspace",
         "projection_owner": "not a prepared projection",
@@ -8568,6 +9327,179 @@
         "semantic_status": "inferred",
         "sensitive_fields": [],
         "sql": "CREATE TABLE lite_revision_events (\n    event_id INTEGER PRIMARY KEY AUTOINCREMENT,\n    database_instance TEXT NOT NULL,\n    domain TEXT NOT NULL CHECK (domain IN (\n        'security', 'fleet', 'apps', 'recovery', 'commands', 'storage', 'audit'\n    )),\n    revision INTEGER NOT NULL CHECK (revision >= 0),\n    changed_ids_json TEXT NOT NULL DEFAULT '[]',\n    reason TEXT NOT NULL DEFAULT 'domain_state_changed',\n    projection_version INTEGER NOT NULL DEFAULT 1 CHECK (projection_version > 0),\n    occurred_at TEXT NOT NULL,\n    occurred_at_epoch_ms INTEGER NOT NULL,\n    sanitized INTEGER NOT NULL DEFAULT 1 CHECK (sanitized IN (0, 1))\n)",
+        "type": "table",
+        "writer": "source-defined control-plane service"
+      },
+      {
+        "checks": [
+          "singleton_id=1",
+          "status IN ('stable','transitioning','degraded','unknown'",
+          "sqlite_schema_version>0"
+        ],
+        "classification": "internal operational metadata",
+        "columns": [
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "singleton_id",
+            "nullable": true,
+            "primary_key_position": 1
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "status",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "reason_code",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "observed_at",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "stale_after",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "coordinated_generation",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "authenticated_source_commit",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "installed_artifact_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "installed_source_inventory_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "fastapi_process_identity_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "worker_process_identity_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "core_supervisor_identity_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "runtime_reconciler_identity_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "loaded_policy_revision",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "loaded_policy_module_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "loaded_policy_data_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "frontend_generation",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "INTEGER",
+            "default": null,
+            "name": "sqlite_schema_version",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "sqlite_migration_ledger_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "identity_sha256",
+            "nullable": false,
+            "primary_key_position": 0
+          },
+          {
+            "declared_type": "TEXT",
+            "default": null,
+            "name": "updated_at",
+            "nullable": false,
+            "primary_key_position": 0
+          }
+        ],
+        "domain": "control_plane",
+        "foreign_keys": [],
+        "indexes": [],
+        "migration_sources": [
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0067_runtime_identity_projection.sql"
+        ],
+        "name": "lite_runtime_identity_projection",
+        "projection_owner": "control_plane",
+        "purpose": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+        "readers": [],
+        "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+        "semantic_status": "inferred",
+        "sensitive_fields": [],
+        "sql": "CREATE TABLE lite_runtime_identity_projection (\n    singleton_id INTEGER PRIMARY KEY CHECK(singleton_id=1),\n    status TEXT NOT NULL CHECK(status IN ('stable','transitioning','degraded','unknown')),\n    reason_code TEXT NOT NULL,\n    observed_at TEXT NOT NULL,\n    stale_after TEXT NOT NULL,\n    coordinated_generation TEXT NOT NULL,\n    authenticated_source_commit TEXT NOT NULL,\n    installed_artifact_sha256 TEXT NOT NULL,\n    installed_source_inventory_sha256 TEXT NOT NULL,\n    fastapi_process_identity_sha256 TEXT NOT NULL,\n    worker_process_identity_sha256 TEXT NOT NULL,\n    core_supervisor_identity_sha256 TEXT NOT NULL,\n    runtime_reconciler_identity_sha256 TEXT NOT NULL,\n    loaded_policy_revision TEXT NOT NULL,\n    loaded_policy_module_sha256 TEXT NOT NULL,\n    loaded_policy_data_sha256 TEXT NOT NULL,\n    frontend_generation TEXT NOT NULL,\n    sqlite_schema_version INTEGER NOT NULL CHECK(sqlite_schema_version>0),\n    sqlite_migration_ledger_sha256 TEXT NOT NULL,\n    identity_sha256 TEXT NOT NULL,\n    updated_at TEXT NOT NULL\n)",
         "type": "table",
         "writer": "source-defined control-plane service"
       },
@@ -12433,7 +13365,8 @@
         "migration_sources": [
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
           "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
-          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql"
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
+          "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql"
         ],
         "name": "policy_activation_operations",
         "projection_owner": "not a prepared projection",
@@ -17859,7 +18792,7 @@
     "row_count_enforced": 0
   },
   "metadata": {
-    "aggregate_fingerprint": "79e74f6517ba93dda0e0b1331adb450d75912352a04535005f7e2a4d33232772",
+    "aggregate_fingerprint": "89288c75c7f7d364cadb6eaa902b9693d303c13c169b5f4ea552ba715af8f863",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -17870,7 +18803,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/metadata/documentation-platform.json": "b8d66469fc3ab5b0b2b2ed610617a35c091810bc2d564d81075cce898682ddda",
-      "contracts/metadata/identity-rules-reason-code-overrides.json": "3b34f0debcf38e177dca50b99dea00a9b2710c4889dcb2b706d688ce0a9fcd9e",
+      "contracts/metadata/identity-rules-reason-code-overrides.json": "b7a3f249e30c6b29db8bf4b2d65e54d0b5ea15108fedf22be5f314b0fc1f486e",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
@@ -17934,6 +18867,12 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0061_lifecycle_trust_configuration.sql": "457addf945f97299e0e411b67bf3ec62aa6a48de3ec5d2ae463617b94d80416b",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql": "d60304c98266721039a6123f25dd2c050cb4acb2baa18a8b94fa86118661368a",
       "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0063_lifecycle_audit_links.sql": "6b303946ec4bcdfdc33fea53b0d7d6b7a064cb4d09e936a852e8e236bbdfc61b",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql": "953ffe5b8cc86c8657cd3faa6d1804c94e0034e5da7cea6b52e9036522ebb024",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql": "fe24afffab30c721feb1a845c2ba6baa7e1a116e1d995323803a7eb8092ac47a",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0066_lifecycle_release_execution.sql": "79acbfba9a8a6c24d8051c69f84304536d71393fd4e00757bc259f76baf75701",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0067_runtime_identity_projection.sql": "029ce6b0e212749c1febb2165441407782b66eb2f3782094a34b8ccb42833a43",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql": "699175d83120ae29ebca2d53d81bf650110b0129b8a139b34c57ee03cae8588e",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0069_lifecycle_release_execution_committed.sql": "3f9927269b4642440387558f1b8bfe432c1b075eadb973fa3e7231cc71b2f7fc",
       "scripts/docs/lite/generate_platform_catalogs.py": "03d45e1757f6eff0622b0bac8d53108a7229b00c2c746bf158a746224499fd08"
     },
     "validation_state": "generated"

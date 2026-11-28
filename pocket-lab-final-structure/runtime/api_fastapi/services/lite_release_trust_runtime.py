@@ -1,7 +1,7 @@
 """Review-only adapter for the existing release worker and subprocess.
 
 Acquisition uses fixed GitHub release assets or an explicit local review directory.
-No extraction, install, activation or arbitrary metadata paths.
+Optional isolated preflight extracts inert files; no install, activation or arbitrary metadata paths.
 A local administrator must independently provision the root SHA-256 and clock
 anchor; the candidate itself cannot supply either. This is not full TUF.
 """
@@ -23,6 +23,7 @@ import uuid
 
 from .lite_release_trust import MAX_BYTES, Root, TrustError, _parse, _expiry, strict_json, verify
 from .lite_release_contract import parse_lite_tag
+from . import lite_release_package as source_package
 
 FILES = {
     "artifact_sha256": "dist.zip",
@@ -81,11 +82,15 @@ def _read(directory: Path, name: str, limit: int, *, hash_only: bool = False):
         return h.hexdigest()
 
 
-def _clock(directory: Path):
+def _clock(directory: Path, *, excluded_key_ids=()):
     # A local administrator attests a recently independently checked UTC time.
     # Linux boot identity + monotonic time limit reuse. Not an authenticated
     # network time protocol; the operator and OS remain explicit trust assumptions.
     try:
+        from . import lite_release_trusted_time
+        source, _, _ = lite_release_trusted_time.source_configuration()
+        if source == "signed_challenge":
+            return lite_release_trusted_time.renew(directory, excluded_key_ids=excluded_key_ids)
         anchor = strict_json(_read(directory, "clock-anchor.json", 4096))
         if set(anchor) != {"boot_id", "boottime_ns", "utc"}:
             return None
@@ -153,6 +158,55 @@ def _candidate(root_dir, tag, request):
         yield path, {"bytes_read": total, "files_examined": len(names)}
 
 
+def _inspect_coordinated_source(candidate, root_dir, request, receipt):
+    """Acquire source bytes only after signed metadata has been verified."""
+    manifest = _read(candidate, FILES["release_manifest_sha256"], MAX_BYTES)
+    if hashlib.sha256(manifest).hexdigest() != receipt["release_manifest_sha256"]:
+        raise TrustError("release_manifest_changed")
+    declaration = source_package.source_declaration(
+        manifest, source_commit=receipt["source_commit"], release_tag=receipt["release_tag"])
+    if declaration is None:
+        return {"state": "not_delivered", "execution_eligible": False}
+    if shutil.disk_usage(candidate).free < source_package.MAX_SOURCE_BYTES + 32 * 1024 * 1024:
+        raise TrustError("source_disk_pressure")
+    name = source_package.SOURCE_ASSET
+    deadline = int(request.get("deadline_ns") or (time.monotonic_ns() + 120_000_000_000))
+    if time.monotonic_ns() >= deadline:
+        raise TrustError("trust_deadline_exceeded")
+    target = candidate / name
+    if os.environ.get("POCKETLAB_RELEASE_TRUST_SOURCE", "github") == "local":
+        with _open_controlled(root_dir / "candidate", name, source_package.MAX_SOURCE_BYTES) as (stream, info):
+            with target.open("xb") as out:
+                copied = 0
+                while chunk := stream.read(1024 * 1024):
+                    copied += len(chunk)
+                    if copied > source_package.MAX_SOURCE_BYTES or time.monotonic_ns() >= deadline:
+                        raise TrustError("source_acquisition_limit")
+                    out.write(chunk)
+                if copied != info.st_size:
+                    raise TrustError("candidate_changed")
+    else:
+        from .release_update_process import _download_to_file, ReleaseProcessFailure
+        url = f"https://github.com/dexter-lab-ctrl/pocket-lab-lite/releases/download/{receipt['release_tag']}/{name}"
+        try:
+            _download_to_file(url, target, timeout=max(1, min(20, (deadline - time.monotonic_ns()) / 1e9)),
+                              max_bytes=source_package.MAX_SOURCE_BYTES, trusted_public=True)
+        except ReleaseProcessFailure as exc:
+            raise FileNotFoundError("trusted_source_asset_unavailable") from exc
+    target.chmod(0o400)
+    policy = _read(candidate, FILES["policy_sha256"], MAX_BYTES)
+    migrations = _read(candidate, FILES["migration_inventory_sha256"], MAX_BYTES)
+    if (hashlib.sha256(policy).hexdigest() != receipt["policy_sha256"]
+            or hashlib.sha256(migrations).hexdigest() != receipt["migration_inventory_sha256"]):
+        raise TrustError("source_inventory_changed")
+    with _open_controlled(candidate, name, source_package.MAX_SOURCE_BYTES) as (stream, _):
+        result = source_package.inspect_source(stream, declaration=declaration,
+            policy_inventory=policy, migration_inventory=migrations)
+    if time.monotonic_ns() >= deadline:
+        raise TrustError("trust_deadline_exceeded")
+    return result
+
+
 def cleanup_review(review_id):
     # Called by the same lease owner after its child exits or is terminated.
     if not re.fullmatch(r"[a-f0-9]{32}", review_id):
@@ -171,10 +225,10 @@ def _trust_directory():
     from .. import deps
     return deps.settings().state_dir.resolve() / "release-trust"
 
-def _local_inventory():
+def _local_inventory_documents():
     from .lite_lifecycle_contract import canonical_bytes
     source = Path(__file__).resolve().parents[4]
-    def source_digest(paths):
+    def source_document(paths):
         paths = sorted(paths)
         if not paths or len(paths) > 512:
             return None
@@ -190,9 +244,14 @@ def _local_inventory():
             if len(raw) != size:
                 return None
             items.append({"path":path.relative_to(source).as_posix(),"sha256":hashlib.sha256(raw).hexdigest()})
-        return hashlib.sha256(canonical_bytes(items)).hexdigest()
-    return (source_digest((source / "security/policies/opa").rglob("*.rego")),
-            source_digest((source / "pocket-lab-final-structure/runtime/api_fastapi/db/schema").glob("*.sql")))
+        return canonical_bytes(items)
+    return (source_document((source / "security/policies/opa").rglob("*.rego")),
+            source_document((source / "pocket-lab-final-structure/runtime/api_fastapi/db/schema").glob("*.sql")))
+
+
+def _local_inventory():
+    return tuple(hashlib.sha256(raw).hexdigest() if raw is not None else None
+                 for raw in _local_inventory_documents())
 
 def inspect_candidate(request):
     """Called exclusively inside the existing bounded release subprocess."""
@@ -209,7 +268,9 @@ def inspect_candidate(request):
         if hashlib.sha256(root_bytes).hexdigest() != pin:
             raise TrustError("root_pin_mismatch")
         root = _parse(Root, root_bytes)
-        clock = _clock(root_dir)
+        clock = _clock(root_dir, excluded_key_ids={
+            key.keyid for key in (*root.keys, *root.rotation_keys)
+        })
         if clock is None:
             raise TrustError("trusted_time_unavailable")
         now, clock_fields = clock
@@ -244,17 +305,60 @@ def inspect_candidate(request):
                 raise TrustError("release_tag_rollback")
             if receipt["metadata_version"] == floor and receipt["metadata_sha256"] != request.get("highest_digest"):
                 raise TrustError("metadata_version_conflict")
+            package_review = _inspect_coordinated_source(candidate, root_dir, request, receipt)
             from .lite_release_provenance import provenance
-            disposition, reason = provenance(candidate, root_dir, commit=receipt["source_commit"], tag=tag)
+            disposition, reason = provenance(candidate, root_dir, commit=receipt["source_commit"], tag=tag,
+                                             trusted_now=now)
+            if package_review["state"] == "inventory_verified":
+                package_review["state"] = "verified_for_review" if disposition == "verified" else "provenance_unconfirmed"
+                acquisition_metrics["bytes_read"] += package_review["archive_bytes"]
+                acquisition_metrics["files_examined"] += 1
+            receipt["source_package"] = package_review
             from .lite_release_trust import CapabilityManifest
             from .lite_lifecycle_contract import CAPABILITIES, assess, canonical_bytes, registry_revision
-            policy, migrations = _local_inventory()
+            local_policy, local_migrations = _local_inventory_documents()
+            policy = hashlib.sha256(local_policy).hexdigest() if local_policy is not None else None
+            migrations = hashlib.sha256(local_migrations).hexdigest() if local_migrations is not None else None
             candidate_caps = _parse(CapabilityManifest, manifest)
             assessment = assess(CAPABILITIES, tuple(candidate_caps.capabilities),
                 policy_changed=policy != receipt["policy_sha256"],
                 migration_changed=migrations != receipt["migration_inventory_sha256"],
                 root_changed=bool(rotation))
             current_schema = int(request.get("current_schema") or 0)
+            from .lite_policy_compatibility import compare_source
+            from .lite_capability_review import compare_capabilities
+            receipt["capability_review"] = compare_capabilities(CAPABILITIES, tuple(candidate_caps.capabilities))
+            if package_review["state"] == "verified_for_review":
+                policy_document = _read(candidate, FILES["policy_sha256"], MAX_BYTES)
+                migration_document = _read(candidate, FILES["migration_inventory_sha256"], MAX_BYTES)
+                if (hashlib.sha256(policy_document).hexdigest() != receipt["policy_sha256"]
+                        or hashlib.sha256(migration_document).hexdigest() != receipt["migration_inventory_sha256"]):
+                    raise TrustError("source_inventory_changed")
+                receipt["policy_review"] = compare_source(local_policy, policy_document)
+                if local_policy is not None and os.environ.get("POCKETLAB_RELEASE_POLICY_DIFFERENTIAL") == "1":
+                    from .lite_policy_candidate_differential import assess as differential
+                    with _open_controlled(candidate, source_package.SOURCE_ASSET, source_package.MAX_SOURCE_BYTES) as (stream, _):
+                        receipt["policy_review"]["differential"] = differential(stream, local_policy, policy_document,
+                            parent=candidate, deadline=int(request.get("deadline_ns") or time.monotonic_ns()))
+                from .lite_policy_runtime_evidence import observe
+                receipt["policy_runtime_observation"] = observe()
+                receipt["migration_review"] = (source_package.migration_inventory_comparison(
+                    local_migrations, migration_document, current_schema=current_schema)
+                    if local_migrations is not None else {"state": "unknown", "reason_code": "migration_baseline_unconfirmed"})
+                if local_migrations is not None:
+                    receipt["migration_review"]["applied_ledger"] = source_package.observe_applied_migrations(
+                        local_migrations, migration_document, current_schema=current_schema)
+            if (package_review["state"] == "verified_for_review"
+                    and request.get("coordinated_preflight") is True
+                    and os.environ.get("POCKETLAB_RELEASE_COORDINATED_PREFLIGHT") == "1"):
+                from .lite_release_coordinated_preflight import assess as preflight
+                receipt["current_schema"] = current_schema
+                declaration = source_package.source_declaration(
+                    _read(candidate, FILES["release_manifest_sha256"], MAX_BYTES),
+                    source_commit=receipt["source_commit"], release_tag=receipt["release_tag"])
+                receipt["coordinated_preflight"] = preflight(candidate, receipt, declaration=declaration,
+                    policy_document=policy_document, migration_document=migration_document,
+                    deadline_ns=int(request.get("deadline_ns") or time.monotonic_ns()))
             schema_match = receipt["schema_min"] <= current_schema <= receipt["schema_max"]
             receipt.update(provenance=disposition, provenance_reason=reason, **rotation, **clock_fields,
                 root_sha256=pin, attestation_root_sha256=config.configured()[1],
@@ -264,6 +368,13 @@ def inspect_candidate(request):
                 schema_range_matches=schema_match, current_schema=current_schema,
                 registry_revision=registry_revision(),
                 compatibility="unknown" if schema_match else "incompatible")
+            if request.get("preparation") and disposition == "verified":
+                from .lite_lifecycle_release_execution import prepare_handoff
+                try:
+                    receipt["coordinated_handoff"] = prepare_handoff(candidate, receipt, request["preparation"],
+                        deadline_ns=int(request["deadline_ns"]))
+                except (OSError, ValueError, PermissionError, TrustError):
+                    receipt["coordinated_handoff"] = {"state": "blocked", "reason_code": "coordinated_handoff_unproved"}
             return {"state": "historical_evidence" if disposition == "verified" else
                     ("verification_failed" if disposition == "failed" else "metadata_unavailable"),
                     "reason_code": reason, "root_sha256": pin, "receipt": receipt if disposition == "verified" else None,
@@ -312,10 +423,11 @@ def cached_review(conn, request):
             return False
         local_policy, local_migrations = _local_inventory()
         root_dir = _trust_directory()
+        from .lite_release_provenance import provenance_root_filename
         if (not local_policy or not local_migrations
                 or local_policy != r.get("local_policy_sha256") or local_migrations != r.get("local_migration_inventory_sha256")
                 or _read(root_dir, "root.json", MAX_BYTES, hash_only=True) != r.get("root_sha256")
-                or _read(root_dir, "github-trusted-root.jsonl", 2 * 1024 * 1024, hash_only=True) != r.get("attestation_root_sha256")):
+                or _read(root_dir, provenance_root_filename(), 2 * 1024 * 1024, hash_only=True) != r.get("attestation_root_sha256")):
             return False
         return (r["provenance"] == "verified" and request["repository"] == "dexter-lab-ctrl/pocket-lab-lite"
                 and request["pinned_root_sha256"] == os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256")
@@ -326,7 +438,10 @@ def cached_review(conn, request):
 
 
 def _semantic_review(state, reason, tag, review):
-    return (state, reason, tag, {k: v for k, v in review.items() if k not in {"checked_at", "correlation_id", "clock_sample_ns", "clock_remaining_ns"}})
+    evidence = {k: v for k, v in review.items() if k not in {"checked_at", "correlation_id", "clock_sample_ns", "clock_remaining_ns", "clock_uncertainty_ms"}}
+    if isinstance(evidence.get("policy_runtime_observation"), dict):
+        evidence["policy_runtime_observation"] = {k: v for k, v in evidence["policy_runtime_observation"].items() if k != "observed_at"}
+    return (state, reason, tag, evidence)
 
 
 def persist(tx, observation, tag):

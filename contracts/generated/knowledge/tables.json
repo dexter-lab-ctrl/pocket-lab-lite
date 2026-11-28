@@ -1230,7 +1230,10 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
       ],
       "name": "human_identities",
       "owner": "not a prepared projection",
@@ -1254,7 +1257,10 @@
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0042_owner_operation_client_pairings.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0047_system_health_approval_action.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1392,6 +1398,60 @@
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "control_plane",
+      "id": "table:lite_lifecycle_candidate_consent",
+      "indexes": [
+        "idx_lifecycle_candidate_consent_history",
+        "idx_lifecycle_candidate_consent_current",
+        "sqlite_autoindex_lite_lifecycle_candidate_consent_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql"
+      ],
+      "name": "lite_lifecycle_candidate_consent",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_lifecycle_capability_activation",
+      "indexes": [
+        "lite_lifecycle_capability_activation_history",
+        "lite_lifecycle_capability_activation_current",
+        "sqlite_autoindex_lite_lifecycle_capability_activation_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
+      ],
+      "name": "lite_lifecycle_capability_activation",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "terminal_evidence_sha256"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
       "id": "table:lite_lifecycle_grants",
       "indexes": [
         "idx_lifecycle_grants_purpose",
@@ -1423,6 +1483,32 @@
       "confidence": "inferred",
       "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
       "domain": "control_plane",
+      "id": "table:lite_lifecycle_policy_execution",
+      "indexes": [
+        "idx_lifecycle_policy_execution_owner",
+        "sqlite_autoindex_lite_lifecycle_policy_execution_2",
+        "sqlite_autoindex_lite_lifecycle_policy_execution_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql"
+      ],
+      "name": "lite_lifecycle_policy_execution",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
       "id": "table:lite_lifecycle_preferences",
       "indexes": [],
       "migration_sources": [
@@ -1436,6 +1522,36 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0056_trusted_lifecycle.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "restricted operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_lifecycle_release_execution",
+      "indexes": [
+        "lite_lifecycle_release_execution_history",
+        "lite_lifecycle_release_execution_single_flight",
+        "sqlite_autoindex_lite_lifecycle_release_execution_1"
+      ],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0066_lifecycle_release_execution.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0069_lifecycle_release_execution_committed.sql"
+      ],
+      "name": "lite_lifecycle_release_execution",
+      "owner": "not a prepared projection",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [
+        "command_id"
+      ],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0066_lifecycle_release_execution.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0069_lifecycle_release_execution_committed.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1478,7 +1594,9 @@
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
       ],
       "name": "lite_lifecycle_workspace",
       "owner": "not a prepared projection",
@@ -1489,7 +1607,9 @@
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0057_lifecycle_authority.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0059_lifecycle_review_state.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0062_lifecycle_independent_scopes.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0064_lifecycle_candidate_consent.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0068_lifecycle_capability_activation.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -1675,6 +1795,28 @@
       "source_refs": [
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql"
+      ],
+      "type": "table",
+      "writer": "source-defined control-plane service"
+    },
+    {
+      "classification": "internal operational metadata",
+      "confidence": "inferred",
+      "description": "Source-derived control plane persistence object; detailed ownership is conservatively inferred from its migration-defined name.",
+      "domain": "control_plane",
+      "id": "table:lite_runtime_identity_projection",
+      "indexes": [],
+      "migration_sources": [
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0067_runtime_identity_projection.sql"
+      ],
+      "name": "lite_runtime_identity_projection",
+      "owner": "control_plane",
+      "readers": [],
+      "retention": "domain-owned bounded retention or explicit lifecycle policy; verify the owning service before destructive maintenance",
+      "sensitive_fields": [],
+      "source_refs": [
+        "contracts/generated/lite-sqlite-schema.json",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0067_runtime_identity_projection.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -2453,7 +2595,8 @@
       "migration_sources": [
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql"
       ],
       "name": "policy_activation_operations",
       "owner": "not a prepared projection",
@@ -2466,7 +2609,8 @@
         "contracts/generated/lite-sqlite-schema.json",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0027_policy_revision_activation_p2.sql",
         "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0029_policy_uncertain_resolution_p2.sql",
-        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql"
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0032_qualification_policy_principal.sql",
+        "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0065_lifecycle_policy_execution.sql"
       ],
       "type": "table",
       "writer": "source-defined control-plane service"
@@ -3496,6 +3640,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1f30b69222bc5131517d56b80bd58de986f7f8fec42139920f80daaf5e708fef"
+    "source_fingerprint": "bf2266ffb6cbc79243fabbd151accbf28fe8f4149e9a8f975bb2fbe712f1fab9"
   }
 }

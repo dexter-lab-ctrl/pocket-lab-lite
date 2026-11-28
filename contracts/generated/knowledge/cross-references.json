@@ -2025,7 +2025,79 @@
           "type": "owns"
         }
       ],
+      "api:post:/api/lite/lifecycle/candidate/consent": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/candidate/consent/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/candidate/consent/revoke": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/capability/activation": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/capability/activation/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/capability/activation/revoke": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/policy/execution": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/policy/execution/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/policy/execution/revoke": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
       "api:post:/api/lite/lifecycle/preferences/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/release/preparation": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/release/preparation/review": [
+        {
+          "source": "domain:lifecycle",
+          "type": "owns"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/release/preparation/revoke": [
         {
           "source": "domain:lifecycle",
           "type": "owns"
@@ -3883,6 +3955,36 @@
           "type": "owns"
         }
       ],
+      "reason:applied_migration_changed": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
+      "reason:applied_schema_ledger_incomplete": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
+      "reason:applied_schema_ledger_invalid": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
+      "reason:applied_schema_ledger_unavailable": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
+      "reason:applied_schema_unconfirmed": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
       "reason:approval_approver_role_required": [
         {
           "source": "domain:rules",
@@ -4051,6 +4153,12 @@
           "type": "owns"
         }
       ],
+      "reason:candidate_applied_migration_checksum_mismatch": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
       "reason:candidate_invalid": [
         {
           "source": "domain:release-trust",
@@ -4096,6 +4204,12 @@
       "reason:connection_failed": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:coordinated_handoff_unproved": [
+        {
+          "source": "domain:runtime",
           "type": "owns"
         }
       ],
@@ -4651,6 +4765,12 @@
           "type": "owns"
         }
       ],
+      "reason:installed_migration_checksum_mismatch": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
       "reason:insufficient_storage": [
         {
           "source": "domain:system",
@@ -4741,6 +4861,12 @@
           "type": "owns"
         }
       ],
+      "reason:local_policy_source_unavailable": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
       "reason:location_not_registered": [
         {
           "source": "domain:recovery",
@@ -4762,6 +4888,24 @@
       "reason:metadata_only": [
         {
           "source": "domain:validation",
+          "type": "owns"
+        }
+      ],
+      "reason:migration_baseline_unconfirmed": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
+      "reason:migration_qualification_required": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
+      "reason:migration_rehearsal_unproved": [
+        {
+          "source": "domain:runtime",
           "type": "owns"
         }
       ],
@@ -5095,6 +5239,12 @@
           "type": "owns"
         }
       ],
+      "reason:policy_module_set_unknown": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
       "reason:policy_parameter_invalid": [
         {
           "source": "domain:rules",
@@ -5377,6 +5527,12 @@
           "type": "owns"
         }
       ],
+      "reason:runtime_identity_stale": [
+        {
+          "source": "domain:runtime",
+          "type": "owns"
+        }
+      ],
       "reason:scanner_intelligence_hard_expired": [
         {
           "source": "domain:security",
@@ -5524,6 +5680,36 @@
       "reason:trusted_local_admin": [
         {
           "source": "domain:identity",
+          "type": "owns"
+        }
+      ],
+      "reason:trusted_policy_admission_denied": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:trusted_policy_execution_required": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:trusted_policy_interrupted_before_switch": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:trusted_policy_isolation_unproved": [
+        {
+          "source": "domain:rules",
+          "type": "owns"
+        }
+      ],
+      "reason:trusted_policy_rollback_unproved": [
+        {
+          "source": "domain:rules",
           "type": "owns"
         }
       ],
@@ -8303,13 +8489,37 @@
           "type": "owns"
         }
       ],
+      "table:lite_lifecycle_candidate_consent": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_capability_activation": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_lifecycle_grants": [
         {
           "source": "domain:control_plane",
           "type": "owns"
         }
       ],
+      "table:lite_lifecycle_policy_execution": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
       "table:lite_lifecycle_preferences": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_lifecycle_release_execution": [
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -8370,6 +8580,12 @@
         }
       ],
       "table:lite_revision_events": [
+        {
+          "source": "domain:control_plane",
+          "type": "owns"
+        }
+      ],
+      "table:lite_runtime_identity_projection": [
         {
           "source": "domain:control_plane",
           "type": "owns"
@@ -9343,6 +9559,12 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_backend_runtime_promotion.py": [
+        {
+          "source": "reason:interrupted",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_complete_documentation_platform.py": [
         {
           "source": "domain:security",
@@ -9366,6 +9588,26 @@
         },
         {
           "source": "reason:already_tuned",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_migration_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_incomplete",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_unconfirmed",
           "type": "verified_by"
         },
         {
@@ -9481,6 +9723,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:candidate_applied_migration_checksum_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:candidate_invalid",
           "type": "verified_by"
         },
@@ -9510,6 +9756,10 @@
         },
         {
           "source": "reason:connection_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:coordinated_handoff_unproved",
           "type": "verified_by"
         },
         {
@@ -9881,6 +10131,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:installed_migration_checksum_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -9941,6 +10195,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:local_policy_source_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:location_not_registered",
           "type": "verified_by"
         },
@@ -9954,6 +10212,18 @@
         },
         {
           "source": "reason:metadata_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_baseline_unconfirmed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_qualification_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_rehearsal_unproved",
           "type": "verified_by"
         },
         {
@@ -10177,6 +10447,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_module_set_unknown",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_parameter_invalid",
           "type": "verified_by"
         },
@@ -10365,6 +10639,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:runtime_identity_stale",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:scanner_intelligence_hard_expired",
           "type": "verified_by"
         },
@@ -10462,6 +10740,26 @@
         },
         {
           "source": "reason:trusted_local_admin",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_admission_denied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_execution_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_interrupted_before_switch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_isolation_unproved",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_rollback_unproved",
           "type": "verified_by"
         },
         {
@@ -10644,6 +10942,12 @@
         },
         {
           "source": "reason:shutdown",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_coordinated_runtime_promotion.py": [
+        {
+          "source": "reason:disabled",
           "type": "verified_by"
         }
       ],
@@ -11583,7 +11887,55 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/lifecycle/candidate/consent",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/candidate/consent/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/capability/activation",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/capability/activation/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/policy/execution",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/policy/execution/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/lifecycle/preferences/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/release/preparation",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/release/preparation/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/release/preparation/revoke",
           "type": "verified_by"
         },
         {
@@ -12413,6 +12765,24 @@
           "type": "verified_by"
         }
       ],
+      "test:tests/backend/test_lite_lifecycle_candidate_review.py": [
+        {
+          "source": "domain:validation",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_lifecycle_policy_execution.py": [
+        {
+          "source": "reason:actor_not_authenticated",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_lifecycle_release_execution.py": [
+        {
+          "source": "reason:disabled",
+          "type": "verified_by"
+        }
+      ],
       "test:tests/backend/test_lite_long_gate_checkpointing.py": [
         {
           "source": "reason:interrupted",
@@ -12952,6 +13322,16 @@
       "test:tests/backend/test_lite_revision_sync_n4_n5.py": [
         {
           "source": "component:frontend-state",
+          "type": "verified_by"
+        }
+      ],
+      "test:tests/backend/test_lite_runtime_identity.py": [
+        {
+          "source": "reason:identity_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:runtime_identity_stale",
           "type": "verified_by"
         }
       ],
@@ -15147,6 +15527,26 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:applied_migration_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_incomplete",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_unconfirmed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:approval_approver_role_required",
           "type": "verified_by"
         },
@@ -15259,6 +15659,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:candidate_applied_migration_checksum_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:candidate_invalid",
           "type": "verified_by"
         },
@@ -15288,6 +15692,10 @@
         },
         {
           "source": "reason:connection_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:coordinated_handoff_unproved",
           "type": "verified_by"
         },
         {
@@ -15659,6 +16067,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:installed_migration_checksum_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -15719,6 +16131,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:local_policy_source_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:location_not_registered",
           "type": "verified_by"
         },
@@ -15732,6 +16148,18 @@
         },
         {
           "source": "reason:metadata_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_baseline_unconfirmed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_qualification_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_rehearsal_unproved",
           "type": "verified_by"
         },
         {
@@ -15955,6 +16383,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_module_set_unknown",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_parameter_invalid",
           "type": "verified_by"
         },
@@ -16143,6 +16575,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:runtime_identity_stale",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:scanner_intelligence_hard_expired",
           "type": "verified_by"
         },
@@ -16240,6 +16676,26 @@
         },
         {
           "source": "reason:trusted_local_admin",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_admission_denied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_execution_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_interrupted_before_switch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_isolation_unproved",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_rollback_unproved",
           "type": "verified_by"
         },
         {
@@ -16457,6 +16913,26 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:applied_migration_changed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_incomplete",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_invalid",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_ledger_unavailable",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:applied_schema_unconfirmed",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:approval_approver_role_required",
           "type": "verified_by"
         },
@@ -16569,6 +17045,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:candidate_applied_migration_checksum_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:candidate_invalid",
           "type": "verified_by"
         },
@@ -16598,6 +17078,10 @@
         },
         {
           "source": "reason:connection_failed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:coordinated_handoff_unproved",
           "type": "verified_by"
         },
         {
@@ -16969,6 +17453,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:installed_migration_checksum_mismatch",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:insufficient_storage",
           "type": "verified_by"
         },
@@ -17029,6 +17517,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:local_policy_source_unavailable",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:location_not_registered",
           "type": "verified_by"
         },
@@ -17042,6 +17534,18 @@
         },
         {
           "source": "reason:metadata_only",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_baseline_unconfirmed",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_qualification_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:migration_rehearsal_unproved",
           "type": "verified_by"
         },
         {
@@ -17265,6 +17769,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:policy_module_set_unknown",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:policy_parameter_invalid",
           "type": "verified_by"
         },
@@ -17453,6 +17961,10 @@
           "type": "verified_by"
         },
         {
+          "source": "reason:runtime_identity_stale",
+          "type": "verified_by"
+        },
+        {
           "source": "reason:scanner_intelligence_hard_expired",
           "type": "verified_by"
         },
@@ -17550,6 +18062,26 @@
         },
         {
           "source": "reason:trusted_local_admin",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_admission_denied",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_execution_required",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_interrupted_before_switch",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_isolation_unproved",
+          "type": "verified_by"
+        },
+        {
+          "source": "reason:trusted_policy_rollback_unproved",
           "type": "verified_by"
         },
         {
@@ -19165,7 +19697,55 @@
           "type": "verified_by"
         },
         {
+          "source": "api:post:/api/lite/lifecycle/candidate/consent",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/candidate/consent/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/capability/activation",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/capability/activation/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/policy/execution",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/policy/execution/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+          "type": "verified_by"
+        },
+        {
           "source": "api:post:/api/lite/lifecycle/preferences/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/release/preparation",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/release/preparation/review",
+          "type": "verified_by"
+        },
+        {
+          "source": "api:post:/api/lite/lifecycle/release/preparation/revoke",
           "type": "verified_by"
         },
         {
@@ -22719,7 +23299,127 @@
           "type": "verified_by"
         }
       ],
+      "api:post:/api/lite/lifecycle/candidate/consent": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/candidate/consent/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/candidate/consent/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/capability/activation": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/capability/activation/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/capability/activation/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/policy/execution": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/policy/execution/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/policy/execution/revoke": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
       "api:post:/api/lite/lifecycle/preferences/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/release/preparation": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/release/preparation/review": [
+        {
+          "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/parity/test_api_contract_fences.py",
+          "type": "verified_by"
+        }
+      ],
+      "api:post:/api/lite/lifecycle/release/preparation/revoke": [
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
           "type": "verified_by"
@@ -27731,11 +28431,27 @@
           "type": "owns"
         },
         {
+          "target": "table:lite_lifecycle_candidate_consent",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_capability_activation",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_lifecycle_grants",
           "type": "owns"
         },
         {
+          "target": "table:lite_lifecycle_policy_execution",
+          "type": "owns"
+        },
+        {
           "target": "table:lite_lifecycle_preferences",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_lifecycle_release_execution",
           "type": "owns"
         },
         {
@@ -27776,6 +28492,10 @@
         },
         {
           "target": "table:lite_revision_events",
+          "type": "owns"
+        },
+        {
+          "target": "table:lite_runtime_identity_projection",
           "type": "owns"
         },
         {
@@ -29431,7 +30151,55 @@
           "type": "owns"
         },
         {
+          "target": "api:post:/api/lite/lifecycle/candidate/consent",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/candidate/consent/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/candidate/consent/revoke",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/capability/activation",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/capability/activation/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/capability/activation/revoke",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/policy/execution",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/policy/execution/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/policy/execution/revoke",
+          "type": "owns"
+        },
+        {
           "target": "api:post:/api/lite/lifecycle/preferences/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/release/preparation",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/release/preparation/review",
+          "type": "owns"
+        },
+        {
+          "target": "api:post:/api/lite/lifecycle/release/preparation/revoke",
           "type": "owns"
         },
         {
@@ -30633,6 +31401,10 @@
           "type": "owns"
         },
         {
+          "target": "reason:local_policy_source_unavailable",
+          "type": "owns"
+        },
+        {
           "target": "reason:owner_approval_policy_inconsistent",
           "type": "owns"
         },
@@ -30690,6 +31462,10 @@
         },
         {
           "target": "reason:policy_known_good_unavailable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:policy_module_set_unknown",
           "type": "owns"
         },
         {
@@ -30797,6 +31573,26 @@
           "type": "owns"
         },
         {
+          "target": "reason:trusted_policy_admission_denied",
+          "type": "owns"
+        },
+        {
+          "target": "reason:trusted_policy_execution_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:trusted_policy_interrupted_before_switch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:trusted_policy_isolation_unproved",
+          "type": "owns"
+        },
+        {
+          "target": "reason:trusted_policy_rollback_unproved",
+          "type": "owns"
+        },
+        {
           "target": "ui:literules",
           "type": "owns"
         },
@@ -30889,7 +31685,51 @@
           "type": "owns"
         },
         {
+          "target": "reason:applied_migration_changed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:applied_schema_ledger_incomplete",
+          "type": "owns"
+        },
+        {
+          "target": "reason:applied_schema_ledger_invalid",
+          "type": "owns"
+        },
+        {
+          "target": "reason:applied_schema_ledger_unavailable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:applied_schema_unconfirmed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:candidate_applied_migration_checksum_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:coordinated_handoff_unproved",
+          "type": "owns"
+        },
+        {
           "target": "reason:delivery_unconfirmed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:installed_migration_checksum_mismatch",
+          "type": "owns"
+        },
+        {
+          "target": "reason:migration_baseline_unconfirmed",
+          "type": "owns"
+        },
+        {
+          "target": "reason:migration_qualification_required",
+          "type": "owns"
+        },
+        {
+          "target": "reason:migration_rehearsal_unproved",
           "type": "owns"
         },
         {
@@ -30910,6 +31750,10 @@
         },
         {
           "target": "reason:runtime_contract_unavailable",
+          "type": "owns"
+        },
+        {
+          "target": "reason:runtime_identity_stale",
           "type": "owns"
         }
       ],
@@ -31902,6 +32746,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_development_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_lifecycle_candidate_review.py",
           "type": "verified_by"
         },
         {
@@ -33205,6 +34053,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_lifecycle_policy_execution.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/docs/test_living_knowledgebase.py",
           "type": "verified_by"
         },
@@ -33214,6 +34066,76 @@
         }
       ],
       "reason:already_tuned": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:applied_migration_changed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:applied_schema_ledger_incomplete": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:applied_schema_ledger_invalid": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:applied_schema_ledger_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:applied_schema_unconfirmed": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -33699,6 +34621,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:candidate_applied_migration_checksum_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:candidate_invalid": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -33818,6 +34754,20 @@
         }
       ],
       "reason:connection_failed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:coordinated_handoff_unproved": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -34291,6 +35241,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_coordinated_runtime_promotion.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_enterprise_identity_p2.py",
           "type": "verified_by"
         },
@@ -34308,6 +35262,10 @@
         },
         {
           "target": "test:tests/backend/test_lite_isolated_qualification_lane.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_lifecycle_release_execution.py",
           "type": "verified_by"
         },
         {
@@ -35453,6 +36411,10 @@
           "type": "verified_by"
         },
         {
+          "target": "test:tests/backend/test_lite_runtime_identity.py",
+          "type": "verified_by"
+        },
+        {
           "target": "test:tests/backend/test_lite_security.py",
           "type": "verified_by"
         },
@@ -35547,6 +36509,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:installed_migration_checksum_mismatch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:insufficient_storage": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -35566,6 +36542,10 @@
         }
       ],
       "reason:interrupted": [
+        {
+          "target": "test:tests/backend/test_lite_backend_runtime_promotion.py",
+          "type": "verified_by"
+        },
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -35837,6 +36817,20 @@
           "type": "verified_by"
         }
       ],
+      "reason:local_policy_source_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:location_not_registered": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -35894,6 +36888,48 @@
         },
         {
           "target": "test:tests/backend/test_lite_pm2_runtime_contract.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:migration_baseline_unconfirmed": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:migration_qualification_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:migration_rehearsal_unproved": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
         },
         {
@@ -36734,6 +37770,20 @@
         }
       ],
       "reason:policy_known_good_unavailable": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:policy_module_set_unknown": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -37613,6 +38663,24 @@
           "type": "verified_by"
         }
       ],
+      "reason:runtime_identity_stale": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/backend/test_lite_runtime_identity.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
       "reason:scanner_intelligence_hard_expired": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
@@ -38058,6 +39126,76 @@
         }
       ],
       "reason:trusted_local_admin": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:trusted_policy_admission_denied": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:trusted_policy_execution_required": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:trusted_policy_interrupted_before_switch": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:trusted_policy_isolation_unproved": [
+        {
+          "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_living_knowledgebase.py",
+          "type": "verified_by"
+        },
+        {
+          "target": "test:tests/docs/test_operational_health_bridge.py",
+          "type": "verified_by"
+        }
+      ],
+      "reason:trusted_policy_rollback_unproved": [
         {
           "target": "test:tests/backend/test_lite_complete_documentation_platform.py",
           "type": "verified_by"
@@ -39089,6 +40227,6 @@
     "generator_version": 3,
     "schema_version": "1.0.0",
     "source_commit": "uncommitted",
-    "source_fingerprint": "1f30b69222bc5131517d56b80bd58de986f7f8fec42139920f80daaf5e708fef"
+    "source_fingerprint": "bf2266ffb6cbc79243fabbd151accbf28fe8f4149e9a8f975bb2fbe712f1fab9"
   }
 }
