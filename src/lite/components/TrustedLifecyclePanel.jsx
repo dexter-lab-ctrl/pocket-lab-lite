@@ -320,9 +320,9 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
     refetchOnMount: 'always', refetchOnWindowFocus: true, pollingMode: 'off' });
   const data = query.data;
   const writable = !readOnly && !query.error && query.backendReachable === true && !query.refreshing && data?.schema_version === 1 && data?.owner_authority === true;
-  async function exactPasskey(review) {
+  async function exactPasskey(review, options) {
     if (!webAuthnAvailable()) throw new Error('passkey_unavailable');
-    const options = await liteApi.passkeyStepUpOptions(review.purpose);
+    if (!options?.publicKey?.challenge) throw new Error('passkey_step_up_options_unavailable');
     const credential = await getLitePasskey(options);
     await liteApi.verifyPasskeyStepUp({ purpose: review.purpose, challenge: options.publicKey.challenge, credential });
   }
@@ -332,29 +332,29 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
     try {
       if (pending.kind === 'profile') {
         const body = { expected_revision: pending.revision, profile: pending.value, confirm: true };
-        if (pending.value !== 'notify') await exactPasskey(pending.review);
+        if (pending.value !== 'notify') await exactPasskey(pending.review, pending.stepUpOptions);
         await liteApi.lifecyclePreference(body);
       } else if (pending.kind === 'grant') {
         const body = { expected_revision: pending.boundary, expected_profile_revision: pending.revision, purpose: pending.value, confirm: true };
-        await exactPasskey(pending.review);
+        await exactPasskey(pending.review, pending.stepUpOptions);
         await liteApi.lifecycleIssueBoundary(body);
       } else if (pending.kind === 'release-preparation') {
-        await exactPasskey(pending.review);
+        await exactPasskey(pending.review, pending.stepUpOptions);
         await liteApi.lifecycleAdmitReleasePreparation({ expected_revision: pending.boundary, metadata_sha256: pending.value, confirm: true });
       } else if (pending.kind === 'release-preparation-revoke') {
         await liteApi.lifecycleRevokeReleasePreparation({ expected_revision: pending.boundary, grant_id: pending.value, confirm: true });
       } else if (pending.kind === 'policy-execution') {
-        await exactPasskey(pending.review);
+        await exactPasskey(pending.review, pending.stepUpOptions);
         await liteApi.lifecycleAdmitPolicyExecution({ expected_revision: pending.boundary, metadata_sha256: pending.value, confirm: true });
       } else if (pending.kind === 'policy-execution-revoke') {
         await liteApi.lifecycleRevokePolicyExecution({ expected_revision: pending.boundary, grant_id: pending.value, confirm: true });
       } else if (pending.kind === 'capability-activation') {
-        await exactPasskey(pending.review);
+        await exactPasskey(pending.review, pending.stepUpOptions);
         await liteApi.lifecycleActivateCapability({ expected_revision: pending.boundary, ...pending.value, confirm: true });
       } else if (pending.kind === 'capability-revoke') {
         await liteApi.lifecycleRevokeCapability({ expected_revision: pending.boundary, activation_id: pending.value, confirm: true });
       } else if (pending.kind === 'candidate') {
-        await exactPasskey(pending.review);
+        await exactPasskey(pending.review, pending.stepUpOptions);
         await liteApi.lifecycleRecordCandidateConsent({ expected_revision: pending.boundary, ...pending.value, confirm: true });
       } else if (pending.kind === 'candidate-revoke') {
         await liteApi.lifecycleRevokeCandidateConsent({ expected_revision: pending.boundary, consent_id: pending.value, confirm: true });
@@ -389,6 +389,7 @@ export default function TrustedLifecyclePanel({ readOnly = false }) {
           expected_revision: next.boundary, expected_profile_revision: next.revision, purpose: change.value, confirm: true });
         if (change.kind === 'profile' && change.value !== 'notify') next.review = await liteApi.lifecycleReviewPreference({
           expected_revision: next.revision, profile: change.value, confirm: true });
+        if (next.review?.purpose) next.stepUpOptions = await liteApi.passkeyStepUpOptions(next.review.purpose);
         setPending(next);
       } catch { setMessage('Review is unavailable. Reconnect or refresh current information.'); }
       finally { setBusy(false); inFlight.current = false; }
