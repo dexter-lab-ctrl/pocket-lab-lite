@@ -103,6 +103,71 @@ def test_owner_evidence_accepts_only_sanitized_backend_confirmation(tmp_path: Pa
     assert controller._owner_evidence(run, evidence)["status"] == "PASS"
 
 
+def test_candidate_review_caddyfile_is_exact_candidate_same_origin_projection(tmp_path: Path):
+    dist = tmp_path / "dist"
+    dist.mkdir()
+    path = tmp_path / "caddy" / "Caddyfile"
+
+    controller._candidate_review_caddyfile(
+        path,
+        caddy_port=38101,
+        api_port=38102,
+        dist=dist,
+        source_sha="c" * 40,
+        run_id="a" * 24,
+    )
+
+    rendered = path.read_text(encoding="utf-8")
+    assert "http://127.0.0.1:38101" in rendered
+    assert "reverse_proxy 127.0.0.1:38102" in rendered
+    assert "X-PocketLab-Source-Commit \"" + ("c" * 40) + "\"" in rendered
+    assert "X-PocketLab-Qualification-Run \"" + ("a" * 24) + "\"" in rendered
+    assert "/api/* /health /healthz /ready" in rendered
+    assert "try_files {path} /index.html" in rendered
+
+
+def test_await_owner_requires_candidate_review_runtime(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    run = _run(tmp_path, phase="awaiting_owner")
+    monkeypatch.setattr(controller, "_verify_origin", lambda *args, **kwargs: {"status": "PASS"})
+    with pytest.raises(controller.QualificationControllerError, match="candidate review runtime"):
+        controller.await_owner(run, "https://qualification.example")
+
+
+def test_candidate_runtime_env_rebinds_live_owner_to_candidate_state_and_pwa(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    run = _run(tmp_path, phase="candidate_owner_ready")
+    root = tmp_path / "run"
+    candidate_root = root / "candidate-review"
+    state = candidate_root / "state"
+    base = candidate_root / "base"
+    (state / "opa" / "active").mkdir(mode=0o700, parents=True)
+    (base / "pwa").mkdir(mode=0o700, parents=True)
+    (candidate_root / "caddy").mkdir(mode=0o700, parents=True)
+    database = state / "pocketlab-lite.sqlite3"
+    database.touch()
+    caddyfile = candidate_root / "caddy" / "Caddyfile"
+    caddyfile.write_text("", encoding="utf-8")
+    run["candidate_review"] = {
+        "status": "PASS",
+        "database": "candidate-review/state/pocketlab-lite.sqlite3",
+        "state": "candidate-review/state",
+        "base": "candidate-review/base",
+        "caddyfile": "candidate-review/caddy/Caddyfile",
+        "ports": {"api": 38111, "caddy": 38112},
+        "services": [],
+    }
+    monkeypatch.setattr(controller, "_base_env", lambda *_args: {"PM2_HOME": str(root / "pm2"), "POCKETLAB_ENVIRONMENT": "qualification"})
+
+    env = controller._candidate_runtime_env(run)
+
+    assert env["POCKETLAB_LITE_DB_PATH"] == str(database)
+    assert env["POCKETLAB_STATE_DIR"] == str(state)
+    assert env["PWA_DIR"] == str(root / "pwa_dist")
+    assert env["POCKETLAB_LITE_PWA_CURRENT_LINK"] == str(root / "pwa_dist" / "current")
+    assert env["POCKETLAB_API_PORT"] == "38111"
+    assert env["DASH_PORT"] == "38112"
+    assert env["POCKETLAB_PROCESS_ROLE"] == "coordinated-promotion-controller"
+
+
 def test_controller_exit_codes_keep_awaiting_operator_distinct():
     assert controller.EXIT_SUCCESS != controller.EXIT_AWAITING_OPERATOR
     assert controller.EXIT_AWAITING_OPERATOR != controller.EXIT_BLOCKED

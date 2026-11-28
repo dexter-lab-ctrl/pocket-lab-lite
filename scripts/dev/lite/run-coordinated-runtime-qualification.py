@@ -479,6 +479,10 @@ def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], bi
         "POCKETLAB_HARNESS_PROVISIONING_TOKEN": "qualification-provisioning-" + run_id,
         "POCKETLAB_QUALIFICATION_OWNER": "0",
         "POCKETLAB_TEST_AUTH_BYPASS": "0",
+        # The one-time setup authority is derived from the run identity and is
+        # intentionally kept in the process environment only.  It is never
+        # written to the manifest or qualification evidence.
+        "POCKETLAB_IDENTITY_SETUP_TOKEN": "qualification-owner-setup-" + run_id,
         "POCKETLAB_QUALIFICATION_CONTEXT": "isolated-runtime-v1",
         "POCKETLAB_QUALIFICATION_CONTEXT_TOKEN": "qualification-context-" + run_id,
         "POCKETLAB_QUALIFICATION_CANDIDATE_SHA": commit,

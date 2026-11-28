@@ -429,10 +429,12 @@ def _baseline_start_script(run: Mapping[str, Any]) -> Path:
     """Create a run-owned compatibility overlay for an older exact baseline.
 
     The T0--T2 baseline predates the isolated-runtime port contract and writes
-    NATS directly to 4222/8222.  Copying or editing the checked-out baseline
-    would blur the source identity, so the controller creates a disposable
-    sibling script that keeps the baseline startup owners and replaces only
-    those hard-coded listener values with the already allocated run ports.
+    NATS directly to 4222/8222.  Some older baselines also start OPA through a
+    script that does not understand the qualification port contract.  Copying
+    or editing the checked-out baseline would blur the source identity, so the
+    controller creates disposable sibling scripts that keep the baseline
+    startup owners and replace only those hard-coded listener values with the
+    already allocated run ports.
     """
     paths = _safe_paths(run)
     source = paths["baseline"] / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "start-dashboard.sh"
@@ -850,7 +852,7 @@ def _start(run: dict[str, Any]) -> dict[str, Any]:
     return updated
 
 
-def _verify_origin(origin: str) -> dict[str, Any]:
+def _verify_origin(origin: str, *, expected_source_commit: str | None = None) -> dict[str, Any]:
     value = str(origin or "").strip().rstrip("/")
     if not value.startswith("https://") or any(marker in value for marker in ("@", "?", "#")):
         raise QualificationControllerError("candidate_https_origin_invalid", "The candidate origin must be an HTTPS URL without credentials or query state.")
@@ -859,19 +861,26 @@ def _verify_origin(origin: str) -> dict[str, Any]:
         if not parsed.hostname:
             raise ValueError("missing host")
         context = ssl.create_default_context()
-        with urllib.request.urlopen(value + "/health", timeout=8, context=context) as response:
+        request = urllib.request.Request(value + "/health", headers={"Cache-Control": "no-store"})
+        with urllib.request.urlopen(request, timeout=8, context=context) as response:
             status = int(response.status)
             body = response.read(128 * 1024)
+            source_commit = str(response.headers.get("X-PocketLab-Source-Commit") or "")
     except (OSError, urllib.error.URLError, ValueError, ssl.SSLError) as exc:
         raise QualificationControllerError("candidate_https_unavailable", "The candidate HTTPS origin could not be verified with normal certificate validation.") from exc
-    return {"status": "PASS" if status == 200 else "FAIL", "url": value, "health_status": status, "response_sha256": _sha256(body), "sanitized": True}
+    if expected_source_commit and source_commit != expected_source_commit:
+        raise QualificationControllerError("candidate_https_identity_mismatch", "The HTTPS origin did not serve the exact candidate runtime.")
+    return {"status": "PASS" if status == 200 else "FAIL", "url": value, "health_status": status, "response_sha256": _sha256(body), "source_commit": source_commit or None, "sanitized": True}
 
 
 def await_owner(run: dict[str, Any], origin: str) -> dict[str, Any]:
     validated = _validate_run(run)
-    if str(validated.get("phase")) not in {"awaiting_owner", "owner_ready"}:
+    if str(validated.get("phase")) not in {"awaiting_owner", "owner_ready", "candidate_owner_ready"}:
         raise QualificationControllerError("owner_checkpoint_invalid", "The qualification run is not at its owner-authentication checkpoint.")
-    verified = _verify_origin(origin)
+    candidate_review = validated.get("candidate_review") if isinstance(validated.get("candidate_review"), Mapping) else {}
+    if candidate_review.get("status") != "PASS":
+        raise QualificationControllerError("candidate_review_not_ready", "The isolated candidate review runtime must be started before owner authentication.")
+    verified = _verify_origin(origin, expected_source_commit=str(validated["candidate_sha"]))
     updated = _write_phase(validated, phase="owner_ready", next_action="open_origin_and_complete_purpose_bound_webauthn", status="AWAITING_OPERATOR", origin=verified)
     updated["operator_prompt"] = "HUMAN INTERVENTION REQUIRED: complete the displayed Pocket Lab Lite Owner passkey ceremony, then resume this exact run."
     _atomic_json(_manifest_path(Path(str(updated["run_root"]))), updated)
@@ -935,7 +944,6 @@ def trust_check(run: dict[str, Any]) -> dict[str, Any]:
         raise QualificationControllerError("runtime_not_started", "The isolated runtime must be started before trust verification.")
     paths = validated["paths_resolved"]
     review = _prepare_trust_review(validated)
-    review_root = paths["manifest"].parent
     review_database = _run_owned_path(validated, review["database"], "trust_review_database")
     review_state = _run_owned_path(validated, review["state"], "trust_review_state")
     checkpoint = _write_phase(
@@ -990,8 +998,303 @@ def trust_check(run: dict[str, Any]) -> dict[str, Any]:
     return updated
 
 
+def _candidate_review_env(run: Mapping[str, Any], *, database: Path, state: Path, base: Path, api_port: int, caddy_port: int) -> dict[str, str]:
+    """Build the candidate-only API environment for live browser review."""
+    validated = _validate_run(run)
+    paths = validated["paths_resolved"]
+    env = _base_env(validated)
+    candidate = paths["candidate"]
+    run_root = Path(str(validated["run_root"])).resolve(strict=True)
+    candidate_assets = run_root / "candidate-assets" / "assets"
+    env.update({
+        "POCKETLAB_REPO_ROOT": str(candidate),
+        "POCKETLAB_CANDIDATE_SOURCE_COMMIT": str(validated["candidate_sha"]),
+        "PYTHONPATH": os.pathsep.join((str(candidate / "pocket-lab-final-structure" / "runtime"), str(candidate / "pocket-lab-final-structure" / "runtime" / "supervisors"), os.environ.get("PYTHONPATH", ""))),
+        "POCKETLAB_STATE_DIR": str(state),
+        "POCKETLAB_QUALIFICATION_STATE_DIR": str(state),
+        "POCKETLAB_LITE_DB_PATH": str(database),
+        "POCKETLAB_OPA_ACTIVE_POLICY_DIR": str(state / "opa" / "active"),
+        "POCKETLAB_BASE_DIR": str(base),
+        "POCKET_LAB_BASE_DIR": str(base),
+        "POCKET_LAB_PWA_DIR": str(base / "pwa"),
+        "POCKET_LAB_API_DIR": str(base / "api"),
+        "POCKETLAB_LITE_PWA_CURRENT_LINK": str(base / "pwa" / "current"),
+        "POCKETLAB_LITE_PWA_RELEASES_DIR": str(base / "pwa" / "releases"),
+        "PWA_DIR": str(base / "pwa"),
+        "POCKETLAB_API_HOST": "127.0.0.1",
+        "POCKETLAB_API_PORT": str(api_port),
+        "API_PORT": str(api_port),
+        "DASH_PORT": str(caddy_port),
+        "POCKETLAB_CADDY_PORT": str(caddy_port),
+        "POCKETLAB_COORDINATED_API_URL": f"http://127.0.0.1:{api_port}",
+        "POCKETLAB_COORDINATED_PROXY_URL": f"http://127.0.0.1:{caddy_port}",
+        "POCKETLAB_LOCAL_DIST_ZIP": str(candidate_assets / "dist.zip"),
+        "POCKETLAB_LOCAL_RELEASE_MANIFEST": str(candidate_assets / "pocketlab-lite-release.json"),
+        "POCKETLAB_LOCAL_RELEASE_CHECKSUMS": str(candidate_assets / "checksums.txt"),
+        "POCKETLAB_LOCAL_RELEASE_TAG": str(validated.get("candidate_release_tag") or ""),
+        "POCKET_LAB_CADDYFILE": str(base / "caddy" / "Caddyfile"),
+        "POCKETLAB_CADDYFILE": str(base / "caddy" / "Caddyfile"),
+        "CADDYFILE": str(base / "caddy" / "Caddyfile"),
+        "POCKETLAB_PROCESS_ROLE": "api",
+        "POCKETLAB_DISABLE_RELEASE_UPDATER": "1",
+        "POCKETLAB_IDENTITY_SETUP_TOKEN": "qualification-owner-setup-" + str(validated["run_id"]),
+    })
+    return env
+
+
+def _spawn_candidate_service(run: Mapping[str, Any], name: str, command: list[str], *, cwd: Path, env: Mapping[str, str], log_name: str) -> dict[str, Any]:
+    root = Path(str(run["run_root"])).resolve(strict=True)
+    log_path = root / "logs" / log_name
+    log_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    try:
+        log = log_path.open("ab", buffering=0)
+        process = subprocess.Popen(
+            command,
+            cwd=str(cwd),
+            env=dict(env),
+            stdin=subprocess.DEVNULL,
+            stdout=log,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+    except OSError as exc:
+        raise QualificationControllerError("candidate_review_start_failed", f"The candidate {name} owner could not start.") from exc
+    finally:
+        try:
+            log.close()
+        except UnboundLocalError:
+            pass
+    return {"name": name, "pid": int(process.pid), "log": _root_relative(log_path, root), "status": "started", "sanitized": True}
+
+
+def _stop_candidate_review_services(run: Mapping[str, Any]) -> bool:
+    review = run.get("candidate_review") if isinstance(run.get("candidate_review"), Mapping) else {}
+    stopped = True
+    run_id = str(run.get("run_id") or "")
+    for item in review.get("services") or []:
+        try:
+            pid = int(item.get("pid") or 0)
+        except (AttributeError, TypeError, ValueError):
+            stopped = False
+            continue
+        if pid <= 0 or not _owned_process(pid, run_id):
+            continue
+        try:
+            os.killpg(pid, __import__("signal").SIGTERM)
+        except (ProcessLookupError, PermissionError, OSError):
+            stopped = False
+            continue
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline and _owned_process(pid, run_id):
+            time.sleep(0.1)
+        if _owned_process(pid, run_id):
+            try:
+                os.killpg(pid, __import__("signal").SIGKILL)
+            except (ProcessLookupError, PermissionError, OSError):
+                stopped = False
+    return stopped
+
+
+def _candidate_review_caddyfile(path: Path, *, caddy_port: int, api_port: int, dist: Path, source_sha: str, run_id: str) -> None:
+    for item in (dist, path.parent):
+        if item.is_symlink():
+            raise QualificationControllerError("candidate_review_symlink", "The candidate review serving path may not be a symlink.")
+    content = f'''{{
+    auto_https off
+    admin off
+}}
+
+http://127.0.0.1:{caddy_port} {{
+    header {{
+        X-PocketLab-Source-Commit "{source_sha}"
+        X-PocketLab-Qualification-Run "{run_id}"
+        Cache-Control "no-store"
+    }}
+    @api path /api/* /health /healthz /ready
+    handle @api {{
+        reverse_proxy 127.0.0.1:{api_port}
+    }}
+    handle {{
+        root * {dist}
+        try_files {{path}} /index.html
+        file_server
+    }}
+}}
+'''
+    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+    path.chmod(0o600)
+
+
+def _candidate_review(run: dict[str, Any]) -> dict[str, Any]:
+    """Start the candidate API/PWA review lane after trust is verified."""
+    validated = _validate_run(run)
+    trust_review = validated.get("trust_review") if isinstance(validated.get("trust_review"), Mapping) else {}
+    if trust_review.get("status") != "PASS":
+        raise QualificationControllerError("qualification_trust_unavailable", "Candidate review requires a passing isolated release-trust review.")
+    paths = validated["paths_resolved"]
+    root = paths["manifest"].parent
+    prior = validated.get("candidate_review") if isinstance(validated.get("candidate_review"), Mapping) else {}
+    if prior.get("status") == "PASS" and all(_owned_process(int(item.get("pid") or 0), str(validated["run_id"])) for item in prior.get("services") or []):
+        return validated
+    _stop_candidate_review_services(validated)
+    candidate_root = root / "candidate-review"
+    if candidate_root.exists():
+        if candidate_root.is_symlink():
+            raise QualificationControllerError("candidate_review_symlink", "The candidate review root may not be a symlink.")
+        shutil.rmtree(candidate_root)
+    candidate_state = candidate_root / "state"
+    candidate_database = candidate_state / "pocketlab-lite.sqlite3"
+    source_database = _run_owned_path(validated, str(trust_review.get("database") or ""), "trust_review_database")
+    source_state = _run_owned_path(validated, str(trust_review.get("state") or ""), "trust_review_state")
+    _copy_sqlite_snapshot(source_database, candidate_database, root)
+    _copy_run_tree(source_state, candidate_state, root)
+    candidate_base = candidate_root / "base"
+    release_dir = candidate_base / "pwa" / "releases" / str(validated["candidate_sha"])
+    shutil.copytree(paths["candidate"] / "dist", release_dir, symlinks=False)
+    (candidate_base / "pwa").mkdir(mode=0o700, parents=True, exist_ok=True)
+    (candidate_base / "pwa" / "current").symlink_to(release_dir, target_is_directory=True)
+    ports = dict(validated.get("ports") or {})
+    used_ports = {int(value) for value in ports.values() if isinstance(value, int)}
+    candidate_api_port = int(ports.get("candidate_api") or 0)
+    while not candidate_api_port or candidate_api_port in used_ports:
+        candidate_api_port = _free_port()
+    ports["candidate_api"] = candidate_api_port
+    used_ports.add(candidate_api_port)
+    candidate_caddy_port = int(ports.get("candidate_caddy") or 0)
+    while not candidate_caddy_port or candidate_caddy_port in used_ports:
+        candidate_caddy_port = _free_port()
+    ports["candidate_caddy"] = candidate_caddy_port
+    env = _candidate_review_env(validated, database=candidate_database, state=candidate_state, base=candidate_base, api_port=ports["candidate_api"], caddy_port=ports["candidate_caddy"])
+    source_schema_probe = _run(
+        [
+            sys.executable,
+            "-c",
+            "from api_fastapi.db.migrations import current_schema_version; print(current_schema_version())",
+        ],
+        env=env,
+        cwd=paths["candidate"],
+        timeout=60,
+    )
+    try:
+        from_schema = int((source_schema_probe.stdout or "0").strip())
+    except ValueError as exc:
+        raise QualificationControllerError("candidate_migration_invalid", "The candidate migration owner returned an invalid source schema.") from exc
+    if source_schema_probe.returncode != 0:
+        raise QualificationControllerError("candidate_migration_invalid", "The candidate migration owner could not inspect the source schema.")
+    migration = _run(
+        [
+            sys.executable,
+            "-c",
+            "from api_fastapi.db.migrations import apply_migrations,current_schema_version; import json; print(json.dumps({'applied': apply_migrations(), 'schema': current_schema_version()}, sort_keys=True))",
+        ],
+        env=env,
+        cwd=paths["candidate"],
+        timeout=120,
+    )
+    try:
+        migration_evidence = json.loads(migration.stdout or "{}")
+    except json.JSONDecodeError as exc:
+        raise QualificationControllerError("candidate_migration_invalid", "The candidate migration owner returned invalid evidence.") from exc
+    if int(migration_evidence.get("schema") or 0) < 69:
+        raise QualificationControllerError("candidate_migration_incomplete", "The candidate review database did not reach the candidate schema.")
+    caddyfile = candidate_root / "caddy" / "Caddyfile"
+    _candidate_review_caddyfile(caddyfile, caddy_port=ports["candidate_caddy"], api_port=ports["candidate_api"], dist=release_dir, source_sha=str(validated["candidate_sha"]), run_id=str(validated["run_id"]))
+    api_server = paths["candidate"] / "pocket-lab-final-structure" / "runtime" / "api_fastapi" / "pocket_lab_fastapi_server.py"
+    services = [_spawn_candidate_service(validated, "candidate-api", [sys.executable, str(api_server)], cwd=paths["candidate"], env=env, log_name="candidate-api.log")]
+    api_url = f"http://127.0.0.1:{ports['candidate_api']}"
+    deadline = time.monotonic() + 60
+    api_status = 0
+    while time.monotonic() < deadline:
+        api_status, _ = _runner()._http_json(api_url + "/health")
+        if api_status == 200:
+            break
+        if not _owned_process(int(services[0]["pid"]), str(validated["run_id"])):
+            break
+        time.sleep(1)
+    if api_status != 200:
+        _stop_candidate_review_services({**validated, "candidate_review": {"services": services}})
+        raise QualificationControllerError("candidate_api_not_ready", "The candidate API did not become healthy.")
+    services.append(_spawn_candidate_service(validated, "candidate-caddy", [str((validated.get("binaries") or {}).get("caddy") or ""), "run", "--config", str(caddyfile)], cwd=candidate_root, env=env, log_name="candidate-caddy.log"))
+    caddy_url = f"http://127.0.0.1:{ports['candidate_caddy']}"
+    deadline = time.monotonic() + 30
+    caddy_status = 0
+    while time.monotonic() < deadline:
+        caddy_status, _ = _runner()._http_json(caddy_url + "/health")
+        if caddy_status == 200:
+            break
+        if not _owned_process(int(services[-1]["pid"]), str(validated["run_id"])):
+            break
+        time.sleep(0.5)
+    if caddy_status != 200:
+        _stop_candidate_review_services({**validated, "candidate_review": {"services": services}})
+        raise QualificationControllerError("candidate_caddy_not_ready", "The candidate same-origin proxy did not become healthy.")
+    review = {
+        "status": "PASS",
+        "database": _root_relative(candidate_database, root),
+        "state": _root_relative(candidate_state, root),
+        "base": _root_relative(candidate_base, root),
+        "caddyfile": _root_relative(caddyfile, root),
+        "api_url": api_url,
+        "proxy_url": caddy_url,
+        "ports": {"api": ports["candidate_api"], "caddy": ports["candidate_caddy"]},
+        "services": services,
+        "migration": {"status": "PASS", "from_schema": from_schema, "to_schema": int(migration_evidence["schema"]), "applied": migration_evidence.get("applied") or [], "sanitized": True},
+        "source_commit": str(validated["candidate_sha"]),
+        "sanitized": True,
+    }
+    updated = _write_phase(validated, phase="candidate_owner_ready", next_action="verify_candidate_https_then_request_owner_authentication", status="AWAITING_OPERATOR", ports=ports, candidate_review=review, evidence=[*(validated.get("evidence") or []), "candidate_review_runtime", "candidate_migration"])
+    _report(updated, "candidate-review.json", {key: value for key, value in review.items() if key != "services"} | {"services": [{"name": item["name"], "pid_present": True, "log": item["log"], "sanitized": True} for item in services]})
+    return updated
+
+
+def _candidate_runtime_env(run: Mapping[str, Any]) -> dict[str, str]:
+    """Build the exact candidate environment used by the live owner.
+
+    Browser review has its own API/Caddy processes so a human can authenticate
+    without touching the baseline PM2 generation.  Once the grant exists those
+    processes are stopped and the native promotion owner starts the candidate
+    through the normal PM2/reconciler path.  This second environment keeps the
+    candidate database/state while rebinding the runtime-owned PWA and Caddy
+    roots to the run root.
+    """
+    validated = _validate_run(run)
+    review = validated.get("candidate_review") if isinstance(validated.get("candidate_review"), Mapping) else {}
+    if review.get("status") != "PASS":
+        raise QualificationControllerError("candidate_review_not_ready", "The exact candidate review runtime is not ready for live promotion.")
+    paths = validated["paths_resolved"]
+    root = Path(str(validated["run_root"])).resolve(strict=True)
+    database = _run_owned_path(validated, str(review.get("database") or ""), "candidate_runtime_database")
+    state = _run_owned_path(validated, str(review.get("state") or ""), "candidate_runtime_state")
+    candidate_base = _run_owned_path(validated, str(review.get("base") or ""), "candidate_runtime_base")
+    ports = review.get("ports") if isinstance(review.get("ports"), Mapping) else {}
+    api_port = int(ports.get("api") or 0)
+    caddy_port = int(ports.get("caddy") or 0)
+    if not (1024 <= api_port <= 65535 and 1024 <= caddy_port <= 65535):
+        raise QualificationControllerError("candidate_runtime_ports_invalid", "The candidate runtime ports are not valid run-owned ports.")
+    env = _candidate_review_env(run, database=database, state=state, base=root, api_port=api_port, caddy_port=caddy_port)
+    pwa = root / "pwa_dist"
+    env.update({
+        "POCKETLAB_QUALIFICATION_CANDIDATE_SHA": str(validated["candidate_sha"]),
+        "POCKETLAB_REPO_ROOT": str(paths["candidate"]),
+        "POCKETLAB_BASE_DIR": str(root),
+        "POCKET_LAB_BASE_DIR": str(root),
+        "POCKET_LAB_PWA_DIR": str(pwa),
+        "PWA_DIR": str(pwa),
+        "POCKETLAB_LITE_PWA_CURRENT_LINK": str(pwa / "current"),
+        "POCKETLAB_LITE_PWA_RELEASES_DIR": str(pwa / "releases"),
+        "POCKETLAB_COORDINATED_RUNTIME_ROOT": str(root / "runtime"),
+        "POCKETLAB_QUALIFICATION_TEST_ORIGIN": f"https://127.0.0.1:{caddy_port}",
+        "POCKETLAB_QUALIFICATION_CONTROL_ORIGIN": f"https://127.0.0.1:{api_port}",
+        "POCKETLAB_PROCESS_ROLE": "coordinated-promotion-controller",
+        "POCKETLAB_CADDYFILE": str(_run_owned_path(validated, str(review.get("caddyfile") or ""), "candidate_runtime_caddyfile")),
+        "CADDYFILE": str(_run_owned_path(validated, str(review.get("caddyfile") or ""), "candidate_runtime_caddyfile")),
+        "POCKET_LAB_CADDYFILE": str(_run_owned_path(validated, str(review.get("caddyfile") or ""), "candidate_runtime_caddyfile")),
+    })
+    return env
+
+
 def _promotion(run: dict[str, Any], *, owner_evidence: Path | None, grant_id: str | None, authorization: Path | None, promotion_public_key: Path | None, recovery_authorization: Path | None, recovery_public_key: Path | None) -> dict[str, Any]:
-    runner = _runner()
     validated = _validate_run(run)
     owner = _owner_evidence(validated, owner_evidence)
     required = {"grant_id": grant_id, "authorization": authorization, "promotion_public_key": promotion_public_key, "recovery_authorization": recovery_authorization, "recovery_public_key": recovery_public_key}
@@ -999,7 +1302,13 @@ def _promotion(run: dict[str, Any], *, owner_evidence: Path | None, grant_id: st
     if missing:
         raise QualificationControllerError("execution_authority_incomplete", "The execution continuation is missing: " + ", ".join(missing) + ".")
     paths = validated["paths_resolved"]
-    env = _base_env(validated)
+    if ((validated.get("candidate_review") or {}).get("status") if isinstance(validated.get("candidate_review"), Mapping) else None) != "PASS":
+        raise QualificationControllerError("candidate_review_not_ready", "Actual coordinated promotion requires the exact candidate runtime review lane.")
+    if not _stop_candidate_review_services(validated):
+        raise QualificationControllerError("candidate_review_cleanup_failed", "The browser review owners could not be stopped before live promotion.")
+    validated = dict(validated)
+    validated["candidate_review"] = {**(validated.get("candidate_review") or {}), "services": [], "status": "PASS", "review_services_stopped": True}
+    env = _candidate_runtime_env(validated)
     command = [sys.executable, str(PROMOTION), "activate-coordinated", "--grant-id", str(grant_id), "--authorization", str(authorization), "--promotion-public-key", str(promotion_public_key), "--recovery-authorization", str(recovery_authorization), "--recovery-public-key", str(recovery_public_key), "--confirm-cutover"]
     result = _run(command, env=env, cwd=paths["baseline"], timeout=600)
     try:
@@ -1018,7 +1327,10 @@ def _promotion(run: dict[str, Any], *, owner_evidence: Path | None, grant_id: st
 def _recover(run: dict[str, Any], *, journal: Path, recovery_authorization: Path, recovery_public_key: Path) -> dict[str, Any]:
     validated = _validate_run(run)
     paths = validated["paths_resolved"]
-    env = _base_env(validated)
+    candidate_review = validated.get("candidate_review") if isinstance(validated.get("candidate_review"), Mapping) else {}
+    if candidate_review.get("status") != "PASS":
+        raise QualificationControllerError("candidate_review_not_ready", "Actual coordinated recovery requires the exact candidate runtime lane.")
+    env = _candidate_runtime_env(validated)
     command = [sys.executable, str(PROMOTION), "recover-coordinated", "--journal", str(journal), "--candidate-sha", str(validated["candidate_sha"]), "--current-sha", str(validated["baseline_sha"]), "--device-id", "qualification-" + str(validated["run_id"]), "--recovery-authorization", str(recovery_authorization), "--recovery-public-key", str(recovery_public_key), "--confirm-recovery"]
     result = _run(command, env=env, cwd=paths["baseline"], timeout=600)
     try:
@@ -1040,16 +1352,17 @@ def cleanup(run: dict[str, Any], *, remove_root: bool) -> dict[str, Any]:
     validated = _validate_run(run, allow_expired=True)
     paths = validated["paths_resolved"]
     env = _base_env(validated)
+    candidate_services_stopped = _stop_candidate_review_services(validated)
     trust_cleanup_ok = _stop_trust_services(validated)
-    cleanup_ok = trust_cleanup_ok and runner._cleanup(env)
+    cleanup_ok = candidate_services_stopped and trust_cleanup_ok and runner._cleanup(env)
     prior_status = str(validated.get("status") or "UNVALIDATED")
     # Cleanup is an operational disposition, never qualification evidence.
     # Preserve an unresolved or failed result even when owned services stop
     # cleanly; otherwise a cleanup-only success would mask a missing cutover,
     # recovery or human-authority requirement.
     qualification_status = prior_status if cleanup_ok else "BLOCKED"
-    updated = _write_phase(validated, phase="cleaned", next_action="none", status=qualification_status, trust_services=[], cleanup={"status": "PASS" if cleanup_ok else "BLOCKED", "run_owned_services_stopped": cleanup_ok, "trust_services_stopped": trust_cleanup_ok, "prior_status": prior_status, "qualification_status": qualification_status, "root_removed": False})
-    _report(updated, "cleanup.json", {"status": updated["status"], "cleanup_status": "PASS" if cleanup_ok else "BLOCKED", "qualification_status": qualification_status, "run_id": updated["run_id"], "services_stopped": cleanup_ok, "trust_services_stopped": trust_cleanup_ok, "root_removed": False, "sanitized": True})
+    updated = _write_phase(validated, phase="cleaned", next_action="none", status=qualification_status, trust_services=[], candidate_review={**(validated.get("candidate_review") or {}), "services": [], "cleanup_status": "PASS" if candidate_services_stopped else "BLOCKED"}, cleanup={"status": "PASS" if cleanup_ok else "BLOCKED", "run_owned_services_stopped": cleanup_ok, "candidate_review_services_stopped": candidate_services_stopped, "trust_services_stopped": trust_cleanup_ok, "prior_status": prior_status, "qualification_status": qualification_status, "root_removed": False})
+    _report(updated, "cleanup.json", {"status": updated["status"], "cleanup_status": "PASS" if cleanup_ok else "BLOCKED", "qualification_status": qualification_status, "run_id": updated["run_id"], "services_stopped": cleanup_ok, "candidate_review_services_stopped": candidate_services_stopped, "trust_services_stopped": trust_cleanup_ok, "root_removed": False, "sanitized": True})
     if remove_root and cleanup_ok:
         root = Path(str(updated["run_root"])).resolve()
         if root == ROOT or root == Path("/") or root.is_symlink():
@@ -1085,6 +1398,8 @@ def _parser() -> argparse.ArgumentParser:
     owner.add_argument("--origin", required=True)
     trust_check_parser = commands.add_parser("trust-check")
     trust_check_parser.add_argument("--run-root", type=Path, required=True)
+    candidate_start = commands.add_parser("candidate-start")
+    candidate_start.add_argument("--run-root", type=Path, required=True)
     resume = commands.add_parser("resume")
     resume.add_argument("--run-root", type=Path, required=True)
     resume.add_argument("--owner-evidence", type=Path, required=True)
@@ -1134,7 +1449,7 @@ def main(argv: list[str] | None = None) -> int:
             env = _base_env(validated)
             observation = runner._observe(env, str(validated["run_id"])) if validated.get("services", {}).get("started") else {"status": "not_started"}
             _print({**validated, "runtime_observation": observation})
-            if validated.get("phase") in {"awaiting_owner", "owner_ready", "recovery_required"}:
+            if validated.get("phase") in {"awaiting_owner", "owner_ready", "candidate_owner_ready", "recovery_required"}:
                 return EXIT_AWAITING_OPERATOR
             if validated.get("status") == "BLOCKED":
                 return EXIT_BLOCKED
@@ -1144,6 +1459,9 @@ def main(argv: list[str] | None = None) -> int:
             return EXIT_AWAITING_OPERATOR
         if args.command == "trust-check":
             _print(trust_check(run))
+            return EXIT_AWAITING_OPERATOR
+        if args.command == "candidate-start":
+            _print(_candidate_review(run))
             return EXIT_AWAITING_OPERATOR
         if args.command in {"resume", "cutover"}:
             _print(_promotion(run, owner_evidence=args.owner_evidence, grant_id=args.grant_id, authorization=args.authorization, promotion_public_key=args.promotion_public_key, recovery_authorization=args.recovery_authorization, recovery_public_key=args.recovery_public_key))
