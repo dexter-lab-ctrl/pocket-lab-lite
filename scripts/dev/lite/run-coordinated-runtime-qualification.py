@@ -479,7 +479,15 @@ def main(argv: list[str] | None = None) -> int:
         })
         Path(env["HOME"]).mkdir(mode=0o700, parents=True, exist_ok=True)
         install = source / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "install-pwa-ui.sh"
-        _run(["bash", str(install)], cwd=source, env=env, timeout=180)
+        install_result = _run(["bash", str(install)], cwd=source, env=env, timeout=180, check=False)
+        payload["pwa_install"] = {
+            "returncode": install_result.returncode,
+            "stdout_tail": _diagnostic(install_result.stdout, root),
+            "stderr_tail": _diagnostic(install_result.stderr, root),
+            "sanitized": True,
+        }
+        if install_result.returncode != 0:
+            raise QualificationError("exact candidate PWA installation failed")
         start = _run([
             "bash",
             str(source / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "start-dashboard.sh"),
