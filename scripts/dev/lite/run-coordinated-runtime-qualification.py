@@ -321,7 +321,7 @@ def _copy_binaries(root: Path, binaries: dict[str, Path]) -> dict[str, Path]:
     destination.mkdir(mode=0o700, parents=True)
     copied: dict[str, Path] = {}
     for name, path in binaries.items():
-        target = destination / name
+        target = destination / ("nats-server" if name == "nats" else name)
         shutil.copy2(path, target)
         target.chmod(0o700)
         copied[name] = target
