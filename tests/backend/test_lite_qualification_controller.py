@@ -135,7 +135,7 @@ def test_baseline_start_overlay_only_rebinds_legacy_nats_listeners(tmp_path: Pat
     )
     source.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     source.write_text(
-        "#!/usr/bin/env bash\ncat <<EOF\nlisten: 0.0.0.0:4222\nhttp: 127.0.0.1:8222\nEOF\n",
+        "#!/usr/bin/env bash\ncat <<EOF\nlisten: 0.0.0.0:4222\nhttp: 127.0.0.1:8222\ncurl http://127.0.0.1:8222/healthz\nEOF\n",
         encoding="utf-8",
     )
     source.chmod(0o700)
@@ -144,4 +144,5 @@ def test_baseline_start_overlay_only_rebinds_legacy_nats_listeners(tmp_path: Pat
     rendered = overlay.read_text(encoding="utf-8")
     assert "${POCKETLAB_LITE_NATS_PORT:-4222}" in rendered
     assert "${POCKETLAB_LITE_NATS_MONITOR_PORT:-8222}" in rendered
+    assert "${POCKETLAB_LITE_NATS_MONITOR_PORT:-8222}/healthz" in rendered
     assert "listen: 0.0.0.0:4222" not in rendered

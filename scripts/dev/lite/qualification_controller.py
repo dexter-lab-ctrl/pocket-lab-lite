@@ -281,6 +281,7 @@ def _baseline_start_script(run: Mapping[str, Any]) -> Path:
     replacements = {
         "listen: 0.0.0.0:4222": "listen: ${POCKETLAB_NATS_LISTEN_HOST:-127.0.0.1}:${POCKETLAB_LITE_NATS_PORT:-4222}",
         "http: 127.0.0.1:8222": "http: 127.0.0.1:${POCKETLAB_LITE_NATS_MONITOR_PORT:-8222}",
+        "http://127.0.0.1:8222/healthz": "http://127.0.0.1:${POCKETLAB_LITE_NATS_MONITOR_PORT:-8222}/healthz",
     }
     changed = False
     for old, new in replacements.items():
