@@ -518,6 +518,7 @@ def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], bi
         "LOG_DIR": str(root / "logs"),
         "RUN_DIR": str(root / "run"),
         "LOCK_DIR": str(root / "locks"),
+        "POCKETLAB_START_DASHBOARD_LOCK": str(root / "locks" / "start-dashboard.sh.lock"),
         "MARKER_DIR": str(root / "markers"),
         "TMP_ROOT": str(root / "tmp"),
         "TMPDIR": str(root / "tmp"),

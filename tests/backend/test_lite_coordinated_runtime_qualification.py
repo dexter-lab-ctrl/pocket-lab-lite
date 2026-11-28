@@ -30,3 +30,8 @@ def test_coordinated_runtime_binds_supervisor_nats_probe_to_isolated_port():
     source = RUNNER.read_text(encoding="utf-8")
     assert '"POCKETLAB_NATS_PORT": str(ports["nats"])' in source
     assert '"POCKETLAB_LITE_NATS_PORT": str(ports["nats"])' in source
+
+
+def test_coordinated_runtime_binds_supervisor_lifecycle_lock_to_run_root():
+    source = RUNNER.read_text(encoding="utf-8")
+    assert '"POCKETLAB_START_DASHBOARD_LOCK": str(root / "locks" / "start-dashboard.sh.lock")' in source
