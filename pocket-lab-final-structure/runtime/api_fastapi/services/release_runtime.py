@@ -23,6 +23,7 @@ import sys
 import threading
 import time
 from typing import Any, Callable, Mapping
+import uuid
 
 from ..db.connection import begin_immediate, connection, read_connection
 from .lite_release_contract import (

@@ -273,6 +273,55 @@ def test_release_check_runs_in_bounded_subprocess(tmp_path, monkeypatch):
     assert diagnostics["api_thread_started"] is False
     assert diagnostics["execution_owner"] == "pocket-worker/release-subprocess"
 
+
+def test_manual_trust_review_allocates_a_bounded_review_id(tmp_path, monkeypatch):
+    """The worker must reach the trust child instead of failing on review-ID creation."""
+    release_runtime, _database = _prepare_runtime(tmp_path, monkeypatch)
+    from api_fastapi.services import lite_release_trust_configuration as trust_config
+
+    monkeypatch.setattr(release_runtime, "build_check_request", lambda: {
+        "configured_repository": "dexter-lab-ctrl/pocket-lab-lite",
+        "verified_repository": "dexter-lab-ctrl/pocket-lab-lite",
+        "repository_match": True,
+        "install_mode": "source",
+        "installed_release_tag": "",
+        "source_url": "http://127.0.0.1/releases",
+        "auto_apply": False,
+    })
+    monkeypatch.setattr(trust_config, "reconcile_configuration", lambda _conn: None)
+    monkeypatch.setattr(trust_config, "latched", lambda _conn: True)
+    seen: dict[str, str] = {}
+
+    async def fake_subprocess(operation, payload, *, deadline=None):
+        assert deadline is not None
+        if operation == "check":
+            return {
+                "product": "pocket-lab-lite",
+                "current_tag": "",
+                "latest_tag": "lite-2026.07.28.2",
+                "update_available": False,
+                "latest_release": {
+                    "prerelease": False,
+                    "manifest": {
+                        "source_commit": "b" * 40,
+                        "artifact_sha256": "c" * 64,
+                    },
+                },
+            }, {"wall_ms": 1.0}
+        assert operation == "verify_trust"
+        seen["review_id"] = str(payload["review_id"])
+        return {
+            "state": "historical_evidence",
+            "reason_code": "qualification_provenance_verified",
+        }, {"wall_ms": 1.0}
+
+    monkeypatch.setattr(release_runtime, "execute_release_subprocess", fake_subprocess)
+    result = asyncio.run(release_runtime.run_release_check("manual-trust-review"))
+
+    assert result["status"] == "healthy"
+    assert len(seen["review_id"]) == 32
+    assert all(character in "0123456789abcdef" for character in seen["review_id"])
+
 def test_release_stage_rejects_archive_traversal(tmp_path, monkeypatch):
     release_runtime, _database = _prepare_runtime(tmp_path, monkeypatch)
     server, base, release = _serve_release(
