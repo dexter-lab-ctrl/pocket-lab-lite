@@ -307,7 +307,8 @@ def inspect_candidate(request):
                 raise TrustError("metadata_version_conflict")
             package_review = _inspect_coordinated_source(candidate, root_dir, request, receipt)
             from .lite_release_provenance import provenance
-            disposition, reason = provenance(candidate, root_dir, commit=receipt["source_commit"], tag=tag)
+            disposition, reason = provenance(candidate, root_dir, commit=receipt["source_commit"], tag=tag,
+                                             trusted_now=now)
             if package_review["state"] == "inventory_verified":
                 package_review["state"] = "verified_for_review" if disposition == "verified" else "provenance_unconfirmed"
                 acquisition_metrics["bytes_read"] += package_review["archive_bytes"]
@@ -422,10 +423,11 @@ def cached_review(conn, request):
             return False
         local_policy, local_migrations = _local_inventory()
         root_dir = _trust_directory()
+        from .lite_release_provenance import provenance_root_filename
         if (not local_policy or not local_migrations
                 or local_policy != r.get("local_policy_sha256") or local_migrations != r.get("local_migration_inventory_sha256")
                 or _read(root_dir, "root.json", MAX_BYTES, hash_only=True) != r.get("root_sha256")
-                or _read(root_dir, "github-trusted-root.jsonl", 2 * 1024 * 1024, hash_only=True) != r.get("attestation_root_sha256")):
+                or _read(root_dir, provenance_root_filename(), 2 * 1024 * 1024, hash_only=True) != r.get("attestation_root_sha256")):
             return False
         return (r["provenance"] == "verified" and request["repository"] == "dexter-lab-ctrl/pocket-lab-lite"
                 and request["pinned_root_sha256"] == os.environ.get("POCKETLAB_RELEASE_ROOT_SHA256")

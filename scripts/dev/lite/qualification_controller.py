@@ -39,6 +39,7 @@ from typing import Any, Iterator, Mapping
 ROOT = Path(__file__).resolve().parents[3]
 RUNNER_PATH = ROOT / "scripts" / "dev" / "lite" / "run-coordinated-runtime-qualification.py"
 PROMOTION = ROOT / "scripts" / "dev" / "lite" / "backend_runtime_promotion.py"
+TRUST_BOOTSTRAP = ROOT / "scripts" / "dev" / "lite" / "qualification_trust_bootstrap.py"
 MANIFEST_NAME = "qualification-run.json"
 SCHEMA = "pocketlab.coordinated-runtime-qualification/v2"
 DEFAULT_TTL_MINUTES = 20
@@ -212,7 +213,7 @@ def _free_port() -> int:
 
 def _ports() -> dict[str, int]:
     result: dict[str, int] = {}
-    for name in ("api", "caddy", "nats", "monitor", "opa"):
+    for name in ("api", "caddy", "nats", "monitor", "opa", "release", "time"):
         port = _free_port()
         while port in result.values():
             port = _free_port()
@@ -260,6 +261,26 @@ def _base_env(run: Mapping[str, Any]) -> dict[str, str]:
     # takes its explicit qualification branch and invokes the same shim
     # directly.  No application owner uses this value to execute JavaScript.
     env["POCKETLAB_NATIVE_NODE"] = sys.executable
+    trust = run.get("trust") if isinstance(run.get("trust"), Mapping) else {}
+    if trust.get("status") == "PASS":
+        trust_root = paths["state"] / "release-trust"
+        certificate = root / str(trust.get("certificate_relative") or "")
+        env.update({
+            "POCKETLAB_RELEASE_TRUST_SOURCE": "local",
+            "POCKETLAB_RELEASE_PROVENANCE_SOURCE": "qualification",
+            "POCKETLAB_RELEASE_ROOT_SHA256": str(trust.get("root_sha256") or ""),
+            "POCKETLAB_RELEASE_ATTESTATION_ROOT_SHA256": str(trust.get("attestation_root_sha256") or ""),
+            "POCKETLAB_RELEASE_TRUST_TIME_SOURCE": "signed_challenge",
+            "POCKETLAB_RELEASE_TIME_URL": f"https://127.0.0.1:{int(run['ports']['time'])}/time",
+            "POCKETLAB_RELEASE_TIME_KEY_SHA256": str(trust.get("time_key_sha256") or ""),
+            "POCKETLAB_RELEASE_COORDINATED_PREFLIGHT": "1",
+            "POCKETLAB_RELEASE_POLICY_DIFFERENTIAL": "1",
+            "POCKETLAB_GITHUB_RELEASES_API": f"http://127.0.0.1:{int(run['ports']['release'])}/releases",
+            "POCKETLAB_RELEASE_ALLOW_INSECURE_SOURCE": "1",
+            "POCKETLAB_RELEASE_ALLOWED_HOSTS": "127.0.0.1",
+            "SSL_CERT_FILE": str(certificate),
+            "REQUESTS_CA_BUNDLE": str(certificate),
+        })
     return env
 
 
@@ -389,6 +410,81 @@ def _package_inputs(run: Mapping[str, Any], lane: str, source_sha: str) -> dict[
     }
 
 
+def _owned_process(pid: int, run_id: str) -> bool:
+    if pid <= 0:
+        return False
+    try:
+        marker = Path(f"/proc/{pid}/environ").read_bytes().replace(b"\x00", b"\n")
+        return f"POCKETLAB_QUALIFICATION_RUN_ID={run_id}".encode() in marker
+    except (FileNotFoundError, OSError):
+        return False
+
+
+def _start_trust_services(run: Mapping[str, Any], env: Mapping[str, str]) -> list[dict[str, Any]]:
+    trust = run.get("trust") if isinstance(run.get("trust"), Mapping) else {}
+    if trust.get("status") != "PASS":
+        raise QualificationControllerError("qualification_trust_unavailable", "The isolated runtime has no verified qualification trust bootstrap.")
+    root = Path(str(run["run_root"])).resolve(strict=True)
+    assets = root / "candidate-assets" / "assets"
+    private = root / "secrets" / "trusted-time-signing.key"
+    certificate = root / str(trust.get("certificate_relative") or "")
+    tls_key = root / "secrets" / "trusted-time-key.pem"
+    for path in (assets, private, certificate, tls_key):
+        if not path.is_file() or path.is_symlink():
+            raise QualificationControllerError("qualification_trust_material_missing", "The run-owned trust service material is incomplete.")
+    log_root = root / "logs"
+    log_root.mkdir(mode=0o700, parents=True, exist_ok=True)
+    commands = [
+        ("trusted-time", [sys.executable, str(TRUST_BOOTSTRAP), "serve-time", "--port", str(run["ports"]["time"]), "--private-key", str(private), "--cert", str(certificate), "--tls-key", str(tls_key)]),
+        ("release-metadata", [sys.executable, str(TRUST_BOOTSTRAP), "serve-release", "--port", str(run["ports"]["release"]), "--assets", str(assets), "--tag", str(run["candidate_release_tag"]), "--commit", str(run["candidate_sha"])]),
+    ]
+    started: list[dict[str, Any]] = []
+    try:
+        for name, command in commands:
+            log = (log_root / f"{name}.log").open("ab", buffering=0)
+            process = subprocess.Popen(command, cwd=str(root), env=dict(env), stdin=subprocess.DEVNULL,
+                                       stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+            log.close()
+            started.append({"name": name, "pid": int(process.pid), "status": "started", "sanitized": True})
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            if all(_owned_process(int(item["pid"]), str(run["run_id"])) for item in started):
+                return started
+            time.sleep(0.1)
+    except OSError as exc:
+        _stop_trust_services({"run_root": str(root), "run_id": run["run_id"], "trust_services": started})
+        raise QualificationControllerError("qualification_trust_service_start_failed", "A run-owned trust service could not start.") from exc
+    _stop_trust_services({"run_root": str(root), "run_id": run["run_id"], "trust_services": started})
+    raise QualificationControllerError("qualification_trust_service_identity_failed", "A trust service did not retain its run identity.")
+
+
+def _stop_trust_services(run: Mapping[str, Any]) -> bool:
+    stopped = True
+    run_id = str(run.get("run_id") or "")
+    for item in run.get("trust_services") or []:
+        try:
+            pid = int(item.get("pid") or 0)
+        except (AttributeError, TypeError, ValueError):
+            stopped = False
+            continue
+        if pid <= 0 or not _owned_process(pid, run_id):
+            continue
+        try:
+            os.killpg(pid, __import__("signal").SIGTERM)
+        except (ProcessLookupError, PermissionError, OSError):
+            stopped = False
+            continue
+        deadline = time.monotonic() + 3
+        while time.monotonic() < deadline and _owned_process(pid, run_id):
+            time.sleep(0.1)
+        if _owned_process(pid, run_id):
+            try:
+                os.killpg(pid, __import__("signal").SIGKILL)
+            except (ProcessLookupError, PermissionError, OSError):
+                stopped = False
+    return stopped
+
+
 def _sanitize_tail(text: str, root: Path) -> list[str]:
     output: list[str] = []
     for line in (text or "").splitlines()[-16:]:
@@ -453,6 +549,18 @@ def prepare(*, baseline_sha: str, candidate_sha: str, run_root: Path | None, evi
     baseline_package = _baseline_package(runner, repo, baseline, root)
     candidate_package = runner._promotion_artifact(repo, candidate, root / "candidate-package")
     ports = _ports()
+    try:
+        from scripts.dev.lite.qualification_trust_bootstrap import bootstrap as bootstrap_trust
+        trust = bootstrap_trust(
+            run_root=root,
+            assets=root / "candidate-assets" / "assets",
+            tag=candidate_assets["tag"],
+            commit=candidate,
+            release_port=ports["release"],
+            time_port=ports["time"],
+        )
+    except (OSError, RuntimeError, subprocess.SubprocessError, ValueError) as exc:
+        raise QualificationControllerError("qualification_trust_bootstrap_failed", "The disposable release-trust and trusted-time inputs could not be prepared.") from exc
     run = {
         "schema": SCHEMA,
         "run_id": run_id,
@@ -484,6 +592,7 @@ def prepare(*, baseline_sha: str, candidate_sha: str, run_root: Path | None, evi
             "baseline": {"artifact": baseline_package["verified"], "pwa": {"source_commit": baseline, "artifact_sha256": baseline_assets["digest"]}},
             "candidate": {"artifact": candidate_package["verified"], "pwa": {"source_commit": candidate, "artifact_sha256": candidate_assets["digest"]}},
         },
+        "trust": trust,
         "services": {"started": False, "owned": list(runner.SERVICE_NAMES)},
         "authority": {"owner": "not_authenticated", "promotion": "not_issued", "recovery": "not_issued"},
         "origin": {"status": "not_verified", "url": None},
@@ -506,6 +615,7 @@ def _start(run: dict[str, Any]) -> dict[str, Any]:
     env = _base_env(validated)
     runner._assert_isolated_environment(env, paths["manifest"].parent)
     Path(env["HOME"]).mkdir(mode=0o700, parents=True, exist_ok=True)
+    trust_services = _start_trust_services(validated, env)
     # The preflight runner installs and records these two independent identity
     # anchors before it starts the owners.  The resumable controller must do
     # the same work for its real baseline checkpoint; otherwise the runtime
@@ -567,7 +677,7 @@ def _start(run: dict[str, Any]) -> dict[str, Any]:
         }
     if not baseline_ready or (baseline_has_identity_contract and (runtime.get("stable") is not True or projection.get("status") != "stable")):
         raise QualificationControllerError("runtime_convergence_failed", "The isolated baseline did not converge with independently observed identity.")
-    updated = _write_phase(validated, phase="awaiting_owner", next_action="verify_candidate_https_then_request_owner_authentication", status="AWAITING_OPERATOR", services={"started": True, "owned": list(runner.SERVICE_NAMES), "process_manager": "qualification_pm2_shim"}, baseline_identity={"status": "PASS" if baseline_projection.get("status") == "stable" and runtime.get("stable") is True else "PARTIAL", "source_commit": validated["baseline_sha"], "installed_artifact": installed_baseline, "policy": policy_baseline, "runtime": runtime, "projection": baseline_projection, "observation": observation}, startup={"status": "PASS", "owner": "exact_baseline_start_dashboard", "qualification_overlay": "isolated_nats_port_and_process_identity"}, evidence=["baseline_identity"])
+    updated = _write_phase(validated, phase="awaiting_owner", next_action="verify_candidate_https_then_request_owner_authentication", status="AWAITING_OPERATOR", services={"started": True, "owned": list(runner.SERVICE_NAMES), "process_manager": "qualification_pm2_shim"}, trust_services=trust_services, baseline_identity={"status": "PASS" if baseline_projection.get("status") == "stable" and runtime.get("stable") is True else "PARTIAL", "source_commit": validated["baseline_sha"], "installed_artifact": installed_baseline, "policy": policy_baseline, "runtime": runtime, "projection": baseline_projection, "observation": observation}, startup={"status": "PASS", "owner": "exact_baseline_start_dashboard", "qualification_overlay": "isolated_nats_port_and_process_identity"}, evidence=["baseline_identity", "qualification_trust_material"])
     updated["manifest"] = str(_manifest_path(paths["manifest"].parent))
     _report(updated, "baseline-start.json", {"status": "PASS", "run_id": updated["run_id"], "baseline_sha": updated["baseline_sha"], "runtime": runtime, "projection": projection, "services": observation, "sanitized": True})
     return updated
@@ -645,6 +755,41 @@ def _newer_write_evidence(payload: Mapping[str, Any]) -> dict[str, Any]:
     return {"state": "not_executed", "independently_verified": False, "preserved": None, "sanitized": True}
 
 
+def trust_check(run: dict[str, Any]) -> dict[str, Any]:
+    """Run the existing release worker against the run-owned trust inputs."""
+    validated = _validate_run(run)
+    if not validated.get("services", {}).get("started"):
+        raise QualificationControllerError("runtime_not_started", "The isolated runtime must be started before trust verification.")
+    paths = validated["paths_resolved"]
+    env = _base_env(validated)
+    # The disposable baseline remains the running consumer, while the exact
+    # candidate release-worker code performs the trust observation that will
+    # be exercised again after candidate activation.  No database rows are
+    # written by this controller; the worker owns the lease and persistence.
+    env["POCKETLAB_REPO_ROOT"] = str(paths["candidate"])
+    env["POCKETLAB_CANDIDATE_SOURCE_COMMIT"] = str(validated["candidate_sha"])
+    env["PYTHONPATH"] = os.pathsep.join((str(paths["candidate"] / "pocket-lab-final-structure" / "runtime"), str(paths["candidate"] / "pocket-lab-final-structure" / "runtime" / "supervisors"), os.environ.get("PYTHONPATH", "")))
+    command = [sys.executable, str(TRUST_BOOTSTRAP), "release-check", "--command-id", "qualification-trust-" + str(validated["run_id"])]
+    result = _run(command, env=env, cwd=paths["candidate"], timeout=360)
+    try:
+        payload = json.loads(result.stdout or "{}")
+    except json.JSONDecodeError:
+        payload = {"status": "BLOCKED", "reason_code": "trust_worker_invalid_output", "sanitized": True}
+    if not isinstance(payload, dict):
+        payload = {"status": "BLOCKED", "reason_code": "trust_worker_invalid_output", "sanitized": True}
+    payload["stderr_tail"] = _sanitize_tail(result.stderr, Path(str(validated["run_root"])))
+    payload["returncode"] = int(result.returncode)
+    payload["sanitized"] = True
+    passed = result.returncode == 0 and payload.get("status") == "PASS" and payload.get("trust_observation", {}).get("state") == "historical_evidence"
+    if not passed:
+        updated = _write_phase(validated, phase="trust_required", next_action="repair_qualification_trust_inputs", status="BLOCKED", trust_observation=payload)
+        _report(updated, "trust-observation.json", payload)
+        raise QualificationControllerError("qualification_trust_verification_failed", "The running release worker did not establish an independently verified qualification trust observation.")
+    updated = _write_phase(validated, phase=str(validated.get("phase") or "awaiting_owner"), next_action="open_origin_and_complete_purpose_bound_webauthn", status="AWAITING_OPERATOR", trust_observation=payload, evidence=[*(validated.get("evidence") or []), "qualification_trust_material", "trust_observation"])
+    _report(updated, "trust-observation.json", payload)
+    return updated
+
+
 def _promotion(run: dict[str, Any], *, owner_evidence: Path | None, grant_id: str | None, authorization: Path | None, promotion_public_key: Path | None, recovery_authorization: Path | None, recovery_public_key: Path | None) -> dict[str, Any]:
     runner = _runner()
     validated = _validate_run(run)
@@ -695,15 +840,16 @@ def cleanup(run: dict[str, Any], *, remove_root: bool) -> dict[str, Any]:
     validated = _validate_run(run, allow_expired=True)
     paths = validated["paths_resolved"]
     env = _base_env(validated)
-    cleanup_ok = runner._cleanup(env)
+    trust_cleanup_ok = _stop_trust_services(validated)
+    cleanup_ok = trust_cleanup_ok and runner._cleanup(env)
     prior_status = str(validated.get("status") or "UNVALIDATED")
     # Cleanup is an operational disposition, never qualification evidence.
     # Preserve an unresolved or failed result even when owned services stop
     # cleanly; otherwise a cleanup-only success would mask a missing cutover,
     # recovery or human-authority requirement.
     qualification_status = prior_status if cleanup_ok else "BLOCKED"
-    updated = _write_phase(validated, phase="cleaned", next_action="none", status=qualification_status, cleanup={"status": "PASS" if cleanup_ok else "BLOCKED", "run_owned_services_stopped": cleanup_ok, "root_removed": False, "prior_status": prior_status, "qualification_status": qualification_status})
-    _report(updated, "cleanup.json", {"status": updated["status"], "cleanup_status": "PASS" if cleanup_ok else "BLOCKED", "qualification_status": qualification_status, "run_id": updated["run_id"], "services_stopped": cleanup_ok, "root_removed": False, "sanitized": True})
+    updated = _write_phase(validated, phase="cleaned", next_action="none", status=qualification_status, trust_services=[], cleanup={"status": "PASS" if cleanup_ok else "BLOCKED", "run_owned_services_stopped": cleanup_ok, "trust_services_stopped": trust_cleanup_ok, "prior_status": prior_status, "qualification_status": qualification_status, "root_removed": False})
+    _report(updated, "cleanup.json", {"status": updated["status"], "cleanup_status": "PASS" if cleanup_ok else "BLOCKED", "qualification_status": qualification_status, "run_id": updated["run_id"], "services_stopped": cleanup_ok, "trust_services_stopped": trust_cleanup_ok, "root_removed": False, "sanitized": True})
     if remove_root and cleanup_ok:
         root = Path(str(updated["run_root"])).resolve()
         if root == ROOT or root == Path("/") or root.is_symlink():
@@ -737,6 +883,8 @@ def _parser() -> argparse.ArgumentParser:
     owner = commands.add_parser("await-owner")
     owner.add_argument("--run-root", type=Path, required=True)
     owner.add_argument("--origin", required=True)
+    trust_check_parser = commands.add_parser("trust-check")
+    trust_check_parser.add_argument("--run-root", type=Path, required=True)
     resume = commands.add_parser("resume")
     resume.add_argument("--run-root", type=Path, required=True)
     resume.add_argument("--owner-evidence", type=Path, required=True)
@@ -794,6 +942,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "await-owner":
             _print(await_owner(run, args.origin))
             return EXIT_AWAITING_OPERATOR
+        if args.command == "trust-check":
+            _print(trust_check(run))
+            return EXIT_AWAITING_OPERATOR
         if args.command in {"resume", "cutover"}:
             _print(_promotion(run, owner_evidence=args.owner_evidence, grant_id=args.grant_id, authorization=args.authorization, promotion_public_key=args.promotion_public_key, recovery_authorization=args.recovery_authorization, recovery_public_key=args.recovery_public_key))
             return EXIT_SUCCESS
@@ -816,7 +967,7 @@ def main(argv: list[str] | None = None) -> int:
         raise QualificationControllerError("command_invalid", "The qualification controller command is invalid.")
     except QualificationControllerError as exc:
         print(json.dumps({"status": "BLOCKED", "reason_code": exc.reason_code, "message": exc.message, "sanitized": True}, ensure_ascii=True, sort_keys=True), file=sys.stderr)
-        return EXIT_BLOCKED if exc.reason_code in {"owner_authorization_required", "candidate_https_origin_invalid", "candidate_https_unavailable", "owner_authentication_unconfirmed", "execution_authority_incomplete", "checkpoint_expired"} else EXIT_FAILED
+        return EXIT_BLOCKED if exc.reason_code in {"owner_authorization_required", "candidate_https_origin_invalid", "candidate_https_unavailable", "owner_authentication_unconfirmed", "execution_authority_incomplete", "checkpoint_expired", "qualification_trust_verification_failed", "qualification_trust_bootstrap_failed", "qualification_trust_unavailable", "qualification_trust_material_missing", "runtime_not_started"} else EXIT_FAILED
 
 
 if __name__ == "__main__":

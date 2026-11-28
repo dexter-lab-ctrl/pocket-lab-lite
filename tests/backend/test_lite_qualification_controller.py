@@ -266,6 +266,7 @@ def test_start_records_identity_anchors_before_owner_checkpoint(tmp_path: Path, 
             return {"status": "stable", "sanitized": True}
 
     monkeypatch.setattr(controller, "_runner", lambda: FakeRunner())
+    monkeypatch.setattr(controller, "_start_trust_services", lambda *_args: [])
     monkeypatch.setattr(controller, "_base_env", lambda value: {
         "HOME": str(root / "home"),
         "POCKETLAB_COORDINATED_API_URL": "http://127.0.0.1:1",
