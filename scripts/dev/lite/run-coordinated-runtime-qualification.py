@@ -257,15 +257,12 @@ def _promotion_artifact(repo: Path, commit: str, root: Path) -> dict:
     return {"prepared": prepared, "verified": verified}
 
 
-def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], binaries: dict[str, Path]) -> dict[str, str]:
+def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], binaries: dict[str, Path], node: Path) -> dict[str, str]:
     source = root / "candidate"
     base = root / "base"
     state = root / "state"
     runtime_root = root / "runtime"
     allow = ",".join(SERVICE_NAMES)
-    node = os.environ.get("POCKETLAB_NATIVE_NODE") or shutil.which("node") or ""
-    if not node:
-        raise QualificationError("node binary is unavailable")
     path_parts = [str(root / "bin"), str(binaries["nats"].parent), str(binaries["caddy"].parent), str(binaries["opa"].parent)]
     path_parts.extend(item for item in os.environ.get("PATH", "").split(os.pathsep) if item)
     return {
@@ -299,7 +296,7 @@ def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], bi
         "POCKETLAB_LITE_NATS_MONITOR_PORT": str(ports["monitor"]),
         "POCKETLAB_OPA_URL": f"http://127.0.0.1:{ports['opa']}",
         "POCKETLAB_NATIVE_BASH": "/bin/bash",
-        "POCKETLAB_NATIVE_NODE": node,
+        "POCKETLAB_NATIVE_NODE": str(node),
         "POCKETLAB_NATS_SERVER_BIN": str(binaries["nats"]),
         "POCKETLAB_CADDY_BIN": str(binaries["caddy"]),
         "POCKETLAB_OPA_BIN": str(binaries["opa"]),
@@ -333,6 +330,14 @@ def _copy_binaries(root: Path, binaries: dict[str, Path]) -> dict[str, Path]:
     pm2.chmod(0o700)
     copied["pm2"] = pm2
     return copied
+
+
+def _node_for_npm(npm: Path) -> Path:
+    candidates = [npm.parent / "node", *(parent / "bin" / "node" for parent in npm.parents)]
+    for candidate in candidates:
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            return candidate.resolve()
+    raise QualificationError("node binary is unavailable")
 
 
 def _copy_runtime_tree(source: Path, root: Path) -> None:
@@ -444,6 +449,7 @@ def main(argv: list[str] | None = None) -> int:
             "opa": _find_binary(args.opa_bin or os.environ.get("OPA_BIN"), "opa"),
         }
         npm = _find_binary(args.npm_bin or os.environ.get("NPM_BIN"), "npm")
+        node = _node_for_npm(npm)
         source = root / "candidate"
         _extract_commit(repo, candidate, source)
         assets = _release_assets(source, candidate, root, npm)
@@ -451,7 +457,7 @@ def main(argv: list[str] | None = None) -> int:
         copied = _copy_binaries(root, binaries)
         _copy_runtime_tree(source, root)
         ports = _ports()
-        env = _environment(root, run_id, candidate, ports, copied)
+        env = _environment(root, run_id, candidate, ports, copied, node)
         env.update({
             "POCKETLAB_LOCAL_DIST_ZIP": assets["archive"],
             "POCKETLAB_LOCAL_RELEASE_MANIFEST": assets["manifest"],
