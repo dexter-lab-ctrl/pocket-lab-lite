@@ -295,8 +295,12 @@ def test_trust_review_uses_sqlite_backup_and_preserves_baseline_projection(tmp_p
         )
     (database.parent / "release-trust").mkdir(mode=0o700)
     (database.parent / "release-trust" / "root.json").write_text("root", encoding="utf-8")
-    (database.parent / "opa" / "active").mkdir(mode=0o700, parents=True)
-    (database.parent / "opa" / "active" / "policy.rego").write_text("package pocketlab", encoding="utf-8")
+    opa = database.parent / "opa"
+    active_target = opa / "stage" / "qualification-revision"
+    active_target.mkdir(mode=0o700, parents=True)
+    (active_target / "policy.rego").write_text("package pocketlab", encoding="utf-8")
+    (opa / "active").symlink_to(active_target, target_is_directory=True)
+    (opa / "known-good").symlink_to(active_target, target_is_directory=True)
 
     review = controller._prepare_trust_review(run)
 
@@ -309,6 +313,11 @@ def test_trust_review_uses_sqlite_backup_and_preserves_baseline_projection(tmp_p
     with sqlite3.connect(database) as conn:
         assert conn.execute("SELECT installed_source_commit FROM release_runtime_projection").fetchone()[0] == "baseline"
     assert (tmp_path / "run" / review["state"] / "release-trust" / "root.json").read_text(encoding="utf-8") == "root"
+    review_opa = tmp_path / "run" / review["state"] / "opa"
+    assert (review_opa / "active").is_symlink()
+    assert (review_opa / "known-good").is_symlink()
+    assert (review_opa / "active").resolve() == review_opa / "stage" / "qualification-revision"
+    assert (review_opa / "active" / "policy.rego").read_text(encoding="utf-8") == "package pocketlab"
 
 
 def test_package_inputs_bind_to_the_sealed_exact_sha(tmp_path: Path):

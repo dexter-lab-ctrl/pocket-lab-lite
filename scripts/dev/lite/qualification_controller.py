@@ -222,7 +222,14 @@ def _copy_sqlite_snapshot(source: Path, destination: Path, root: Path) -> dict[s
 
 
 def _copy_run_tree(source: Path, destination: Path, root: Path) -> None:
-    """Copy static qualification state while rejecting links and escapes."""
+    """Copy static qualification state while preserving only safe links.
+
+    OPA keeps its active and known-good policy pointers as symlinks. Those
+    pointers are part of the runtime state contract, but copying an absolute
+    link verbatim would rebind the review runtime to the source run. Validate
+    every link against the source tree, copy ordinary entries first, and
+    recreate links as relative links inside the destination tree.
+    """
     source = source.resolve(strict=True)
     destination = destination.resolve(strict=False)
     try:
@@ -232,18 +239,55 @@ def _copy_run_tree(source: Path, destination: Path, root: Path) -> None:
         raise QualificationControllerError("review_state_outside_root", "The trust-review state must remain inside the run root.") from exc
     if source.is_symlink() or destination.is_symlink():
         raise QualificationControllerError("review_state_symlink", "The trust-review state may not contain a symlink root.")
-    destination.mkdir(mode=0o700, parents=True, exist_ok=True)
-    for entry in source.iterdir():
-        target = destination / entry.name
+
+    source_root = source
+    destination_root = destination
+
+    def validate(entry: Path) -> None:
         if entry.is_symlink():
-            raise QualificationControllerError("review_state_symlink", "The trust-review state contains a symlink.")
-        if entry.is_dir():
-            _copy_run_tree(entry, target, root)
-        elif entry.is_file():
-            shutil.copy2(entry, target)
-            target.chmod(entry.stat().st_mode & 0o700 or 0o400)
-        else:
-            raise QualificationControllerError("review_state_special_file", "The trust-review state contains an unsupported file.")
+            try:
+                resolved = entry.resolve(strict=True)
+                resolved.relative_to(source_root)
+            except (OSError, RuntimeError, ValueError) as exc:
+                raise QualificationControllerError(
+                    "review_state_symlink",
+                    "The trust-review state contains a symlink outside its source tree.",
+                ) from exc
+            if not resolved.is_file() and not resolved.is_dir():
+                raise QualificationControllerError("review_state_special_file", "The trust-review state contains an unsupported link target.")
+            return
+        if entry.is_file() or entry.is_dir():
+            return
+        raise QualificationControllerError("review_state_special_file", "The trust-review state contains an unsupported file.")
+
+    validate(source_root)
+    for entry in source_root.rglob("*"):
+        validate(entry)
+
+    def copy_tree(current_source: Path, current_destination: Path) -> None:
+        current_destination.mkdir(mode=0o700, parents=True, exist_ok=True)
+        entries = sorted(current_source.iterdir(), key=lambda item: item.name)
+        for entry in entries:
+            target = current_destination / entry.name
+            if entry.is_symlink():
+                continue
+            if entry.is_dir():
+                copy_tree(entry, target)
+            elif entry.is_file():
+                shutil.copy2(entry, target)
+                target.chmod(entry.stat().st_mode & 0o700 or 0o400)
+            else:
+                raise QualificationControllerError("review_state_special_file", "The trust-review state contains an unsupported file.")
+        for entry in entries:
+            if not entry.is_symlink():
+                continue
+            resolved = entry.resolve(strict=True)
+            relative_target = resolved.relative_to(source_root)
+            target = current_destination / entry.name
+            link_target = os.path.relpath(destination_root / relative_target, target.parent)
+            target.symlink_to(link_target, target_is_directory=resolved.is_dir())
+
+    copy_tree(source_root, destination_root)
 
 
 def _review_projection_digest(database: Path) -> str:
