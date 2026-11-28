@@ -106,3 +106,42 @@ def test_controller_exit_codes_keep_awaiting_operator_distinct():
     assert controller.EXIT_SUCCESS != controller.EXIT_AWAITING_OPERATOR
     assert controller.EXIT_AWAITING_OPERATOR != controller.EXIT_BLOCKED
     assert controller.EXIT_FAILED != controller.EXIT_SUCCESS
+
+
+def test_phase_transition_does_not_persist_internal_path_objects(tmp_path: Path):
+    run = _run(tmp_path)
+    updated = controller._write_phase(
+        controller._validate_run(run),
+        phase="cleaned",
+        next_action="none",
+        status="PASS",
+    )
+    assert "paths_resolved" not in updated
+    persisted = controller._read_manifest(tmp_path / "run" / controller.MANIFEST_NAME)
+    assert "paths_resolved" not in persisted
+    assert persisted["phase"] == "cleaned"
+
+
+def test_baseline_start_overlay_only_rebinds_legacy_nats_listeners(tmp_path: Path):
+    run = _run(tmp_path)
+    source = (
+        tmp_path
+        / "run"
+        / "baseline"
+        / "pocket-lab-final-structure"
+        / "pocket-lab-bootstrap-production-scripts-patched"
+        / "scripts"
+        / "start-dashboard.sh"
+    )
+    source.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    source.write_text(
+        "#!/usr/bin/env bash\ncat <<EOF\nlisten: 0.0.0.0:4222\nhttp: 127.0.0.1:8222\nEOF\n",
+        encoding="utf-8",
+    )
+    source.chmod(0o700)
+    overlay = controller._baseline_start_script(run)
+    assert overlay != source
+    rendered = overlay.read_text(encoding="utf-8")
+    assert "${POCKETLAB_LITE_NATS_PORT:-4222}" in rendered
+    assert "${POCKETLAB_LITE_NATS_MONITOR_PORT:-8222}" in rendered
+    assert "listen: 0.0.0.0:4222" not in rendered

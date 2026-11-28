@@ -222,6 +222,11 @@ def _ports() -> dict[str, int]:
 
 def _write_phase(run: dict[str, Any], *, phase: str, next_action: str, status: str = "RUNNING", **fields: Any) -> dict[str, Any]:
     run = dict(run)
+    # ``_validate_run`` attaches resolved Path objects for the current
+    # operation.  They are an in-memory convenience only; persisting them
+    # would make the JSON checkpoint unserializable and would prevent cleanup
+    # or a later resumable invocation from reaching its next action.
+    run.pop("paths_resolved", None)
     run.update({"phase": phase, "next_action": next_action, "status": status, "updated_at": _utc(), **fields})
     path = _manifest_path(Path(str(run["run_root"])))
     _atomic_json(path, run)
@@ -246,7 +251,51 @@ def _base_env(run: Mapping[str, Any]) -> dict[str, str]:
         "POCKETLAB_LOCAL_RELEASE_TAG": str(run.get("baseline_release_tag") or ""),
         "PYTHONPATH": os.pathsep.join((str(paths["baseline"] / "pocket-lab-final-structure" / "runtime"), str(paths["baseline"] / "pocket-lab-final-structure" / "runtime" / "supervisors"), os.environ.get("PYTHONPATH", ""))),
     })
+    # The exact main baseline predates the qualification PM2-shim branch in
+    # common.sh.  Its PM2 wrapper therefore invokes the configured "native
+    # node" as ``node <cli>``.  In this disposable lane the run-owned PM2
+    # implementation is Python; point that compatibility invocation at the
+    # repository venv interpreter while leaving the manifest's real Node
+    # identity unchanged for asset/build work.  The candidate-side common.sh
+    # takes its explicit qualification branch and invokes the same shim
+    # directly.  No application owner uses this value to execute JavaScript.
+    env["POCKETLAB_NATIVE_NODE"] = sys.executable
     return env
+
+
+def _baseline_start_script(run: Mapping[str, Any]) -> Path:
+    """Create a run-owned compatibility overlay for an older exact baseline.
+
+    The T0--T2 baseline predates the isolated-runtime port contract and writes
+    NATS directly to 4222/8222.  Copying or editing the checked-out baseline
+    would blur the source identity, so the controller creates a disposable
+    sibling script that keeps the baseline startup owners and replaces only
+    those hard-coded listener values with the already allocated run ports.
+    """
+    paths = _safe_paths(run)
+    source = paths["baseline"] / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "start-dashboard.sh"
+    try:
+        text = source.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise QualificationControllerError("baseline_startup_unavailable", "The exact baseline startup owner is unavailable.") from exc
+    replacements = {
+        "listen: 0.0.0.0:4222": "listen: ${POCKETLAB_NATS_LISTEN_HOST:-127.0.0.1}:${POCKETLAB_LITE_NATS_PORT:-4222}",
+        "http: 127.0.0.1:8222": "http: 127.0.0.1:${POCKETLAB_LITE_NATS_MONITOR_PORT:-8222}",
+    }
+    changed = False
+    for old, new in replacements.items():
+        if old in text:
+            text = text.replace(old, new)
+            changed = True
+    if not changed and "POCKETLAB_LITE_NATS_PORT" not in text:
+        raise QualificationControllerError("baseline_startup_contract_unsupported", "The exact baseline has no safe isolated NATS port contract.")
+    overlay = source.with_name(".qualification-start-dashboard.sh")
+    try:
+        overlay.write_text(text, encoding="utf-8")
+        overlay.chmod(0o700)
+    except OSError as exc:
+        raise QualificationControllerError("baseline_startup_overlay_failed", "The run-owned baseline startup overlay could not be created.") from exc
+    return overlay
 
 
 @contextmanager
@@ -412,7 +461,7 @@ def _start(run: dict[str, Any]) -> dict[str, Any]:
     installed = _run(["bash", str(install)], cwd=paths["baseline"], env=env, timeout=180)
     if installed.returncode != 0:
         raise QualificationControllerError("baseline_install_failed", "The isolated baseline PWA installation failed.")
-    start_script = paths["baseline"] / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "start-dashboard.sh"
+    start_script = _baseline_start_script(validated)
     started = _run(["bash", str(start_script), "--lite", "--reconcile-only"], cwd=paths["baseline"], env=env, timeout=300)
     if started.returncode != 0:
         raise QualificationControllerError("runtime_start_failed", "The isolated runtime owners did not start.")
@@ -425,7 +474,7 @@ def _start(run: dict[str, Any]) -> dict[str, Any]:
     projection = runner._identity_projection(env)
     if status != 200 or health != 200 or ready != 200 or runtime.get("stable") is not True or projection.get("status") != "stable":
         raise QualificationControllerError("runtime_convergence_failed", "The isolated baseline did not converge with independently observed identity.")
-    updated = _write_phase(validated, phase="awaiting_owner", next_action="verify_candidate_https_then_request_owner_authentication", status="AWAITING_OPERATOR", services={"started": True, "owned": list(runner.SERVICE_NAMES), "process_manager": "qualification_pm2_shim"}, baseline_identity={"status": "PASS", "source_commit": validated["baseline_sha"], "runtime": runtime, "projection": projection, "observation": observation}, evidence=["baseline_identity"])
+    updated = _write_phase(validated, phase="awaiting_owner", next_action="verify_candidate_https_then_request_owner_authentication", status="AWAITING_OPERATOR", services={"started": True, "owned": list(runner.SERVICE_NAMES), "process_manager": "qualification_pm2_shim"}, baseline_identity={"status": "PASS", "source_commit": validated["baseline_sha"], "runtime": runtime, "projection": projection, "observation": observation}, startup={"status": "PASS", "owner": "exact_baseline_start_dashboard", "qualification_overlay": "isolated_nats_port_only"}, evidence=["baseline_identity"])
     updated["manifest"] = str(_manifest_path(paths["manifest"].parent))
     _report(updated, "baseline-start.json", {"status": "PASS", "run_id": updated["run_id"], "baseline_sha": updated["baseline_sha"], "runtime": runtime, "projection": projection, "services": observation, "sanitized": True})
     return updated
