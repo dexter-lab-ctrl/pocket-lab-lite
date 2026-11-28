@@ -269,6 +269,28 @@ def _run(command: list[str], *, env: Mapping[str, str] | None = None, cwd: Path 
     return result
 
 
+def _baseline_package(runner: Any, repo: Path, baseline: str, root: Path) -> dict[str, Any]:
+    """Build the baseline artifact from an exact temporary Git worktree.
+
+    ``backend_runtime_promotion.prepare`` intentionally rejects a dirty or
+    mismatched checkout.  The controller must not switch the developer's
+    feature worktree merely to build the distinct baseline, so it gives the
+    existing builder its own detached, exact-SHA worktree and removes that
+    worktree after the artifact is sealed.
+    """
+    worktree = root / "baseline-package" / "exact-source"
+    worktree.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    added = _run(["git", "-C", str(repo), "worktree", "add", "--detach", str(worktree), baseline], timeout=90)
+    if added.returncode != 0:
+        raise QualificationControllerError("baseline_worktree_failed", "The exact baseline worktree could not be created.")
+    try:
+        return runner._promotion_artifact(worktree, baseline, root / "baseline-package")
+    finally:
+        removed = _run(["git", "-C", str(repo), "worktree", "remove", "--force", str(worktree)], timeout=90)
+        if removed.returncode != 0:
+            raise QualificationControllerError("baseline_worktree_cleanup_failed", "The temporary baseline worktree could not be removed safely.")
+
+
 def _sanitize_tail(text: str, root: Path) -> list[str]:
     output: list[str] = []
     for line in (text or "").splitlines()[-16:]:
@@ -322,7 +344,7 @@ def prepare(*, baseline_sha: str, candidate_sha: str, run_root: Path | None, evi
     runner._extract_commit(repo, candidate, candidate_source)
     baseline_assets = runner._release_assets(baseline_source, baseline, root / "baseline-assets", npm)
     candidate_assets = runner._release_assets(candidate_source, candidate, root / "candidate-assets", npm)
-    baseline_package = runner._promotion_artifact(repo, baseline, root / "baseline-package")
+    baseline_package = _baseline_package(runner, repo, baseline, root)
     candidate_package = runner._promotion_artifact(repo, candidate, root / "candidate-package")
     ports = _ports()
     run = {
