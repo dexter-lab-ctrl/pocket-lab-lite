@@ -839,6 +839,25 @@ tasks:
     cmds:
       - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_coordinated_release_package.py tests/backend/test_lite_release_trusted_time.py tests/backend/test_lite_release_trusted_time_integration.py tests/backend/test_lite_lifecycle_candidate_review.py tests/backend/test_lite_lifecycle_policy_execution.py tests/backend/test_lite_lifecycle_release_execution.py tests/backend/test_lite_runtime_identity.py tests/backend/test_lite_runtime_reconciler.py tests/backend/test_lite_coordinated_runtime_promotion.py tests/backend/test_lite_backend_runtime_promotion.py'
 
+  lite:lifecycle:runtime:preflight:
+    desc: Run the exact-SHA isolated live-owner identity and convergence preflight; cutover stays blocked without human Owner authority
+    vars:
+      CANDIDATE_SHA: '{{default "" .CANDIDATE_SHA}}'
+      EVIDENCE_DIR: '{{default "" .EVIDENCE_DIR}}'
+      NATS_SERVER_BIN: '{{default "" .NATS_SERVER_BIN}}'
+      CADDY_BIN: '{{default "" .CADDY_BIN}}'
+      OPA_BIN: '{{default "" .OPA_BIN}}'
+      NPM_BIN: '{{default "" .NPM_BIN}}'
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/dev/lite/run-coordinated-runtime-qualification.py
+        {{if .CANDIDATE_SHA}}--candidate-sha "{{.CANDIDATE_SHA}}"{{end}}
+        {{if .EVIDENCE_DIR}}--evidence-dir "{{.EVIDENCE_DIR}}"{{end}}
+        {{if .NATS_SERVER_BIN}}--nats-server-bin "{{.NATS_SERVER_BIN}}"{{end}}
+        {{if .CADDY_BIN}}--caddy-bin "{{.CADDY_BIN}}"{{end}}
+        {{if .OPA_BIN}}--opa-bin "{{.OPA_BIN}}"{{end}}
+        {{if .NPM_BIN}}--npm-bin "{{.NPM_BIN}}"{{end}}
+
   lite:lifecycle:ui:
     desc: Focused Trusted Lifecycle frontend component qualification
     cmds:

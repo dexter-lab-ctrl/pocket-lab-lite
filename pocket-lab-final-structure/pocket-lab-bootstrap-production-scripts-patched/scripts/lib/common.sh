@@ -363,8 +363,28 @@ pocketlab_pm2_exec() {
   local node cli
   node="$(pocketlab_resolve_native_node 2>/dev/null || true)"
   cli="$(pocketlab_resolve_pm2_cli 2>/dev/null || true)"
-  [[ -n "$node" ]] || { printf '%s\n' "Pocket Lab PM2 requires a trusted native Node interpreter" >&2; return 127; }
   [[ -n "$cli" ]] || { printf '%s\n' "Pocket Lab PM2 CLI is missing or outside the trusted runtime path" >&2; return 127; }
+  # The integrated disposable qualification lane deliberately replaces the
+  # native PM2 CLI with the repository-owned run-scoped compatibility owner.
+  # Keep this branch impossible in production: it requires the explicit
+  # qualification environment, a complete run binding, and the shim marker.
+  if [[ "${POCKETLAB_QUALIFICATION_PM2_SHIM:-0}" == "1" ]]; then
+    [[ "${POCKETLAB_ENVIRONMENT:-}" == "qualification" ]] || {
+      printf '%s\n' "Qualification PM2 shim requires the qualification environment" >&2
+      return 126
+    }
+    [[ -n "${POCKETLAB_QUALIFICATION_ROOT:-}" && -n "${POCKETLAB_QUALIFICATION_RUN_ID:-}" ]] || {
+      printf '%s\n' "Qualification PM2 shim requires a run binding" >&2
+      return 126
+    }
+    case "$cli" in
+      "$POCKETLAB_QUALIFICATION_ROOT"/*) ;;
+      *) printf '%s\n' "Qualification PM2 shim is outside the run root" >&2; return 126 ;;
+    esac
+    "$cli" "$@"
+    return $?
+  fi
+  [[ -n "$node" ]] || { printf '%s\n' "Pocket Lab PM2 requires a trusted native Node interpreter" >&2; return 127; }
   "$node" "$cli" "$@"
 }
 
@@ -384,6 +404,26 @@ pocketlab_pm2_identity_report() {
   PM2_IDENTITY_DAEMON_COUNT="0"
   PM2_IDENTITY_SERVICE_PARENT_PIDS=""
   export PM2_IDENTITY_STATE PM2_IDENTITY_REASONS PM2_IDENTITY_REASON
+
+  # The disposable qualification lane intentionally has no PM2 daemon.  Its
+  # repository-owned shim is the run-scoped lifecycle owner, and the shim
+  # itself verifies the process namespace and child markers below.  Keep this
+  # branch impossible outside an explicitly bound qualification root so the
+  # production daemon identity contract remains unchanged.
+  if [[ "${POCKETLAB_QUALIFICATION_PM2_SHIM:-0}" == "1" && "${POCKETLAB_ENVIRONMENT:-}" == "qualification" && -n "${POCKETLAB_QUALIFICATION_ROOT:-}" && -n "${POCKETLAB_QUALIFICATION_RUN_ID:-}" ]]; then
+    local qualification_cli="${POCKETLAB_PM2_CLI:-}"
+    case "$qualification_cli" in
+      "$POCKETLAB_QUALIFICATION_ROOT"/*) ;;
+      *) return 1 ;;
+    esac
+    PM2_IDENTITY_STATE="ok"
+    PM2_IDENTITY_REASONS="none"
+    PM2_IDENTITY_REASON="none"
+    PM2_IDENTITY_DAEMON_COUNT="0"
+    PM2_IDENTITY_SERVICE_PARENT_PIDS="shim"
+    export PM2_IDENTITY_STATE PM2_IDENTITY_REASONS PM2_IDENTITY_REASON
+    return 0
+  fi
 
   if [[ -z "$node" || ! -r "$helper" ]]; then
     return 1
@@ -426,6 +466,48 @@ pocketlab_pm2_identity_preflight() {
 
 pocketlab_pm2_identity_check() {
   local jlist_file rc=0
+  if [[ "${POCKETLAB_QUALIFICATION_PM2_SHIM:-0}" == "1" && "${POCKETLAB_ENVIRONMENT:-}" == "qualification" && -n "${POCKETLAB_QUALIFICATION_ROOT:-}" && -n "${POCKETLAB_QUALIFICATION_RUN_ID:-}" ]]; then
+    local shim_output
+    pocketlab_pm2_identity_preflight || return 1
+    shim_output="$(pm2 jlist 2>/dev/null)" || return 1
+    printf '%s' "$shim_output" | python3 -c '
+import json, os, pathlib, sys
+try:
+    rows=json.load(sys.stdin)
+except Exception:
+    raise SystemExit(1)
+allowed={value.strip() for value in os.environ.get("POCKETLAB_QUALIFICATION_PM2_ALLOW_SERVICES", "").split(",") if value.strip()}
+root=pathlib.Path(os.environ["POCKETLAB_QUALIFICATION_ROOT"]).resolve(strict=True)
+run_id=os.environ["POCKETLAB_QUALIFICATION_RUN_ID"]
+if not allowed or not isinstance(rows, list) or not rows:
+    raise SystemExit(1)
+for item in rows:
+    if not isinstance(item, dict) or str(item.get("name") or "") not in allowed:
+        raise SystemExit(1)
+    env=item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
+    if str(env.get("status") or "").lower() != "online" or int(env.get("pid") or 0) <= 0:
+        raise SystemExit(1)
+    executable=pathlib.Path(str(env.get("pm_exec_path") or "")).resolve(strict=False)
+    try:
+        executable.relative_to(root)
+    except ValueError:
+        raise SystemExit(1)
+    try:
+        marker=f"POCKETLAB_QUALIFICATION_RUN_ID={run_id}".encode()
+        pid_value=int(env.get("pid") or 0)
+        if marker not in pathlib.Path(f"/proc/{pid_value}/environ").read_bytes():
+            raise SystemExit(1)
+    except (OSError, KeyError, TypeError, ValueError):
+        raise SystemExit(1)
+' || return 1
+    PM2_IDENTITY_STATE="ok"
+    PM2_IDENTITY_REASONS="none"
+    PM2_IDENTITY_REASON="none"
+    PM2_IDENTITY_DAEMON_COUNT="0"
+    PM2_IDENTITY_SERVICE_PARENT_PIDS="shim"
+    export PM2_IDENTITY_STATE PM2_IDENTITY_REASONS PM2_IDENTITY_REASON
+    return 0
+  fi
   # PM2's read-only CLI can start a daemon when no live identity is present.
   # Establish the process/pidfile identity without invoking PM2 first, and
   # refuse both absent and ambiguous ownership before collecting jlist data.
@@ -475,6 +557,10 @@ pm2_with_timeout() {
   local seconds="${1:-}" node cli
   [[ "$seconds" =~ ^[0-9]+$ ]] || { printf '%s\n' "PM2 timeout requires integer seconds" >&2; return 2; }
   shift
+  if [[ "${POCKETLAB_QUALIFICATION_PM2_SHIM:-0}" == "1" ]]; then
+    pm2 "$@"
+    return $?
+  fi
   # Isolated tests commonly replace pm2 with a shell function. Do not bypass
   # that test double with an external timeout process.
   if [[ "$(declare -f pm2 2>/dev/null || true)" != *"pocketlab_pm2_exec"* ]]; then

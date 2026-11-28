@@ -113,6 +113,40 @@ def _healthy_probes():
     }
 
 
+def test_health_snapshot_uses_bounded_loopback_qualification_ports(monkeypatch):
+    _load("pocketlab_runtime_registry")
+    contract = _load("pocketlab_runtime_contract")
+    calls = []
+
+    monkeypatch.setenv("POCKETLAB_LITE_NATS_PORT", "14222")
+    monkeypatch.setenv("POCKETLAB_OPA_URL", "http://127.0.0.1:18181")
+    monkeypatch.setenv("POCKETLAB_API_PORT", "18080")
+    monkeypatch.setenv("DASH_PORT", "18443")
+    monkeypatch.setattr(contract, "_tcp_ready", lambda port, timeout=0.6: calls.append(("tcp", port)) or True)
+    monkeypatch.setattr(contract, "_http_ready", lambda url, timeout=1.0: calls.append(("http", url)) or True)
+
+    assert all(value == "ready" for value in contract.local_health_snapshot().values())
+    assert calls == [
+        ("tcp", 14222),
+        ("http", "http://127.0.0.1:18181/health"),
+        ("http", "http://127.0.0.1:18080/health"),
+        ("http", "http://127.0.0.1:18080/ready"),
+        ("tcp", 18443),
+    ]
+
+
+def test_health_snapshot_rejects_non_loopback_opa_override(monkeypatch):
+    _load("pocketlab_runtime_registry")
+    contract = _load("pocketlab_runtime_contract")
+    observed = []
+    monkeypatch.setenv("POCKETLAB_OPA_URL", "http://example.invalid:18181")
+    monkeypatch.setattr(contract, "_tcp_ready", lambda port, timeout=0.6: True)
+    monkeypatch.setattr(contract, "_http_ready", lambda url, timeout=1.0: observed.append(url) or True)
+
+    contract.local_health_snapshot()
+    assert "http://127.0.0.1:8181/health" in observed
+
+
 def test_http_health_probe_rejects_client_and_server_error_responses(monkeypatch):
     _load("pocketlab_runtime_registry")
     contract = _load("pocketlab_runtime_contract")
