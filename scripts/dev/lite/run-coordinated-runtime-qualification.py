@@ -283,6 +283,7 @@ def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], bi
         "POCKETLAB_TEST_AUTH_BYPASS": "0",
         "POCKETLAB_QUALIFICATION_CONTEXT": "isolated-runtime-v1",
         "POCKETLAB_QUALIFICATION_CONTEXT_TOKEN": "qualification-context-" + run_id,
+        "POCKETLAB_QUALIFICATION_CANDIDATE_SHA": commit,
         "POCKETLAB_QUALIFICATION_ROOT": str(root),
         "POCKETLAB_QUALIFICATION_RUN_ID": run_id,
         "POCKETLAB_REPO_ROOT": str(source),
