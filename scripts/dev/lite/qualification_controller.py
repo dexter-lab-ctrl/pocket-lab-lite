@@ -327,8 +327,16 @@ def prepare(*, baseline_sha: str, candidate_sha: str, run_root: Path | None, evi
         if root.is_symlink() or any(root.iterdir()):
             raise QualificationControllerError("run_root_not_empty", "The qualification run root must be a new empty directory.")
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
-    run_id = root.name if len(root.name) >= 12 else _run_id()
+    # The run identity is a random hex value, never a user-selected path
+    # name.  qualification_context validates this value before arming any
+    # mutable owner, so a path such as ``fc01-candidate`` must not become an
+    # accepted process identity.
+    run_id = _run_id()
     evidence = (evidence_dir or root / "evidence").expanduser().resolve()
+    try:
+        evidence.relative_to(root)
+    except ValueError as exc:
+        raise QualificationControllerError("evidence_outside_run_root", "Qualification evidence must remain inside the run-owned root.") from exc
     evidence.mkdir(mode=0o700, parents=True, exist_ok=True)
     binaries = {
         "nats": _find_binary(nats_bin or os.environ.get("NATS_SERVER_BIN"), "nats-server"),
