@@ -319,6 +319,10 @@ def serve_release(*, port: int, assets: Path, tag: str, commit: str) -> None:
 
 
 def run_release_check(command_id: str) -> int:
+    # The qualification entry point invokes the real release-worker service
+    # contract directly.  Keep the role explicit so the worker-only admission
+    # fence cannot accidentally inherit the API role from the controller.
+    os.environ["POCKETLAB_PROCESS_ROLE"] = "worker"
     from api_fastapi.db.connection import read_connection
     from api_fastapi.services import release_runtime
     result = asyncio.run(release_runtime.run_release_check(command_id, source="manual"))
