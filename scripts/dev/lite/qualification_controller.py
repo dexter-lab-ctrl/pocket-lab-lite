@@ -37,6 +37,12 @@ from typing import Any, Iterator, Mapping
 
 
 ROOT = Path(__file__).resolve().parents[3]
+# Direct script execution places ``scripts/dev/lite`` on ``sys.path`` rather
+# than the checkout root.  The controller intentionally imports the existing
+# repository-owned qualification modules as a namespace package, so make the
+# exact checkout root available without depending on the caller's cwd.
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 RUNNER_PATH = ROOT / "scripts" / "dev" / "lite" / "run-coordinated-runtime-qualification.py"
 PROMOTION = ROOT / "scripts" / "dev" / "lite" / "backend_runtime_promotion.py"
 TRUST_BOOTSTRAP = ROOT / "scripts" / "dev" / "lite" / "qualification_trust_bootstrap.py"
