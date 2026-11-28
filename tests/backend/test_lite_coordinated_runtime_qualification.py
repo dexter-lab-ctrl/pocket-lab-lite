@@ -24,3 +24,9 @@ def test_coordinated_runtime_task_is_repository_owned():
     assert "lite:lifecycle:runtime:preflight:" in tasks
     assert "run-coordinated-runtime-qualification.py" in tasks
     assert "CANDIDATE_SHA" in tasks
+
+
+def test_coordinated_runtime_binds_supervisor_nats_probe_to_isolated_port():
+    source = RUNNER.read_text(encoding="utf-8")
+    assert '"POCKETLAB_NATS_PORT": str(ports["nats"])' in source
+    assert '"POCKETLAB_LITE_NATS_PORT": str(ports["nats"])' in source

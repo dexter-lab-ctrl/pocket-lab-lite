@@ -528,6 +528,12 @@ def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], bi
         "POCKETLAB_CADDY_PORT": str(ports["caddy"]),
         "POCKETLAB_API_PORT": str(ports["api"]),
         "POCKETLAB_NATS_LISTEN_HOST": "127.0.0.1",
+        # The core supervisor's authoritative liveness probe reads
+        # POCKETLAB_NATS_PORT. Keep the Lite-specific port name as well for
+        # the bootstrap/configuration owners, but bind both to the same
+        # run-owned listener so an isolated lane cannot probe production's
+        # default 4222 endpoint.
+        "POCKETLAB_NATS_PORT": str(ports["nats"]),
         "POCKETLAB_LITE_NATS_PORT": str(ports["nats"]),
         "POCKETLAB_LITE_NATS_MONITOR_PORT": str(ports["monitor"]),
         "POCKETLAB_OPA_URL": f"http://127.0.0.1:{ports['opa']}",
