@@ -7,6 +7,8 @@ from pathlib import Path, PurePosixPath
 
 import jsonschema
 
+from scripts.docs.knowledge import generate_codebase_map
+
 ROOT = Path(__file__).resolve().parents[2]
 MODEL_PATH = ROOT / "contracts/generated/knowledge/repository-codebase-map.json"
 BROWSER_PATH = ROOT / "docs/generated/assets/knowledge/repository-codebase-map.json"
@@ -124,6 +126,20 @@ def test_browser_projection_is_static_compact_and_resolvable():
     # Browser projection is intentionally smaller than the canonical evidence model.
     assert BROWSER_PATH.stat().st_size < MODEL_PATH.stat().st_size
     assert BROWSER_PATH.stat().st_size < 10_000_000
+
+
+def test_browser_search_projection_is_bounded_and_retains_path_navigation():
+    browser = load(BROWSER_PATH)
+    nodes = {node["id"]: node for node in browser["nodes"]}
+    search = browser["indexes"]["search"]
+    assert generate_codebase_map.MAX_BROWSER_SEARCH_CHARS == 96
+    for node_id, value in search.items():
+        assert len(value) <= generate_codebase_map.MAX_BROWSER_SEARCH_CHARS
+        path = str(nodes[node_id]["p"]).lower()
+        # Long generated paths are intentionally bounded; their leading path
+        # segment remains searchable while the canonical map retains the full
+        # navigation identity in ``by_path``.
+        assert path[: min(32, len(path))] in value
 
 
 def test_codebase_map_runtime_network_and_sensitive_data_fence():

@@ -858,6 +858,13 @@ tasks:
         {{if .OPA_BIN}}--opa-bin "{{.OPA_BIN}}"{{end}}
         {{if .NPM_BIN}}--npm-bin "{{.NPM_BIN}}"{{end}}
 
+  lite:lifecycle:runtime:controller:
+    desc: Run the resumable exact-SHA coordinated-runtime qualification controller; mutable cutover remains owner-authorized
+    vars:
+      QUALIFICATION_CONTROLLER_ARGS: '{{default "status --run-root .pocketlab-dev/qualification-runs/current" .QUALIFICATION_CONTROLLER_ARGS}}'
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/qualification_controller.py {{.QUALIFICATION_CONTROLLER_ARGS}}'
+
   lite:lifecycle:ui:
     desc: Focused Trusted Lifecycle frontend component qualification
     cmds:
