@@ -271,6 +271,7 @@ def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], bi
         str(ROOT / ".venv" / "bin"),
     ]
     path_parts.extend(item for item in os.environ.get("PATH", "").split(os.pathsep) if item)
+    bootstrap_fingerprint = "sha256:" + hashlib.sha256(run_id.encode("ascii")).hexdigest()
     return {
         **os.environ,
         "PATH": os.pathsep.join(dict.fromkeys(path_parts)),
@@ -281,6 +282,8 @@ def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], bi
         "POCKETLAB_HARNESS_DESTRUCTIVE": "0",
         "POCKETLAB_HARNESS_BOOTSTRAP_APPROVED": "1",
         "POCKETLAB_HARNESS_BOOTSTRAP_PROFILE": "security-assurance-runner",
+        "POCKETLAB_HARNESS_BOOTSTRAP_PUBLIC_KEY_FINGERPRINT": bootstrap_fingerprint,
+        "POCKETLAB_HARNESS_PROVISIONING_TOKEN": "qualification-provisioning-" + run_id,
         "POCKETLAB_QUALIFICATION_OWNER": "0",
         "POCKETLAB_TEST_AUTH_BYPASS": "0",
         "POCKETLAB_QUALIFICATION_CONTEXT": "isolated-runtime-v1",
