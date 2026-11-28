@@ -437,6 +437,7 @@ def _base_env(run: Mapping[str, Any]) -> dict[str, str]:
         "POCKETLAB_LOCAL_RELEASE_TAG": str(run.get("baseline_release_tag") or ""),
         "PYTHONPATH": os.pathsep.join((str(paths["baseline"] / "pocket-lab-final-structure" / "runtime"), str(paths["baseline"] / "pocket-lab-final-structure" / "runtime" / "supervisors"), os.environ.get("PYTHONPATH", ""))),
     })
+    _bind_run_nats_credentials(env, paths["state"])
     # The exact main baseline predates the qualification PM2-shim branch in
     # common.sh.  Its PM2 wrapper therefore invokes the configured "native
     # node" as ``node <cli>``.  In this disposable lane the run-owned PM2
@@ -467,6 +468,52 @@ def _base_env(run: Mapping[str, Any]) -> dict[str, str]:
             "REQUESTS_CA_BUNDLE": str(certificate),
         })
     return env
+
+
+_NATS_CREDENTIAL_KEYS = frozenset(
+    {
+        "POCKETLAB_NATS_API_USER",
+        "POCKETLAB_NATS_API_PASSWORD",
+        "POCKETLAB_NATS_WORKER_USER",
+        "POCKETLAB_NATS_WORKER_PASSWORD",
+        "POCKETLAB_NATS_AGENT_USER",
+        "POCKETLAB_NATS_AGENT_PASSWORD",
+    }
+)
+
+
+def _bind_run_nats_credentials(env: dict[str, str], state: Path) -> None:
+    """Bind generated run-owned NATS identities to later candidate owners.
+
+    The baseline startup script creates the disposable NATS credential file in
+    a child process, so those values cannot flow back into the controller's
+    original environment. Candidate review and promotion are separate child
+    processes and must read the same run-owned values explicitly. The parser
+    accepts only the six generated credential keys and never writes them to a
+    manifest or evidence report.
+    """
+    credential_file = state / "nats" / "pocketlab-nats.env"
+    try:
+        lines = credential_file.read_text(encoding="utf-8").splitlines()
+    except (FileNotFoundError, OSError, UnicodeDecodeError):
+        return
+    values: dict[str, str] = {}
+    for line in lines:
+        key, separator, value = line.partition("=")
+        if not separator or key not in _NATS_CREDENTIAL_KEYS:
+            continue
+        value = value.strip()
+        if value:
+            values[key] = value
+    if not values:
+        return
+    env.update(values)
+    if values.get("POCKETLAB_NATS_API_USER") and values.get("POCKETLAB_NATS_API_PASSWORD"):
+        env["POCKETLAB_NATS_USER"] = values["POCKETLAB_NATS_API_USER"]
+        env["POCKETLAB_NATS_PASSWORD"] = values["POCKETLAB_NATS_API_PASSWORD"]
+    if values.get("POCKETLAB_NATS_AGENT_USER") and values.get("POCKETLAB_NATS_AGENT_PASSWORD"):
+        env["POCKETLAB_AGENT_NATS_USER"] = values["POCKETLAB_NATS_AGENT_USER"]
+        env["POCKETLAB_AGENT_NATS_PASSWORD"] = values["POCKETLAB_NATS_AGENT_PASSWORD"]
 
 
 def _baseline_start_script(run: Mapping[str, Any]) -> Path:

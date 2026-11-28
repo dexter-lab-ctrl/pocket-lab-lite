@@ -80,6 +80,33 @@ def test_manifest_rejects_run_path_escape(tmp_path: Path):
         controller._validate_run(run)
 
 
+def test_candidate_owners_bind_run_owned_nats_credentials_without_manifest_persistence(tmp_path: Path):
+    run = _run(tmp_path)
+    state = tmp_path / "run" / "state"
+    credentials = state / "nats" / "pocketlab-nats.env"
+    credentials.parent.mkdir(mode=0o700)
+    credentials.write_text(
+        "POCKETLAB_NATS_API_USER=run_api\n"
+        "POCKETLAB_NATS_API_PASSWORD=run_api_password\n"
+        "POCKETLAB_NATS_WORKER_USER=run_worker\n"
+        "POCKETLAB_NATS_WORKER_PASSWORD=run_worker_password\n"
+        "POCKETLAB_NATS_AGENT_USER=run_agent\n"
+        "POCKETLAB_NATS_AGENT_PASSWORD=run_agent_password\n"
+        "UNRELATED=value\n",
+        encoding="utf-8",
+    )
+    env = {"POCKETLAB_NATS_USER": "inherited", "POCKETLAB_NATS_PASSWORD": "inherited"}
+
+    controller._bind_run_nats_credentials(env, state)
+
+    assert env["POCKETLAB_NATS_USER"] == "run_api"
+    assert env["POCKETLAB_NATS_PASSWORD"] == "run_api_password"
+    assert env["POCKETLAB_AGENT_NATS_USER"] == "run_agent"
+    assert env["POCKETLAB_AGENT_NATS_PASSWORD"] == "run_agent_password"
+    assert "UNRELATED" not in env
+    assert "run_api_password" not in json.dumps(run)
+
+
 def test_owner_evidence_requires_backend_confirmation_and_candidate_binding(tmp_path: Path):
     run = _run(tmp_path)
     evidence = tmp_path / "owner.json"
