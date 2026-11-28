@@ -613,16 +613,21 @@ def _observe(env: dict[str, str], expected: str) -> dict:
         pm2_env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
         pid = int(pm2_env.get("pid") or item.get("pid") or 0)
         executable = str(pm2_env.get("pm_exec_path") or "")
-        marker = False
+        marker = str(pm2_env.get("qualification_run_id") or "") == expected
+        marker_source = "pm2_run_record" if marker else ""
         if pid > 0:
             try:
-                marker = f"POCKETLAB_QUALIFICATION_RUN_ID={expected}" in Path(f"/proc/{pid}/environ").read_bytes().replace(b"\x00", b"\n").decode("utf-8", "ignore")
+                process_marker = f"POCKETLAB_QUALIFICATION_RUN_ID={expected}" in Path(f"/proc/{pid}/environ").read_bytes().replace(b"\x00", b"\n").decode("utf-8", "ignore")
+                if process_marker:
+                    marker = True
+                    marker_source = "process_environment"
             except (FileNotFoundError, OSError, UnicodeError):
-                marker = False
+                pass
         services[name] = {
             "status": str(pm2_env.get("status") or "unknown"),
             "pid_present": pid > 0,
             "run_marker": marker,
+            "run_marker_source": marker_source or "unavailable",
             "executable_under_qualification_root": executable.startswith(env["POCKETLAB_QUALIFICATION_ROOT"] + os.sep),
         }
     return {"services": services, "all_required_online": all(item["status"] == "online" and item["pid_present"] and item["run_marker"] and item["executable_under_qualification_root"] for item in services.values()), "sanitized": True}

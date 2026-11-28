@@ -263,6 +263,7 @@ def _jlist() -> int:
             "POCKETLAB_SERVICE_VERSION": record.get("version") or "",
             "POCKETLAB_PROCESS_SPEC_HASH": record.get("process_spec_hash") or "",
             "POCKETLAB_PM2_POLICY_FINGERPRINT": record.get("policy_fingerprint") or "",
+            "qualification_run_id": record.get("run_id") or "",
             "restart_time": record.get("restart_time", 0),
             "pm_cwd": record.get("cwd") or "",
             "pm_exec_path": record.get("script") or "",

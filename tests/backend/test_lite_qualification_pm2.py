@@ -61,6 +61,7 @@ def test_ecosystem_start_projects_owned_identity_and_supports_stop(tmp_path: Pat
     assert projected["exec_interpreter"] == sys.executable
     assert projected["pm_cwd"] == str(tmp_path)
     assert projected["POCKETLAB_SERVICE_VERSION"] == ""
+    assert projected["qualification_run_id"] == "a" * 24
 
     stopped = _run(tmp_path, "stop", "test-service")
     assert stopped.returncode == 0, stopped.stderr

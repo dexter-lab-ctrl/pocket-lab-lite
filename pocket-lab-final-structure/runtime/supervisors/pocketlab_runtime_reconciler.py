@@ -366,7 +366,12 @@ def publish_runtime_identity(*, processes: Iterable[dict[str, Any]], runtime_con
     }
     pointer = _bounded_json(state_root / "backend-runtime" / "active.json")
     release_root = Path(str(pointer.get("release_root") or "")) if pointer.get("release_root") else None
-    manifest = _bounded_json(release_root / "artifact-manifest.json") if release_root else {}
+    # The authenticated backend manifest contains the complete runtime file
+    # inventory.  It is intentionally bounded, but the repository's current
+    # dependency-complete artifact is larger than the active-pointer bound.
+    # Keep the pointer strict while allowing the signed inventory to be read
+    # within its separate finite envelope.
+    manifest = _bounded_json(release_root / "artifact-manifest.json", limit=512 * 1024) if release_root else {}
 
     source_commit = str(pointer.get("source_commit") or manifest.get("source_commit") or "").lower()
     if not _IDENTITY_SOURCE.fullmatch(source_commit):
