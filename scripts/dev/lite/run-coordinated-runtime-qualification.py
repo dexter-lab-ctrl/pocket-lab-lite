@@ -551,6 +551,11 @@ def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], bi
         "POCKETLAB_QUALIFICATION_PM2_ALLOW_SERVICES": allow,
         "POCKETLAB_QUALIFICATION_LOG_DIR": str(root / "logs"),
         "POCKETLAB_COORDINATED_LIVE_QUALIFICATION": "1",
+        # The continuation controller invokes the real release-worker check
+        # explicitly after the trust prerequisites are ready.  Keep the
+        # baseline worker's periodic updater asleep so it cannot coalesce or
+        # race that exact qualification lease.
+        "POCKETLAB_DISABLE_RELEASE_UPDATER": "1",
         "POCKETLAB_RELEASE_COORDINATED_EXECUTION": "1",
         "POCKETLAB_COORDINATED_RUNTIME_ROOT": str(runtime_root),
         "POCKETLAB_COORDINATED_API_URL": f"http://127.0.0.1:{ports['api']}",
