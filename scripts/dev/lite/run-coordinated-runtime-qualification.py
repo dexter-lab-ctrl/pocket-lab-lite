@@ -22,6 +22,7 @@ from pathlib import Path
 import secrets
 import shutil
 import socket
+import sqlite3
 import subprocess
 import sys
 import tarfile
@@ -257,6 +258,197 @@ def _promotion_artifact(repo: Path, commit: str, root: Path) -> dict:
     return {"prepared": prepared, "verified": verified}
 
 
+def _install_backend_baseline(package: dict, env: dict[str, str], *, commit: str, run_id: str) -> dict[str, str]:
+    """Install the verified backend artifact as the disposable baseline.
+
+    This is intentionally a qualification-lane setup operation.  It stages
+    the exact artifact through the repository promotion controller, then
+    records the resulting installed pointer inside the run-owned state root.
+    It does not issue a promotion grant and is never used for production
+    activation.
+    """
+    prepared = package.get("prepared") if isinstance(package.get("prepared"), dict) else {}
+    verified = package.get("verified") if isinstance(package.get("verified"), dict) else {}
+    artifact = Path(str(prepared.get("artifact") or "")).resolve()
+    manifest = Path(str(prepared.get("manifest") or "")).resolve()
+    checksums = Path(str(prepared.get("checksums") or "")).resolve()
+    if not artifact.is_file() or not manifest.is_file() or not checksums.is_file():
+        raise QualificationError("backend baseline inputs are incomplete")
+    state_root = Path(env["POCKETLAB_STATE_DIR"]).resolve()
+    qualification_root = Path(env["POCKETLAB_QUALIFICATION_ROOT"]).resolve(strict=True)
+    stage_result = _run([
+        sys.executable,
+        str(PROMOTION),
+        "stage",
+        "--artifact", str(artifact),
+        "--manifest", str(manifest),
+        "--checksums", str(checksums),
+        "--staging-root", str(state_root / "backend-runtime"),
+        "--expected-device-id", "qualification-server",
+        "--target-device-id", "qualification-server",
+    ], env=env, timeout=120)
+    try:
+        staged = json.loads(stage_result.stdout)
+        external_manifest = json.loads(manifest.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        raise QualificationError("backend baseline staging returned invalid evidence") from exc
+    release_root = Path(str(staged.get("release_root") or "")).resolve()
+    try:
+        release_root.relative_to(qualification_root)
+    except ValueError as exc:
+        raise QualificationError("backend baseline staging escaped qualification root") from exc
+    staged_manifest = release_root / "artifact-manifest.json"
+    if not staged_manifest.is_file():
+        raise QualificationError("backend baseline staged manifest is missing")
+    staged_payload = json.loads(staged_manifest.read_text(encoding="utf-8"))
+    if (
+        staged_payload.get("source_commit") != commit
+        or staged_payload.get("artifact_sha256") != verified.get("artifact_sha256")
+        or staged_payload.get("payload_sha256") != external_manifest.get("payload_sha256")
+    ):
+        raise QualificationError("backend baseline identity does not match the verified artifact")
+    generation = "runtime-" + hashlib.sha256(
+        f"{commit}:{verified.get('artifact_sha256')}:{run_id}".encode("ascii")
+    ).hexdigest()[:32]
+    pointer = {
+        "schema": "pocketlab.backend-runtime-active/v1",
+        "kind": "artifact",
+        "source_commit": commit,
+        "artifact_sha256": str(verified.get("artifact_sha256") or ""),
+        "payload_sha256": str(external_manifest.get("payload_sha256") or ""),
+        "release_root": str(release_root),
+        "generation": generation,
+        "device_id": "qualification-server",
+        "installed_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "installation": "isolated-qualification-baseline",
+        "sanitized": True,
+    }
+    _json_write(state_root / "backend-runtime" / "active.json", pointer)
+    return {
+        "status": "PASS",
+        "source_commit": commit,
+        "artifact_sha256": str(verified.get("artifact_sha256") or ""),
+        "payload_sha256": str(external_manifest.get("payload_sha256") or ""),
+        "generation": generation,
+        "release_root": "<qualification-root>/state/backend-runtime/releases/" + commit,
+        "sanitized": True,
+    }
+
+
+def _seed_policy_baseline(env: dict[str, str], *, run_id: str) -> dict[str, str]:
+    """Record the exact loaded repository policy as a disposable baseline.
+
+    Startup first activates the repository baseline through the normal OPA
+    bootstrap path.  This qualification-only durable record then binds that
+    already-loaded revision to the same SQLite governance schema, allowing the
+    normal reconciler observation path to prove DB, pointers, OPA and process
+    convergence.  It creates no human identity, membership or grant.
+    """
+    state_root = Path(env["POCKETLAB_STATE_DIR"]).resolve()
+    stage_root = state_root / "opa" / "active"
+    revision_file = stage_root / "revision.txt"
+    manifest_file = stage_root / "manifest.json"
+    template_file = stage_root / "template.json"
+    if not revision_file.is_file() or not manifest_file.is_file() or not template_file.is_file():
+        raise QualificationError("loaded OPA baseline evidence is incomplete")
+    revision = revision_file.read_text(encoding="utf-8").strip()
+    manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+    template = json.loads(template_file.read_text(encoding="utf-8"))
+    if not isinstance(manifest, dict) or not isinstance(manifest.get("files"), list):
+        raise QualificationError("loaded OPA baseline manifest is invalid")
+    candidate_hash = str(manifest.get("candidate_hash") or "")
+    if not revision or not candidate_hash or not isinstance(template, dict):
+        raise QualificationError("loaded OPA baseline identity is incomplete")
+    manifest_json = json.dumps(
+        {"files": manifest["files"], "candidate_hash": candidate_hash},
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    )
+    now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    database = Path(env["POCKETLAB_LITE_DB_PATH"]).resolve()
+    try:
+        conn = sqlite3.connect(database, timeout=15)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys=ON")
+        row = conn.execute(
+            "SELECT manifest_json,content_hash,created_by_principal_type,created_by_principal_id FROM policy_revisions WHERE revision_id=?",
+            (revision,),
+        ).fetchone()
+        if row is None:
+            conn.execute(
+                """INSERT INTO policy_revisions(
+                    revision_id,parent_revision_id,template_id,template_version,
+                    canonical_parameters_json,manifest_json,content_hash,created_by_human_id,
+                    created_by_principal_type,created_by_principal_id,created_at,
+                    validation_status,validated_at,validation_reason_code,lifecycle_status,
+                    activated_at,change_summary
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    revision,
+                    None,
+                    str(template.get("template_id") or "baseline"),
+                    str(template.get("template_version") or "1"),
+                    json.dumps(template.get("parameters") or {}, sort_keys=True, separators=(",", ":"), ensure_ascii=True),
+                    manifest_json,
+                    candidate_hash,
+                    None,
+                    "qualification",
+                    "qualification-baseline-" + run_id,
+                    now,
+                    "valid",
+                    now,
+                    "",
+                    "active",
+                    now,
+                    "Disposable isolated baseline for runtime identity qualification",
+                ),
+            )
+        elif (
+            str(row["manifest_json"] or "") != manifest_json
+            or str(row["content_hash"] or "") != candidate_hash
+            or str(row["created_by_principal_type"] or "") != "qualification"
+        ):
+            raise QualificationError("loaded OPA baseline conflicts with durable policy evidence")
+        runtime = conn.execute(
+            "SELECT active_revision_id,known_good_revision_id FROM policy_runtime_state WHERE state_id=1"
+        ).fetchone()
+        if runtime is None:
+            conn.execute(
+                "INSERT INTO policy_runtime_state(state_id,active_revision_id,known_good_revision_id,updated_at,updated_by_operation_id) VALUES (1,?,?,?,NULL)",
+                (revision, revision, now),
+            )
+        elif str(runtime["active_revision_id"] or "") != revision or str(runtime["known_good_revision_id"] or "") != revision:
+            raise QualificationError("loaded OPA baseline conflicts with policy runtime state")
+        conn.commit()
+    except sqlite3.Error as exc:
+        raise QualificationError("isolated policy baseline could not be recorded") from exc
+    finally:
+        try:
+            conn.close()
+        except UnboundLocalError:
+            pass
+    return {"status": "PASS", "revision": revision, "content_hash": candidate_hash, "sanitized": True}
+
+
+def _identity_projection(env: dict[str, str]) -> dict:
+    script = (
+        "import json\n"
+        "from api_fastapi.db.connection import connection\n"
+        "from api_fastapi.services import lite_runtime_identity\n"
+        "with connection() as conn:\n"
+        "    print(json.dumps(lite_runtime_identity.public_projection(conn), sort_keys=True))\n"
+    )
+    result = _run([sys.executable, "-c", script], env=env, timeout=20, check=False)
+    if result.returncode != 0:
+        return {"status": "unknown", "reason_code": "runtime_identity_observation_unavailable", "sanitized": True}
+    try:
+        value = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise QualificationError("runtime identity projection returned invalid evidence") from exc
+    return value if isinstance(value, dict) else {}
+
+
 def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], binaries: dict[str, Path], node: Path) -> dict[str, str]:
     source = root / "candidate"
     base = root / "base"
@@ -356,6 +548,7 @@ def _environment(root: Path, run_id: str, commit: str, ports: dict[str, int], bi
         "POCKETLAB_COORDINATED_API_URL": f"http://127.0.0.1:{ports['api']}",
         "POCKETLAB_COORDINATED_PROXY_URL": f"http://127.0.0.1:{ports['caddy']}",
         "POCKETLAB_QUALIFICATION_ALLOW_TEST_DESTINATION": "1",
+        "POCKETLAB_RUNTIME_RECONCILE_SECONDS": "10",
         "PYTHONPATH": os.pathsep.join((str(source / "pocket-lab-final-structure" / "runtime"), str(source / "pocket-lab-final-structure" / "runtime" / "supervisors"), os.environ.get("PYTHONPATH", ""))),
         "POCKETLAB_CANDIDATE_SOURCE_COMMIT": commit,
     }
@@ -554,6 +747,7 @@ def main(argv: list[str] | None = None) -> int:
         })
         _assert_isolated_environment(env, root)
         Path(env["HOME"]).mkdir(mode=0o700, parents=True, exist_ok=True)
+        payload["backend_baseline"] = _install_backend_baseline(package, env, commit=candidate, run_id=run_id)
         install = source / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "install-pwa-ui.sh"
         install_result = _run(["bash", str(install)], cwd=source, env=env, timeout=180, check=False)
         payload["pwa_install"] = {
@@ -578,15 +772,45 @@ def main(argv: list[str] | None = None) -> int:
         }
         if start.returncode != 0:
             raise QualificationError("isolated runtime owners did not converge")
+        payload["policy_baseline"] = _seed_policy_baseline(env, run_id=run_id)
         observation = _observe(env, run_id)
-        status, runtime = _http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/api/lite/runtime")
-        health, _ = _http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/health")
-        ready, _ = _http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/ready")
-        identity_status = runtime.get("runtime_identity", {}).get("status") if isinstance(runtime.get("runtime_identity"), dict) else runtime.get("runtime_identity_status")
+        status = health = ready = 0
+        runtime: dict = {}
+        projection: dict = {}
+        deadline = time.monotonic() + 45
+        while time.monotonic() < deadline:
+            status, runtime = _http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/api/lite/runtime")
+            health, _ = _http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/health")
+            ready, _ = _http_json(env["POCKETLAB_COORDINATED_API_URL"] + "/ready")
+            projection = _identity_projection(env)
+            if (
+                observation["all_required_online"]
+                and status == 200
+                and health == 200
+                and ready == 200
+                and runtime.get("stable") is True
+                and projection.get("status") == "stable"
+            ):
+                break
+            time.sleep(2)
+        identity_status = str(projection.get("status") or "unknown")
+        identity_pass = (
+            identity_status == "stable"
+            and projection.get("authenticated_source_commit") == candidate
+            and runtime.get("stable") is True
+        )
         payload.update({
-            "status": "PASS" if observation["all_required_online"] and status == 200 and health == 200 and ready == 200 and identity_status == "stable" else "FAIL",
+            "status": "BLOCKED" if observation["all_required_online"] and status == 200 and health == 200 and ready == 200 and identity_pass else "FAIL",
             "package": {"status": "PASS", "backend": package["verified"], "pwa": {"source_commit": candidate, "artifact_sha256": assets["digest"], "release_tag": assets["tag"]}},
-            "runtime_identity": {"status": "PASS" if identity_status == "stable" else "FAIL", "api_status": status, "identity_status": identity_status, "service_observation": observation},
+            "runtime_identity": {
+                "status": "PASS" if identity_pass else "FAIL",
+                "api_status": status,
+                "health_status": health,
+                "ready_status": ready,
+                "contract_stable": runtime.get("stable") is True,
+                "projection": projection,
+                "service_observation": observation,
+            },
             "cutover": {"status": "BLOCKED", "reason_code": "human_owner_authorization_required", "production_execution": False, "attempted": False},
             "recovery": {"status": "NOT_RUN", "reason_code": "cutover_not_authorized"},
             "physical_android": {"status": "NOT_RUN", "reason_code": "this_driver_is_dev_pc_only"},
