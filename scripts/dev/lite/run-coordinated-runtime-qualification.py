@@ -19,6 +19,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import runpy
 import secrets
 import shutil
 import socket
@@ -175,7 +176,15 @@ def _ports() -> dict[str, int]:
 
 
 def _release_assets(source: Path, commit: str, root: Path, npm: Path) -> dict[str, str]:
-    """Build an exact-commit PWA and create a deterministic local release."""
+    """Build an exact-commit PWA and create a deterministic local release.
+
+    The live coordinated owner requires the same signed source-package
+    declaration as the protected release workflow.  The former qualification
+    helper only built ``dist.zip`` and therefore produced a review-only
+    candidate even though the rest of the lane was armed for coordinated
+    execution.  Build the source archive from the exact Git object here; do
+    not archive the potentially dirty checkout or the generated build tree.
+    """
     node_modules = ROOT / "node_modules"
     if not node_modules.is_dir():
         raise QualificationError("repository node_modules is unavailable for exact candidate build")
@@ -206,8 +215,9 @@ def _release_assets(source: Path, commit: str, root: Path, npm: Path) -> dict[st
         "target": "web-pwa",
     }
     (dist / "pocketlab-lite-build.json").write_text(json.dumps(marker, sort_keys=True, separators=(",", ":")), encoding="utf-8")
-    archive = root / "assets" / "dist.zip"
-    archive.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    assets = root / "assets"
+    archive = assets / "dist.zip"
+    assets.mkdir(mode=0o700, parents=True, exist_ok=True)
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as bundle:
         for path in sorted(item for item in dist.rglob("*") if item.is_file()):
             relative = path.relative_to(dist).as_posix()
@@ -217,7 +227,7 @@ def _release_assets(source: Path, commit: str, root: Path, npm: Path) -> dict[st
             bundle.writestr(info, path.read_bytes())
     digest = _sha256(archive)
     manifest = root / "assets" / "pocketlab-lite-release.json"
-    _json_write(manifest, {
+    payload = {
         "product": "pocket-lab-lite",
         "schema_version": 1,
         "release_tag": tag,
@@ -229,10 +239,63 @@ def _release_assets(source: Path, commit: str, root: Path, npm: Path) -> dict[st
         "created_at": created_at,
         "minimum_runtime_version": "qualification",
         "sanitized": True,
-    })
+    }
+    source_declaration = _package_coordinated_source(
+        repo=ROOT,
+        source=source,
+        commit=commit,
+        assets=assets,
+    )
+    if source_declaration is not None:
+        payload["coordinated_source"] = source_declaration
+    _json_write(manifest, payload)
     checksums = root / "assets" / "checksums.txt"
-    checksums.write_text(f"{digest}  dist.zip\n{_sha256(manifest)}  pocketlab-lite-release.json\n", encoding="utf-8")
-    return {"archive": str(archive), "manifest": str(manifest), "checksums": str(checksums), "tag": tag, "digest": digest}
+    checksum_lines = [f"{digest}  dist.zip", f"{_sha256(manifest)}  pocketlab-lite-release.json"]
+    if source_declaration is not None:
+        checksum_lines.append(f"{source_declaration['sha256']}  {source_declaration['artifact']}")
+    checksums.write_text("\n".join(checksum_lines) + "\n", encoding="utf-8")
+    return {"archive": str(archive), "manifest": str(manifest), "checksums": str(checksums), "tag": tag, "digest": digest,
+            "source": source_declaration}
+
+
+def _package_coordinated_source(*, repo: Path, source: Path, commit: str, assets: Path) -> dict[str, str] | None:
+    """Create the registered installable source profile from an exact Git object.
+
+    Older baseline commits predate the coordinated-source declaration and
+    remain valid as identity-only baselines.  Candidate commits that contain
+    the package profile must carry the installable profile so the real trust
+    verifier can perform source, policy, migration and dependency admission.
+    """
+    profile_path = source / "pocket-lab-final-structure" / "runtime" / "api_fastapi" / "services" / "lite_release_package_profile.py"
+    if not profile_path.is_file() or profile_path.is_symlink():
+        return None
+    try:
+        profile = runpy.run_path(str(profile_path))
+        roots = tuple(str(item) for item in profile["RUNTIME_PROFILE_ROOTS"])
+        installable = str(profile["INSTALLABLE_RUNTIME_PROFILE"])
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        raise QualificationError("coordinated_source_profile_invalid") from exc
+    if not roots or not installable:
+        raise QualificationError("coordinated_source_profile_invalid")
+    archive = assets / "pocketlab-lite-source.zip"
+    result = _run(
+        ["git", "-C", str(repo), "archive", "--format=zip", "--output", str(archive), commit, "--", *roots],
+        cwd=repo,
+        timeout=180,
+        capture=True,
+        check=False,
+    )
+    if result.returncode != 0 or not archive.is_file() or archive.is_symlink():
+        raise QualificationError("coordinated_source_archive_failed")
+    if archive.stat().st_size > 256 * 1024 * 1024:
+        raise QualificationError("coordinated_source_archive_too_large")
+    return {
+        "schema_version": 2,
+        "artifact": archive.name,
+        "sha256": _sha256(archive),
+        "source_commit": commit,
+        "profile": installable,
+    }
 
 
 def _promotion_artifact(repo: Path, commit: str, root: Path) -> dict:

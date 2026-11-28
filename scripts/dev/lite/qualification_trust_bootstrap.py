@@ -147,6 +147,8 @@ def _certificate(directory: Path) -> tuple[Path, Path]:
 
 def _provenance_bundle(directory: Path, signer: Ed25519PrivateKey, *, commit: str, tag: str) -> None:
     subjects = ["dist.zip", "pocketlab-lite-trust.dsse.json"]
+    if (directory / "pocketlab-lite-source.zip").is_file():
+        subjects.append("pocketlab-lite-source.zip")
     lines = []
     key_id = hashlib.sha256(_public(signer)).hexdigest()
     for subject in subjects:
@@ -191,7 +193,10 @@ def bootstrap(*, run_root: Path, assets: Path, tag: str, commit: str, release_po
     _write(time_private, time_signer.private_bytes(serialization.Encoding.Raw, serialization.PrivateFormat.Raw, serialization.NoEncryption()), mode=0o600)
     cert, tls_private = _certificate(secrets)
 
-    for name in ("dist.zip", "pocketlab-lite-release.json", "checksums.txt"):
+    names = ["dist.zip", "pocketlab-lite-release.json", "checksums.txt"]
+    if (assets / "pocketlab-lite-source.zip").is_file():
+        names.append("pocketlab-lite-source.zip")
+    for name in names:
         source = assets / name
         if not source.is_file() or source.is_symlink():
             raise RuntimeError("qualification_release_asset_missing")
