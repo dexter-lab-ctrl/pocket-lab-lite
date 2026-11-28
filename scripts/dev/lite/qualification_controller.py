@@ -1195,7 +1195,7 @@ def _candidate_review_caddyfile(path: Path, *, caddy_port: int, api_port: int, d
     admin off
 }}
 
-http://127.0.0.1:{caddy_port} {{
+http://:{caddy_port} {{
     header {{
         X-PocketLab-Source-Commit "{source_sha}"
         X-PocketLab-Qualification-Run "{run_id}"
