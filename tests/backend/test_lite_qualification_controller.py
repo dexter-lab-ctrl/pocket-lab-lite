@@ -147,6 +147,8 @@ def test_candidate_review_caddyfile_is_exact_candidate_same_origin_projection(tm
     rendered = path.read_text(encoding="utf-8")
     assert "http://:38101" in rendered
     assert "reverse_proxy 127.0.0.1:38102" in rendered
+    assert "header_up Host {http.request.header.X-Forwarded-Host}" in rendered
+    assert "header_up X-Forwarded-Proto {http.request.header.X-Forwarded-Proto}" in rendered
     assert "X-PocketLab-Source-Commit \"" + ("c" * 40) + "\"" in rendered
     assert "X-PocketLab-Qualification-Run \"" + ("a" * 24) + "\"" in rendered
     assert "/api/* /health /healthz /ready" in rendered

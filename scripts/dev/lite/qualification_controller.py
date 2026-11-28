@@ -1203,7 +1203,14 @@ http://:{caddy_port} {{
     }}
     @api path /api/* /health /healthz /ready
     handle @api {{
-        reverse_proxy 127.0.0.1:{api_port}
+        reverse_proxy 127.0.0.1:{api_port} {{
+            # The browser-facing HTTPS bridge supplies these validated
+            # authorities. Preserve them instead of letting the private
+            # loopback upstream become the WebAuthn origin on refresh-time
+            # requests that do not carry an Origin header.
+            header_up Host {{http.request.header.X-Forwarded-Host}}
+            header_up X-Forwarded-Proto {{http.request.header.X-Forwarded-Proto}}
+        }}
     }}
     handle {{
         root * {dist}
