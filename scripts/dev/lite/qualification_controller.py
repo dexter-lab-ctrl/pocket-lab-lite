@@ -26,6 +26,7 @@ import secrets
 import shutil
 import socket
 import ssl
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -161,6 +162,140 @@ def _safe_paths(run: Mapping[str, Any]) -> dict[str, Path]:
         if path.is_symlink():
             raise QualificationControllerError("run_path_symlink", "Qualification paths may not be symlinks.")
     return values
+
+
+def _run_owned_path(run: Mapping[str, Any], relative: str, label: str) -> Path:
+    """Resolve a manifest-relative path without following an escape or link."""
+    root = Path(str(run.get("run_root") or "")).expanduser().resolve(strict=True)
+    value = str(relative or "")
+    candidate = Path(value)
+    if not value or candidate.is_absolute() or ".." in candidate.parts:
+        raise QualificationControllerError("manifest_path_invalid", f"The manifest {label} path is invalid.")
+    resolved = (root / candidate).resolve(strict=False)
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise QualificationControllerError("manifest_path_invalid", f"The manifest {label} path escaped the run root.") from exc
+    current = root
+    for part in candidate.parts:
+        current = current / part
+        if current.is_symlink():
+            raise QualificationControllerError("run_path_symlink", f"The manifest {label} path contains a symlink.")
+    return resolved
+
+
+def _copy_sqlite_snapshot(source: Path, destination: Path, root: Path) -> dict[str, Any]:
+    """Create a consistent run-owned SQLite backup without copying a live WAL."""
+    source = source.resolve(strict=True)
+    destination = destination.resolve(strict=False)
+    try:
+        source.relative_to(root)
+        destination.relative_to(root)
+    except ValueError as exc:
+        raise QualificationControllerError("review_database_outside_root", "The trust-review database must remain inside the run root.") from exc
+    if source.is_symlink() or destination.is_symlink():
+        raise QualificationControllerError("review_database_symlink", "The trust-review database may not be a symlink.")
+    destination.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    destination.unlink(missing_ok=True)
+    try:
+        source_conn = sqlite3.connect(f"file:{source}?mode=ro", uri=True, timeout=15)
+        destination_conn = sqlite3.connect(destination, timeout=15)
+        source_conn.backup(destination_conn)
+        check = str(destination_conn.execute("PRAGMA quick_check").fetchone()[0])
+        destination_conn.commit()
+    except sqlite3.Error as exc:
+        raise QualificationControllerError("review_database_backup_failed", "The isolated trust-review database backup failed.") from exc
+    finally:
+        try:
+            source_conn.close()
+        except UnboundLocalError:
+            pass
+        try:
+            destination_conn.close()
+        except UnboundLocalError:
+            pass
+    if check != "ok":
+        raise QualificationControllerError("review_database_integrity_failed", "The isolated trust-review database failed SQLite quick_check.")
+    with destination.open("rb") as handle:
+        os.fsync(handle.fileno())
+    return {"status": "PASS", "quick_check": check, "sanitized": True}
+
+
+def _copy_run_tree(source: Path, destination: Path, root: Path) -> None:
+    """Copy static qualification state while rejecting links and escapes."""
+    source = source.resolve(strict=True)
+    destination = destination.resolve(strict=False)
+    try:
+        source.relative_to(root)
+        destination.relative_to(root)
+    except ValueError as exc:
+        raise QualificationControllerError("review_state_outside_root", "The trust-review state must remain inside the run root.") from exc
+    if source.is_symlink() or destination.is_symlink():
+        raise QualificationControllerError("review_state_symlink", "The trust-review state may not contain a symlink root.")
+    destination.mkdir(mode=0o700, parents=True, exist_ok=True)
+    for entry in source.iterdir():
+        target = destination / entry.name
+        if entry.is_symlink():
+            raise QualificationControllerError("review_state_symlink", "The trust-review state contains a symlink.")
+        if entry.is_dir():
+            _copy_run_tree(entry, target, root)
+        elif entry.is_file():
+            shutil.copy2(entry, target)
+            target.chmod(entry.stat().st_mode & 0o700 or 0o400)
+        else:
+            raise QualificationControllerError("review_state_special_file", "The trust-review state contains an unsupported file.")
+
+
+def _review_projection_digest(database: Path) -> str:
+    """Hash only bounded release identity rows for baseline-preservation proof."""
+    try:
+        conn = sqlite3.connect(database, timeout=15)
+        conn.row_factory = sqlite3.Row
+        values: dict[str, Any] = {}
+        for table in ("release_runtime_projection", "lite_release_trust_observation", "lite_release_trusted_time"):
+            exists = conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)).fetchone()
+            if not exists:
+                values[table] = "missing"
+                continue
+            rows = conn.execute(f"SELECT * FROM {table} ORDER BY rowid").fetchall()
+            values[table] = [dict(row) for row in rows]
+        return _sha256(json.dumps(values, ensure_ascii=True, sort_keys=True, default=str, separators=(",", ":")).encode("utf-8"))
+    except sqlite3.Error as exc:
+        raise QualificationControllerError("baseline_projection_unavailable", "The baseline release identity projection could not be observed.") from exc
+    finally:
+        try:
+            conn.close()
+        except UnboundLocalError:
+            pass
+
+
+def _prepare_trust_review(run: Mapping[str, Any]) -> dict[str, Any]:
+    """Create a disposable review DB/state pair; never review into baseline state."""
+    paths = _safe_paths(run)
+    root = paths["manifest"].parent
+    review_root = root / "trust-review"
+    if review_root.exists():
+        if review_root.is_symlink():
+            raise QualificationControllerError("review_state_symlink", "The trust-review root may not be a symlink.")
+        shutil.rmtree(review_root)
+    review_state = review_root / "state"
+    review_db = review_state / "pocketlab-lite.sqlite3"
+    backup = _copy_sqlite_snapshot(paths["state"] / "pocketlab-lite.sqlite3", review_db, root)
+    source_state = paths["state"]
+    for relative in ("release-trust", "opa"):
+        source = source_state / relative
+        if source.exists():
+            _copy_run_tree(source, review_state / relative, root)
+    return {
+        "status": "READY",
+        "database": _root_relative(review_db, root),
+        "state": _root_relative(review_state, root),
+        "baseline_projection_digest": _review_projection_digest(paths["state"] / "pocketlab-lite.sqlite3"),
+        "backup": backup,
+        "candidate_sha": str(run["candidate_sha"]),
+        "baseline_sha": str(run["baseline_sha"]),
+        "sanitized": True,
+    }
 
 
 def _validate_run(run: Mapping[str, Any], *, expected_run_id: str | None = None, allow_expired: bool = False) -> dict[str, Any]:
@@ -306,10 +441,12 @@ def _baseline_start_script(run: Mapping[str, Any]) -> Path:
     except (OSError, UnicodeError) as exc:
         raise QualificationControllerError("baseline_startup_unavailable", "The exact baseline startup owner is unavailable.") from exc
     candidate_common = paths["candidate"] / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "lib" / "common.sh"
+    candidate_opa = paths["candidate"] / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts" / "lite" / "start-opa-runtime.sh"
     try:
         common_text = candidate_common.read_text(encoding="utf-8")
+        opa_text = candidate_opa.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
-        raise QualificationControllerError("qualification_common_unavailable", "The candidate qualification process-management boundary is unavailable.") from exc
+        raise QualificationControllerError("qualification_runtime_overlay_unavailable", "The candidate qualification runtime overlay is unavailable.") from exc
     replacements = {
         "listen: 0.0.0.0:4222": "listen: ${POCKETLAB_NATS_LISTEN_HOST:-127.0.0.1}:${POCKETLAB_LITE_NATS_PORT:-4222}",
         "http: 127.0.0.1:8222": "http: 127.0.0.1:${POCKETLAB_LITE_NATS_MONITOR_PORT:-8222}",
@@ -324,17 +461,39 @@ def _baseline_start_script(run: Mapping[str, Any]) -> Path:
         raise QualificationControllerError("baseline_startup_contract_unsupported", "The exact baseline has no safe isolated NATS port contract.")
     overlay = source.with_name(".qualification-start-dashboard.sh")
     common_overlay = source.parent / "lib" / ".qualification-common.sh"
+    opa_overlay = source.parent / "lite" / ".qualification-start-opa-runtime.sh"
     try:
         common_overlay.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        opa_overlay.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         overlay.write_text(text, encoding="utf-8")
         overlay.chmod(0o700)
         common_overlay.write_text(common_text, encoding="utf-8")
         common_overlay.chmod(0o700)
+        opa_overlay.write_text(
+            opa_text.replace(
+                'source "$ROOT_SCRIPT_DIR/lib/common.sh"',
+                'source "$ROOT_SCRIPT_DIR/lib/.qualification-common.sh"',
+                1,
+            ),
+            encoding="utf-8",
+        )
+        opa_overlay.chmod(0o700)
         rendered = overlay.read_text(encoding="utf-8")
         source_import = 'source "$SCRIPT_DIR/lib/common.sh"'
         if source_import not in rendered:
             raise QualificationControllerError("baseline_startup_contract_unsupported", "The exact baseline startup owner has no stable common-shell import.")
-        overlay.write_text(rendered.replace(source_import, 'source "$SCRIPT_DIR/lib/.qualification-common.sh"', 1), encoding="utf-8")
+        rendered = rendered.replace(source_import, 'source "$SCRIPT_DIR/lib/.qualification-common.sh"', 1)
+        opa_reference = 'OPA_RUNTIME_START="$SCRIPT_DIR/lite/start-opa-runtime.sh"'
+        if opa_reference not in rendered:
+            raise QualificationControllerError("baseline_startup_contract_unsupported", "The exact baseline startup owner has no stable OPA startup import.")
+        overlay.write_text(
+            rendered.replace(
+                opa_reference,
+                'OPA_RUNTIME_START="$SCRIPT_DIR/lite/.qualification-start-opa-runtime.sh"',
+                1,
+            ),
+            encoding="utf-8",
+        )
     except OSError as exc:
         raise QualificationControllerError("baseline_startup_overlay_failed", "The run-owned baseline startup overlay could not be created.") from exc
     return overlay
@@ -764,19 +923,40 @@ def _newer_write_evidence(payload: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def trust_check(run: dict[str, Any]) -> dict[str, Any]:
-    """Run the existing release worker against the run-owned trust inputs."""
+    """Run the existing release worker against an isolated review database.
+
+    Trust review is candidate evidence, not baseline runtime state.  The
+    release worker owns the observation and receipt writes, but those writes
+    must land in a disposable SQLite backup and state tree so a review cannot
+    silently convert the baseline into the candidate.
+    """
     validated = _validate_run(run)
     if not validated.get("services", {}).get("started"):
         raise QualificationControllerError("runtime_not_started", "The isolated runtime must be started before trust verification.")
     paths = validated["paths_resolved"]
+    review = _prepare_trust_review(validated)
+    review_root = paths["manifest"].parent
+    review_database = _run_owned_path(validated, review["database"], "trust_review_database")
+    review_state = _run_owned_path(validated, review["state"], "trust_review_state")
+    checkpoint = _write_phase(
+        validated,
+        phase="trust_check",
+        next_action="verify_candidate_release_trust_in_isolated_review_state",
+        status="RUNNING",
+        trust_review=review,
+    )
+    validated = _validate_run(checkpoint)
     env = _base_env(validated)
-    # The disposable baseline remains the running consumer, while the exact
-    # candidate release-worker code performs the trust observation that will
-    # be exercised again after candidate activation.  No database rows are
-    # written by this controller; the worker owns the lease and persistence.
+    # The exact candidate release-worker code performs the trust observation,
+    # while all release projection and trusted-time writes land in the
+    # run-owned review copy rather than the running baseline database.
     env["POCKETLAB_REPO_ROOT"] = str(paths["candidate"])
     env["POCKETLAB_CANDIDATE_SOURCE_COMMIT"] = str(validated["candidate_sha"])
     env["PYTHONPATH"] = os.pathsep.join((str(paths["candidate"] / "pocket-lab-final-structure" / "runtime"), str(paths["candidate"] / "pocket-lab-final-structure" / "runtime" / "supervisors"), os.environ.get("PYTHONPATH", "")))
+    env["POCKETLAB_STATE_DIR"] = str(review_state)
+    env["POCKETLAB_QUALIFICATION_STATE_DIR"] = str(review_state)
+    env["POCKETLAB_LITE_DB_PATH"] = str(review_database)
+    env["POCKETLAB_OPA_ACTIVE_POLICY_DIR"] = str(review_state / "opa" / "active")
     command = [sys.executable, str(TRUST_BOOTSTRAP), "release-check", "--command-id", "qualification-trust-" + str(validated["run_id"])]
     result = _run(command, env=env, cwd=paths["candidate"], timeout=360)
     try:
@@ -788,12 +968,24 @@ def trust_check(run: dict[str, Any]) -> dict[str, Any]:
     payload["stderr_tail"] = _sanitize_tail(result.stderr, Path(str(validated["run_root"])))
     payload["returncode"] = int(result.returncode)
     payload["sanitized"] = True
+    baseline_digest_after = _review_projection_digest(paths["state"] / "pocketlab-lite.sqlite3")
+    baseline_preserved = baseline_digest_after == str(review.get("baseline_projection_digest") or "")
+    payload["review_database"] = {
+        "status": "PASS" if baseline_preserved else "FAIL",
+        "relative_path": review["database"],
+        "state_relative_path": review["state"],
+        "baseline_projection_preserved": baseline_preserved,
+        "baseline_projection_digest": review.get("baseline_projection_digest"),
+        "baseline_projection_digest_after": baseline_digest_after,
+        "sanitized": True,
+    }
     passed = result.returncode == 0 and payload.get("status") == "PASS" and payload.get("trust_observation", {}).get("state") == "historical_evidence"
+    passed = passed and baseline_preserved
     if not passed:
-        updated = _write_phase(validated, phase="trust_required", next_action="repair_qualification_trust_inputs", status="BLOCKED", trust_observation=payload)
+        updated = _write_phase(validated, phase="trust_required", next_action="repair_qualification_trust_inputs", status="BLOCKED", trust_observation=payload, trust_review={**review, "status": "BLOCKED", "baseline_projection_preserved": baseline_preserved})
         _report(updated, "trust-observation.json", payload)
         raise QualificationControllerError("qualification_trust_verification_failed", "The running release worker did not establish an independently verified qualification trust observation.")
-    updated = _write_phase(validated, phase=str(validated.get("phase") or "awaiting_owner"), next_action="open_origin_and_complete_purpose_bound_webauthn", status="AWAITING_OPERATOR", trust_observation=payload, evidence=[*(validated.get("evidence") or []), "qualification_trust_material", "trust_observation"])
+    updated = _write_phase(validated, phase="awaiting_owner", next_action="open_origin_and_complete_purpose_bound_webauthn", status="AWAITING_OPERATOR", trust_observation=payload, trust_review={**review, "status": "PASS", "baseline_projection_preserved": True}, evidence=[*(validated.get("evidence") or []), "qualification_trust_material", "trust_observation", "isolated_trust_review"])
     _report(updated, "trust-observation.json", payload)
     return updated
 

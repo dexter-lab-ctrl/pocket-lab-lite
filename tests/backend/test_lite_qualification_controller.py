@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import sqlite3
 
 import pytest
 
@@ -186,8 +187,17 @@ def test_baseline_start_overlay_only_rebinds_legacy_nats_listeners(tmp_path: Pat
     )
     candidate_common.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     candidate_common.write_text("# candidate qualification common\n", encoding="utf-8")
+    candidate_opa = candidate_common.parent.parent / "lite" / "start-opa-runtime.sh"
+    candidate_opa.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    candidate_opa.write_text(
+        '#!/usr/bin/env bash\nsource "$ROOT_SCRIPT_DIR/lib/common.sh"\n'
+        'pm2_ensure_versioned_process pocket-opa x -- run --server --addr="$OPA_ADDR"\n',
+        encoding="utf-8",
+    )
     source.write_text(
-        "#!/usr/bin/env bash\nsource \"$SCRIPT_DIR/lib/common.sh\"\ncat <<EOF\nlisten: 0.0.0.0:4222\nhttp: 127.0.0.1:8222\ncurl http://127.0.0.1:8222/healthz\nEOF\n",
+        "#!/usr/bin/env bash\nsource \"$SCRIPT_DIR/lib/common.sh\"\n"
+        'OPA_RUNTIME_START="$SCRIPT_DIR/lite/start-opa-runtime.sh"\n'
+        "cat <<EOF\nlisten: 0.0.0.0:4222\nhttp: 127.0.0.1:8222\ncurl http://127.0.0.1:8222/healthz\nEOF\n",
         encoding="utf-8",
     )
     source.chmod(0o700)
@@ -199,7 +209,41 @@ def test_baseline_start_overlay_only_rebinds_legacy_nats_listeners(tmp_path: Pat
     assert "${POCKETLAB_LITE_NATS_MONITOR_PORT:-8222}/healthz" in rendered
     assert "listen: 0.0.0.0:4222" not in rendered
     assert 'source "$SCRIPT_DIR/lib/.qualification-common.sh"' in rendered
+    assert 'OPA_RUNTIME_START="$SCRIPT_DIR/lite/.qualification-start-opa-runtime.sh"' in rendered
     assert (overlay.parent / "lib" / ".qualification-common.sh").read_text(encoding="utf-8") == "# candidate qualification common\n"
+    assert 'source "$ROOT_SCRIPT_DIR/lib/.qualification-common.sh"' in (overlay.parent / "lite" / ".qualification-start-opa-runtime.sh").read_text(encoding="utf-8")
+
+
+def test_trust_review_uses_sqlite_backup_and_preserves_baseline_projection(tmp_path: Path):
+    run = _run(tmp_path)
+    database = tmp_path / "run" / "state" / "pocketlab-lite.sqlite3"
+    with sqlite3.connect(database) as conn:
+        conn.executescript(
+            """
+            CREATE TABLE release_runtime_projection (installed_source_commit TEXT, release_tag TEXT);
+            CREATE TABLE lite_release_trust_observation (singleton_id INTEGER, state TEXT, review_json TEXT);
+            CREATE TABLE lite_release_trusted_time (singleton_id INTEGER, trusted_at TEXT);
+            INSERT INTO release_runtime_projection VALUES ('baseline', 'baseline-tag');
+            INSERT INTO lite_release_trust_observation VALUES (1, 'missing', '{}');
+            INSERT INTO lite_release_trusted_time VALUES (1, 'baseline-time');
+            """
+        )
+    (database.parent / "release-trust").mkdir(mode=0o700)
+    (database.parent / "release-trust" / "root.json").write_text("root", encoding="utf-8")
+    (database.parent / "opa" / "active").mkdir(mode=0o700, parents=True)
+    (database.parent / "opa" / "active" / "policy.rego").write_text("package pocketlab", encoding="utf-8")
+
+    review = controller._prepare_trust_review(run)
+
+    review_db = tmp_path / "run" / review["database"]
+    assert review_db.is_file()
+    assert review["baseline_projection_digest"] == controller._review_projection_digest(database)
+    with sqlite3.connect(review_db) as conn:
+        conn.execute("UPDATE release_runtime_projection SET installed_source_commit='candidate'")
+        conn.commit()
+    with sqlite3.connect(database) as conn:
+        assert conn.execute("SELECT installed_source_commit FROM release_runtime_projection").fetchone()[0] == "baseline"
+    assert (tmp_path / "run" / review["state"] / "release-trust" / "root.json").read_text(encoding="utf-8") == "root"
 
 
 def test_package_inputs_bind_to_the_sealed_exact_sha(tmp_path: Path):
