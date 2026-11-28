@@ -400,6 +400,19 @@ def _http_json(url: str) -> tuple[int, dict]:
         return 0, {}
 
 
+def _diagnostic(text: str, root: Path) -> list[str]:
+    """Keep only short, sanitized owner diagnostics in the evidence report."""
+    lines: list[str] = []
+    for raw in (text or "").splitlines()[-24:]:
+        line = raw.replace(str(root), "<qualification-root>").replace(str(ROOT), "<repository-root>").strip()
+        lowered = line.casefold()
+        if any(marker in lowered for marker in ("password", "token", "secret", "cookie", "private key", "authorization:")):
+            continue
+        if line:
+            lines.append(line[:240])
+    return lines
+
+
 def _cleanup(env: dict[str, str]) -> bool:
     try:
         before = _jlist(env)
@@ -471,6 +484,12 @@ def main(argv: list[str] | None = None) -> int:
             "--lite",
             "--reconcile-only",
         ], cwd=source, env=env, timeout=300, check=False)
+        payload["startup"] = {
+            "returncode": start.returncode,
+            "stdout_tail": _diagnostic(start.stdout, root),
+            "stderr_tail": _diagnostic(start.stderr, root),
+            "sanitized": True,
+        }
         if start.returncode != 0:
             raise QualificationError("isolated runtime owners did not converge")
         observation = _observe(env, run_id)
